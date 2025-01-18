@@ -1,0 +1,182 @@
+<?php
+    namespace Gamebase\Infrastructure\Persistance;
+
+use Exception;
+use PDO;
+    use PDOException;
+    use Gamebase\Domain\Repositories\GameGenreRepositoryInterface;
+    use Gamebase\Domain\Entities\GameGenre;    
+    use Gamebase\Infrastructure\Utils\Pathfinder;
+
+    include_once(PATHFINDER_DIRECTORY);
+	include_once(Pathfinder::find("src/domain/repositories/GameGenreRepositoryInterface.php"));
+
+    class MariaDBGameGenreRepository implements GameGenreRepositoryInterface 
+    {
+        private PDO $pdo;
+
+        public function __construct(PDO $pdo)
+        {
+            $this->pdo = $pdo;
+        }
+
+        public function insert(GameGenre $gameGenre): GameGenre 
+        {
+            try
+            {
+                $statement = $this->pdo->prepare("INSERT INTO game_genre (genre_id, game_id) VALUES (:genreId, :gameId);");
+                $statement->execute([
+                    ":genreId" => $gameGenre->getGenreId(),
+                    ":gameId" => $gameGenre->getGameId()
+                ]);
+
+                $lastInsertId = intval($this->pdo->lastInsertId());
+                $statement = $this->pdo->prepare("SELECT * FROM game_genre WHERE id = :id;");
+                $statement->execute([
+                    ":id" => $lastInsertId
+                ]);
+                $result = $statement->fetch();
+
+                $gameGenre = new GameGenre();
+                $gameGenre->setId($result["id"]);
+                $gameGenre->setGenreId($result["genre_id"]);
+                $gameGenre->setGameId($result["game_id"]);
+                
+                return $gameGenre;
+            }
+            catch (PDOException $e)
+            {
+                throw $e;
+            }            
+        }
+
+        public function edit(GameGenre $gameGenre): bool 
+        {
+            try 
+            {
+                $gameId = $gameGenre->getGameId();
+                $statement = $this->pdo->prepare("UPDATE game_genre SET genre_id = :genreId WHERE game_id = :gameId;");
+                $wasItSuccessful = $statement->execute([":gameId" => $gameId]);
+                return $wasItSuccessful;
+            }
+            catch (Exception $e) 
+            {
+                throw $e;
+            }
+        }
+
+        public function delete(GameGenre $gameGenre): bool
+        {
+            try 
+            {
+                $statement = $this->pdo->prepare(
+                    "DELETE FROM
+                        game_genre
+                    WHERE
+                        game_id = :gameId
+                    AND
+                        genre_id = :genreId;"
+                );
+
+                $gameId = $gameGenre->getGameId();
+                $genreId = $gameGenre->getGenreId();
+
+                $wasItSuccessful = $statement->execute([
+                    "gameId" => $gameId,
+                    "genreId" => $genreId
+                ]);
+
+                return $wasItSuccessful;
+            }
+            catch (PDOException $e) 
+            {
+                throw $e;
+            }
+        }
+
+        public function deleteAllByGameId(GameGenre $gameGenre): bool
+        {
+            try 
+            {
+                $statement = $this->pdo->prepare(
+                    "DELETE FROM
+                        game_genre
+                    WHERE
+                        game_id = :gameId;"
+                );
+
+                $gameId = $gameGenre->getGameId();
+
+                $wasItSuccessful = $statement->execute(["gameId" => $gameId]);
+                return $wasItSuccessful;
+            }
+            catch (PDOException $e) 
+            {
+                throw $e;
+            }
+        }
+
+        public function findAllGameGenresByGameId(int $gameId): array 
+        {
+            try 
+            {
+                $statement = $this->pdo->prepare("SELECT * FROM game_genre WHERE game_id = :gameId;");
+                $statement->execute([":gameId" => $gameId]);
+
+                $result = $statement->fetchAll();
+                $gameGenres = [];
+                foreach($result as $row)
+                {
+                    $gameGenre = new GameGenre();
+                    $gameGenre->setId($row["id"]);
+                    $gameGenre->setGameId($row["game_id"]);
+                    $gameGenre->setGenreId($row["genre_id"]);
+                    $gameGenres[] = $gameGenre;
+                }
+
+                return $gameGenres;
+            }
+            catch (PDOException $e) 
+            {
+                throw $e;
+            }
+        }
+
+        public function innerJoinBetweenGameAndGameGenreByGameId(): array 
+        {
+            try 
+            {
+                $statement = $this->pdo->prepare(
+                    "SELECT
+                        game_genre.id AS id,
+                        game_genre.game_id AS game_id,
+                        game_genre.genre_id AS genre_id
+                    FROM
+                        game
+                    INNER JOIN
+                        game_genre
+                    ON
+                        game.id = game_genre.game_id;"
+                );
+                $statement->execute();
+                $result = $statement->fetchAll();
+
+                $gameGenres = [];
+                foreach ($result as $row) 
+                {
+                    $gameGenre = new GameGenre();
+                    $gameGenre->setId($row["id"]);
+                    $gameGenre->setGameId($row["game_id"]);
+                    $gameGenre->setGenreId($row["genre_id"]);
+                    $gameGenres[] = $gameGenre;
+                }
+
+                return $gameGenres;
+            }
+            catch (PDOException $e) 
+            {
+                throw $e;
+            }
+        }
+    }
+?>
