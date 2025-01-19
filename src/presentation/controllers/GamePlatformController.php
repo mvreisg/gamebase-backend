@@ -2,8 +2,8 @@
     namespace Gamebase\Presentation\Controllers;
 
     use Exception;
-    use Gamebase\Presentation\Http\HttpRequest;
-    use Gamebase\Presentation\Http\HttpResponse;
+    use Gamebase\Infrastructure\Http\HttpRequest;
+    use Gamebase\Infrastructure\Http\HttpResponse;
     use Gamebase\Application\Services\GamePlatformService;
 
     class GamePlatformController 

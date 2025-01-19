@@ -1,5 +1,5 @@
 <?php
-    namespace Gamebase\Presentation\Http;
+    namespace Gamebase\Infrastructure\Http;
 
     class HttpRequest 
     {

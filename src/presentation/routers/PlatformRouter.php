@@ -1,13 +1,11 @@
 <?php
     namespace Gamebase\Presentation\Routers;
+    
+    use Gamebase\Infrastructure\Http\HttpRequest;
+    use Gamebase\Infrastructure\Http\HttpResponse;
+    use Gamebase\Infrastructure\Http\HttpApplication;
 
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-    use Gamebase\Presentation\Http\HttpRequest;
-    use Gamebase\Presentation\Http\HttpResponse;
-    use Gamebase\Presentation\Http\HttpApplication;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/presentation/factories/PlatformControllerFactory.php"));
+	include_once("./../src/presentation/factories/PlatformControllerFactory.php");
 
     class PlatformRouter 
     {

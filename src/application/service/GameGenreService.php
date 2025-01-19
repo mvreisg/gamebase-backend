@@ -4,10 +4,8 @@
     use Exception;
     use Gamebase\Domain\Entities\GameGenre;
     use Gamebase\Domain\Repositories\GameGenreRepositoryInterface;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-    include_once(Pathfinder::find("src/domain/entities/GameGenre.php"));
+    
+    include_once("./../src/domain/entities/GameGenre.php");
 
     class GameGenreService 
     {

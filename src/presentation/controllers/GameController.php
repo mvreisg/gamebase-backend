@@ -5,8 +5,8 @@
     use Gamebase\Application\Services\GameService;
     use Gamebase\Domain\Exceptions\InvalidValueException;
     use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
-    use Gamebase\Presentation\Http\HttpRequest;
-    use Gamebase\Presentation\Http\HttpResponse;
+    use Gamebase\Infrastructure\Http\HttpRequest;
+    use Gamebase\Infrastructure\Http\HttpResponse;
 
     class GameController 
     {
@@ -24,26 +24,12 @@
             $body = $request->parseBodyFromJSON();
 
             $name = $body["name"] ?? null;
-            //$genresId = $body["genresIds"] ?? null;
-            //$platformsId = $body["platformsIds"] ?? null;
 
             $hasNullKey = false;
             if ($name === null){
                 $hasNullKey = true;
                 $message[] = "O parâmetro 'name' não foi informado.";
             }
-
-            /*
-            if ($genresId === null){
-                $hasNullKey = true;
-                $message[] = "O parâmetro 'genresId' não foi informado.";
-            }
-
-            if ($platformsId === null){
-                $hasNullKey = true;
-                $message[] = "O parâmetro 'platformsId' não foi informado.";
-            }
-            */
 
             if ($hasNullKey){
                 $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
@@ -58,11 +44,6 @@
                     $message[] = "Ocorreu um erro ao inserir o jogo. Contate o suporte.";
                     $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
                 }
-
-                //$gameId = $game->getId();
-
-                //array_map(fn($genreId) => $this->gameGenreService->insert($genreId, $gameId), $genresId);
-                //array_map(fn($platformId) => $this->gamePlatformService->insert($platformId, $gameId), $platformsId);
 
                 $message[] = "Jogo inserido com sucesso!";
                 $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_201)->sendJSON();

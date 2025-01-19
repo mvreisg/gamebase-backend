@@ -4,10 +4,8 @@
     use Exception;
     use Gamebase\Domain\Entities\GamePlatform;
     use Gamebase\Domain\Repositories\GamePlatformRepositoryInterface;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-    include_once(Pathfinder::find("src/domain/entities/GamePlatform.php"));
+    
+    include_once("./../src/domain/entities/GamePlatform.php");
 
     class GamePlatformService 
     {

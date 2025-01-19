@@ -1,11 +1,8 @@
 <?php
-    namespace Gamebase\Presentation\Http;
+    namespace Gamebase\Infrastructure\Http;
 
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-    include_once(Pathfinder::find("src/presentation/http/HttpRequest.php"));
-    include_once(Pathfinder::find("src/presentation/http/HttpResponse.php"));
+    include_once("./../src/infrastructure/http/HttpRequest.php");
+    include_once("./../src/infrastructure/http/HttpResponse.php");
 
     define("HEADER_CONTENT_TYPE_APPLICATION_JSON", "Content-Type: application/json");
 

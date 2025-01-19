@@ -5,10 +5,8 @@
     use Gamebase\Domain\Entities\Platform;
     use Gamebase\Domain\Repositories\PlatformRepositoryInterface;
     use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/domain/entities/Platform.php"));
+    
+	include_once("./../src/domain/entities/Platform.php");
 
     class PlatformService 
     {

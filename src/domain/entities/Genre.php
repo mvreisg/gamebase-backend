@@ -2,10 +2,8 @@
     namespace Gamebase\Domain\Entities;
 
     use Gamebase\Domain\Exceptions\InvalidValueException;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-    include_once(Pathfinder::find("src/domain/exceptions/InvalidValueException.php"));
+    
+    include_once("./../src/domain/exceptions/InvalidValueException.php");
 
     class Genre 
     {

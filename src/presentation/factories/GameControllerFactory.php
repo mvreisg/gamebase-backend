@@ -4,14 +4,12 @@
     use Gamebase\Application\Services\GameService;
     use Gamebase\Presentation\Controllers\GameController;
     use Gamebase\Infrastructure\Database\MariaDBConnection;
-    use Gamebase\Infrastructure\Persistance\MariaDBGameRepository;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/presentation/controllers/GameController.php"));
-    include_once(Pathfinder::find("src/application/service/GameService.php"));
-    include_once(Pathfinder::find("src/infrastructure/database/MariaDBConnection.php"));
-    include_once(Pathfinder::find("src/infrastructure/persistance/MariaDBGameRepository.php"));
+    use Gamebase\Infrastructure\Repositories\MariaDBGameRepository;
+    
+	include_once("./../src/presentation/controllers/GameController.php");
+    include_once("./../src/application/service/GameService.php");
+    include_once("./../src/infrastructure/database/MariaDBConnection.php");
+    include_once("./../src/infrastructure/repositories/MariaDBGameRepository.php");
 
     class GameControllerFactory 
     {

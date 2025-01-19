@@ -5,8 +5,8 @@
     use Gamebase\Application\Services\GenreService;
     use Gamebase\Domain\Exceptions\InvalidValueException;
     use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
-    use Gamebase\Presentation\Http\HttpRequest;
-    use Gamebase\Presentation\Http\HttpResponse;
+    use Gamebase\Infrastructure\Http\HttpRequest;
+    use Gamebase\Infrastructure\Http\HttpResponse;
 
     class GenreController 
     {

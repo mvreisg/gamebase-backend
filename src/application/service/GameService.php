@@ -5,11 +5,9 @@
     use Gamebase\Domain\Entities\Game;
     use Gamebase\Domain\Repositories\GameRepositoryInterface;
     use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/domain/entities/Game.php"));
-    include_once(Pathfinder::find("src/infrastructure/exceptions/DuplicatedEntryException.php"));
+    
+	include_once("./../src/domain/entities/Game.php");
+    include_once("./../src/infrastructure/exceptions/DuplicatedEntryException.php");
 
     class GameService 
     {

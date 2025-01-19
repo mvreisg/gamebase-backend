@@ -1,14 +1,12 @@
 <?php
-    namespace Gamebase\Infrastructure\Persistance;
+    namespace Gamebase\Infrastructure\Repositories;
 
     use PDO;
     use PDOException;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
     use Gamebase\Domain\Entities\Platform;
     use Gamebase\Domain\Repositories\PlatformRepositoryInterface; 
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/domain/repositories/PlatformRepositoryInterface.php"));
+    
+	include_once("./../src/domain/repositories/PlatformRepositoryInterface.php");
 
     class MariaDBPlatformRepository implements PlatformRepositoryInterface 
     {

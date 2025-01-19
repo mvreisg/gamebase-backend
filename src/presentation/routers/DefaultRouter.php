@@ -1,9 +1,9 @@
 <?php
     namespace Gamebase\Presentation\Routers;
 
-    use Gamebase\Presentation\Http\HttpRequest;
-    use Gamebase\Presentation\Http\HttpResponse;
-    use Gamebase\Presentation\Http\HttpApplication;
+    use Gamebase\Infrastructure\Http\HttpRequest;
+    use Gamebase\Infrastructure\Http\HttpResponse;
+    use Gamebase\Infrastructure\Http\HttpApplication;
 
     class DefaultRouter 
     {

@@ -5,10 +5,8 @@
     use Gamebase\Domain\Entities\Genre;
     use Gamebase\Domain\Repositories\GenreRepositoryInterface;
     use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/domain/entities/Genre.php"));
+    
+	include_once("./../src/domain/entities/Genre.php");
 
     class GenreService 
     {

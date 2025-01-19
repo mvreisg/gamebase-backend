@@ -4,14 +4,12 @@
     use Gamebase\Application\Services\GameGenreService;
     use Gamebase\Presentation\Controllers\GameGenreController;
     use Gamebase\Infrastructure\Database\MariaDBConnection;
-    use Gamebase\Infrastructure\Persistance\MariaDBGameGenreRepository;
-    use Gamebase\Infrastructure\Utils\Pathfinder;
-
-    include_once(PATHFINDER_DIRECTORY);
-	include_once(Pathfinder::find("src/presentation/controllers/GameGenreController.php"));
-    include_once(Pathfinder::find("src/application/service/GameGenreService.php"));
-    include_once(Pathfinder::find("src/infrastructure/database/MariaDBConnection.php"));
-    include_once(Pathfinder::find("src/infrastructure/persistance/MariaDBGameGenreRepository.php"));
+    use Gamebase\Infrastructure\Repositories\MariaDBGameGenreRepository;
+    
+	include_once("./../src/presentation/controllers/GameGenreController.php");
+    include_once("./../src/application/service/GameGenreService.php");
+    include_once("./../src/infrastructure/database/MariaDBConnection.php");
+    include_once("./../src/infrastructure/repositories/MariaDBGameGenreRepository.php");
 
     class GameGenreControllerFactory 
     {
