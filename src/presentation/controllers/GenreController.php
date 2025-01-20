@@ -3,8 +3,8 @@
 
     use Exception;
     use Gamebase\Application\Services\GenreService;
-    use Gamebase\Domain\Exceptions\InvalidValueException;
-    use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
+    use Gamebase\Domain\Exceptions\EntityInvalidValueException;
+    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
     use Gamebase\Infrastructure\Http\HttpRequest;
     use Gamebase\Infrastructure\Http\HttpResponse;
 
@@ -19,213 +19,221 @@
 
         public function insert(HttpRequest $request, HttpResponse $response)
         {
-            $message = [];
+            $messages = [];
 
             $body = $request->parseBodyFromJSON();
-
             $name = $body["name"] ?? null;
 
-            $hasParameterError = false;
-            if ($name === null){
-                $hasParameterError = true;
-                $message[] = "O parâmetro 'name' não foi informado.";                
-            }
-
-            if ($hasParameterError){
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
+            if ($name === null)
+            {
+                $messages[] = "O parâmetro 'name' não foi informado no JSON.";                
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
                 return;
             }
 
+            $genre = null;
             try
             {
                 $genre = $this->service->insert($name);
-                if ($genre == false) 
-                {
-                    $message[] = "Ocorreu algum erro ao inserir o gênero. Contate o suporte.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
-                    return;
-                }
-
-                $message[] = "Gênero incluído com sucesso!";
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_201)->sendJSON();
             }
-            catch(InvalidValueException | DuplicatedEntryException $e)
+            catch(EntityInvalidValueException | DatabaseDuplicatedEntryException $e)
             {
-                $message[] = $e->getMessage();
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                $messages[] = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
             }
             catch (Exception $e) 
             {
-                $message = $e->getMessage();
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                $messages = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
             }
+            
+            if ($genre == false) 
+            {
+                $messages[] = "Ocorreu um erro ao inserir o gênero. Contate o suporte.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
+            }
+
+            $messages[] = "Gênero incluído com sucesso!";
+            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_201)->sendJSON();
         }
 
         public function edit(HttpRequest $request, HttpResponse $response)
         {
-            $message = [];
+            $messages = [];
             
+            $body = $request->parseBodyFromJSON();
+            $params = $request->getParams();
+
+            $genreId = $params["genreId"] ?? null;
+            $name = $body["name"] ?? null;
+
+            $hasParameterError = false;                
+            if ($genreId === null)
+            {
+                $hasParameterError = true;
+                $messages[] = "O id do gênero não foi informado na URL.";
+            }
+            
+            if ($name === null){
+                $hasParameterError = true;
+                $messages[] = "O parâmetro 'name' não foi informado no JSON.";
+            }
+
+            if ($hasParameterError){
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $isGenreIdNumeric = is_numeric($genreId);
+            if ($isGenreIdNumeric === false)
+            {
+                $messages[] = "O id do gênero precisa ser um número inteiro.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $genreId = intval($genreId);
+            if ($genreId <= 0)
+            {
+                $messages[] = "O id do gênero precisa ser un número inteiro maior que zero.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $wasEditAnSuccess = false;
             try 
             {
-                $body = $request->parseBodyFromJSON();
-                $params = $request->getParams();
-
-                $genreId = $params["genreId"] ?? null;
-                $name = $body["name"] ?? null;
-
-                $hasParameterError = false;                
-                if ($genreId === null){
-                    $message[] = "O parâmetro 'genreId' informado é nulo.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }                
-                    
-                $isGenreIdNumeric = is_numeric($genreId);
-                if ($isGenreIdNumeric === false)
-                {
-                    $message[] = "O parâmetro 'genreId' informado precisa ser um número inteiro.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
-                $genreId = intval($genreId);
-
-                if ($genreId <= 0)
-                {
-                    $message[] = "O parâmetro 'genreId' informado precisa ser un número inteiro maior que zero.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
-                if ($name === null){
-                    $hasParameterError = true;
-                    $message[] = "O parâmetro 'name' não foi informado.";
-                }
-    
-                if ($hasParameterError){
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
                 $wasEditAnSuccess = $this->service->edit($genreId, $name);
-                if ($wasEditAnSuccess === false) 
-                {
-                    $message[] = "Ocorreu algum erro ao editar o gênero. Contate o suporte.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
-                    return;
-                }
-
-                $message[] = "Gênero editado com sucesso!";
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_200)->sendJSON();
             }
             catch (Exception $e) 
             {
-                $message[] = $e->getMessage();
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                $messages[] = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
             }
+
+            if ($wasEditAnSuccess === false) 
+            {
+                $messages[] = "Ocorreu um erro ao editar o gênero. Contate o suporte.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
+            }
+
+            $messages[] = "Gênero editado com sucesso!";
+            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_200)->sendJSON();
         }
 
         public function findById(HttpRequest $request, HttpResponse $response)
         {
-            $message = [];
+            $messages = [];
+            $data = [];
 
+            $params = $request->getParams();
+
+            $genreId = $params["genreId"] ?? null;
+
+            if ($genreId === null)
+            {
+                $messages[] = "O id do gênero não foi informado na URL.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $isGenreIdNumeric = is_numeric($genreId);
+            if ($isGenreIdNumeric === false)
+            {
+                $messages[] = "O id do gênero precisa ser um número inteiro.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $genreId = intval($genreId);
+            if ($genreId <= 0)
+            {
+                $messages[] = "O id do gênero precisa ser un número inteiro maior que zero.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $genre = null;
             try
             {
-                $params = $request->getParams();
-
-                $genreId = $params["genreId"] ?? null;
-
-                if ($genreId === null){
-                    $message[] = "O parâmetro da rota 'genreId' não foi informado.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
-                $isGenreIdNumeric = is_numeric($genreId);
-                if ($isGenreIdNumeric === false)
-                {
-                    $message[] = "O parâmetro 'genreId' informado precisa ser um número inteiro.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
-                $genreId = intval($genreId);
-
-                if ($genreId <= 0)
-                {
-                    $message[] = "O parâmetro 'genreId' informado precisa ser un número inteiro maior que zero.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-    
                 $genre = $this->service->findById($genreId);
-                if ($genre === null)
-                {
-                    $message[] = "O gênero procurado não existe!";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                    return;
-                }
-
-                $genreId = $genre->getId();
-                $genreName = $genre->getName();
-
-                $message[] = "Genero buscado com sucesso!";
-                $response->appendArray(array_merge(["message" => $message], [
-                    "data" => [
-                        "id" => $genreId,
-                        "name" => $genreName,
-                    ]
-                ]))->status(HTTP_STATUS_CODE_200)->sendJSON();
             }
             catch (Exception $e) 
             {
-                $message[] = $e->getMessage();
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                $messages[] = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
             }
+
+            if ($genre === null)
+            {
+                $messages[] = "O gênero procurado não existe!";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
+
+            $genreId = $genre->getId();
+            $genreName = $genre->getName();
+
+            $data = [
+                "id" => $genreId,
+                "name" => $genreName,
+            ];
+
+            $messages[] = "Gênero buscado com sucesso!";
+            $response->appendArray(["messages" => $messages, "data" => $data])->status(HTTP_STATUS_CODE_200)->sendJSON();
         }
 
         public function findAll(HttpRequest $request, HttpResponse $response)
         {
-            $message = [];
+            $messages = [];
+            $data = [];
 
+            $genres = null;
             try
             {
                 $genres = $this->service->findAll();
-                if ($genres == false) 
-                {
-                    $message[] = "Ocorreu algum erro ao buscar os gêneros. Contate o suporte.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
-                    return;
-                }                
-
-                $numberOfGenres = count($genres);
-                if ($numberOfGenres === 0) 
-                {
-                    $message[] = "A busca foi concluída e nenhum gênero foi encontrado.";
-                    $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_200)->sendJSON();
-                    return;
-                }
-
-                $data = [];
-                foreach ($genres as $genre) 
-                {
-                    $genreId = $genre->getId();
-                    $genreName = $genre->getName();
-
-                    $data[] = [
-                        "id" => $genreId,
-                        "name" => $genreName
-                    ];
-                }
-
-                $message[] = "Gêneros buscados com sucesso!";
-                $response->appendArray(array_merge(["message" => $message], ["data" => $data]))->status(HTTP_STATUS_CODE_200)->sendJSON();
             }
             catch (Exception $e) 
             {
-                $message[] = $e->getMessage();
-                $response->appendArray(["message" => $message])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                $messages[] = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
             }
+
+            if ($genres == false) 
+            {
+                $messages[] = "Ocorreu um erro ao buscar os gêneros. Contate o suporte.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                return;
+            }                
+
+            $numberOfGenres = count($genres);
+            if ($numberOfGenres === 0) 
+            {
+                $messages[] = "A busca foi concluída e nenhum gênero foi encontrado.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_200)->sendJSON();
+                return;
+            }
+
+            foreach ($genres as $genre) 
+            {
+                $genreId = $genre->getId();
+                $genreName = $genre->getName();
+
+                $data[] = [
+                    "id" => $genreId,
+                    "name" => $genreName
+                ];
+            }
+
+            $messages[] = "Gêneros buscados com sucesso!";
+            $response->appendArray(["messages" => $messages, "data" => $data])->status(HTTP_STATUS_CODE_200)->sendJSON();
         }
     }
 ?>

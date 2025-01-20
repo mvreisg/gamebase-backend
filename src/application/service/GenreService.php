@@ -4,7 +4,7 @@
     use Exception;
     use Gamebase\Domain\Entities\Genre;
     use Gamebase\Domain\Repositories\GenreRepositoryInterface;
-    use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
+    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
     
 	include_once("./../src/domain/entities/Genre.php");
 
@@ -28,7 +28,7 @@
                 $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
                 if ($hasDuplicatedNames)
                 {
-                    throw new DuplicatedEntryException("O nome do gênero a ser inserido já existe no banco de dados!");
+                    throw new DatabaseDuplicatedEntryException("O nome do gênero a ser inserido já existe no banco de dados!");
                 }
                 $genre = $this->repository->insert($genre);
                 return $genre;
@@ -52,7 +52,7 @@
                 $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
                 if ($hasDuplicatedNames)
                 {
-                    throw new DuplicatedEntryException("O nome do gênero a ser editado já existe no banco de dados!");
+                    throw new DatabaseDuplicatedEntryException("O nome do gênero a ser editado já existe no banco de dados!");
                 }
                 $wasItSuccessful = $this->repository->edit($genre);
                 return $wasItSuccessful;

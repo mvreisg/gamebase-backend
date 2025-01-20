@@ -1,9 +1,9 @@
 <?php
     namespace Gamebase\Domain\Entities;
 
-    use Gamebase\Domain\Exceptions\InvalidValueException;
+    use Gamebase\Domain\Exceptions\EntityInvalidValueException;
     
-    include_once("./../src/domain/exceptions/InvalidValueException.php");
+    include_once("./../src/domain/exceptions/EntityInvalidValueException.php");
 
     class Platform 
     {
@@ -39,13 +39,13 @@
         public function validateName()
         {
             if ($this->name === null){
-                throw new InvalidValueException("O nome é nulo.");
+                throw new EntityInvalidValueException("O nome é nulo.");
             }
 
             $this->name = trim($this->name);
 
             if ($this->name === ""){
-                throw new InvalidValueException("O nome está vazio.");
+                throw new EntityInvalidValueException("O nome está vazio.");
             }
         }
     }

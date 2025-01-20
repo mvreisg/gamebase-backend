@@ -4,10 +4,10 @@
     use Exception;
     use Gamebase\Domain\Entities\Game;
     use Gamebase\Domain\Repositories\GameRepositoryInterface;
-    use Gamebase\Infrastructure\Exceptions\DuplicatedEntryException;
+    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
     
 	include_once("./../src/domain/entities/Game.php");
-    include_once("./../src/infrastructure/exceptions/DuplicatedEntryException.php");
+    include_once("./../src/infrastructure/exceptions/DatabaseDuplicatedEntryException.php");
 
     class GameService 
     {
@@ -29,7 +29,7 @@
                 $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
                 if ($hasDuplicatedNames)
                 {
-                    throw new DuplicatedEntryException("O nome do jogo a ser inserido já existe no banco de dados!");
+                    throw new DatabaseDuplicatedEntryException("O nome do jogo a ser inserido já existe no banco de dados!");
                 }
                 $game = $this->repository->insert($game);
                 return $game;
@@ -53,7 +53,7 @@
                 $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
                 if ($hasDuplicatedNames)
                 {
-                    throw new DuplicatedEntryException("O nome do jogo a ser editado já existe no banco de dados!");
+                    throw new DatabaseDuplicatedEntryException("O nome do jogo a ser editado já existe no banco de dados!");
                 }
                 $wasItSuccessful = $this->repository->edit($game);
                 return $wasItSuccessful;
