@@ -26,16 +26,12 @@
                 $name = $platform->getName();
 
                 $insertStatement = $this->pdo->prepare("INSERT INTO platform (name) VALUES (:name);");
-                $insertStatement->execute([
-                    ":name" => $platform->getName()
-                ]);
+                $insertStatement->execute([":name" => $name]);
 
                 $lastInsertId = intval($this->pdo->lastInsertId());
 
                 $selectGameStatement = $this->pdo->prepare("SELECT * FROM platform WHERE id = :id;");
-                $selectGameStatement->execute([
-                    ":id" => $lastInsertId
-                ]);
+                $selectGameStatement->execute([":id" => $lastInsertId]);
 
                 $genreFetchResult = $selectGameStatement->fetch();
 
@@ -58,22 +54,17 @@
         {
             try 
             {
+                $id = $platform->getId();
                 $name = $platform->getName();
                 
-                $statement = $this->pdo->prepare(
-                    "UPDATE
-                        platform
-                    SET
-                        name = :name
-                    WHERE
-                        id = :id;"
-                );
+                $statement = $this->pdo->prepare("UPDATE platform SET name = :name WHERE id = :id;");
 
-                $wasItSuccessful = $statement->execute([
-                    ":name" => $platform->getName(),
-                    ":id" => $platform->getId()
+                $statement->execute([
+                    ":name" => $name,
+                    ":id" => $id
                 ]);
 
+                $wasItSuccessful = $statement->rowCount() > 0;
                 return $wasItSuccessful;
             }
             catch (PDOException $e) 
@@ -91,9 +82,7 @@
             try
             {
                 $statement = $this->pdo->prepare("SELECT * FROM platform WHERE id = :id;");
-                $statement->execute([
-                    ":id" => $id
-                ]);
+                $statement->execute([":id" => $id]);
                 
                 $result = $statement->fetch();
                 if ($result === false)
@@ -144,14 +133,9 @@
             try 
             {
                 $statement = $this->pdo->prepare("SELECT * FROM platform WHERE name = :name;");
+                $statement->execute([":name" => $name]);
     
-                $statement->execute([
-                    ":name" => $name
-                ]);
-    
-                $result = $statement->fetch();
-    
-                return $result == true;
+                return $statement->rowCount() > 0;
             }
             catch (PDOException $e)
             {

@@ -26,16 +26,12 @@
                 $name = $game->getName();
 
                 $insertStatement = $this->pdo->prepare("INSERT INTO game (name) VALUES (:name);");
-                $insertStatement->execute([
-                    ":name" => $game->getName(),
-                ]);
+                $insertStatement->execute([":name" => $name]);
 
                 $lastInsertId = intval($this->pdo->lastInsertId());
 
                 $selectStatement = $this->pdo->prepare("SELECT * FROM game WHERE id = :id;");
-                $selectStatement->execute([
-                    ":id" => $lastInsertId
-                ]);
+                $selectStatement->execute([":id" => $lastInsertId]);
 
                 $gameFetchResult = $selectStatement->fetch();
 
@@ -56,24 +52,19 @@
 
         public function edit(Game $game): bool
         {
+            $id = $game->getId();
             $name = $game->getName();    
 
             try 
             {
-                $statement = $this->pdo->prepare(
-                    "UPDATE
-                        game
-                    SET
-                        name = :name
-                    WHERE
-                        id = :id;"
-                );
+                $statement = $this->pdo->prepare("UPDATE game SET name = :name WHERE id = :id;");
 
-                $wasItSuccessful = $statement->execute([
-                    ":name" => $game->getName(),
-                    ":id" => $game->getId()
+                $statement->execute([
+                    ":name" => $name,
+                    ":id" => $id
                 ]);
 
+                $wasItSuccessful = $statement->rowCount() > 0;
                 return $wasItSuccessful;
             }
             catch (PDOException $e) 
@@ -92,9 +83,7 @@
             try 
             {
                 $statement = $this->pdo->prepare("SELECT * FROM game WHERE id = :id;");
-                $statement->execute([
-                    ":id" => $id
-                ]);
+                $statement->execute([":id" => $id]);
 
                 $result = $statement->fetch();
                 
@@ -145,14 +134,9 @@
             try 
             {
                 $statement = $this->pdo->prepare("SELECT * FROM game WHERE name = :name;");
+                $statement->execute([":name" => $name]);
     
-                $statement->execute([
-                    ":name" => $name
-                ]);
-    
-                $result = $statement->fetch();
-    
-                return $result == true;
+                return $statement->rowCount() > 0;
             }
             catch (PDOException $e)
             {

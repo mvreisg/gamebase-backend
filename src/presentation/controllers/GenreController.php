@@ -108,6 +108,12 @@
             {
                 $wasEditAnSuccess = $this->service->edit($genreId, $name);
             }
+            catch(EntityInvalidValueException | DatabaseDuplicatedEntryException $e)
+            {
+                $messages[] = $e->getMessage();
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                return;
+            }
             catch (Exception $e) 
             {
                 $messages[] = $e->getMessage();
@@ -117,8 +123,8 @@
 
             if ($wasEditAnSuccess === false) 
             {
-                $messages[] = "Ocorreu um erro ao editar o gênero. Contate o suporte.";
-                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                $messages[] = "Verifique se o id do gênero existe no banco de dados.";
+                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
                 return;
             }
 
@@ -204,14 +210,7 @@
                 $messages[] = $e->getMessage();
                 $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
                 return;
-            }
-
-            if ($genres == false) 
-            {
-                $messages[] = "Ocorreu um erro ao buscar os gêneros. Contate o suporte.";
-                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
-                return;
-            }                
+            }              
 
             $numberOfGenres = count($genres);
             if ($numberOfGenres === 0) 
