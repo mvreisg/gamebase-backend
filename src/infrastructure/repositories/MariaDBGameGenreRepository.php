@@ -20,32 +20,34 @@
 
         public function insert(GameGenre $gameGenre): GameGenre 
         {
+            $genreId = $gameGenre->getGenreId();
+            $gameId = $gameGenre->getGameId();
+
+            $newGameGenre = null;
             try
             {
                 $statement = $this->pdo->prepare("INSERT INTO game_genre (genre_id, game_id) VALUES (:genreId, :gameId);");
                 $statement->execute([
-                    ":genreId" => $gameGenre->getGenreId(),
-                    ":gameId" => $gameGenre->getGameId()
+                    ":genreId" => $genreId,
+                    ":gameId" => $gameId
                 ]);
 
                 $lastInsertId = intval($this->pdo->lastInsertId());
                 $statement = $this->pdo->prepare("SELECT * FROM game_genre WHERE id = :id;");
-                $statement->execute([
-                    ":id" => $lastInsertId
-                ]);
+                $statement->execute([":id" => $lastInsertId]);
                 $result = $statement->fetch();
 
-                $gameGenre = new GameGenre();
-                $gameGenre->setId($result["id"]);
-                $gameGenre->setGenreId($result["genre_id"]);
-                $gameGenre->setGameId($result["game_id"]);
-                
-                return $gameGenre;
+                $newGameGenre = new GameGenre();
+                $newGameGenre->setId($result["id"]);
+                $newGameGenre->setGenreId($result["genre_id"]);
+                $newGameGenre->setGameId($result["game_id"]);
             }
             catch (PDOException $e)
             {
                 throw $e;
-            }            
+            }   
+
+            return $newGameGenre;         
         }
 
         public function edit(GameGenre $gameGenre): bool 

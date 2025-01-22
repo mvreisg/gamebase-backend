@@ -29,13 +29,13 @@
             if ($gameId === null)
             {
                 $hasErrors = true;
-                $messages[] = "O parâmetro 'gameId' não foi informado.";
+                $messages[] = "O id do jogo não foi informado na URL.";
             }
 
             if ($genresIds === null)
             {
                 $hasErrors = true;
-                $messages[] = "O parâmetro 'genresId' não foi informado.";
+                $messages[] = "O array de ids de gêneros não foi informado no JSON.";
             }
 
             if ($hasErrors) 
@@ -47,57 +47,65 @@
             $isGameIdNumeric = is_numeric($gameId);
             if ($isGameIdNumeric === false) 
             {
-                $messages[] = "O valor de 'gameId' precisa ser numérico.";
+                $messages[] = "O id do jogo precisa ser um número.";
                 $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
                 return;
             }
 
             $gameId = intval($gameId);
-
             if ($gameId <= 0) 
             {
-                $messages[] = "O valor de 'gameId' precisa ser maior que zero.";
+                $messages[] = "O id do jogo precisa ser maior que zero.";
                 $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
                 return;
             }
-
-            try
+        
+            foreach ($genresIds as $genreId) 
             {
-                foreach ($genresIds as $genreId) 
+                if ($genreId === null) 
                 {
-                    if ($genreId === null) 
-                    {
-                        $messages[] = "Um dos ids de 'genresId' é nulo.";
-                        $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                        return;
-                    }
-
-                    $isGenreIdNumeric = is_numeric($genreId);
-                    if ($isGenreIdNumeric === false) 
-                    {
-                        $messages[] = "Um dos ids de 'genresId' não é um número inteiro.";
-                        $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-                        return;
-                    }
-
-                    $genreId = intval($genreId);
-
-                    $gameGenre = $this->service->insert($genreId, $gameId);
-                    if ($gameGenre == false) 
-                    {
-                        $messages[] = "Ocorreu um erro ao inserir o vínculo entre jogo e gênero. Contate o suporte.";
-                        $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
-                    }
+                    $messages[] = "Um dos ids de gênero é nulo.";
+                    $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                    return;
                 }
 
-                $messages[] = "Vínculo entre jogo e gênero inserido com sucesso!";
-                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_201)->sendJSON();
+                $isGenreIdNumeric = is_numeric($genreId);
+                if ($isGenreIdNumeric === false) 
+                {
+                    $messages[] = "Um dos ids de gênero não é um número inteiro.";
+                    $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                    return;
+                }
+
+                $genreId = intval($genreId);
+                if ($genreId <= 0) 
+                {
+                    $messages[] = "Um dos ids de gênero não é um número inteiro maior que zero.";
+                    $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+                    return;
+                }
+
+                try
+                {
+                    $gameGenre = $this->service->insert($genreId, $gameId);
+                }
+                catch (Exception $e) 
+                {
+                    $messages[] = $e->getMessage();
+                    $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                    return;
+                }
+
+                if ($gameGenre == false) 
+                {
+                    $messages[] = "Ocorreu um erro ao inserir o vínculo entre jogo e gênero. Contate o suporte.";
+                    $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+                    return;
+                }
             }
-            catch (Exception $e) 
-            {
-                $messages[] = $e->getMessage();
-                $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
-            }
+
+            $messages[] = "Vínculo entre jogo e gênero inserido com sucesso!";
+            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_201)->sendJSON();
         }
 
         public function edit(HttpRequest $request, HttpResponse $response) 
