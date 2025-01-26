@@ -1,0 +1,27 @@
+name: Deploy PHP App to AWS EC2
+
+on:
+  push:
+    branches:
+      - dev  # Roda o deploy quando houver push na branch dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar chave SSH
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Deploy para EC2 via SSH
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@3.14.74.216 << 'EOF'
+            cd /var/www/html
+            sudo git pull origin main
+            sudo systemctl restart apache2
+          EOF
