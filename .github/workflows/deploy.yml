@@ -23,7 +23,6 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             sudo rm -rf /var/www/html/gamebase-backend
             sudo mkdir /var/www/html/gamebase-backend
-            cd /var/www/html/gamebase-backend
             sudo git clone https://github.com/mvreisg/gamebase-backend.git /var/www/html/gamebase-backend
             sudo chown -R www-data:www-data /var/www/html/gamebase-backend
             sudo chmod -R 755 /var/www/html/gamebase-backend
