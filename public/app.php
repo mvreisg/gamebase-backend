@@ -12,10 +12,10 @@ use Mvreisg\GamebaseBackend\Presentation\Routers\PlatformRouter;
 use Mvreisg\GamebaseBackend\Presentation\Routers\GameGenreRouter;
 use Mvreisg\GamebaseBackend\Presentation\Routers\GamePlatformRouter;
 
-include_once("./../vendor/autoload.php");
+include_once(__DIR__."/../vendor/autoload.php");
 
 try {
-    Dotenv\Dotenv::createImmutable("./../")->safeLoad();
+    Dotenv\Dotenv::createImmutable(__DIR__."/../")->load();
 } catch (InvalidFileException $e) {
     print_r($e);
     return;
