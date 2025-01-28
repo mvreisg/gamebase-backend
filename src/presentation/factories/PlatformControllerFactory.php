@@ -1,16 +1,11 @@
 <?php
-    namespace Gamebase\Presentation\Routers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
-    use Gamebase\Application\Services\PlatformService;
-    use Gamebase\Infrastructure\Database\MariaDBConnection;
-    use Gamebase\Infrastructure\Repositories\MariaDBPlatformRepository;
-    use Gamebase\Presentation\Controllers\PlatformController;
+    use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
+    use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
+    use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBPlatformRepository;
+    use Mvreisg\GamebaseBackend\Presentation\Controllers\PlatformController;
     
-	include_once("./../src/presentation/controllers/PlatformController.php");
-    include_once("./../src/application/service/PlatformService.php");
-    include_once("./../src/infrastructure/database/MariaDBConnection.php");
-    include_once("./../src/infrastructure/repositories/MariaDBPlatformRepository.php");
-
     class PlatformControllerFactory 
     {
         public static function get(): PlatformController {        

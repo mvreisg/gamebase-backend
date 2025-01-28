@@ -1,8 +1,5 @@
 <?php
-    namespace Gamebase\Infrastructure\Http;
-
-    include_once("./../src/infrastructure/http/HttpRequest.php");
-    include_once("./../src/infrastructure/http/HttpResponse.php");
+    namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
     define("HEADER_CONTENT_TYPE_APPLICATION_JSON", "Content-Type: application/json");
 

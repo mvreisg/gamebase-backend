@@ -1,12 +1,12 @@
 <?php
-    namespace Gamebase\Presentation\Controllers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
     use Exception;
-    use Gamebase\Application\Services\GenreService;
-    use Gamebase\Domain\Exceptions\EntityInvalidValueException;
-    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-    use Gamebase\Infrastructure\Http\HttpRequest;
-    use Gamebase\Infrastructure\Http\HttpResponse;
+    use Mvreisg\GamebaseBackend\Application\Services\GenreService;
+    use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+    use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 
     class GenreController 
     {

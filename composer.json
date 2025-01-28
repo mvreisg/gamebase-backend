@@ -1,0 +1,19 @@
+{
+    "name": "mvreisg/gamebase-backend",
+    "description": "A simple PHP API for game database.",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Mvreisg\\GamebaseBackend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marcus Vinicius",
+            "email": "marcus_viniciusreis@hotmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

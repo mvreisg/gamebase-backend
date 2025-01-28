@@ -1,13 +1,11 @@
 <?php
-    namespace Gamebase\Presentation\Routers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Routers;
 
-    use Gamebase\Presentation\Factories\GameControllerFactory;
-    use Gamebase\Infrastructure\Http\HttpRequest;
-    use Gamebase\Infrastructure\Http\HttpResponse;
-    use Gamebase\Infrastructure\Http\HttpApplication;
+    use Mvreisg\GamebaseBackend\Presentation\Factories\GameControllerFactory;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
     
-	include_once("./../src/presentation/factories/GameControllerFactory.php");    
-
     class GameRouter 
     {
         public function register(HttpApplication $app) {        

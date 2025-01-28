@@ -1,5 +1,5 @@
 <?php
-    namespace Gamebase\Infrastructure\Exceptions;
+    namespace Mvreisg\GamebaseBackend\Infrastructure\Exceptions;
 
     use Throwable;
     use Exception;

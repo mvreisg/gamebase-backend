@@ -1,19 +1,34 @@
 <?php
-    namespace Gamebase\Infrastructure\Database;
+    namespace Mvreisg\GamebaseBackend\Infrastructure\Database;
 
     use PDO;
 
     class MariaDBConnection {
-        private const DSN = "mysql:host=localhost;dbname=gamebase";
-        private const USERNAME = "root";
-        private const PASSWORD = "";
-
         public static function get(): PDO
         {
-            return new PDO(self::DSN, self::USERNAME, self::PASSWORD, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]);
+            /**
+             * @var PDO
+             */
+            $pdo = $_SERVER["ENVIRONMENT"] === "development" ?
+                new PDO(
+                    $_SERVER["MARIADB_DATABASE_DEVELOPMENT_DSN"], 
+                    $_SERVER["MARIADB_DATABASE_DEVELOPMENT_USERNAME"], 
+                    $_SERVER["MARIADB_DATABASE_DEVELOPMENT_PASSWORD"], 
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    ]
+                ) : 
+                new PDO(
+                    $_SERVER["MARIADB_DATABASE_PRODUCTION_DSN"], 
+                    $_SERVER["MARIADB_DATABASE_PRODUCTION_USERNAME"], 
+                    $_SERVER["MARIADB_DATABASE_PRODUCTION_PASSWORD"], 
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    ]
+                );
+            return $pdo;
         }
     }
 ?>

@@ -1,10 +1,10 @@
 <?php
-    namespace Gamebase\Presentation\Controllers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
     use Exception;
-    use Gamebase\Infrastructure\Http\HttpRequest;
-    use Gamebase\Infrastructure\Http\HttpResponse;
-    use Gamebase\Application\Services\GameGenreService;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+    use Mvreisg\GamebaseBackend\Application\Services\GameGenreService;
 
     class GameGenreController 
     {

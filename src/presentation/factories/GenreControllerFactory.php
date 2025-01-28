@@ -1,16 +1,11 @@
 <?php
-    namespace Gamebase\Presentation\Routers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
-    use Gamebase\Application\Services\GenreService;
-    use Gamebase\Infrastructure\Database\MariaDBConnection;
-    use Gamebase\Infrastructure\Repositories\MariaDBGenreRepository;
-    use Gamebase\Presentation\Controllers\GenreController;
+    use Mvreisg\GamebaseBackend\Application\Services\GenreService;
+    use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
+    use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBGenreRepository;
+    use Mvreisg\GamebaseBackend\Presentation\Controllers\GenreController;
     
-	include_once("./../src/presentation/controllers/GenreController.php");
-    include_once("./../src/application/service/GenreService.php");
-    include_once("./../src/infrastructure/database/MariaDBConnection.php");
-    include_once("./../src/infrastructure/repositories/MariaDBGenreRepository.php");
-
     class GenreControllerFactory 
     {
         public static function get(): GenreController {        

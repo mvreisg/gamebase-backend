@@ -1,5 +1,5 @@
 <?php
-    namespace Gamebase\Infrastructure\Http;
+    namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
     class HttpResponse 
     {

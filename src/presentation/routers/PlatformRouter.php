@@ -1,11 +1,10 @@
 <?php
-    namespace Gamebase\Presentation\Routers;
+    namespace Mvreisg\GamebaseBackend\Presentation\Routers;
     
-    use Gamebase\Infrastructure\Http\HttpRequest;
-    use Gamebase\Infrastructure\Http\HttpResponse;
-    use Gamebase\Infrastructure\Http\HttpApplication;
-
-	include_once("./../src/presentation/factories/PlatformControllerFactory.php");
+    use Mvreisg\GamebaseBackend\Presentation\Factories\PlatformControllerFactory;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+    use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
 
     class PlatformRouter 
     {

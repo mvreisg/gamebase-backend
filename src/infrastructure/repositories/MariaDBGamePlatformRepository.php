@@ -1,13 +1,11 @@
 <?php
-    namespace Gamebase\Infrastructure\Repositories;
+    namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
 
     use PDO;
     use PDOException;
-    use Gamebase\Domain\Repositories\GamePlatformRepositoryInterface;
-    use Gamebase\Domain\Entities\GamePlatform;
+    use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+    use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
     
-	include_once("./../src/domain/repositories/GamePlatformRepositoryInterface.php");
-
     class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface 
     {
         private PDO $pdo;

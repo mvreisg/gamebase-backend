@@ -1,4 +1,4 @@
-CREATE DATABASE gamebase;
+CREATE MARIADB_DATABASE_DEVELOPMENT gamebase;
 USE gamebase;
 
 CREATE TABLE user (

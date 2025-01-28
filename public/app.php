@@ -1,21 +1,18 @@
 <?php
-	namespace Gamebase;
+	namespace Mvreisg\GamebaseBackend;
 
-	use Gamebase\Infrastructure\Http\HttpApplication;
-	use Gamebase\Presentation\Routers\DefaultRouter;
-	use Gamebase\Presentation\Routers\GameGenreRouter;
-	use Gamebase\Presentation\Routers\GamePlatformRouter;
-	use Gamebase\Presentation\Routers\GenreRouter;
-	use Gamebase\Presentation\Routers\GameRouter;
-	use Gamebase\Presentation\Routers\PlatformRouter;
+	use Dotenv;
+	use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\DefaultRouter;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\GameGenreRouter;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\GamePlatformRouter;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\GenreRouter;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\GameRouter;
+	use Mvreisg\GamebaseBackend\Presentation\Routers\PlatformRouter;
 
-	include_once("./../src/infrastructure/http/HttpApplication.php");
-	include_once("./../src/presentation/routers/DefaultRouter.php");
-	include_once("./../src/presentation/routers/GameGenreRouter.php");
-	include_once("./../src/presentation/routers/GamePlatformRouter.php");
-	include_once("./../src/presentation/routers/GameRouter.php");
-	include_once("./../src/presentation/routers/GenreRouter.php");
-	include_once("./../src/presentation/routers/PlatformRouter.php");
+	include_once("./../vendor/autoload.php");	
+
+	Dotenv\Dotenv::createImmutable("./../")->load();
 
 	$app = new HttpApplication();
 

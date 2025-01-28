@@ -1,10 +1,8 @@
 <?php
-    namespace Gamebase\Domain\Entities;
+    namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
-    use Gamebase\Domain\Exceptions\EntityInvalidValueException;
+    use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
     
-    include_once("./../src/domain/exceptions/EntityInvalidValueException.php");
-
     class Genre 
     {
         private int $id;

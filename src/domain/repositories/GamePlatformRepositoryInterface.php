@@ -1,7 +1,7 @@
 <?php
-    namespace Gamebase\Domain\Repositories;
+    namespace Mvreisg\GamebaseBackend\Domain\Repositories;
 
-    use Gamebase\Domain\Entities\GamePlatform;
+    use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
     interface GamePlatformRepositoryInterface 
     {
         public function insert(GamePlatform $gamePlatform): GamePlatform;        

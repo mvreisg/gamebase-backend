@@ -1,12 +1,10 @@
 <?php
-    namespace Gamebase\Application\Services;
+    namespace Mvreisg\GamebaseBackend\Application\Services;
 
     use Exception;
-    use Gamebase\Domain\Entities\GameGenre;
-    use Gamebase\Domain\Repositories\GameGenreRepositoryInterface;
+    use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
+    use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
     
-    include_once("./../src/domain/entities/GameGenre.php");
-
     class GameGenreService 
     {
         private GameGenreRepositoryInterface $repository;

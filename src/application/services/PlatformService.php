@@ -1,13 +1,11 @@
 <?php
-    namespace Gamebase\Application\Services;
+    namespace Mvreisg\GamebaseBackend\Application\Services;
 
     use Exception;
-    use Gamebase\Domain\Entities\Platform;
-    use Gamebase\Domain\Repositories\PlatformRepositoryInterface;
-    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+    use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
+    use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+    use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
     
-	include_once("./../src/domain/entities/Platform.php");
-
     class PlatformService 
     {
         private PlatformRepositoryInterface $repository;

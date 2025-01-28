@@ -1,13 +1,11 @@
 <?php
-    namespace Gamebase\Application\Services;
+    namespace Mvreisg\GamebaseBackend\Application\Services;
 
     use Exception;
-    use Gamebase\Domain\Entities\Genre;
-    use Gamebase\Domain\Repositories\GenreRepositoryInterface;
-    use Gamebase\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+    use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
+    use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+    use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
     
-	include_once("./../src/domain/entities/Genre.php");
-
     class GenreService 
     {
         private GenreRepositoryInterface $repository;

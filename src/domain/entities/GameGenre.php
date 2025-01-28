@@ -1,5 +1,5 @@
 <?php
-    namespace Gamebase\Domain\Entities;
+    namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
     class GameGenre 
     {

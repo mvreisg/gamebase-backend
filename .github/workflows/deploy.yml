@@ -27,4 +27,5 @@ jobs:
             sudo git clone https://github.com/mvreisg/gamebase-backend.git /var/www/html/gamebase-backend
             sudo chown -R www-data:www-data /var/www/html/gamebase-backend
             sudo chmod -R 755 /var/www/html/gamebase-backend
+            composer install
           EOF
