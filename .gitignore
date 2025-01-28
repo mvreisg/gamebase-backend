@@ -1,2 +1,11 @@
+# Composer
 /vendor/
+
+# .env
 .env
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# PHP Lint
+.phplint.cache

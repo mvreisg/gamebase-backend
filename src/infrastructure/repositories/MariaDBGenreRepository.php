@@ -1,145 +1,127 @@
 <?php
-    namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
 
-    use PDO;
-    use PDOException;
-    use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
-    use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface; 
+use PDO;
+use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
     
-    class MariaDBGenreRepository implements GenreRepositoryInterface 
+class MariaDBGenreRepository implements GenreRepositoryInterface
+{
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo)
     {
-        private PDO $pdo;
+        $this->pdo = $pdo;
+    }
 
-        public function __construct(PDO $pdo) 
-        {
-            $this->pdo = $pdo;
-        }
+    public function insert(Genre $genre): Genre
+    {
+        try {
+            $this->pdo->beginTransaction();
 
-        public function insert(Genre $genre): Genre 
-        {
-            try
-            {
-                $this->pdo->beginTransaction();
+            $name = $genre->getName();
 
-                $name = $genre->getName();
+            $insertStatement = $this->pdo->prepare("INSERT INTO genre (name) VALUES (:name);");
+            $insertStatement->execute([":name" => $name]);
 
-                $insertStatement = $this->pdo->prepare("INSERT INTO genre (name) VALUES (:name);");
-                $insertStatement->execute([":name" => $name]);                
+            $lastInsertId = intval($this->pdo->lastInsertId());
 
-                $lastInsertId = intval($this->pdo->lastInsertId());
+            $selectGameStatement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
+            $selectGameStatement->execute([":id" => $lastInsertId]);
 
-                $selectGameStatement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
-                $selectGameStatement->execute([":id" => $lastInsertId]);
+            $genreFetchResult = $selectGameStatement->fetch();
 
-                $genreFetchResult = $selectGameStatement->fetch();
+            $this->pdo->commit();
 
-                $this->pdo->commit();
+            $newGenre = new Genre();
+            $newGenre->setId($genreFetchResult["id"]);
+            $newGenre->setName($genreFetchResult["name"]);
 
-                $newGenre = new Genre();
-                $newGenre->setId($genreFetchResult["id"]);
-                $newGenre->setName($genreFetchResult["name"]);
-
-                return $newGenre;
-            }
-            catch (PDOException $e)
-            {
-                $this->pdo->rollBack();
-                throw $e;
-            }
-        }
-
-        public function edit(Genre $genre): bool 
-        {
-            try 
-            {
-                $id = $genre->getId();
-                $name = $genre->getName();
-                
-                $statement = $this->pdo->prepare("UPDATE genre SET name = :name WHERE id = :id;");
-
-                $statement->execute([
-                    ":name" => $name,
-                    ":id" => $id
-                ]);
-
-                $wasItSuccessful = $statement->rowCount() > 0;
-                return $wasItSuccessful;
-            }
-            catch (PDOException $e) 
-            {
-                throw $e;
-            }
-        }
-
-        public function delete(int $id): bool 
-        {
-            return false;
-        }
-
-        public function findById(int $id): Genre|null
-        {
-            try
-            {
-                $statement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
-                $statement->execute([":id" => $id]);
-                
-                $result = $statement->fetch();
-                if ($result === false)
-                {
-                    return null;
-                }
-
-                $genre = new Genre();
-                $genre->setId($result["id"]);
-                $genre->setName($result["name"]);
-                return $genre;
-            }
-            catch (PDOException $e)
-            {
-                throw $e;
-            } 
-        }
-
-        public function findAll(): array 
-        {
-            try
-            {
-                $statement = $this->pdo->prepare("SELECT * FROM genre;");
-                $statement->execute();
-                
-                $result = $statement->fetchAll();
-
-                $genres = [];
-
-                foreach ($result as $row) 
-                {
-                    $genre = new Genre();
-                    $genre->setId($row["id"]);
-                    $genre->setName($row["name"]);
-                    $genres[] = $genre;
-                }
-
-                return $genres;
-            }
-            catch (PDOException $e)
-            {
-                throw $e;
-            }            
-        }
-
-        public function hasDuplicatedNames(string $name): bool
-        {
-            try 
-            {
-                $statement = $this->pdo->prepare("SELECT * FROM genre WHERE name = :name;");
-                $statement->execute([":name" => $name]);
-    
-                return $statement->rowCount() > 0;
-            }
-            catch (PDOException $e)
-            {
-                throw $e;
-            }
+            return $newGenre;
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
     }
-?>
+
+    public function edit(Genre $genre): bool
+    {
+        try {
+            $id = $genre->getId();
+            $name = $genre->getName();
+                
+            $statement = $this->pdo->prepare("UPDATE genre SET name = :name WHERE id = :id;");
+
+            $statement->execute([
+                ":name" => $name,
+                ":id" => $id
+            ]);
+
+            $wasItSuccessful = $statement->rowCount() > 0;
+            return $wasItSuccessful;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    public function delete(int $id): bool
+    {
+        return false;
+    }
+
+    public function findById(int $id): Genre|null
+    {
+        try {
+            $statement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
+            $statement->execute([":id" => $id]);
+                
+            $result = $statement->fetch();
+            if ($result === false) {
+                return null;
+            }
+
+            $genre = new Genre();
+            $genre->setId($result["id"]);
+            $genre->setName($result["name"]);
+            return $genre;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    public function findAll(): array
+    {
+        try {
+            $statement = $this->pdo->prepare("SELECT * FROM genre;");
+            $statement->execute();
+                
+            $result = $statement->fetchAll();
+
+            $genres = [];
+
+            foreach ($result as $row) {
+                $genre = new Genre();
+                $genre->setId($row["id"]);
+                $genre->setName($row["name"]);
+                $genres[] = $genre;
+            }
+
+            return $genres;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    public function hasDuplicatedNames(string $name): bool
+    {
+        try {
+            $statement = $this->pdo->prepare("SELECT * FROM genre WHERE name = :name;");
+            $statement->execute([":name" => $name]);
+    
+            return $statement->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+}

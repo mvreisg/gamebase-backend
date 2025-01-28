@@ -1,18 +1,18 @@
 <?php
-    namespace Mvreisg\GamebaseBackend\Presentation\Factories;
+namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
-    use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
-    use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
-    use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBPlatformRepository;
-    use Mvreisg\GamebaseBackend\Presentation\Controllers\PlatformController;
+use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
+use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Presentation\Controllers\PlatformController;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBPlatformRepository;
     
-    class PlatformControllerFactory 
+class PlatformControllerFactory
+{
+    public static function get(): PlatformController
     {
-        public static function get(): PlatformController {        
-            $repository = new MariaDBPlatformRepository(MariaDBConnection::get());
-            $service = new PlatformService($repository);
-            $controller = new PlatformController($service);
-            return $controller;
-        }
-    }    
-?>
+        $repository = new MariaDBPlatformRepository(MariaDBConnection::get());
+        $service = new PlatformService($repository);
+        $controller = new PlatformController($service);
+        return $controller;
+    }
+}
