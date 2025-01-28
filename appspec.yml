@@ -2,9 +2,13 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /var/www/html
+    destination: /var/www/html/gamebase-backend
 hooks:
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 60
+      runas: root
   AfterInstall:
-    - location: scripts/restart_server.sh
+    - location: scripts/after_install.sh
       timeout: 60
       runas: root
