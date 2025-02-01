@@ -70,4 +70,11 @@ class Game
             throw new EntityInvalidValueException("O nome está vazio.");
         }
     }
+
+    public function validateId()
+    {
+        if ($this->id < 1) {
+            throw new EntityInvalidValueException("O id ".$this->id." é menor que um.");
+        }
+    }
 }

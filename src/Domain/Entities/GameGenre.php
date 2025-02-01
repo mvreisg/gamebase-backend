@@ -1,6 +1,8 @@
 <?php
 namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
+use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+
 class GameGenre
 {
     private int $id;
@@ -42,5 +44,26 @@ class GameGenre
     public function setGameId(int $gameId)
     {
         $this->gameId = $gameId;
+    }
+
+    public function validateId()
+    {
+        if ($this->id < 1) {
+            throw new EntityInvalidValueException("O id ".$this->id." é menor que um.");
+        }
+    }
+
+    public function validateGenreId()
+    {
+        if ($this->genreId < 1) {
+            throw new EntityInvalidValueException("O genreId ".$this->genreId." é menor que um.");
+        }
+    }
+
+    public function validateGameId()
+    {
+        if ($this->gameId < 1) {
+            throw new EntityInvalidValueException("O gameId ".$this->gameId." é menor que um.");
+        }
     }
 }
