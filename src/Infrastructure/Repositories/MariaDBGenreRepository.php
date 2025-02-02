@@ -1,11 +1,12 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
 
 use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-    
+
 class MariaDBGenreRepository implements GenreRepositoryInterface
 {
     private PDO $pdo;
@@ -22,21 +23,21 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $name = $genre->getName();
 
-            $insertStatement = $this->pdo->prepare("INSERT INTO genre (name) VALUES (:name);");
-            $insertStatement->execute([":name" => $name]);
+            $insertStatement = $this->pdo->prepare('INSERT INTO genre (name) VALUES (:name);');
+            $insertStatement->execute([':name' => $name]);
 
             $lastInsertId = intval($this->pdo->lastInsertId());
 
-            $selectGameStatement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
-            $selectGameStatement->execute([":id" => $lastInsertId]);
+            $selectGameStatement = $this->pdo->prepare('SELECT * FROM genre WHERE id = :id;');
+            $selectGameStatement->execute([':id' => $lastInsertId]);
 
             $genreFetchResult = $selectGameStatement->fetch();
 
             $this->pdo->commit();
 
             $newGenre = new Genre();
-            $newGenre->setId($genreFetchResult["id"]);
-            $newGenre->setName($genreFetchResult["name"]);
+            $newGenre->setId($genreFetchResult['id']);
+            $newGenre->setName($genreFetchResult['name']);
 
             return $newGenre;
         } catch (PDOException $e) {
@@ -50,12 +51,12 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         try {
             $id = $genre->getId();
             $name = $genre->getName();
-                
-            $statement = $this->pdo->prepare("UPDATE genre SET name = :name WHERE id = :id;");
+
+            $statement = $this->pdo->prepare('UPDATE genre SET name = :name WHERE id = :id;');
 
             $statement->execute([
-                ":name" => $name,
-                ":id" => $id
+                ':name' => $name,
+                ':id' => $id
             ]);
 
             $wasItSuccessful = $statement->rowCount() > 0;
@@ -73,17 +74,17 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function findById(int $id): Genre|null
     {
         try {
-            $statement = $this->pdo->prepare("SELECT * FROM genre WHERE id = :id;");
-            $statement->execute([":id" => $id]);
-                
+            $statement = $this->pdo->prepare('SELECT * FROM genre WHERE id = :id;');
+            $statement->execute([':id' => $id]);
+
             $result = $statement->fetch();
             if ($result === false) {
                 return null;
             }
 
             $genre = new Genre();
-            $genre->setId($result["id"]);
-            $genre->setName($result["name"]);
+            $genre->setId($result['id']);
+            $genre->setName($result['name']);
             return $genre;
         } catch (PDOException $e) {
             throw $e;
@@ -93,17 +94,17 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare("SELECT * FROM genre;");
+            $statement = $this->pdo->prepare('SELECT * FROM genre;');
             $statement->execute();
-                
+
             $result = $statement->fetchAll();
 
             $genres = [];
 
             foreach ($result as $row) {
                 $genre = new Genre();
-                $genre->setId($row["id"]);
-                $genre->setName($row["name"]);
+                $genre->setId($row['id']);
+                $genre->setName($row['name']);
                 $genres[] = $genre;
             }
 
@@ -116,9 +117,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function hasDuplicatedNames(string $name): bool
     {
         try {
-            $statement = $this->pdo->prepare("SELECT * FROM genre WHERE name = :name;");
-            $statement->execute([":name" => $name]);
-    
+            $statement = $this->pdo->prepare('SELECT * FROM genre WHERE name = :name;');
+            $statement->execute([':name' => $name]);
+
             return $statement->rowCount() > 0;
         } catch (PDOException $e) {
             throw $e;

@@ -1,75 +1,117 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Exception;
+use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-    
+
+/**
+ * The Game service class.
+ */
 class GameService
 {
+    /**
+     * @var GameRepositoryInterface $repository The repository to be used by the service.
+     */
     private GameRepositoryInterface $repository;
 
+    /**
+     * The Game service class constructor.
+     * @param GameRepositoryInterface $repository The repository to bu used by the service.
+     */
     public function __construct(GameRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
+    /**
+     * Inserts a new Game object based on the passed data.
+     * @param string $name The Game name.
+     * @return Game The Game object created.
+     * @throws DatabaseDuplicatedEntryException|EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     */
     public function insert(string $name): Game
     {
         $game = new Game();
         $game->setName($name);
-            
+
         try {
             $game->validateName();
             $validatedName = $game->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException("O nome do jogo a ser inserido já existe no banco de dados!");
+                throw new DatabaseDuplicatedEntryException('O nome do jogo a ser inserido já existe no banco de dados!');
             }
             $game = $this->repository->insert($game);
             return $game;
-        } catch (Exception $e) {
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
             throw $e;
         }
     }
 
-    public function edit(int $id, string $name): bool
+    /**
+     * Updated a registered Game based on the values passed.
+     * @param int $id The id of the Game that is wanted to be updated.
+     * @param string $name The name of the Game that is wanted to be updated.
+     * @return bool Returns the success flag.
+     * @throws DatabaseDuplicatedEntryException|EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     */
+    public function update(int $id, string $name): bool
     {
         $game = new Game();
         $game->setId($id);
         $game->setName($name);
-            
+
         try {
             $game->validateName();
+            $game->validateId();
             $validatedName = $game->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException("O nome do jogo a ser editado já existe no banco de dados!");
+                throw new DatabaseDuplicatedEntryException('O nome do jogo a ser editado já existe no banco de dados!');
             }
-            $wasItSuccessful = $this->repository->edit($game);
+            $wasItSuccessful = $this->repository->update($game);
             return $wasItSuccessful;
-        } catch (Exception $e) {
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
             throw $e;
         }
     }
 
+    /**
+     * Finds a Game already registered based on the passed id.
+     * @param int $id The Game id.
+     * @return Game|null Returns Game if the Game with the respective id was found, else returns null.
+     * @throws EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     */
     public function findById(int $id): Game|null
     {
+        $game = new Game();
+        $game->setId($id);
+
         try {
+            $game->validateId();
             $game = $this->repository->findById($id);
             return $game;
-        } catch (Exception $e) {
+        } catch (EntityInvalidValueException | PDOException | Exception $e) {
             throw $e;
         }
     }
 
+    /**
+     * Finds and returns all Game registers.
+     * @return list<Game> A list containing all the found registers in the repository.
+     * @throws PDOException|Exception Throwed in case of error.
+     */
     public function findAll(): array
     {
         try {
             $games = $this->repository->findAll();
             return $games;
-        } catch (Exception $e) {
+        } catch (PDOException | Exception $e) {
             throw $e;
         }
     }

@@ -1,5 +1,5 @@
 path: 
-  - ./src 
+  - ./src   
   - ./public
 jobs: 10
 extensions:

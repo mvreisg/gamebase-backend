@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\GameGenreService;

@@ -1,11 +1,12 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-    
+
 class PlatformService
 {
     private PlatformRepositoryInterface $repository;
@@ -19,13 +20,13 @@ class PlatformService
     {
         $platform = new Platform();
         $platform->setName($name);
-            
+
         try {
             $platform->validateName();
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException("O nome da plataforma a ser inserida já existe no banco de dados!");
+                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser inserida já existe no banco de dados!');
             }
             $platform = $this->repository->insert($platform);
             return $platform;
@@ -39,13 +40,13 @@ class PlatformService
         $platform = new Platform();
         $platform->setId($id);
         $platform->setName($name);
-            
+
         try {
             $platform->validateName();
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException("O nome da plataforma a ser editada já existe no banco de dados!");
+                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser editada já existe no banco de dados!');
             }
             $wasItSuccessful = $this->repository->edit($platform);
             return $wasItSuccessful;

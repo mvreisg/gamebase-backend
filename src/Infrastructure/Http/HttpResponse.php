@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
 class HttpResponse
@@ -6,7 +7,7 @@ class HttpResponse
     private array $headers;
     private string $body;
 
-    public function __construct(array $headers = [], string $body = "")
+    public function __construct(array $headers = [], string $body = '')
     {
         $this->headers = $headers;
         $this->body = $body;
@@ -46,7 +47,7 @@ class HttpResponse
 
     public function sendJSON()
     {
-        header(HEADER_CONTENT_TYPE_APPLICATION_JSON);
+        header(HttpApplication::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
         foreach ($this->headers as $header) {
             header($header);
         }

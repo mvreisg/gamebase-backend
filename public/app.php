@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend;
 
 use Dotenv;
@@ -11,33 +12,30 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
 use Mvreisg\GamebaseBackend\Presentation\Routers\PlatformRouter;
 use Mvreisg\GamebaseBackend\Presentation\Routers\GameGenreRouter;
 use Mvreisg\GamebaseBackend\Presentation\Routers\GamePlatformRouter;
+use Throwable;
+use Exception;
 
-include_once(__DIR__."/../vendor/autoload.php");
+include_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-    Dotenv\Dotenv::createImmutable(__DIR__."/../")->load();
-} catch (InvalidFileException $e) {
-    print_r($e);
-    return;
-} catch (InvalidEncodingException $e) {
-    print_r($e);
-    return;
+    Dotenv\Dotenv::createImmutable(__DIR__ . '/../')->load();
+    $app = new HttpApplication();
+
+    $defaultRouter = new DefaultRouter();
+    $gameRouter = new GameRouter();
+    $gameGenreRouter = new GameGenreRouter();
+    $gamePlatformRouter = new GamePlatformRouter();
+    $genreRouter = new GenreRouter();
+    $platformRouter = new PlatformRouter();
+
+    $defaultRouter->register($app);
+    $gameRouter->register($app);
+    $gameGenreRouter->register($app);
+    $gamePlatformRouter->register($app);
+    $genreRouter->register($app);
+    $platformRouter->register($app);
+
+    $app->run();
+} catch (InvalidFileException | InvalidEncodingException | Exception | Throwable $e) {
+    print($e->getMessage());
 }
-
-$app = new HttpApplication();
-
-$defaultRouter = new DefaultRouter();
-$gameRouter = new GameRouter();
-$gameGenreRouter = new GameGenreRouter();
-$gamePlatformRouter = new GamePlatformRouter();
-$genreRouter = new GenreRouter();
-$platformRouter = new PlatformRouter();
-
-$defaultRouter->register($app);
-$gameRouter->register($app);
-$gameGenreRouter->register($app);
-$gamePlatformRouter->register($app);
-$genreRouter->register($app);
-$platformRouter->register($app);
-
-$app->run();

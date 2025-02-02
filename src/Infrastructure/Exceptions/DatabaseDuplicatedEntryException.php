@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Exceptions;
 
 use Exception;

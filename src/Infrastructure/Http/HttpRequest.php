@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
 class HttpRequest
@@ -9,7 +10,7 @@ class HttpRequest
     private array $params;
     private string $body;
 
-    public function __construct(string $method, string $route, array $queries = [], array $params = [], string $body = "")
+    public function __construct(string $method, string $route, array $queries = [], array $params = [], string $body = '')
     {
         $this->method = $method;
         $this->route = $route;

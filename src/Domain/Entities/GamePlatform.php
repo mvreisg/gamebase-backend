@@ -1,4 +1,5 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -49,21 +50,21 @@ class GamePlatform
     public function validateId()
     {
         if ($this->id < 1) {
-            throw new EntityInvalidValueException("O id ".$this->id." é menor que um.");
+            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
         }
     }
 
     public function validatePlatformId()
     {
         if ($this->platformId < 1) {
-            throw new EntityInvalidValueException("O platformId ".$this->platformId." é menor que um.");
+            throw new EntityInvalidValueException('O platformId ' . $this->platformId . ' é menor que um.');
         }
     }
 
     public function validateGameId()
     {
         if ($this->gameId < 1) {
-            throw new EntityInvalidValueException("O gameId ".$this->gameId." é menor que um.");
+            throw new EntityInvalidValueException('O gameId ' . $this->gameId . ' é menor que um.');
         }
     }
 }

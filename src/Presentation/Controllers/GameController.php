@@ -1,173 +1,218 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
 use Exception;
+use PDOException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Application\Services\GameService;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 
+/**
+ * The Game controller class.
+ */
 class GameController
 {
+    /**
+     * @var GameService $service The service to be used by the controller.
+     */
     private GameService $service;
 
+    /**
+     * The Game controller class constructor.
+     * @param GameService $service The service to be used by the controller.
+     */
     public function __construct(GameService $service)
     {
         $this->service = $service;
     }
 
+    /**
+     * Method that handles the HTTP request and response of a Game insertion.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-            
-        $body = $request->parseBodyFromJSON();
-        $name = $body["name"] ?? null;
 
-        if ($name === null) {
-            $messages[] = "O parâmetro 'name' não foi informado na URL.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
+        $body = $request->parseBodyFromJSON();
+        $name = $body['name'] ?? null;
 
         $game = null;
         try {
             $game = $this->service->insert($name);
         } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[400])
+                ->sendJSON();
             return;
-        } catch (Exception $e) {
+        } catch (PDOException | Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[500])
+                ->sendJSON();
             return;
         }
 
         if ($game == false) {
-            $messages[] = "Ocorreu um erro ao inserir o jogo. Contate o suporte.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+            $messages[] = 'Ocorreu um erro ao inserir o jogo. Contate o suporte.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[500])
+                ->sendJSON();
             return;
         }
 
-        $messages[] = "Jogo inserido com sucesso!";
-        $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_201)->sendJSON();
+        $messages[] = 'Jogo inserido com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages
+            ])
+            ->status(HttpApplication::STATUS_CODES[201])
+            ->sendJSON();
     }
 
-    public function edit(HttpRequest $request, HttpResponse $response)
+    /**
+     * Method that handles the HTTP request and response of a Game update.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     */
+    public function update(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
 
         $body = $request->parseBodyFromJSON();
         $params = $request->getParams();
 
-        $gameId = $params["gameId"] ?? null;
-        $name = $body["name"] ?? null;
-
-        $hasNullKey = false;
-        if ($name === null) {
-            $hasNullKey = true;
-            $messages[] = "O parâmetro 'name' não foi informado na URL.";
-        }
-            
-        if ($gameId === null) {
-            $hasNullKey = true;
-            $messages[] = "O id do jogo não foi informado na URL.";
-        }
-
-        if ($hasNullKey) {
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
-                
-        $isGameIdNumeric = is_numeric($gameId);
-        if ($isGameIdNumeric === false) {
-            $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
-
-        $gameId = intval($gameId);
-        if ($gameId <= 0) {
-            $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro maior que zero.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
+        $gameId = $params['gameId'] ?? null;
+        $name = $body['name'] ?? null;
 
         $wasGameEditAnSuccess = false;
         try {
-            $wasGameEditAnSuccess = $this->service->edit($gameId, $name);
+            $gameId = intval($gameId);
+            $wasGameEditAnSuccess = $this->service->update($gameId, $name);
         } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[400])
+                ->sendJSON();
             return;
-        } catch (Exception $e) {
+        } catch (PDOException | Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[500])
+                ->sendJSON();
             return;
         }
 
         if ($wasGameEditAnSuccess === false) {
-            $messages[] = "Verifique se o id do jogo existe no banco de dados.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
+            $messages[] = 'Verifique se o id do jogo existe no banco de dados.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[404])
+                ->sendJSON();
             return;
         }
-            
-        $messages[] = "Jogo editado com sucesso!";
-        $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_200)->sendJSON();
+
+        $messages[] = 'Jogo editado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages
+            ])
+            ->status(HttpApplication::STATUS_CODES[200])
+            ->sendJSON();
     }
 
+    /**
+     * Method that handles the HTTP request and response of a Game being found by the id.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP resposne object.
+     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
         $data = [];
 
         $params = $request->getParams();
-        $gameId = $params["gameId"] ?? null;
-
-        if ($gameId === null) {
-            $messages[] = "O id do jogo não foi informado na URL.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
-               
-        $isGameIdNumeric = is_numeric($gameId);
-        if ($isGameIdNumeric === false) {
-            $messages[] = "O id do jogo precisa ser um número inteiro.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
-
-        $gameId = intval($gameId);
-        if ($gameId <= 0) {
-            $messages[] = "O id do jogo precisa ser um número inteiro maior que zero.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_400)->sendJSON();
-            return;
-        }
+        $gameId = $params['gameId'] ?? null;
 
         $game = null;
         try {
+            $gameId = intval($gameId);
             $game = $this->service->findById($gameId);
-        } catch (Exception $e) {
+        } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[500])
+                ->sendJSON();
             return;
         }
 
         if ($game === null) {
-            $messages[] = "O jogo procurado não existe.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_404)->sendJSON();
+            $messages[] = 'O jogo procurado não existe.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[404])
+                ->sendJSON();
             return;
         }
 
         $data = [
-            "id" => $game->getId(),
-            "name" => $game->getName(),
+            'id' => $game->getId(),
+            'name' => $game->getName(),
         ];
 
-        $messages[] = "Jogo buscado com sucesso!";
-        $response->appendArray(["messages" => $messages, "data" => $data])->status(HTTP_STATUS_CODE_200)->sendJSON();
+        $messages[] = 'Jogo buscado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpApplication::STATUS_CODES[200])
+            ->sendJSON();
     }
 
+    /**
+     * Method that handles the HTTP request and response of a search for all Game registers.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP resposne object.
+     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
@@ -175,16 +220,26 @@ class GameController
         $games = null;
         try {
             $games = $this->service->findAll();
-        } catch (Exception $e) {
+        } catch (PDOException | Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_500)->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[500])
+                ->sendJSON();
             return;
         }
 
         $numberOfGames = count($games);
         if ($numberOfGames === 0) {
-            $messages[] = "A busca foi concluída e nenhum jogo foi encontrado.";
-            $response->appendArray(["messages" => $messages])->status(HTTP_STATUS_CODE_200)->sendJSON();
+            $messages[] = 'A busca foi concluída e nenhum jogo foi encontrado.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpApplication::STATUS_CODES[200])
+                ->sendJSON();
             return;
         }
 
@@ -193,12 +248,18 @@ class GameController
             $gameName = $game->getName();
 
             $data[] = [
-                "id" => $gameId,
-                "name" => $gameName
+                'id' => $gameId,
+                'name' => $gameName
             ];
         }
 
-        $messages[] = "Jogos buscados com sucesso!";
-        $response->appendArray(["messages" => $messages, "data" => $data])->status(HTTP_STATUS_CODE_200)->sendJSON();
+        $messages[] = 'Jogos buscados com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpApplication::STATUS_CODES[200])
+            ->sendJSON();
     }
 }

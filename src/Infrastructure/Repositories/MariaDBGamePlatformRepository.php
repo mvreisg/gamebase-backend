@@ -1,11 +1,12 @@
 <?php
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
 
 use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
-    
+
 class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 {
     private PDO $pdo;
@@ -18,24 +19,24 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
         try {
-            $statement = $this->pdo->prepare("INSERT INTO game_platform (platform_id, game_id) VALUES (:platformId, :gameId);");
+            $statement = $this->pdo->prepare('INSERT INTO game_platform (platform_id, game_id) VALUES (:platformId, :gameId);');
             $statement->execute([
-                ":platformId" => $gamePlatform->getPlatformId(),
-                ":gameId" => $gamePlatform->getGameId()
+                ':platformId' => $gamePlatform->getPlatformId(),
+                ':gameId' => $gamePlatform->getGameId()
             ]);
 
             $lastInsertId = intval($this->pdo->lastInsertId());
-            $statement = $this->pdo->prepare("SELECT * FROM game_platform WHERE id = :id;");
+            $statement = $this->pdo->prepare('SELECT * FROM game_platform WHERE id = :id;');
             $statement->execute([
-                ":id" => $lastInsertId
+                ':id' => $lastInsertId
             ]);
             $result = $statement->fetch();
 
             $gamePlatform = new GamePlatform();
-            $gamePlatform->setId($result["id"]);
-            $gamePlatform->setPlatformId($result["platform_id"]);
-            $gamePlatform->setGameId($result["game_id"]);
-                
+            $gamePlatform->setId($result['id']);
+            $gamePlatform->setPlatformId($result['platform_id']);
+            $gamePlatform->setGameId($result['game_id']);
+
             return $gamePlatform;
         } catch (PDOException $e) {
             throw $e;
@@ -46,8 +47,8 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $gameId = $gamePlatform->getGameId();
-            $statement = $this->pdo->prepare("UPDATE game_platform SET platform_id WHERE game_id = :gameId;");
-            $wasItSuccessful = $statement->execute([":gameId" => $gameId]);
+            $statement = $this->pdo->prepare('UPDATE game_platform SET platform_id WHERE game_id = :gameId;');
+            $wasItSuccessful = $statement->execute([':gameId' => $gameId]);
             return $wasItSuccessful;
         } catch (PDOException $e) {
             throw $e;
@@ -58,20 +59,20 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                "DELETE FROM
+                'DELETE FROM
                         game_platform
                     WHERE
                         game_id = :gameId
                     AND
-                        platform_id = :platformId;"
+                        platform_id = :platformId;'
             );
 
             $gameId = $gamePlatform->getGameId();
             $platformId = $gamePlatform->getPlatformId();
 
             $wasItSuccessful = $statement->execute([
-                "gameId" => $gameId,
-                "platformId" => $platformId
+                'gameId' => $gameId,
+                'platformId' => $platformId
             ]);
 
             return $wasItSuccessful;
@@ -84,15 +85,15 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                "DELETE FROM
+                'DELETE FROM
                         game_platform
                     WHERE
-                        game_id = :gameId;"
+                        game_id = :gameId;'
             );
 
             $gameId = $gamePlatform->getGameId();
 
-            $wasItSuccessful = $statement->execute(["gameId" => $gameId]);
+            $wasItSuccessful = $statement->execute(['gameId' => $gameId]);
             return $wasItSuccessful;
         } catch (PDOException $e) {
             throw $e;
@@ -102,16 +103,16 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     public function findAllGamePlatformsByGameId(int $gameId): array
     {
         try {
-            $statement = $this->pdo->prepare("SELECT * FROM game_platform WHERE game_id = :gameId;");
-            $statement->execute([":gameId" => $gameId]);
+            $statement = $this->pdo->prepare('SELECT * FROM game_platform WHERE game_id = :gameId;');
+            $statement->execute([':gameId' => $gameId]);
 
             $result = $statement->fetchAll();
             $gamePlatforms = [];
             foreach ($result as $row) {
                 $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($row["id"]);
-                $gamePlatform->setGameId($row["game_id"]);
-                $gamePlatform->setPlatformId($row["platform_id"]);
+                $gamePlatform->setId($row['id']);
+                $gamePlatform->setGameId($row['game_id']);
+                $gamePlatform->setPlatformId($row['platform_id']);
                 $gamePlatforms[] = $gamePlatform;
             }
 
@@ -125,7 +126,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                "SELECT
+                'SELECT
                         game_platform.id AS id,
                         game_platform.game_id AS game_id,
                         game_platform.platform_id AS platform_id
@@ -134,7 +135,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                     INNER JOIN
                         game_platform
                     ON
-                        game.id = game_platform.game_id;"
+                        game.id = game_platform.game_id;'
             );
             $statement->execute();
             $result = $statement->fetchAll();
@@ -142,9 +143,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $gamePlatforms = [];
             foreach ($result as $row) {
                 $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($row["id"]);
-                $gamePlatform->setGameId($row["game_id"]);
-                $gamePlatform->setPlatformId($row["platform_id"]);
+                $gamePlatform->setId($row['id']);
+                $gamePlatform->setGameId($row['game_id']);
+                $gamePlatform->setPlatformId($row['platform_id']);
                 $gamePlatforms[] = $gamePlatform;
             }
 
