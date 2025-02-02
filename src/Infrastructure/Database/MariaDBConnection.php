@@ -4,8 +4,15 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Database;
 
 use PDO;
 
+/**
+ * MariaDB connection class.
+ */
 class MariaDBConnection
 {
+    /**
+     * Static method that returns the database connection object.
+     * @return PDO The database connection object.
+     */
     public static function get(): PDO
     {
         return new PDO(

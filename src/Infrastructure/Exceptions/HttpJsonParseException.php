@@ -1,18 +1,18 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Domain\Exceptions;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Exceptions;
 
 use Exception;
 use Throwable;
 
 /**
- * Entity invalid value exception class.
- * Throwed when a entity property value is invalid.
+ * HTTP JSON parse exception class.
+ * Throwed when a error occurs in JSON parsing.
  */
-class EntityInvalidValueException extends Exception
+class HttpJsonParseException extends Exception
 {
     /**
-     * Entity invalid value exception class constructor.
+     * HTTP JSON parse exception class constructor.
      * @param string $message The exception message.
      * @param int $code The exception code.
      * @param Throwable|null $cause The exception cause object.

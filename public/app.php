@@ -15,10 +15,13 @@ use Mvreisg\GamebaseBackend\Presentation\Routers\GamePlatformRouter;
 use Throwable;
 use Exception;
 
+// Includes the class autoloader.
 include_once __DIR__ . '/../vendor/autoload.php';
 
 try {
+    // Loads the .env file.
     Dotenv\Dotenv::createImmutable(__DIR__ . '/../')->load();
+
     $app = new HttpApplication();
 
     $defaultRouter = new DefaultRouter();

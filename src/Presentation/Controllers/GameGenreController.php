@@ -21,7 +21,7 @@ class GameGenreController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSON();
+        $body = $request->parseBodyFromJSONString();
         $params = $request->getParams();
 
         $gameId = $params['gameId'] ?? null;
@@ -102,7 +102,7 @@ class GameGenreController
         $messages = [];
 
         try {
-            $body = $request->parseBodyFromJSON();
+            $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
             $gameId = $params['gameId'] ?? null;

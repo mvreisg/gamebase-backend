@@ -23,7 +23,7 @@ class PlatformController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSON();
+        $body = $request->parseBodyFromJSONString();
 
         $name = $body['name'] ?? null;
 
@@ -60,7 +60,7 @@ class PlatformController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSON();
+        $body = $request->parseBodyFromJSONString();
         $params = $request->getParams();
 
         $platformId = $params['platformId'] ?? null;

@@ -40,7 +40,7 @@ class GameController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSON();
+        $body = $request->parseBodyFromJSONString();
         $name = $body['name'] ?? null;
 
         $game = null;
@@ -95,7 +95,7 @@ class GameController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSON();
+        $body = $request->parseBodyFromJSONString();
         $params = $request->getParams();
 
         $gameId = $params['gameId'] ?? null;

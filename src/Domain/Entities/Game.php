@@ -20,12 +20,12 @@ class Game
     private string $name;
 
     /**
-     * @var list<Genre> $genres The Game Genres objects list.
+     * @var array $genres The Game Genres objects list.
      */
     private array $genres;
 
     /**
-     * @var list<Platform> $platforms The Game Platforms objects list.
+     * @var List<Platform> $platforms The Game Platforms objects list.
      */
     private array $platforms;
 
@@ -33,8 +33,8 @@ class Game
      * The Game class constructor.
      * @param int $id The Game id.
      * @param string $name The Game name;
-     * @param list<Genre> $genres The Game Genres objects list.
-     * @param list<Platform> $platforms The Game Genres objects list.
+     * @param array $genres The Game Genres objects list.
+     * @param List<Platform> $platforms The Game Genres objects list.
      * @return void
      */
     public function __construct(int $id = 0, string $name = '', array $genres = [], array $platforms = [])
@@ -85,7 +85,7 @@ class Game
 
     /**
      * The Game Genres objects list getter.
-     * @return list<Genre> The Game Genres objects list.
+     * @return array The Game Genres objects list.
      */
     public function getGenres()
     {
@@ -94,7 +94,7 @@ class Game
 
     /**
      * The Game Genres objects list setter.
-     * @param list<Genre> $genres The Game Genres objects list.
+     * @param array $genres The Game Genres objects list.
      * @return void
      */
     public function setGenres(array $genres)
@@ -104,7 +104,7 @@ class Game
 
     /**
      * The Game Platforms objects list getter.
-     * @return list<Platform> The Game Platforms objects list.
+     * @return List<Platform> The Game Platforms objects list.
      */
     public function getPlatforms()
     {
@@ -113,11 +113,22 @@ class Game
 
     /**
      * The Game Platforms objects list setter.
-     * @param list<Platform> $platforms The Game Platforms objects list.
+     * @param List<Platform> $platforms The Game Platforms objects list.
      */
     public function setPlatforms(array $platforms)
     {
         $this->platforms = $platforms;
+    }
+
+    /**
+     * Method to validate the id of the Game, throwing an exception if the id is invalid.
+     * @throws EntityInvalidValueException Throwed if the id is invalid.
+     */
+    public function validateId()
+    {
+        if ($this->id < 1) {
+            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
+        }
     }
 
     /**
@@ -134,17 +145,6 @@ class Game
 
         if ($this->name === '') {
             throw new EntityInvalidValueException('O nome está vazio.');
-        }
-    }
-
-    /**
-     * Method to validate the id of the Game, throwing an exception if the id is invalid.
-     * @throws EntityInvalidValueException Throwed if the id is invalid.
-     */
-    public function validateId()
-    {
-        if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
         }
     }
 }

@@ -32,7 +32,10 @@ class GameService
      * Inserts a new Game object based on the passed data.
      * @param string $name The Game name.
      * @return Game The Game object created.
-     * @throws DatabaseDuplicatedEntryException|EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
+     * @throws EntityInvalidValueException Throwed in case of entity error.
+     * @throws PDOException Throwed in case of database connection error.
+     * @throws Exception Throwed in case of error.
      */
     public function insert(string $name): Game
     {
@@ -58,7 +61,10 @@ class GameService
      * @param int $id The id of the Game that is wanted to be updated.
      * @param string $name The name of the Game that is wanted to be updated.
      * @return bool Returns the success flag.
-     * @throws DatabaseDuplicatedEntryException|EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
+     * @throws EntityInvalidValueException Throwed in case of entity error.
+     * @throws PDOException Throwed in case of database connection error.
+     * @throws Exception Throwed in case of error.
      */
     public function update(int $id, string $name): bool
     {
@@ -85,7 +91,9 @@ class GameService
      * Finds a Game already registered based on the passed id.
      * @param int $id The Game id.
      * @return Game|null Returns Game if the Game with the respective id was found, else returns null.
-     * @throws EntityInvalidValueException|PDOException|Exception Throwed in case of error.
+     * @throws EntityInvalidValueException Throwed in case of entity error.
+     * @throws PDOException Throwed in case of database connection error.
+     * @throws Exception Throwed in case of error.
      */
     public function findById(int $id): Game|null
     {
@@ -103,8 +111,9 @@ class GameService
 
     /**
      * Finds and returns all Game registers.
-     * @return list<Game> A list containing all the found registers in the repository.
-     * @throws PDOException|Exception Throwed in case of error.
+     * @return array A list containing all the found registers in the repository.
+     * @throws PDOException Throwed in case of database connection error.
+     * @throws Exception Throwed in case of error.
      */
     public function findAll(): array
     {

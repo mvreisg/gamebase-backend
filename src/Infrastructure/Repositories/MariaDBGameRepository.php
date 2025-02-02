@@ -130,7 +130,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
     /**
      * Finds all the Game registers in the repository.
-     * @return list<Game> Returns all Games registers found in the Game repository in a list.
+     * @return array Returns all Games registers found in the Game repository in a list.
      * @throws PDOException Throwed if a PDO database action error occurs.
      */
     public function findAll(): array

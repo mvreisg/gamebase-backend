@@ -7,8 +7,16 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
 use Mvreisg\GamebaseBackend\Presentation\Factories\GenreControllerFactory;
 
+/**
+ * Genre router class.
+ */
 class GenreRouter
 {
+    /**
+     * Method that registers the routes into the HTTP application.
+     * @var HttpApplication $app The HTTP application.
+     * @return void
+     */
     public function register(HttpApplication $app)
     {
         $controller = GenreControllerFactory::get();
@@ -26,7 +34,7 @@ class GenreRouter
         });
 
         $app->add('PUT', '/genre/:genreId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
-            $controller->edit($request, $response);
+            $controller->update($request, $response);
         });
     }
 }

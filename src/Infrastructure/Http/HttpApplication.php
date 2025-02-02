@@ -9,7 +9,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 class HttpApplication
 {
     /**
-     * @var list<int,string> STATUS_CODES The status codes list.
+     * @var List<int,string> STATUS_CODES The status codes list.
      */
     public const STATUS_CODES = [
         200 => 'HTTP/1.1 200 OK',
@@ -21,7 +21,7 @@ class HttpApplication
     ];
 
     /**
-     * @var list<string,string> HEADERS The headers list.
+     * @var List<string,string> HEADERS The headers list.
      */
     public const HEADERS = [
         'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json'
@@ -33,7 +33,7 @@ class HttpApplication
     public const NON_EXISTANT_ROUTE = '';
 
     /**
-     * @var list<string,string,callable> $routes The list of routes.
+     * @var List<string,string,callable> $routes The list of routes.
      */
     private array $routes = [];
 
@@ -59,64 +59,40 @@ class HttpApplication
      */
     public function run()
     {
-        $method = $_SERVER['REQUEST_METHOD'];
         $path = $_SERVER['REQUEST_URI'];
-        $route = explode('?', $path)[0];
-        $explodedPath = explode('/', $path);
-        array_shift($explodedPath);
-        $rawQueries = [];
-        $queries = [];
-        $explodedTuples = [];
+
+        $method = $_SERVER['REQUEST_METHOD'];
+
+        // /game/1 ? a=1&b=2
+        $explodedPath = explode('?', $path);
+        // -> [/game/1] ? a=1&b=2
+        $routePart = $explodedPath[0];
+        $containsQueryParameters = count($explodedPath) > 1;
+        $queryPart = null;
+        if ($containsQueryParameters) {
+            // /game/1 ? -> [a=1&b=2]
+            $queryPart = $explodedPath[1];
+        }
         $body = file_get_contents('php://input');
-        $params = [];
 
-        foreach ($explodedPath as $pathSegment) {
-            //b?c=1&d=2
-            $explodedQuery = explode('?', $pathSegment);
-            //[0] b
-            //[1] c=1&d=2
-            if (count($explodedQuery) > 1) {
-                $rawQueries[] = $explodedQuery[1];
-            }
-        }
-
-        foreach ($rawQueries as $query) {
-            $explodedTuples = explode('&', $query);
-        }
-
-        foreach ($explodedTuples as $tuple) {
-            $keyValue = explode('=', $tuple);
-            $queries[$keyValue[0]] = $keyValue[1];
-        }
-
-        $numberOfTries = 0;
-        foreach ($this->routes as $singleRoute) {
-            if ($singleRoute['route'] === HttpApplication::NON_EXISTANT_ROUTE) {
-                $numberOfTries++;
-                continue;
-            }
-
-            if (strtoupper($singleRoute['method']) === strtoupper($method) && $this->matchRoute($singleRoute['route'], $route)) {
-                $params = $this->findRouteParams($singleRoute['route'], $route);
-                $request = new HttpRequest($method, $route, $queries, $params, $body);
+        $nonExistantRoute = null;
+        foreach ($this->routes as $item) {
+            if (($item['method'] === $method || $item['method'] === '*') && $this->matchRoute($item['route'], $routePart)) {
+                $params = $this->findRouteParameters($item['route'], $routePart);
+                $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
+                $request = new HttpRequest($method, $routePart, $queries, $params, $body);
                 $response = new HttpResponse();
-                call_user_func_array($singleRoute['callback'], [$request, $response]);
+                call_user_func_array($item['callback'], [$request, $response]);
                 return;
             }
-
-            $numberOfTries++;
-        }
-
-        if ($numberOfTries >= count($this->routes)) {
-            foreach ($this->routes as $singleRoute) {
-                if ($singleRoute['route'] === HttpApplication::NON_EXISTANT_ROUTE) {
-                    $request = new HttpRequest($method, $route, $queries, $params, $body);
-                    $response = new HttpResponse();
-                    call_user_func_array($singleRoute['callback'], [$request, $response]);
-                    return;
-                }
+            if ($item['route'] === self::NON_EXISTANT_ROUTE) {
+                $nonExistantRoute = $item;
             }
         }
+
+        $request = new HttpRequest($method, $routePart);
+        $response = new HttpResponse();
+        call_user_func_array($nonExistantRoute['callback'], [$request, $response]);
     }
 
     /**
@@ -168,10 +144,29 @@ class HttpApplication
     }
 
     /**
-     * Method that gets the internal route defined in the code and the actual requested HTTP route and matches them to extract the parameters values from the actual requested route.
-     * @return list<string,string> The list of parameters.
+     * Method that receives the path part all the query parameters and returns only a map of it.
+     * @param string $path The path which will de extracted the values.
+     * @return Map<string,string> The map of query parameters.
      */
-    private function findRouteParams(string $requestRoute, string $informedRoute)
+    private function findQueryParameters(string $path)
+    {
+        $queries = [];
+
+        $explodedTuples = explode('&', $path);
+
+        foreach ($explodedTuples as $tuple) {
+            $list = explode('=', $tuple);
+            $queries[$list[0]] = $list[1];
+        }
+
+        return $queries;
+    }
+
+    /**
+     * Method that gets the internal route defined in the code and the actual requested HTTP route and matches them to extract the parameters values from the actual requested route.
+     * @return Map<string,string> The map of parameters.
+     */
+    private function findRouteParameters(string $requestRoute, string $informedRoute)
     {
         $params = [];
 
