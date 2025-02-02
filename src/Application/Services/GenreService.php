@@ -44,7 +44,6 @@ class GenreService
         $genre->setName($name);
 
         try {
-            $genre->validateId();
             $genre->validateName();
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
