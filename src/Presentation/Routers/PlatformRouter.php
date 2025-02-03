@@ -7,8 +7,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
 use Mvreisg\GamebaseBackend\Presentation\Factories\PlatformControllerFactory;
 
+/**
+ * Platform router class.
+ */
 class PlatformRouter
 {
+    /**
+     * Registers the routes into the HTTP application app.
+     * @param HttpApplication $app The HTTP application app.
+     */
     public function register(HttpApplication $app)
     {
         $controller = PlatformControllerFactory::get();
@@ -26,7 +33,7 @@ class PlatformRouter
         });
 
         $app->add('PUT', '/platform/:platformId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
-            $controller->edit($request, $response);
+            $controller->update($request, $response);
         });
     }
 }
