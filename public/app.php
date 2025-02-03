@@ -19,6 +19,7 @@ use Exception;
 include_once __DIR__ . '/../vendor/autoload.php';
 
 try {
+    ===
     // Loads the .env file.
     Dotenv\Dotenv::createImmutable(__DIR__ . '/../')->load();
 
