@@ -21,8 +21,8 @@ class Genre
 
     /**
      * Genre entity class constructor.
-     * @param int $id The Genre id.
-     * @param string $name The Genre name.
+     * @param int $id [optional] The Genre id.
+     * @param string $name [optional] The Genre name.
      * @return void
      */
     public function __construct(int $id = 0, string $name = '')

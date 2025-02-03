@@ -31,10 +31,10 @@ class Game
 
     /**
      * The Game class constructor.
-     * @param int $id The Game id.
-     * @param string $name The Game name;
-     * @param array $genres The Game Genres objects list.
-     * @param array $platforms The Game Genres objects list.
+     * @param int $id [optional] The Game id.
+     * @param string $name [optional] The Game name;
+     * @param array $genres [optional] The Game Genres objects list.
+     * @param array $platforms [optional] The Game Genres objects list.
      * @return void
      */
     public function __construct(int $id = 0, string $name = '', array $genres = [], array $platforms = [])
