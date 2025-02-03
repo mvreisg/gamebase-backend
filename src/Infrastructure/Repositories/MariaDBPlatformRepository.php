@@ -31,7 +31,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @param Platform $platform The Platform to be inserted.
      * @return Platform A copy of the inserted Platform.
      * @throws PDOException Throwed in case of database error.
-     */    
+     */
     public function insert(Platform $platform): Platform
     {
         try {
@@ -67,7 +67,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @param Platform $platform The Platform data to be updated.
      * @return bool The success flag.
      * @throws PDOException Throwed in case of database error.
-     */    
+     */
     public function update(Platform $platform): bool
     {
         try {
@@ -104,7 +104,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @param int $id The id to search for.
      * @return Platform|null Returns the Platform if found, else returns null.
      * @throws PDOException Throwed in case of database error.
-     */    
+     */
     public function findById(int $id): Platform|null
     {
         try {
@@ -129,7 +129,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * Finds all Platforms in the repository.
      * @return array A list containing all the founded repositories.
      * @throws PDOException Throwed in case of database error.
-     */    
+     */
     public function findAll(): array
     {
         try {
@@ -158,7 +158,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @param string $name The name to be searched.
      * @return bool True if it already exists, else returns false.
      * @throws PDOException Throwed in case of database error.
-     */    
+     */
     public function hasDuplicatedNames(string $name): bool
     {
         try {
