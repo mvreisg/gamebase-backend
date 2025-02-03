@@ -25,7 +25,7 @@ class Game
     private array $genres;
 
     /**
-     * @var List<Platform> $platforms The Game Platforms objects list.
+     * @var array $platforms The Game Platforms objects list.
      */
     private array $platforms;
 
@@ -34,7 +34,7 @@ class Game
      * @param int $id The Game id.
      * @param string $name The Game name;
      * @param array $genres The Game Genres objects list.
-     * @param List<Platform> $platforms The Game Genres objects list.
+     * @param array $platforms The Game Genres objects list.
      * @return void
      */
     public function __construct(int $id = 0, string $name = '', array $genres = [], array $platforms = [])
@@ -104,7 +104,7 @@ class Game
 
     /**
      * The Game Platforms objects list getter.
-     * @return List<Platform> The Game Platforms objects list.
+     * @return array The Game Platforms objects list.
      */
     public function getPlatforms()
     {
@@ -113,7 +113,7 @@ class Game
 
     /**
      * The Game Platforms objects list setter.
-     * @param List<Platform> $platforms The Game Platforms objects list.
+     * @param array $platforms The Game Platforms objects list.
      */
     public function setPlatforms(array $platforms)
     {
