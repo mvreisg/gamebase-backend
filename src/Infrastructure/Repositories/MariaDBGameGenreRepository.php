@@ -3,20 +3,36 @@
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
 
 use PDO;
-use Exception;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
 
+/**
+ * MariaDB Game Genre repository.
+ */
 class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 {
+    /**
+     * @var PDO $pdo The database connection class object.
+     */
     private PDO $pdo;
 
+    /**
+     * MariaDB game Genre repository class constructor.
+     * @param PDO $pdo The database connection class object.
+     * @return void
+     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
+    /**
+     * Inserts a new Game Genre entity into the repository.
+     * @param GameGenre $gameGenre The eneity to be inserted.
+     * @return GameGenre a copy of the inserted entity.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
     public function insert(GameGenre $gameGenre): GameGenre
     {
         $genreId = $gameGenre->getGenreId();
@@ -46,18 +62,30 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         return $newGameGenre;
     }
 
-    public function edit(GameGenre $gameGenre): bool
+    /**
+     * Updates an existing register of a Game Genre entity in the repository.
+     * @param GameGenre $gameGenre The data to be updated.
+     * @return bool The success flag.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
+    public function update(GameGenre $gameGenre): bool
     {
         try {
             $gameId = $gameGenre->getGameId();
             $statement = $this->pdo->prepare('UPDATE game_genre SET genre_id = :genreId WHERE game_id = :gameId;');
             $wasItSuccessful = $statement->execute([':gameId' => $gameId]);
             return $wasItSuccessful;
-        } catch (Exception $e) {
+        } catch (PDOException $e) {
             throw $e;
         }
     }
 
+    /**
+     * Deletes an existing register of a Game Genre entity in the repository.
+     * @param GameGenre $gameGenre The data to be deleted.
+     * @return bool The success flag.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
     public function delete(GameGenre $gameGenre): bool
     {
         try {
@@ -84,6 +112,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
+    /**
+     * Deletes all registers of Game Genre entity with the respective Game id binded to it.
+     * @param GameGenre $gameGenre The data containing the Game id.
+     * @return bool The success flag.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
     public function deleteAllByGameId(GameGenre $gameGenre): bool
     {
         try {
@@ -103,6 +137,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
+    /**
+     * Finds all the Game Genres entities that contains the respective Game id.
+     * @param int $gameId The Game id.
+     * @return array A list containing the Game Genre entities.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
     public function findAllGameGenresByGameId(int $gameId): array
     {
         try {
@@ -125,6 +165,11 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
+    /**
+     * Makes a inner join between Game and Game Genre, returuning all registers with the Game id.
+     * @return array A list containing the game Genre entities.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
     public function innerJoinBetweenGameAndGameGenreByGameId(): array
     {
         try {
