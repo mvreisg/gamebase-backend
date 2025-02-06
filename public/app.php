@@ -37,7 +37,7 @@ try {
     $gamePlatformRouter->register($app);
     $genreRouter->register($app);
     $platformRouter->register($app);
-    throw new Exception();
+
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Exception | Throwable $e) {
     print('Ocorreu um erro. Contate o suporte.');
