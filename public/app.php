@@ -16,11 +16,11 @@ use Throwable;
 use Exception;
 
 // Includes the class autoloader.
-include_once __DIR__ . '/../vendor/autoload.php';
+include_once dirname(__DIR__) . '/vendor/autoload.php';
 
 try {
     // Loads the .env file.
-    Dotenv\Dotenv::createImmutable(__DIR__ . '/../')->load();
+    Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
 
     $app = new HttpApplication();
 
