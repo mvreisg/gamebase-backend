@@ -37,8 +37,9 @@ try {
     $gamePlatformRouter->register($app);
     $genreRouter->register($app);
     $platformRouter->register($app);
-
+    throw new Exception();
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Exception | Throwable $e) {
-    print($e->getMessage());
+    print('Ocorreu um erro. Contate o suporte.');
+    header('HTTP/1.1 500 Internal Server Error');
 }
