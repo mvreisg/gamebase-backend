@@ -71,9 +71,23 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     public function update(GameGenre $gameGenre): bool
     {
         try {
+            $id = $gameGenre->getId();
             $gameId = $gameGenre->getGameId();
-            $statement = $this->pdo->prepare('UPDATE game_genre SET genre_id = :genreId WHERE game_id = :gameId;');
-            $wasItSuccessful = $statement->execute([':gameId' => $gameId]);
+            $genreId = $gameGenre->getGenreId();
+            $statement = $this->pdo->prepare(
+                'UPDATE 
+                    game_genre 
+                SET 
+                    genre_id = :genreId, 
+                    game_id = :gameId 
+                WHERE 
+                    id = :id;'
+            );
+            $wasItSuccessful = $statement->execute([
+                ':id' => $id,
+                ':gameId' => $gameId,
+                ':genreId' => $genreId
+            ]);
             return $wasItSuccessful;
         } catch (PDOException $e) {
             throw $e;
@@ -93,17 +107,13 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 'DELETE FROM
                         game_genre
                     WHERE
-                        game_id = :gameId
-                    AND
-                        genre_id = :genreId;'
+                        id = :id;'
             );
 
-            $gameId = $gameGenre->getGameId();
-            $genreId = $gameGenre->getGenreId();
+            $id = $gameGenre->getId();
 
             $wasItSuccessful = $statement->execute([
-                'gameId' => $gameId,
-                'genreId' => $genreId
+                ':id' => $id
             ]);
 
             return $wasItSuccessful;
@@ -130,7 +140,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $gameId = $gameGenre->getGameId();
 
-            $wasItSuccessful = $statement->execute(['gameId' => $gameId]);
+            $wasItSuccessful = $statement->execute([':gameId' => $gameId]);
             return $wasItSuccessful;
         } catch (PDOException $e) {
             throw $e;
