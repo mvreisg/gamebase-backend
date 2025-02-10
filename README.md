@@ -10,10 +10,11 @@ Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr
 
 ## Installation
 
+***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
+
 - Make sure you have PHP 8.2.12 installed.
 - Make sure you have a Apache HTTP server installed.
 - Make sure you have MariaDB installed.
-***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*
 - Make sure you have Composer installed globally and configured in the PATH environment.
 - Clone the project.
 
