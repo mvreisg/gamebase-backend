@@ -38,6 +38,19 @@ interface GameGenreRepositoryInterface
     public function deleteAllByGameId(GameGenre $gameGenre): bool;
 
     /**
+     * Finds a Game Genre register by its id.
+     * @param int $id The id to find.
+     * @return GameGenre the found Game Genre.
+     */
+    public function findById(int $id): GameGenre|null;
+
+    /**
+     * Finds all Game Genre registers
+     * @return array A list of all the Game Genres.
+     */
+    public function findAll(): array;
+
+    /**
      * Finds all the Game Genres entities that contains the respective Game id.
      * @param int $gameId The Game id.
      * @return array A list containing the Game Genre entities.

@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
  * The HTTP Application class.
  * Manages all the HTTP routes and methods.
  */
-class HttpApplication
+class HttpRouter
 {
     /**
      * @var List<int,string> STATUS_CODES The status codes list.
@@ -33,7 +33,12 @@ class HttpApplication
     public const NON_EXISTANT_ROUTE = '';
 
     /**
-     * @var List<string,string,callable> $routes The list of routes.
+     * @var string WILDCARD_METHOD A representation for a wildcard method that can be any method value.
+     */
+    public const WILDCARD_METHOD = '*';
+
+    /**
+     * @var array $routes The list of routes.
      */
     private array $routes = [];
 
@@ -75,24 +80,33 @@ class HttpApplication
         }
         $body = file_get_contents('php://input');
 
-        $nonExistantRoute = null;
-        foreach ($this->routes as $item) {
-            if (($item['method'] === $method || $item['method'] === '*') && $this->matchRoute($item['route'], $routePart)) {
-                $params = $this->findRouteParameters($item['route'], $routePart);
-                $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-                $request = new HttpRequest($method, $routePart, $queries, $params, $body);
-                $response = new HttpResponse();
-                call_user_func_array($item['callback'], [$request, $response]);
-                return;
-            }
-            if ($item['route'] === self::NON_EXISTANT_ROUTE) {
-                $nonExistantRoute = $item;
-            }
-        }
+        $matchingMethods = array_filter($this->routes, fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD);
 
-        $request = new HttpRequest($method, $routePart);
-        $response = new HttpResponse();
-        call_user_func_array($nonExistantRoute['callback'], [$request, $response]);
+        $exactlyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $item['route'] === $routePart);
+        $looselyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $this->matchRoute($item['route'], $routePart));
+
+        $numberOfExactlyMatchedRoutes = count($exactlyMatchedRoutes);
+        $numberOfLooselyMatchedRoutes = count($looselyMatchedRoutes);
+
+        if ($numberOfExactlyMatchedRoutes === 1) {
+            $item = array_pop($exactlyMatchedRoutes);
+            $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
+            $request = new HttpRequest($method, $routePart, $queries, [], $body);
+            $response = new HttpResponse();
+            call_user_func_array($item['callback'], [$request, $response]);
+            return;
+        } elseif ($numberOfLooselyMatchedRoutes === 1) {
+            $item = array_pop($looselyMatchedRoutes);
+            $params = $this->findRouteParameters($item['route'], $routePart);
+            $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
+            $request = new HttpRequest($method, $routePart, $queries, $params, $body);
+            $response = new HttpResponse();
+            call_user_func_array($item['callback'], [$request, $response]);
+            return;
+        } else {
+            print('Rota não encontrada!');
+            header(self::STATUS_CODES[404]);
+        }
     }
 
     /**

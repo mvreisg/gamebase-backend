@@ -5,7 +5,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
@@ -52,7 +52,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (PDOException | Exception $e) {
@@ -61,7 +61,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -72,7 +72,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -82,7 +82,7 @@ class PlatformController
             ->appendArray([
                 'messages' => $messages
             ])
-            ->status(HttpApplication::STATUS_CODES[201])
+            ->status(HttpRouter::STATUS_CODES[201])
             ->sendJSON();
     }
 
@@ -111,7 +111,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (PDOException | Exception $e) {
@@ -120,7 +120,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -131,7 +131,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         }
@@ -141,7 +141,7 @@ class PlatformController
             ->appendArray([
                 'messages' => $messages
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 
@@ -168,7 +168,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -179,7 +179,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[404])
+                ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
         }
@@ -198,7 +198,7 @@ class PlatformController
                 'messages' => $messages,
                 'data' => $data
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 
@@ -221,7 +221,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -233,7 +233,7 @@ class PlatformController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[200])
+                ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
         }
@@ -254,7 +254,7 @@ class PlatformController
                 'messages' => $messages,
                 'data' => $data
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 }

@@ -5,7 +5,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatformService;
 
 class GamePlatformController
@@ -39,14 +39,14 @@ class GamePlatformController
         }
 
         if ($hasErrors) {
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
             return;
         }
 
         $isGameIdNumeric = is_numeric($gameId);
         if ($isGameIdNumeric === false) {
             $messages[] = "O valor de 'gameId' precisa ser numérico.";
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
             return;
         }
 
@@ -54,7 +54,7 @@ class GamePlatformController
 
         if ($gameId <= 0) {
             $messages[] = "O valor de 'gameId' precisa ser maior que zero.";
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
             return;
         }
 
@@ -62,14 +62,14 @@ class GamePlatformController
             foreach ($platformsIds as $platformId) {
                 if ($platformId === null) {
                     $messages[] = "Um dos ids de 'genresId' é nulo.";
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                     return;
                 }
 
                 $isPlatformIdNumeric = is_numeric($platformId);
                 if ($isPlatformIdNumeric === false) {
                     $messages[] = "Um dos ids de 'genresId' não é um número inteiro.";
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                     return;
                 }
 
@@ -78,15 +78,15 @@ class GamePlatformController
                 $gamePlatform = $this->service->insert($platformId, $gameId);
                 if ($gamePlatform == false) {
                     $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e plataforma. Contate o suporte.';
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
                 }
             }
 
             $messages[] = 'Vínculo entre jogo e plataforma inserido com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[201])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[201])->sendJSON();
         } catch (Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
         }
     }
 
@@ -113,14 +113,14 @@ class GamePlatformController
             }
 
             if ($hasNullKeys) {
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
             $isGameIdNumeric = is_numeric($gameId);
             if ($isGameIdNumeric === false) {
                 $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro.";
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
@@ -128,27 +128,27 @@ class GamePlatformController
 
             if ($gameId <= 0) {
                 $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro maior que zero.";
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
             $hasValuesToBeEdited = count($platformsIds);
             if ($hasValuesToBeEdited === false) {
                 $messages[] = 'Não há valores a serrem editados!';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
                 return;
             }
 
             foreach ($platformsIds as $platformId) {
                 if ($platformId === null) {
                     $messages[] = 'Um dos ids de gênero informado é nulo.';
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 }
 
                 $isPlatformIdNumeric = is_numeric($platformId);
                 if ($isPlatformIdNumeric === false) {
                     $messages[] = 'Um dos ids de gênero não é um número inteiro.';
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 }
             }
 
@@ -157,7 +157,7 @@ class GamePlatformController
 
             if (count($gamePlatformsIds) === 0 && count($platformsIds) === 0) {
                 $messages[] = 'Nenhuma alteração feita!';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
                 return;
             } elseif (count($gamePlatformsIds) === 0 && count($platformsIds) > 0) {
                 array_map(fn ($genreId) => $this->service->insert($genreId, $gameId), $platformsIds);
@@ -170,10 +170,10 @@ class GamePlatformController
             }
 
             $messages[] = 'Vínculos entre jogos e plataformas editados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
         } catch (Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
         }
     }
 
@@ -187,14 +187,14 @@ class GamePlatformController
 
             if ($gameId === null) {
                 $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
             $isGameIdNumeric = is_numeric($gameId);
             if ($isGameIdNumeric === false) {
                 $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
@@ -202,7 +202,7 @@ class GamePlatformController
 
             if ($gameId <= 0) {
                 $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
@@ -210,10 +210,10 @@ class GamePlatformController
             $data = array_map(fn ($gamePlatform) => $gamePlatform->getPlatformId(), $gamePlatforms);
 
             $messages[] = 'Ids de plataformas buscados com sucesso!';
-            $response->appendArray(['messages' => $messages, 'data' => $data])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
+            $response->appendArray(['messages' => $messages, 'data' => $data])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
         } catch (Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
         }
     }
 
@@ -227,14 +227,14 @@ class GamePlatformController
 
             if ($gameId === null) {
                 $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
             $isGameIdNumeric = is_numeric($gameId);
             if ($isGameIdNumeric === false) {
                 $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
@@ -242,22 +242,22 @@ class GamePlatformController
 
             if ($gameId <= 0) {
                 $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
                 return;
             }
 
             $wasItSuccessful = $this->service->deleteAllByGameId($gameId);
             if ($wasItSuccessful === false) {
                 $messages[] = 'Ocorreu um erro ao deletar os vínculos entre jogo e plataforma pelo id do jogo. Contate o suporte.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
                 return;
             }
 
             $messages[] = 'Vínculos entre jogo e plataforma baseados no id do jogo deletados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
         } catch (Exception $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
         }
     }
 }

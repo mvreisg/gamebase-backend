@@ -1,24 +1,23 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Presentation\Routers;
+namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Factories\GameControllerFactory;
 
 /**
- * Game router class.
- * Manages the game HTTP routes.
+ * Game routes class.
  */
-class GameRouter
+class GameRoutes
 {
     /**
-     * Method that registers the router in the HTTP application
-     * @param HttpApplication $app The application to add this router.
+     * Registers the routes relatives to this entity in the router.
+     * @param HttpRouter $app The HTTP router
      * @return void
      */
-    public function register(HttpApplication $app)
+    public function register(HttpRouter $app)
     {
         $controller = GameControllerFactory::get();
 

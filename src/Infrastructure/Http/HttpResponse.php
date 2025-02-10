@@ -97,7 +97,7 @@ class HttpResponse
      */
     public function sendJSON()
     {
-        header(HttpApplication::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
+        header(HttpRouter::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
         foreach ($this->headers as $header) {
             header($header);
         }

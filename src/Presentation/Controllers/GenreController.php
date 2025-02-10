@@ -6,7 +6,7 @@ use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Application\Services\GenreService;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use PDOException;
@@ -53,7 +53,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (PDOException | Exception $e) {
@@ -62,7 +62,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -73,7 +73,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -83,7 +83,7 @@ class GenreController
             ->appendArray([
                 'messages' => $messages
             ])
-            ->status(HttpApplication::STATUS_CODES[201])
+            ->status(HttpRouter::STATUS_CODES[201])
             ->sendJSON();
     }
 
@@ -112,7 +112,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (PDOException | Exception $e) {
@@ -121,7 +121,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -132,7 +132,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         }
@@ -142,7 +142,7 @@ class GenreController
             ->appendArray([
                 'messages' => $messages
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 
@@ -170,7 +170,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (PDOException | Exception $e) {
@@ -179,7 +179,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -190,7 +190,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         }
@@ -209,7 +209,7 @@ class GenreController
                 'messages' => $messages,
                 'data' => $data
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 
@@ -233,7 +233,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
@@ -245,7 +245,7 @@ class GenreController
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpApplication::STATUS_CODES[200])
+                ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
         }
@@ -266,7 +266,7 @@ class GenreController
                 'messages' => $messages,
                 'data' => $data
             ])
-            ->status(HttpApplication::STATUS_CODES[200])
+            ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
     }
 }

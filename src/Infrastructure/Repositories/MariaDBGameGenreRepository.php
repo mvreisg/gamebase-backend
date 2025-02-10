@@ -148,6 +148,69 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     }
 
     /**
+     * Finds a Game Genre register by its id.
+     * @param int $id The id to find.
+     * @return GameGenre the found Game Genre.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
+    public function findById(int $id): GameGenre|null
+    {
+        try {
+            $statement = $this->pdo->prepare('SELECT * FROM game_genre WHERE id = :id');
+            $statement->execute([
+                ':id' => $id
+            ]);
+            $result = $statement->fetch();
+
+            if ($result == false) {
+                return null;
+            }
+
+            $gameGenre = new GameGenre();
+            $gameGenre->setId($result['id']);
+            $gameGenre->setGameId($result['game_id']);
+            $gameGenre->setGenreId($result['genre_id']);
+
+            return $gameGenre;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Finds all Game Genre registers
+     * @return array A list of all the Game Genres.
+     * @throws PDOException Throwed if a database connection error occurs.
+     */
+    public function findAll(): array
+    {
+        try {
+            $statement = $this->pdo->prepare('SELECT * FROM game_genre');
+            $statement->execute();
+            $result = $statement->fetchAll();
+
+            if ($result == false) {
+                return null;
+            }
+
+            $gameGenres = [];
+
+            foreach ($result as $row) {
+                $gameGenre = new GameGenre();
+                $gameGenre->setId($row['id']);
+                $gameGenre->setGameId($row['game_id']);
+                $gameGenre->setGenreId($row['genre_id']);
+
+                $gameGenres[] = $gameGenre;
+            }
+
+            return $gameGenres;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    /**
      * Finds all the Game Genres entities that contains the respective Game id.
      * @param int $gameId The Game id.
      * @return array A list containing the Game Genre entities.

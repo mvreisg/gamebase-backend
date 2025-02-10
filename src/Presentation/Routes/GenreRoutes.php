@@ -1,23 +1,23 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Presentation\Routers;
+namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Factories\GenreControllerFactory;
 
 /**
- * Genre router class.
+ * Genre routes class.
  */
-class GenreRouter
+class GenreRoutes
 {
     /**
-     * Method that registers the routes into the HTTP application.
-     * @var HttpApplication $app The HTTP application.
+     * Registers the routes relatives to this entity in the router.
+     * @param HttpRouter $app The HTTP router
      * @return void
      */
-    public function register(HttpApplication $app)
+    public function register(HttpRouter $app)
     {
         $controller = GenreControllerFactory::get();
 

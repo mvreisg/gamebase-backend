@@ -5,15 +5,16 @@ namespace Mvreisg\GamebaseBackend;
 use Dotenv;
 use Dotenv\Exception\InvalidFileException;
 use Dotenv\Exception\InvalidEncodingException;
-use Mvreisg\GamebaseBackend\Presentation\Routers\GameRouter;
-use Mvreisg\GamebaseBackend\Presentation\Routers\GenreRouter;
-use Mvreisg\GamebaseBackend\Presentation\Routers\DefaultRouter;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
-use Mvreisg\GamebaseBackend\Presentation\Routers\PlatformRouter;
-use Mvreisg\GamebaseBackend\Presentation\Routers\GameGenreRouter;
-use Mvreisg\GamebaseBackend\Presentation\Routers\GamePlatformRouter;
+use Mvreisg\GamebaseBackend\Presentation\Routes\GameRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Routes\GenreRoutes;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
+use Mvreisg\GamebaseBackend\Presentation\Routes\PlatformRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Routes\GameGenreRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
 use Exception;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 
 // Includes the class autoloader.
 include_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -22,24 +23,28 @@ try {
     // Loads the .env file.
     Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
 
-    $app = new HttpApplication();
+    $app = new HttpRouter();
 
-    $defaultRouter = new DefaultRouter();
-    $gameRouter = new GameRouter();
-    $gameGenreRouter = new GameGenreRouter();
-    $gamePlatformRouter = new GamePlatformRouter();
-    $genreRouter = new GenreRouter();
-    $platformRouter = new PlatformRouter();
+    $gameRoutes = new GameRoutes();
+    $gameGenreRoutes = new GameGenreRoutes();
+    $gamePlatformRoutes = new GamePlatformRoutes();
+    $genreRoutes = new GenreRoutes();
+    $platformRoutes = new PlatformRoutes();
 
-    $defaultRouter->register($app);
-    $gameRouter->register($app);
-    $gameGenreRouter->register($app);
-    $gamePlatformRouter->register($app);
-    $genreRouter->register($app);
-    $platformRouter->register($app);
+    $gameRoutes->register($app);
+    $gameGenreRoutes->register($app);
+    $gamePlatformRoutes->register($app);
+    $genreRoutes->register($app);
+    $platformRoutes->register($app);
+
+    $app->add(
+        HttpRouter::WILDCARD_METHOD,
+        '/',
+        fn (HttpRequest $req, HttpResponse $res) => $res->status(HttpRouter::STATUS_CODES[200])->appendString('Servidor funcionando!')->send()
+    );
 
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Exception | Throwable $e) {
     print('Ocorreu um erro. Contate o suporte.');
-    header('HTTP/1.1 500 Internal Server Error');
+    header(HttpRouter::STATUS_CODES[500]);
 }

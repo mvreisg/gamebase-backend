@@ -1,15 +1,15 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Presentation\Routers;
+namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Factories\GamePlatformControllerFactory;
 
-class GamePlatformRouter
+class GamePlatformRoutes
 {
-    public function register(HttpApplication $app)
+    public function register(HttpRouter $app)
     {
         $controller = GamePlatformControllerFactory::get();
 

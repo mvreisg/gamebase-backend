@@ -66,7 +66,7 @@ class GameGenreService
     public function update(int $id, int $genreId, int $gameId): bool
     {
         $gameGenre = new GameGenre();
-        $gameGenre->setGameId($gameId);
+        $gameGenre->setId($id);
         $gameGenre->setGenreId($genreId);
         $gameGenre->setGameId($gameId);
 
@@ -121,6 +121,44 @@ class GameGenreService
             $wasItSuccessful = $this->repository->deleteAllByGameId($gameGenre);
             return $wasItSuccessful;
         } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Finds a Game Genre by its id.
+     * @param int $id The id to search.
+     * @return GameGenre The found Game Genre, else null.
+     * @throws EntityInvalidValueException Throwed if the entity has an invalid value.
+     * @throws PDOException Throwed if a database connection error occurs.
+     * @throws Exception Throwed if any error occurs.
+     */
+    public function findById(int $id): GameGenre|null
+    {
+        $gameGenre = new GameGenre();
+        $gameGenre->setId($id);
+
+        try {
+            $gameGenre->validateId();
+            $gameGenre = $this->repository->findById($id);
+            return $gameGenre;
+        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Finds all the Game Genre registers.
+     * @return array A list containing all the found Game Genres.
+     * @throws PDOException Throwed if a database connection error occurs.
+     * @throws Exception Throwed if any error occurs.
+     */
+    public function findAll(): array
+    {
+        try {
+            $result = $this->repository->findAll();
+            return $result;
+        } catch (PDOException | Exception $e) {
             throw $e;
         }
     }

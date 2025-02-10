@@ -5,266 +5,370 @@ namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpApplication;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenreService;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use PDOException;
 
+/**
+ * Game Genre controller class.
+ */
 class GameGenreController
 {
+    /**
+     * @var GameGenreService $service The service to be used by this controller.
+     */
     private GameGenreService $service;
 
+    /**
+     * Game Genre controller class controller.
+     * @param GameGenreService $service The service to be used by this controller.
+     */
     public function __construct(GameGenreService $service)
     {
         $this->service = $service;
     }
 
+    /**
+     * Method that handles the HTTP request and response of a Game Genre insertion.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
     public function insert(HttpRequest $request, HttpResponse $response)
+    {
+        $messages = [];
+        $data = [];
+
+        $body = $request->parseBodyFromJSONString();
+
+        $gameId = $body['gameId'] ?? null;
+        $genresIds = $body['genresIds'] ?? [];
+
+        if ($genresIds == false) {
+            $messages[] = 'Os ids de gêneros não foram informados.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        }
+
+        try {
+            foreach ($genresIds as $genreId) {
+                $gameId = intval($gameId);
+                $genreId = intval($genreId);
+                $gameGenre = $this->service->insert($genreId, $gameId);
+                $data[] = [
+                    'id' => $gameGenre->getId(),
+                    'gameId' => $gameGenre->getGameId(),
+                    'genreId' => $gameGenre->getGenreId()
+                ];
+
+                if ($gameGenre == false) {
+                    $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e gênero. Contate o suporte.';
+                    $response
+                        ->appendArray([
+                            'messages' => $messages
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[500])
+                        ->sendJSON();
+                    return;
+                }
+            }
+        } catch (EntityInvalidValueException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+
+        $messages[] = 'Vínculo entre jogo e gênero inserido com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpRouter::STATUS_CODES[201])
+            ->sendJSON();
+    }
+
+    /**
+     * Method that handles the HTTP request and response of a Game Genre update.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function update(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
 
         $body = $request->parseBodyFromJSONString();
         $params = $request->getParams();
 
-        $gameId = $params['gameId'] ?? null;
+        $id = $params['id'] ?? null;
+        $gameId = $body['gameId'] ?? null;
         $genresIds = $body['genresIds'] ?? null;
 
-        $hasErrors = false;
-        if ($gameId === null) {
-            $hasErrors = true;
-            $messages[] = 'O id do jogo não foi informado na URL.';
-        }
-
-        if ($genresIds === null) {
-            $hasErrors = true;
-            $messages[] = 'O array de ids de gêneros não foi informado no JSON.';
-        }
-
-        if ($hasErrors) {
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+        if ($genresIds == false) {
+            $messages[] = 'Os ids de gêneros não foram informados.';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
             return;
         }
-
-        $isGameIdNumeric = is_numeric($gameId);
-        if ($isGameIdNumeric === false) {
-            $messages[] = 'O id do jogo precisa ser um número.';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-            return;
-        }
-
-        $gameId = intval($gameId);
-        if ($gameId <= 0) {
-            $messages[] = 'O id do jogo precisa ser maior que zero.';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-            return;
-        }
-
-        foreach ($genresIds as $genreId) {
-            if ($genreId === null) {
-                $messages[] = 'Um dos ids de gênero é nulo.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $isGenreIdNumeric = is_numeric($genreId);
-            if ($isGenreIdNumeric === false) {
-                $messages[] = 'Um dos ids de gênero não é um número inteiro.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $genreId = intval($genreId);
-            if ($genreId <= 0) {
-                $messages[] = 'Um dos ids de gênero não é um número inteiro maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            try {
-                $gameGenre = $this->service->insert($genreId, $gameId);
-            } catch (Exception $e) {
-                $messages[] = $e->getMessage();
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
-                return;
-            }
-
-            if ($gameGenre == false) {
-                $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e gênero. Contate o suporte.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
-                return;
-            }
-        }
-
-        $messages[] = 'Vínculo entre jogo e gênero inserido com sucesso!';
-        $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[201])->sendJSON();
-    }
-
-    public function edit(HttpRequest $request, HttpResponse $response)
-    {
-        $messages = [];
 
         try {
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
-
-            $gameId = $params['gameId'] ?? null;
-            $genresIds = $body['genresIds'] ?? null;
-
-            $hasNullKeys = false;
-            if ($gameId === null) {
-                $hasNullKeys = true;
-                $messages[] = 'É necessário informar o id do jogo na rota.';
-            }
-
-            if ($genresIds === null) {
-                $hasNullKeys = true;
-                $messages[] = "É necessário informar os ids dos gêneros em um array 'genresIds'.";
-            }
-
-            if ($hasNullKeys) {
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro.";
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
+            $id = intval($id);
             $gameId = intval($gameId);
-
-            if ($gameId <= 0) {
-                $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro maior que zero.";
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $hasValuesToBeEdited = count($genresIds);
-            if ($hasValuesToBeEdited === false) {
-                $messages[] = 'Não há valores a serrem editados!';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
-                return;
-            }
 
             foreach ($genresIds as $genreId) {
-                if ($genreId === null) {
-                    $messages[] = 'Um dos ids de gênero informado é nulo.';
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                }
+                $genreId = intval($genreId);
 
-                $isGenreIdNumeric = is_numeric($genreId);
-                if ($isGenreIdNumeric === false) {
-                    $messages[] = 'Um dos ids de gênero não é um número inteiro.';
-                    $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
+                $wasItSuccessful = $this->service->update($id, $genreId, $gameId);
+
+                if ($wasItSuccessful === false) {
+                    $messages[] = 'Ocorreu um erro ao tentar atualizar!';
+                    $response
+                        ->appendArray([
+                            'messages' => $messages
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[500])
+                        ->sendJSON();
+                    return;
                 }
             }
-
-            $existingGameGenres = $this->service->findAllGameGenresByGameId($gameId);
-            $existingGenresId = array_map(fn ($existingGameGenre) => $existingGameGenre->getGenreId(), $existingGameGenres);
-
-            if (count($existingGenresId) === 0 && count($genresIds) === 0) {
-                $messages[] = 'Nenhuma alteração feita!';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
-                return;
-            } elseif (count($existingGenresId) === 0 && count($genresIds) > 0) {
-                array_map(fn ($genreId) => $this->service->insert($genreId, $gameId), $genresIds);
-            } elseif (count($existingGenresId) > 0 && count($genresIds) > 0) {
-                $mergedGenresIds = array_merge($existingGenresId, $genresIds);
-                $includentGenresIds = array_filter($mergedGenresIds, fn ($value) => in_array($value, $existingGenresId) === false);
-                $excludentGenresIds = array_filter($mergedGenresIds, fn ($value) => in_array($value, $genresIds) === false);
-                array_map(fn ($genreId) => $this->service->insert($genreId, $gameId), $includentGenresIds);
-                array_map(fn ($genreId) => $this->service->delete($genreId, $gameId), $excludentGenresIds);
-            }
-
-            $messages[] = 'Vínculos entre jogos e gêneros editados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
+        } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
         }
+
+        $messages[] = 'Vínculos entre jogos e gêneros editado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages
+            ])
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->sendJSON();
     }
 
-    public function findAllGenresIdByGameId(HttpRequest $request, HttpResponse $response)
+    /**
+     * Method that handles the HTTP request and response of a Game Genre deletion.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function delete(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
 
-        try {
-            $params = $request->getParams();
-            $gameId = $params['gameId'] ?? null;
+        $params = $request->getParams();
 
-            if ($gameId === null) {
-                $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $gameId = intval($gameId);
-
-            if ($gameId <= 0) {
-                $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $gameGenres = $this->service->findAllGameGenresByGameId($gameId);
-            $data = array_map(fn ($gameGenre) => $gameGenre->getGenreId(), $gameGenres);
-
-            $messages[] = 'Ids de gêneros buscados com sucesso!';
-            $response->appendArray(['messages' => $messages, 'data' => $data])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
-            $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
-        }
-    }
-
-    public function deleteAllGenresByGameId(HttpRequest $request, HttpResponse $response)
-    {
-        $messages = [];
+        $id = $params['id'] ?? null;
 
         try {
-            $params = $request->getParams();
-            $gameId = $params['gameId'] ?? null;
+            $id = intval($id);
 
-            if ($gameId === null) {
-                $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
+            $wasItSuccessful = $this->service->delete($id);
 
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $gameId = intval($gameId);
-
-            if ($gameId <= 0) {
-                $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $wasItSuccessful = $this->service->deleteAllByGameId($gameId);
             if ($wasItSuccessful === false) {
-                $messages[] = 'Ocorreu um erro ao deletar os vínculos entre jogo e gênero pelo id do jogo. Contate o suporte.';
-                $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+                $messages[] = 'Ocorreu um erro ao tentar deletar!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[500])
+                    ->sendJSON();
                 return;
             }
-
-            $messages[] = 'Vínculos entre jogo e gênero baseados no id do jogo deletados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
+        } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpApplication::STATUS_CODES[500])->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
         }
+
+        $messages[] = 'Vínculos entre jogos e gêneros deletado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages
+            ])
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->sendJSON();
+    }
+
+    /**
+     * Method that handles the HTTP request and response of a Game Genre search by the id.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function findById(HttpRequest $request, HttpResponse $response)
+    {
+        $messages = [];
+
+        $params = $request->getParams();
+
+        $id = $params['id'] ?? null;
+
+        $gameGenre = null;
+        try {
+            $id = intval($id);
+            $gameGenre = $this->service->findById($id);
+        } catch (EntityInvalidValueException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+
+        if ($gameGenre === null) {
+            $messages[] = 'O vínculo entre gênero e jogo procurado não existe!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        }
+
+        $gameGenreId = $gameGenre->getId();
+        $gameGenreGameId = $gameGenre->getGameId();
+        $gameGenreGenreId = $gameGenre->getGenreId();
+
+        $data = [
+            'id' => $gameGenreId,
+            'gameId' => $gameGenreGameId,
+            'genreId' => $gameGenreGenreId
+        ];
+
+        $messages[] = 'Vínculo entre gênero e jogo encontrado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->sendJSON();
+        return;
+    }
+
+    /**
+     * Method that handles the HTTP request and response of a search of all Game Genres.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function findAll(HttpRequest $request, HttpResponse $response)
+    {
+        $messages = [];
+        $data = [];
+
+        $result = null;
+        try {
+            $result = $this->service->findAll();
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+
+        if ($result === null) {
+            $messages[] = 'Os vínculos entre gêneros e jogos procurados não existem!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        }
+
+        foreach ($result as $gameGenre) {
+            $gameGenreId = $gameGenre->getId();
+            $gameGenreGameId = $gameGenre->getGameId();
+            $gameGenreGenreId = $gameGenre->getGenreId();
+
+            $data[] = [
+                'id' => $gameGenreId,
+                'gameId' => $gameGenreGameId,
+                'genreId' => $gameGenreGenreId
+            ];
+        }
+
+        $messages[] = 'Vínculo entre gênero e jogo encontrado com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->sendJSON();
+        return;
     }
 }

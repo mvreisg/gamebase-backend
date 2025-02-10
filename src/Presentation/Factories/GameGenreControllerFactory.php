@@ -7,8 +7,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\GameGenreController;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBGameGenreRepository;
 
+/**
+ * Game Genre controller factory class.
+ */
 class GameGenreControllerFactory
 {
+    /**
+     * Static method that get the Game Genre controller instance.
+     * @return GameGenreController The instance.
+     */
     public static function get(): GameGenreController
     {
         $repository = new MariaDBGameGenreRepository(MariaDBConnection::get());
