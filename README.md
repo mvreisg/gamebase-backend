@@ -1,10 +1,12 @@
-# Gamebase
+# Gamebase-Backend
 
 A simple PHP backend for game database.
 
-Using PHP 8.2.12
+Using [PHP 8.2.12](https://www.php.net/)
 
-Uses Composer as the project package manager.
+Uses [Composer](https://getcomposer.org/) as the project package manager.
+
+Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr/).
 
 ## Installation
 
@@ -18,19 +20,7 @@ Uses Composer as the project package manager.
 
 ### Setup
 
-Add a virtual host to your Apache virtual host configuration files:
-
-```xml
-<VirtualHost *:80>
-    ServerAdmin webmaster@backend.gamebase.com.br
-    DocumentRoot "path/to/your/project/gamebase-backend/public"
-    ServerName backend.gamebase.com.br
-    ErrorLog "logs/backend.gamebase.com.br-error.log"
-    CustomLog "logs/backend.gamebase.com.br-access.log" common
-</VirtualHost>
-```
-
-Also, make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
+Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
 
 <hr/>
 
