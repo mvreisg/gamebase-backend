@@ -7,257 +7,352 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatformService;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use PDOException;
 
+/**
+ * Game Platform controller class.
+ */
 class GamePlatformController
 {
+    /**
+     * @var GamePlatformService $service The service to be used by this controller.
+     */
     private GamePlatformService $service;
 
+    /**
+     * Game Platform controller class constructor.
+     * @param GamePlatformService $service The service to be used by this controller.
+     * @return void
+     */
     public function __construct(GamePlatformService $service)
     {
         $this->service = $service;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response)
-    {
-        $messages = [];
-
-        $body = $request->parseBodyFromJSONString();
-        $params = $request->getParams();
-
-        $gameId = $params['gameId'] ?? null;
-        $platformsIds = $body['platformsIds'] ?? null;
-
-        $hasErrors = false;
-        if ($gameId === null) {
-            $hasErrors = true;
-            $messages[] = "O parâmetro 'gameId' não foi informado.";
-        }
-
-        if ($platformsIds === null) {
-            $hasErrors = true;
-            $messages[] = "O parâmetro 'platformsIds' não foi informado.";
-        }
-
-        if ($hasErrors) {
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-            return;
-        }
-
-        $isGameIdNumeric = is_numeric($gameId);
-        if ($isGameIdNumeric === false) {
-            $messages[] = "O valor de 'gameId' precisa ser numérico.";
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-            return;
-        }
-
-        $gameId = intval($gameId);
-
-        if ($gameId <= 0) {
-            $messages[] = "O valor de 'gameId' precisa ser maior que zero.";
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-            return;
-        }
-
-        try {
-            foreach ($platformsIds as $platformId) {
-                if ($platformId === null) {
-                    $messages[] = "Um dos ids de 'genresId' é nulo.";
-                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                    return;
-                }
-
-                $isPlatformIdNumeric = is_numeric($platformId);
-                if ($isPlatformIdNumeric === false) {
-                    $messages[] = "Um dos ids de 'genresId' não é um número inteiro.";
-                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                    return;
-                }
-
-                $platformId = intval($platformId);
-
-                $gamePlatform = $this->service->insert($platformId, $gameId);
-                if ($gamePlatform == false) {
-                    $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e plataforma. Contate o suporte.';
-                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
-                }
-            }
-
-            $messages[] = 'Vínculo entre jogo e plataforma inserido com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[201])->sendJSON();
-        } catch (Exception $e) {
-            $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
-        }
-    }
-
-    public function edit(HttpRequest $request, HttpResponse $response)
+    /**
+     * Method that handles the HTTP request and response of a Game Platform insertion.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function insert(HttpRequest $request, HttpResponse $response): void
     {
         $messages = [];
 
         try {
             $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
 
-            $gameId = $params['gameId'] ?? null;
+            $gameId = $body['gameId'] ?? null;
             $platformsIds = $body['platformsIds'] ?? null;
 
-            $hasNullKeys = false;
-            if ($gameId === null) {
-                $hasNullKeys = true;
-                $messages[] = 'É necessário informar o id do jogo na rota.';
-            }
-
-            if ($platformsIds === null) {
-                $hasNullKeys = true;
-                $messages[] = "É necessário informar os ids dos gêneros em um array 'platformIds'.";
-            }
-
-            if ($hasNullKeys) {
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro.";
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
             $gameId = intval($gameId);
+            $isPlaformsArrayIterable = is_iterable($platformsIds);
 
-            if ($gameId <= 0) {
-                $messages[] = "O parâmetro 'gameId' informado precisa ser um número inteiro maior que zero.";
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $hasValuesToBeEdited = count($platformsIds);
-            if ($hasValuesToBeEdited === false) {
-                $messages[] = 'Não há valores a serrem editados!';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
+            if ($isPlaformsArrayIterable === false) {
+                $messages[] = 'O valor de platformsIds não é iterável!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
                 return;
             }
 
             foreach ($platformsIds as $platformId) {
-                if ($platformId === null) {
-                    $messages[] = 'Um dos ids de gênero informado é nulo.';
-                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                }
+                $platformId = intval($platformId);
 
-                $isPlatformIdNumeric = is_numeric($platformId);
-                if ($isPlatformIdNumeric === false) {
-                    $messages[] = 'Um dos ids de gênero não é um número inteiro.';
-                    $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
+                $gamePlatform = $this->service->insert($platformId, $gameId);
+                if ($gamePlatform == false) {
+                    $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e plataforma. Contate o suporte.';
+                    $response
+                        ->appendArray([
+                            'messages' => $messages
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[500])
+                        ->sendJSON();
+                    return;
                 }
             }
 
-            $gamePlatforms = $this->service->findAllGamePlatformsByGameId($gameId);
-            $gamePlatformsIds = array_map(fn ($gamePlatform) => $gamePlatform->getPlatformId(), $gamePlatforms);
+            $messages[] = 'Vínculo entre jogo e plataforma inserido com sucesso!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
+        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
 
-            if (count($gamePlatformsIds) === 0 && count($platformsIds) === 0) {
-                $messages[] = 'Nenhuma alteração feita!';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
+    /**
+     * Method that handles the HTTP request and response of a Game Platform update.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function update(HttpRequest $request, HttpResponse $response): void
+    {
+        $messages = [];
+
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $id = $params['id'] ?? null;
+            $gameId = $body['gameId'] ?? null;
+            $platformsIds = $body['platformsIds'] ?? null;
+
+            $id = intval($id);
+            $gameId = intval($gameId);
+            $isPlaformsArrayIterable = is_iterable($platformsIds);
+
+            if ($isPlaformsArrayIterable === false) {
+                $messages[] = 'O valor de platformsIds não é iterável!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
                 return;
-            } elseif (count($gamePlatformsIds) === 0 && count($platformsIds) > 0) {
-                array_map(fn ($genreId) => $this->service->insert($genreId, $gameId), $platformsIds);
-            } elseif (count($gamePlatformsIds) > 0 && count($platformsIds) > 0) {
-                $mergedPlatformsIds = array_merge($gamePlatformsIds, $platformsIds);
-                $includentPlatformsIds = array_filter($mergedPlatformsIds, fn ($value) => in_array($value, $gamePlatformsIds) === false);
-                $excludentPlatformsIds = array_filter($mergedPlatformsIds, fn ($value) => in_array($value, $platformsIds) === false);
-                array_map(fn ($genreId) => $this->service->insert($genreId, $gameId), $includentPlatformsIds);
-                array_map(fn ($genreId) => $this->service->delete($genreId, $gameId), $excludentPlatformsIds);
+            }
+
+            $hasValuesToBeEdited = count($platformsIds);
+            if ($hasValuesToBeEdited === 0) {
+                $messages[] = 'Não há valores a serem editados!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->sendJSON();
+                return;
+            }
+
+            foreach ($platformsIds as $platformId) {
+                $platformId = intval($platformId);
+                $this->service->update($id, $platformId, $gameId);
             }
 
             $messages[] = 'Vínculos entre jogos e plataformas editados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
         }
     }
 
-    public function findAllPlatformsIdsByGameId(HttpRequest $request, HttpResponse $response)
+    /**
+     * Method that handles the HTTP request and response of a Game Platform deletion.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function delete(HttpRequest $request, HttpResponse $response): void
     {
-        $messages = [];
-
+        $params = $request->getParams();
         try {
-            $params = $request->getParams();
-            $gameId = $params['gameId'] ?? null;
+            $id = $params['id'] ?? null;
 
-            if ($gameId === null) {
-                $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
+            $id = intval($id);
+
+            $wasDeletionSuccessful = $this->service->delete($id);
+
+            if ($wasDeletionSuccessful) {
+                $messages[] = 'Vínculo entre jogos e plataformas deletado com sucesso!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->sendJSON();
                 return;
             }
 
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $gameId = intval($gameId);
-
-            if ($gameId <= 0) {
-                $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $gamePlatforms = $this->service->findAllGamePlatformsByGameId($gameId);
-            $data = array_map(fn ($gamePlatform) => $gamePlatform->getPlatformId(), $gamePlatforms);
-
-            $messages[] = 'Ids de plataformas buscados com sucesso!';
-            $response->appendArray(['messages' => $messages, 'data' => $data])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
+            $messages[] = 'Ocorreu um erro ao deletar o vínculo entre jogo e plataforma!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
         }
     }
 
-    public function deleteAllPlatformsByGameId(HttpRequest $request, HttpResponse $response)
+    /**
+     * Method that handles the HTTP request and response of a Game Platform find by id.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function findById(HttpRequest $request, HttpResponse $response): void
     {
         $messages = [];
+        $data = [];
 
+        $params = $request->getParams();
         try {
-            $params = $request->getParams();
-            $gameId = $params['gameId'] ?? null;
+            $id = $params['id'] ?? null;
 
-            if ($gameId === null) {
-                $messages[] = 'O id do jogo não foi informado.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
+            $id = intval($id);
+
+            $gamePlatform = $this->service->findById($id);
+
+            if ($gamePlatform == false) {
+                $messages[] = 'A busca foi concluída e nenhum valor com o id ' . $id . ' foi encontrado!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->sendJSON();
                 return;
             }
 
-            $isGameIdNumeric = is_numeric($gameId);
-            if ($isGameIdNumeric === false) {
-                $messages[] = 'O id do jogo não é um número.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
+            $gamePlatformId = $gamePlatform->getId();
+            $gamePlatformPlatformId = $gamePlatform->getPlatformId();
+            $gamePlatformGameId = $gamePlatform->getGameId();
 
-            $gameId = intval($gameId);
+            $data = [
+                'id' => $gamePlatformId,
+                'platformId' => $gamePlatformPlatformId,
+                'gameId' => $gamePlatformGameId
+            ];
 
-            if ($gameId <= 0) {
-                $messages[] = 'O id do jogo precisa ser maior que zero.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[400])->sendJSON();
-                return;
-            }
-
-            $wasItSuccessful = $this->service->deleteAllByGameId($gameId);
-            if ($wasItSuccessful === false) {
-                $messages[] = 'Ocorreu um erro ao deletar os vínculos entre jogo e plataforma pelo id do jogo. Contate o suporte.';
-                $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
-                return;
-            }
-
-            $messages[] = 'Vínculos entre jogo e plataforma baseados no id do jogo deletados com sucesso!';
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[200])->sendJSON();
-        } catch (Exception $e) {
+            $messages[] = 'Busca realizada com sucesso!';
+            $response
+                ->appendArray([
+                    'messages' => $messages,
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
-            $response->appendArray(['messages' => $messages])->status(HttpRouter::STATUS_CODES[500])->sendJSON();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
+
+    /**
+     * Method that handles the HTTP request and response of a find of all Game Platforms.
+     * @param HttpRequest $request The HTTP request object.
+     * @param HttpResponse $response The HTTP response object.
+     * @return void
+     */
+    public function findAll(HttpRequest $request, HttpResponse $response): void
+    {
+        $messages = [];
+        $data = [];
+        try {
+            $gamePlatforms = $this->service->findAll();
+
+            foreach ($gamePlatforms as $gamePlatform) {
+                $id = $gamePlatform->getId();
+                $platformId = $gamePlatform->getPlatformId();
+                $gameId = $gamePlatform->getGameId();
+                $data[] = [
+                    'id' => $id,
+                    'platformId' => $platformId,
+                    'gameId' => $gameId
+                ];
+            }
+
+            $messages[] = 'Busca realizada com sucesso!';
+            $response
+                ->appendArray([
+                    'messages' => $messages,
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (PDOException | Exception $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
         }
     }
 }
