@@ -12,12 +12,12 @@ class Genre
     /**
      * @var int $id The Genre id.
      */
-    private int $id;
+    private mixed $id;
 
     /**
      * @var string $name The Genre name.
      */
-    private string $name;
+    private mixed $name;
 
     /**
      * Genre entity class constructor.
@@ -45,7 +45,7 @@ class Genre
      * @param int $id The genre id.
      * @return void
      */
-    public function setId(int $id)
+    public function setId(mixed $id)
     {
         $this->id = $id;
     }
@@ -64,7 +64,7 @@ class Genre
      * @param string $name The Genre name.
      * @return void
      */
-    public function setName(string $name)
+    public function setName(mixed $name)
     {
         $this->name = $name;
     }
@@ -87,7 +87,11 @@ class Genre
     public function validateName()
     {
         if ($this->name === null) {
-            throw new EntityInvalidValueException('O nome é nulo.');
+            throw new EntityInvalidValueException('O nome é null.');
+        }
+
+        if (is_string($this->name) === false) {
+            throw new EntityInvalidValueException('O nome não é uma string.');
         }
 
         $this->name = trim($this->name);

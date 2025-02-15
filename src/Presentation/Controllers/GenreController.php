@@ -9,6 +9,10 @@ use Mvreisg\GamebaseBackend\Application\Services\GenreService;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use PDOException;
 
 /**
@@ -40,14 +44,24 @@ class GenreController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $body = $request->parseBodyFromJSONString();
-        $name = $body['name'] ?? null;
-
         $genre = null;
         try {
+            $body = $request->parseBodyFromJSONString();
+            $isNameFieldSetted = isset($body['name']);
+            if ($isNameFieldSetted === false) {
+                $messages[] = 'A chave name não existe ou seu valor é null';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
+                return;
+            }
+
+            $name = $body['name'];
             $genre = $this->service->insert($name);
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -56,7 +70,7 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $messages = $e->getMessage();
             $response
                 ->appendArray([
@@ -67,18 +81,7 @@ class GenreController
             return;
         }
 
-        if ($genre == false) {
-            $messages[] = 'Ocorreu um erro ao inserir o gênero. Contate o suporte.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
-            return;
-        }
-
-        $messages[] = 'Gênero incluído com sucesso!';
+        $messages[] = 'Gênero inserido com sucesso!';
         $response
             ->appendArray([
                 'messages' => $messages

@@ -6,6 +6,9 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
 /**
  * The MariaDB Genre repository.
@@ -40,24 +43,63 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $name = $genre->getName();
 
-            $insertStatement = $this->pdo->prepare('INSERT INTO genre (name) VALUES (:name);');
-            $insertStatement->execute([':name' => $name]);
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    genre (name) 
+                VALUES 
+                    (:name);'
+            );
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
+            if ($insertStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+            }
 
-            $selectGameStatement = $this->pdo->prepare('SELECT * FROM genre WHERE id = :id;');
-            $selectGameStatement->execute([':id' => $lastInsertId]);
+            $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
+                ':name' => $name
+            ]);
 
-            $genreFetchResult = $selectGameStatement->fetch();
+            if ($wasInsertStatementExecutedSuccessfully === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+            }
+
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
+
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    genre 
+                WHERE 
+                    id = :id;'
+            );
+
+            if ($selectStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+                ':id' => $lastInsertedId
+            ]);
+
+            if ($wasSelectStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao tentar executar a declaração de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+
+            if ($fetchResult === false) {
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados do gênero!');
+            }
 
             $this->pdo->commit();
 
-            $newGenre = new Genre();
-            $newGenre->setId($genreFetchResult['id']);
-            $newGenre->setName($genreFetchResult['name']);
+            $genre = new Genre();
+            $genre->setId($fetchResult['id']);
+            $genre->setName($fetchResult['name']);
 
-            return $newGenre;
-        } catch (PDOException $e) {
+            return $genre;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $this->pdo->rollBack();
             throw $e;
         }
