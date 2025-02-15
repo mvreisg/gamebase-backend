@@ -10,6 +10,9 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 
 /**
  * The Game controller class.
@@ -40,13 +43,24 @@ class GameController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSONString();
-        $name = $body['name'] ?? null;
-
         $game = null;
         try {
+            $body = $request->parseBodyFromJSONString();
+            $isNameFieldSetted = isset($body['name']);
+            if ($isNameFieldSetted === false) {
+                $messages[] = 'A chave name não foi informada ou seu valor é null!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
+                return;
+            }
+
+            $name = $body['name'];
             $game = $this->service->insert($name);
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -55,7 +69,7 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseFetchFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

@@ -17,7 +17,7 @@ class Game
     /**
      * @var string $name The Game name.
      */
-    private string $name;
+    private mixed $name;
 
     /**
      * @var array $genres The Game Genres objects list.
@@ -78,7 +78,7 @@ class Game
      * @param string $name The Game name.
      * @return void
      */
-    public function setName(string $name)
+    public function setName(mixed $name)
     {
         $this->name = $name;
     }
@@ -139,6 +139,10 @@ class Game
     {
         if ($this->name === null) {
             throw new EntityInvalidValueException('O nome é nulo.');
+        }
+
+        if (is_string($this->name) == false) {
+            throw new EntityInvalidValueException('O nome não é uma string.');
         }
 
         $this->name = trim($this->name);
