@@ -7,6 +7,7 @@ use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
 /**
@@ -33,6 +34,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
      * Inserts a Game into the repository.
      * @param Game $game The Game object containing the data to be inserted into the repository.
      * @return Game The inserted Game object clone.
+     * @throws DatabaseStatementCreationFailureException Throwed in case PDO tries to create a statement then fails.
      * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
      * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
      * @throws PDOException Throwed if a PDO database action error occurs.
@@ -49,6 +51,11 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     game (name) 
                 VALUES (:name);'
             );
+
+            if ($insertStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+            }
+
             $wasInsertExecutionASuccess = $insertStatement->execute([
                 ':name' => $name
             ]);
@@ -68,6 +75,11 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 WHERE 
                     id = :id;'
             );
+
+            if ($selectStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
             $wasSelectExecutionASuccess = $selectStatement->execute([
                 ':id' => $lastInsertedId
             ]);
@@ -89,7 +101,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game->setName($fetchResult['name']);
 
             return $game;
-        } catch (DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $this->pdo->rollBack();
             throw $e;
         }

@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
 /**
@@ -34,10 +35,12 @@ class GameService
      * Inserts a new Game object based on the passed data.
      * @param string $name The Game name.
      * @return Game The Game object created.
+     * @throws DatabaseStatementCreationFailureException Throwed in case PDO tries to create a statement then fails.
+     * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
+     * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
      * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws EntityInvalidValueException Throwed in case of entity error.
-     * @throws PDOException Throwed in case of database connection error.
-     * @throws Exception Throwed in case of error.
+     * @throws PDOException Throwed if a PDO database action error occurs.
+     * @throws EntityInvalidValueException Throwed in case of a value in the entity is invalid.
      */
     public function insert(mixed $name): Game
     {
@@ -53,7 +56,7 @@ class GameService
             }
             $game = $this->repository->insert($game);
             return $game;
-        } catch (DatabaseFetchFailureException | DatabaseStatementExecutionFailureException | DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | DatabaseDuplicatedEntryException | PDOException | EntityInvalidValueException $e) {
             throw $e;
         }
     }

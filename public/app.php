@@ -12,7 +12,6 @@ use Mvreisg\GamebaseBackend\Presentation\Routes\PlatformRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\GameGenreRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
-use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 
@@ -45,6 +44,6 @@ try {
 
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
-    print('Ocorreu um erro. Contate o suporte.');    
+    print('Ocorreu um erro. Contate o suporte.');
     header(HttpRouter::STATUS_CODES[500]);
 }
