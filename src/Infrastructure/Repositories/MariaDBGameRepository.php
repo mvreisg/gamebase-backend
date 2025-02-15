@@ -214,8 +214,23 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM game;');
-            $statement->execute();
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game;'
+            );
+
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementExecutionSuccessful = $statement->execute();
+
+            if ($wasTheStatementExecutionSuccessful === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
             $result = $statement->fetchAll();
 
             if ($result === false) {
@@ -231,7 +246,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             return $games;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
