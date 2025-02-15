@@ -119,16 +119,32 @@ class MariaDBGameRepository implements GameRepositoryInterface
         $name = $game->getName();
 
         try {
-            $statement = $this->pdo->prepare('UPDATE game SET name = :name WHERE id = :id;');
+            $statement = $this->pdo->prepare(
+                'UPDATE 
+                    game 
+                SET 
+                    name = :name 
+                WHERE 
+                    id = :id;'
+            );
 
-            $statement->execute([
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasStatementExecutionSuccessful = $statement->execute([
                 ':name' => $name,
                 ':id' => $id
             ]);
 
-            $wasItSuccessful = $statement->rowCount() > 0;
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            if ($wasStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasUpdateSuccessful = $numberOfLinesAffected > 0;
+            return $wasUpdateSuccessful;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
