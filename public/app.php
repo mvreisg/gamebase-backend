@@ -44,7 +44,7 @@ try {
     );
 
     $app->run();
-} catch (InvalidFileException | InvalidEncodingException | Exception | Throwable $e) {
-    print('Ocorreu um erro. Contate o suporte.');
+} catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
+    print('Ocorreu um erro. Contate o suporte.');    
     header(HttpRouter::STATUS_CODES[500]);
 }

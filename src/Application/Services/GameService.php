@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
 /**
  * The Game service class.
@@ -37,7 +39,7 @@ class GameService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(string $name): Game
+    public function insert(mixed $name): Game
     {
         $game = new Game();
         $game->setName($name);
@@ -51,7 +53,7 @@ class GameService
             }
             $game = $this->repository->insert($game);
             return $game;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (DatabaseFetchFailureException | DatabaseStatementExecutionFailureException | DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException $e) {
             throw $e;
         }
     }
