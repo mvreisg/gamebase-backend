@@ -100,7 +100,7 @@ class GameService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function findById(int $id): Game|null
+    public function findById(mixed $id): Game|null
     {
         $game = new Game();
         $game->setId($id);
@@ -109,7 +109,7 @@ class GameService
             $game->validateId();
             $game = $this->repository->findById($id);
             return $game;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

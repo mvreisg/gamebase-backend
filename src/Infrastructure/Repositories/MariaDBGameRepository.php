@@ -166,11 +166,29 @@ class MariaDBGameRepository implements GameRepositoryInterface
      * @return Game|null Returns the Game object if id is founded, else returns null.
      * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function findById(int $id): Game|null
+    public function findById(mixed $id): Game|null
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM game WHERE id = :id;');
-            $statement->execute([':id' => $id]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game 
+                WHERE 
+                    id = :id;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':id' => $id
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetch();
 
@@ -183,7 +201,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game->setName($result['name']);
 
             return $game;
-        } catch (PDOException $e) {
+        } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
