@@ -221,13 +221,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     game;'
             );
 
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute();
 
-            if ($wasTheStatementExecutionSuccessful === false){
+            if ($wasTheStatementExecutionSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
@@ -260,14 +260,32 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function hasDuplicatedNames(string $name): bool
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM game WHERE name = :name;');
-            $statement->execute([':name' => $name]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game 
+                WHERE 
+                    name = :name;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao tentar criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':name' => $name
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao tentar executar a declaração de busca!');
+            }
 
             $numberOfLinesAffected = $statement->rowCount();
             $hasDuplicatedNames = $numberOfLinesAffected > 0;
 
             return $hasDuplicatedNames;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

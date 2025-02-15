@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
-use Exception;
 use PDOException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Application\Services\GameService;
