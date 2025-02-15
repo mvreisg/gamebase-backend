@@ -125,7 +125,7 @@ class GameService
         try {
             $games = $this->repository->findAll();
             return $games;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

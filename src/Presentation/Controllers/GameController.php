@@ -264,7 +264,7 @@ class GameController
         $games = null;
         try {
             $games = $this->service->findAll();
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -275,8 +275,8 @@ class GameController
             return;
         }
 
-        $numberOfGames = count($games);
-        if ($numberOfGames === 0) {
+        $numberOfGamesFound = count($games);
+        if ($numberOfGamesFound === 0) {
             $messages[] = 'A busca foi concluída e nenhum jogo foi encontrado.';
             $response
                 ->appendArray([
