@@ -6,6 +6,8 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
 /**
  * The MariaDB Game repository class.
@@ -31,6 +33,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
      * Inserts a Game into the repository.
      * @param Game $game The Game object containing the data to be inserted into the repository.
      * @return Game The inserted Game object clone.
+     * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
+     * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
      * @throws PDOException Throwed if a PDO database action error occurs.
      */
     public function insert(Game $game): Game
@@ -40,24 +44,52 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $name = $game->getName();
 
-            $insertStatement = $this->pdo->prepare('INSERT INTO game (name) VALUES (:name);');
-            $insertStatement->execute([':name' => $name]);
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    game (name) 
+                VALUES (:name);'
+            );
+            $wasInsertExecutionASuccess = $insertStatement->execute([
+                ':name' => $name
+            ]);
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
+            if ($wasInsertExecutionASuccess === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+            }
 
-            $selectStatement = $this->pdo->prepare('SELECT * FROM game WHERE id = :id;');
-            $selectStatement->execute([':id' => $lastInsertId]);
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
 
-            $gameFetchResult = $selectStatement->fetch();
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game 
+                WHERE 
+                    id = :id;'
+            );
+            $wasSelectExecutionASuccess = $selectStatement->execute([
+                ':id' => $lastInsertedId
+            ]);
+
+            if ($wasSelectExecutionASuccess === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+
+            if ($fetchResult === false) {
+                throw new DatabaseFetchFailureException('Ocorreu uma falha ao realizar a busca!');
+            }
 
             $this->pdo->commit();
 
-            $newGame = new Game();
-            $newGame->setId($gameFetchResult['id']);
-            $newGame->setName($gameFetchResult['name']);
+            $game = new Game();
+            $game->setId($fetchResult['id']);
+            $game->setName($fetchResult['name']);
 
-            return $newGame;
-        } catch (PDOException $e) {
+            return $game;
+        } catch (DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -140,6 +172,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $statement->execute();
             $result = $statement->fetchAll();
 
+            if ($result === false) {
+                return [];
+            }
+
             $games = [];
             foreach ($result as $row) {
                 $game = new Game();
@@ -166,7 +202,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $statement = $this->pdo->prepare('SELECT * FROM game WHERE name = :name;');
             $statement->execute([':name' => $name]);
 
-            return $statement->rowCount() > 0;
+            $numberOfLinesAffected = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfLinesAffected > 0;
+
+            return $hasDuplicatedNames;
         } catch (PDOException $e) {
             throw $e;
         }
