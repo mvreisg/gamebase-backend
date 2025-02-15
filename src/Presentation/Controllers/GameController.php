@@ -189,11 +189,22 @@ class GameController
         $data = [];
 
         $params = $request->getParams();
-        $gameId = $params['gameId'] ?? null;
 
+        $isGameIdSetted = isset($params['gameId']);
+        if ($isGameIdSetted === false) {
+            $messages[] = 'O id do jogo não foi informado na URL!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        }
+
+        $gameId = $params['gameId'];
         $game = null;
         try {
-            $gameId = intval($gameId);
             $game = $this->service->findById($gameId);
         } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
@@ -204,7 +215,7 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -216,7 +227,7 @@ class GameController
         }
 
         if ($game === null) {
-            $messages[] = 'O jogo procurado não existe.';
+            $messages[] = 'O registro com o gameId ' . $gameId . ' não foi encontrado.';
             $response
                 ->appendArray([
                     'messages' => $messages
