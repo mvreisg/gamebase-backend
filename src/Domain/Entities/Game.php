@@ -12,7 +12,7 @@ class Game
     /**
      * @var int $id The Game id.
      */
-    private int $id;
+    private mixed $id;
 
     /**
      * @var string $name The Game name.
@@ -59,7 +59,7 @@ class Game
      * @param int $id The Game id.
      * @return void
      */
-    public function setId(int $id)
+    public function setId(mixed $id)
     {
         $this->id = $id;
     }
@@ -126,8 +126,12 @@ class Game
      */
     public function validateId()
     {
+        if (is_numeric($this->id) === false) {
+            throw new EntityInvalidValueException('O id ' . $this->id . ' é inválido.');
+        }
+
         if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
+            throw new EntityInvalidValueException('O id ' . $this->id . ' deve ser maior que 0.');
         }
     }
 
@@ -141,7 +145,7 @@ class Game
             throw new EntityInvalidValueException('O nome é nulo.');
         }
 
-        if (is_string($this->name) == false) {
+        if (is_string($this->name) === false) {
             throw new EntityInvalidValueException('O nome não é uma string.');
         }
 

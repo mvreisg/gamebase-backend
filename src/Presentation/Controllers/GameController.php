@@ -109,18 +109,36 @@ class GameController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $body = $request->parseBodyFromJSONString();
-        $params = $request->getParams();
-
-        $gameId = $params['gameId'] ?? null;
-        $name = $body['name'] ?? null;
-
-        $wasGameEditAnSuccess = false;
+        $wasTheUpdateSuccessful = false;
         try {
-            $gameId = intval($gameId);
-            $wasGameEditAnSuccess = $this->service->update($gameId, $name);
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+            $body = $request->parseBodyFromJSONString();
+            $params = $request->getParams();
+
+            $isGameIdSetted = isset($params['gameId']);
+            if ($isGameIdSetted === false) {
+                $messages[] = 'A chave gameId não existe ou seu valor é null!';
+            }
+
+            $isNameSetted = isset($body['name']);
+            if ($isNameSetted === false) {
+                $messages[] = 'A chave name não existe ou seu valor é null!';
+            }
+
+            $hasUndefinedKeys = $isGameIdSetted === false || $isNameSetted === false;
+            if ($hasUndefinedKeys) {
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
+                return;
+            }
+
+            $gameId = $params['gameId'];
+            $name = $body['name'];
+            $wasTheUpdateSuccessful = $this->service->update($gameId, $name);
+        } catch (HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -129,7 +147,7 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -140,8 +158,8 @@ class GameController
             return;
         }
 
-        if ($wasGameEditAnSuccess === false) {
-            $messages[] = 'Verifique se o id do jogo existe no banco de dados.';
+        if ($wasTheUpdateSuccessful === false) {
+            $messages[] = 'Os dados do jogo não puderam ser atualizados.';
             $response
                 ->appendArray([
                     'messages' => $messages
@@ -151,7 +169,7 @@ class GameController
             return;
         }
 
-        $messages[] = 'Jogo editado com sucesso!';
+        $messages[] = 'Dados do jogo atualizado com sucesso!';
         $response
             ->appendArray([
                 'messages' => $messages
