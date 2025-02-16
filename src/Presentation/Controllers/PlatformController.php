@@ -9,6 +9,11 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use PDOException;
 
 /**
@@ -39,14 +44,24 @@ class PlatformController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $body = $request->parseBodyFromJSONString();
-        $name = $body['name'] ?? null;
-
         $platform = null;
         try {
+            $body = $request->parseBodyFromJSONString();
+            $isNameSetted = isset($body['name']);
+            if ($isNameSetted === false){
+                $messages[] = 'A chave name não foi definida ou seu valor é null!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
+                return;
+            }
+
+            $name = $body['name'];
             $platform = $this->service->insert($name);
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+        } catch (HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -55,19 +70,8 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
-            return;
-        }
-
-        if ($platform == false) {
-            $messages[] = 'Ocorreu um erro ao inserir a plataforma. Contate o suporte.';
             $response
                 ->appendArray([
                     'messages' => $messages

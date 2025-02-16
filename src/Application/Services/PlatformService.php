@@ -7,6 +7,10 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
 
 /**
@@ -37,7 +41,7 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(string $name): Platform
+    public function insert(mixed $name): Platform
     {
         $platform = new Platform();
         $platform->setName($name);
@@ -51,7 +55,7 @@ class PlatformService
             }
             $platform = $this->repository->insert($platform);
             return $platform;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             throw $e;
         }
     }
