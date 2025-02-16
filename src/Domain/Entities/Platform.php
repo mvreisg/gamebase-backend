@@ -12,12 +12,12 @@ class Platform
     /**
      * @var int $id The Platform id.
      */
-    private int $id;
+    private mixed $id;
 
     /**
      * @var string $name The Platform name.
      */
-    private string $name;
+    private mixed $name;
 
     /**
      * Platform entity class constructor.
@@ -45,7 +45,7 @@ class Platform
      * @param int $id The Platform id.
      * @return void
      */
-    public function setId(int $id)
+    public function setId(mixed $id)
     {
         $this->id = $id;
     }
@@ -64,7 +64,7 @@ class Platform
      * @param string $name The platform name.
      * @return void
      */
-    public function setName(string $name)
+    public function setName(mixed $name)
     {
         $this->name = $name;
     }
@@ -75,6 +75,10 @@ class Platform
      */
     public function validateId()
     {
+        if (is_numeric($this->id) === false){
+            throw new EntityInvalidValueException('O id ' . $this->id . ' não é um número.');
+        }
+
         if ($this->id < 1) {
             throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
         }
@@ -87,7 +91,11 @@ class Platform
     public function validateName()
     {
         if ($this->name === null) {
-            throw new EntityInvalidValueException('O nome é nulo.');
+            throw new EntityInvalidValueException('O nome é null.');
+        }
+
+        if (is_string($this->name) === false){
+            throw new EntityInvalidValueException('O nome não é uma string.');
         }
 
         $this->name = trim($this->name);

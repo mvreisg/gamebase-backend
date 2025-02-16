@@ -7,6 +7,10 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
 
 /**
@@ -37,7 +41,7 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(string $name): Platform
+    public function insert(mixed $name): Platform
     {
         $platform = new Platform();
         $platform->setName($name);
@@ -51,7 +55,7 @@ class PlatformService
             }
             $platform = $this->repository->insert($platform);
             return $platform;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -66,7 +70,7 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(int $id, string $name): bool
+    public function update(mixed $id, mixed $name): bool
     {
         $platform = new Platform();
         $platform->setId($id);
@@ -78,11 +82,11 @@ class PlatformService
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser editada já existe no banco de dados!');
+                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser atualizada já existe no repositório!');
             }
-            $wasItSuccessful = $this->repository->update($platform);
-            return $wasItSuccessful;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheUpdateSuccessful = $this->repository->update($platform);
+            return $wasTheUpdateSuccessful;
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -94,12 +98,15 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function findById(int $id): Platform|null
+    public function findById(mixed $id): Platform|null
     {
+        $platform = new Platform();
+        $platform->setId($id);
         try {
+            $platform->validateId();
             $platform = $this->repository->findById($id);
             return $platform;
-        } catch (PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -115,7 +122,7 @@ class PlatformService
         try {
             $platforms = $this->repository->findAll();
             return $platforms;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

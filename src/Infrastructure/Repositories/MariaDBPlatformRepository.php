@@ -6,6 +6,10 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
 /**
  * MariaDB platform repository class.
@@ -35,28 +39,66 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function insert(Platform $platform): Platform
     {
         try {
-            $this->pdo->beginTransaction();
+            $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
+            if ($wasTheTransactionCreationSuccessful === false){
+                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+            }
 
             $name = $platform->getName();
 
-            $insertStatement = $this->pdo->prepare('INSERT INTO platform (name) VALUES (:name);');
-            $insertStatement->execute([':name' => $name]);
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    platform 
+                        (name) 
+                VALUES 
+                        (:name);'
+            );
+            if ($insertStatement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a transação de inserção!');
+            }
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
+            $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
+                ':name' => $name
+            ]);
+            if ($wasTheInsertStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a transação de inserção!');
+            }
 
-            $selectGameStatement = $this->pdo->prepare('SELECT * FROM platform WHERE id = :id;');
-            $selectGameStatement->execute([':id' => $lastInsertId]);
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
 
-            $genreFetchResult = $selectGameStatement->fetch();
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform 
+                WHERE 
+                    id = :id;'
+            );
+            if ($selectStatement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+                ':id' => $lastInsertedId
+            ]);
+            if ($wasTheSelectStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+            if ($fetchResult === false){
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados!');
+            }
 
             $this->pdo->commit();
 
-            $newPlatform = new Platform();
-            $newPlatform->setId($genreFetchResult['id']);
-            $newPlatform->setName($genreFetchResult['name']);
+            $platform = new Platform();
+            $platform->setId($fetchResult['id']);
+            $platform->setName($fetchResult['name']);
 
-            return $newPlatform;
-        } catch (PDOException $e) {
+            return $platform;
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -70,20 +112,29 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      */
     public function update(Platform $platform): bool
     {
+        $id = $platform->getId();
+        $name = $platform->getName();
+
         try {
-            $id = $platform->getId();
-            $name = $platform->getName();
+            $statement = $this->pdo->prepare(
+                'UPDATE 
+                    platform 
+                SET 
+                    name = :name 
+                WHERE 
+                    id = :id;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
 
-            $statement = $this->pdo->prepare('UPDATE platform SET name = :name WHERE id = :id;');
-
-            $statement->execute([
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
                 ':id' => $id
             ]);
 
-            $wasItSuccessful = $statement->rowCount() > 0;
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            return $wasTheStatementSuccessfullyExecuted;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -108,8 +159,24 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function findById(int $id): Platform|null
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM platform WHERE id = :id;');
-            $statement->execute([':id' => $id]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform 
+                WHERE 
+                    id = :id;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':id' => $id
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetch();
             if ($result === false) {
@@ -119,8 +186,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($result['id']);
             $platform->setName($result['name']);
+
             return $platform;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -133,10 +201,25 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM platform;');
-            $statement->execute();
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+            
+            $wasTheStatementSuccessfullyExecuted = $statement->execute();
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetchAll();
+            if ($result === false){
+                return [];
+            }
 
             $platforms = [];
 
@@ -148,7 +231,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             return $platforms;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -162,11 +245,29 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function hasDuplicatedNames(string $name): bool
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM platform WHERE name = :name;');
-            $statement->execute([':name' => $name]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform 
+                WHERE 
+                    name = :name;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            return $statement->rowCount() > 0;
-        } catch (PDOException $e) {
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':name' => $name
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $numberOfAffectedRows = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfAffectedRows > 0;
+            return $hasDuplicatedNames;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
