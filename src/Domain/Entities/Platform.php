@@ -75,7 +75,7 @@ class Platform
      */
     public function validateId()
     {
-        if (is_numeric($this->id) === false){
+        if (is_numeric($this->id) === false) {
             throw new EntityInvalidValueException('O id ' . $this->id . ' não é um número.');
         }
 
@@ -94,7 +94,7 @@ class Platform
             throw new EntityInvalidValueException('O nome é null.');
         }
 
-        if (is_string($this->name) === false){
+        if (is_string($this->name) === false) {
             throw new EntityInvalidValueException('O nome não é uma string.');
         }
 

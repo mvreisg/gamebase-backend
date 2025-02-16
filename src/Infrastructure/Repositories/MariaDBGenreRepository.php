@@ -170,7 +170,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     id = :id;'
             );
 
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
@@ -178,7 +178,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 ':id' => $id
             ]);
 
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
@@ -212,19 +212,19 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     genre;'
             );
 
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
 
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
             $result = $statement->fetchAll();
 
-            if ($result === false){
+            if ($result === false) {
                 return [];
             }
 
@@ -261,7 +261,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     name = :name;'
             );
 
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
@@ -269,7 +269,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 ':name' => $name
             ]);
 
-            if ($wasTheStatementExecutedSuccessfully === false){
+            if ($wasTheStatementExecutedSuccessfully === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
