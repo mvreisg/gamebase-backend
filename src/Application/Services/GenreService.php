@@ -70,7 +70,7 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(int $id, string $name): bool
+    public function update(mixed $id, mixed $name): bool
     {
         $genre = new Genre();
         $genre->setId($id);
@@ -82,11 +82,11 @@ class GenreService
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do gênero a ser editado já existe no banco de dados!');
+                throw new DatabaseDuplicatedEntryException('O nome do gênero a ser atualizado já existe no repositório!');
             }
             $wasItSuccessful = $this->repository->update($genre);
             return $wasItSuccessful;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
