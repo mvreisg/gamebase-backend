@@ -165,15 +165,27 @@ class PlatformController
     {
         $messages = [];
         $data = [];
-
-        $params = $request->getParams();
-        $platformId = $params['platformId'] ?? null;
-
         $platform = null;
-        try {
-            $platformId = intval($platformId);
+        
+        try {            
+            $params = $request->getParams();
+            $isPlatformIdSetted = isset($params['platformId']);
+            if ($isPlatformIdSetted === false){
+                throw new ControllerUndefinedValueException('O parâmetro platformId não está definido no JSON ou seu valor é null!');
+            }
+
+            $platformId = $params['platformId'];
             $platform = $this->service->findById($platformId);
-        } catch (PDOException | Exception $e) {
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -184,8 +196,8 @@ class PlatformController
             return;
         }
 
-        if ($platform == null) {
-            $messages[] = 'A plataforma procurada não existe!';
+        if ($platform === null) {
+            $messages[] = 'A plataforma procurada não foi encontrada!';
             $response
                 ->appendArray([
                     'messages' => $messages

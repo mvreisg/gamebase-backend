@@ -98,12 +98,15 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function findById(int $id): Platform|null
+    public function findById(mixed $id): Platform|null
     {
+        $platform = new Platform();
+        $platform->setId($id);
         try {
+            $platform->validateId();
             $platform = $this->repository->findById($id);
             return $platform;
-        } catch (PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

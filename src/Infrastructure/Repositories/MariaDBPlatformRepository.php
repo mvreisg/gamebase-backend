@@ -159,8 +159,24 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function findById(int $id): Platform|null
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM platform WHERE id = :id;');
-            $statement->execute([':id' => $id]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform 
+                WHERE 
+                    id = :id;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':id' => $id
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetch();
             if ($result === false) {
@@ -170,8 +186,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($result['id']);
             $platform->setName($result['name']);
+
             return $platform;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
