@@ -166,7 +166,7 @@ class PlatformController
         $messages = [];
         $data = [];
         $platform = null;
-        
+
         try {            
             $params = $request->getParams();
             $isPlatformIdSetted = isset($params['platformId']);
@@ -238,7 +238,7 @@ class PlatformController
         $platforms = null;
         try {
             $platforms = $this->service->findAll();
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

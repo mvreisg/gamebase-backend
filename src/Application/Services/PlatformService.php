@@ -122,7 +122,7 @@ class PlatformService
         try {
             $platforms = $this->repository->findAll();
             return $platforms;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

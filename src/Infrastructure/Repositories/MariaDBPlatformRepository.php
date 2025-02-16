@@ -201,10 +201,25 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM platform;');
-            $statement->execute();
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+            
+            $wasTheStatementSuccessfullyExecuted = $statement->execute();
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetchAll();
+            if ($result === false){
+                return [];
+            }
 
             $platforms = [];
 
@@ -216,7 +231,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             return $platforms;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
