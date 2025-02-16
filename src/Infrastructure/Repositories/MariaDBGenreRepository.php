@@ -205,10 +205,28 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM genre;');
-            $statement->execute();
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    genre;'
+            );
+
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute();
+
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetchAll();
+
+            if ($result === false){
+                return [];
+            }
 
             $genres = [];
 
@@ -220,7 +238,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             return $genres;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
