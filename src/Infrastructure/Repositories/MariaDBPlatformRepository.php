@@ -112,20 +112,29 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      */
     public function update(Platform $platform): bool
     {
+        $id = $platform->getId();
+        $name = $platform->getName();
+
         try {
-            $id = $platform->getId();
-            $name = $platform->getName();
+            $statement = $this->pdo->prepare(
+                'UPDATE 
+                    platform 
+                SET 
+                    name = :name 
+                WHERE 
+                    id = :id;'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
 
-            $statement = $this->pdo->prepare('UPDATE platform SET name = :name WHERE id = :id;');
-
-            $statement->execute([
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
                 ':id' => $id
             ]);
 
-            $wasItSuccessful = $statement->rowCount() > 0;
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            return $wasTheStatementSuccessfullyExecuted;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }

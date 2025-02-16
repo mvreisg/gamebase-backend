@@ -14,6 +14,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 /**
@@ -44,24 +46,18 @@ class PlatformController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
+        $data = [];
         $platform = null;
         try {
             $body = $request->parseBodyFromJSONString();
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false){
-                $messages[] = 'A chave name não foi definida ou seu valor é null!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+                throw new ControllerUndefinedValueException('A chave name não foi definida no JSON ou seu valor é null!');
             }
 
             $name = $body['name'];
             $platform = $this->service->insert($name);
-        } catch (HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -81,10 +77,16 @@ class PlatformController
             return;
         }
 
+        $data = [
+            'id' => $platform->getId(),
+            'name' => $platform->getName()
+        ];
+
         $messages[] = 'Plataforma incluída com sucesso!';
         $response
             ->appendArray([
-                'messages' => $messages
+                'messages' => $messages,
+                'data' => $data
             ])
             ->status(HttpRouter::STATUS_CODES[201])
             ->sendJSON();
@@ -98,18 +100,34 @@ class PlatformController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $body = $request->parseBodyFromJSONString();
-        $params = $request->getParams();
-
-        $platformId = $params['platformId'] ?? null;
-        $name = $body['name'] ?? null;
-
-        $wasEditAnSuccess = false;
+        $wasTheUpdateSuccessful = false;
         try {
-            $platformId = intval($platformId);
-            $wasEditAnSuccess = $this->service->update($platformId, $name);
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+            
+            $isPlatformIdSetted = isset($params['platformId']);
+            if ($isPlatformIdSetted === false){
+                $messages[] = 'O parâmetro platformId não foi informado na URL ou seu valor é null!';
+            }
+
+            $isNameSetted = isset($body['name']);
+            if ($isNameSetted === false){
+                $messages[] = 'A chave name não foi definida no JSON ou seu valor é null!';
+            }
+
+            $itHaveUndefinedKeys = $isPlatformIdSetted === false || $isNameSetted === false;
+            if ($itHaveUndefinedKeys){
+                throw new ControllerUndefinedValueException('Ocorreu um erro!'); 
+            }            
+
+            $platformId = $params['platformId'];
+            $name = $body['name'];
+
+            $wasTheUpdateSuccessful = $this->service->update($platformId, $name);
+            if ($wasTheUpdateSuccessful === false) {
+                throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .'. $platformId . '!');
+            }
+        } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -118,7 +136,7 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -129,18 +147,7 @@ class PlatformController
             return;
         }
 
-        if ($wasEditAnSuccess === false) {
-            $messages[] = 'Verifique se o id da plataforma existe no banco de dados.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
-        $messages[] = 'Plataforma editada com sucesso!';
+        $messages[] = 'Plataforma atualizada com sucesso!';
         $response
             ->appendArray([
                 'messages' => $messages

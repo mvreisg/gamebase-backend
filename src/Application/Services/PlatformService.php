@@ -70,7 +70,7 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(int $id, string $name): bool
+    public function update(mixed $id, mixed $name): bool
     {
         $platform = new Platform();
         $platform->setId($id);
@@ -82,11 +82,11 @@ class PlatformService
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser editada já existe no banco de dados!');
+                throw new DatabaseDuplicatedEntryException('O nome da plataforma a ser atualizada já existe no repositório!');
             }
-            $wasItSuccessful = $this->repository->update($platform);
-            return $wasItSuccessful;
-        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheUpdateSuccessful = $this->repository->update($platform);
+            return $wasTheUpdateSuccessful;
+        } catch (DatabaseDuplicatedEntryException | EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
