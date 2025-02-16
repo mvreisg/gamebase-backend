@@ -261,7 +261,7 @@ class GenreController
         $genres = null;
         try {
             $genres = $this->service->findAll();
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -272,8 +272,8 @@ class GenreController
             return;
         }
 
-        $numberOfGenres = count($genres);
-        if ($numberOfGenres === 0) {
+        $numberOfGenresFound = count($genres);
+        if ($numberOfGenresFound === 0) {
             $messages[] = 'A busca foi concluída e nenhum gênero foi encontrado.';
             $response
                 ->appendArray([
