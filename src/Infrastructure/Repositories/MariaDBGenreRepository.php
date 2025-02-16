@@ -161,8 +161,26 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function findById(int $id): Genre|null
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM genre WHERE id = :id;');
-            $statement->execute([':id' => $id]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    genre 
+                WHERE 
+                    id = :id;'
+            );
+
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':id' => $id
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetch();
             if ($result === false) {
@@ -172,8 +190,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($result['id']);
             $genre->setName($result['name']);
+
             return $genre;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

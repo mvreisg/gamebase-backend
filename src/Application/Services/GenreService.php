@@ -99,12 +99,16 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function findById(int $id): Genre|null
+    public function findById(mixed $id): Genre|null
     {
+        $genre = new Genre();
+        $genre->setId($id);
+
         try {
+            $genre->validateId();
             $genre = $this->repository->findById($id);
             return $genre;
-        } catch (DatabaseDuplicatedEntryException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
