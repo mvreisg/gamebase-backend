@@ -181,13 +181,24 @@ class GenreController
         $data = [];
 
         $params = $request->getParams();
-        $genreId = $params['genreId'] ?? null;
 
+        $isGenreIdSetted = isset($params['genreId']);
+        if ($isGenreIdSetted === false){
+            $messages[] = 'O parâmetro genreId não foi informado ou seu valor é null!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        }
+
+        $genreId = $params['genreId'];
         $genre = null;
         try {
-            $genreId = intval($genreId);
             $genre = $this->service->findById($genreId);
-        } catch (DatabaseDuplicatedEntryException $e) {
+        } catch (EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -196,7 +207,7 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -208,7 +219,7 @@ class GenreController
         }
 
         if ($genre === null) {
-            $messages[] = 'O gênero procurado não existe!';
+            $messages[] = 'O gênero com o id '.$genreId.' não existe!';
             $response
                 ->appendArray([
                     'messages' => $messages
@@ -226,7 +237,7 @@ class GenreController
             'name' => $genreName,
         ];
 
-        $messages[] = 'Gênero buscado com sucesso!';
+        $messages[] = 'Gênero encontrado com sucesso!';
         $response
             ->appendArray([
                 'messages' => $messages,
