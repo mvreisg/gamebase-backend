@@ -113,20 +113,30 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
      */
     public function update(Genre $genre): bool
     {
+        $id = $genre->getId();
+        $name = $genre->getName();
+
         try {
-            $id = $genre->getId();
-            $name = $genre->getName();
+            $statement = $this->pdo->prepare(
+                'UPDATE 
+                    genre 
+                SET 
+                    name = :name 
+                WHERE 
+                    id = :id;'
+            );
 
-            $statement = $this->pdo->prepare('UPDATE genre SET name = :name WHERE id = :id;');
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
 
-            $statement->execute([
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
                 ':id' => $id
             ]);
 
-            $wasItSuccessful = $statement->rowCount() > 0;
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            return $wasTheUpdateSuccessfullyExecuted;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -205,11 +215,32 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function hasDuplicatedNames(string $name): bool
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM genre WHERE name = :name;');
-            $statement->execute([':name' => $name]);
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    genre 
+                WHERE 
+                    name = :name;'
+            );
 
-            return $statement->rowCount() > 0;
-        } catch (PDOException $e) {
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementExecutedSuccessfully = $statement->execute([
+                ':name' => $name
+            ]);
+
+            if ($wasTheStatementExecutedSuccessfully === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $numberOfAffectedLines = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfAffectedLines > 0;
+
+            return $hasDuplicatedNames;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

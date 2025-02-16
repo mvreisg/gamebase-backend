@@ -100,16 +100,36 @@ class GenreController
     {
         $messages = [];
 
-        $body = $request->parseBodyFromJSONString();
-        $params = $request->getParams();
-
-        $genreId = $params['genreId'] ?? null;
-        $name = $body['name'] ?? null;
-
         try {
-            $genreId = intval($genreId);
-            $wasEditAnSuccess = $this->service->update($genreId, $name);
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+            $body = $request->parseBodyFromJSONString();
+            $params = $request->getParams();
+
+            $isGenreIdSetted = isset($params['genreId']);
+            if ($isGenreIdSetted === false){
+                $messages[] = 'O parâmetro genreId não foi informado na URL ou seu valor é null!';
+            }
+
+            $isNameFieldSetted = isset($body['name']);
+            if ($isNameFieldSetted === false){
+                $messages[] = 'A chave name não foi informada ou seu valor é null!';
+            }
+
+            $hasUndefinedFields = $isGenreIdSetted === false || $isNameFieldSetted === false;
+            if ($hasUndefinedFields){                
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[400])
+                    ->sendJSON();
+                return;
+            }
+
+            $genreId = $params['genreId'];
+            $name = $body['name'];
+
+            $wasTheUpdateASuccess = $this->service->update($genreId, $name);
+        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -118,7 +138,7 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -129,18 +149,18 @@ class GenreController
             return;
         }
 
-        if ($wasEditAnSuccess === false) {
-            $messages[] = 'Verifique se o id do gênero existe no banco de dados.';
+        if ($wasTheUpdateASuccess === false) {
+            $messages[] = 'Ocorreu uma falha na atualização!';
             $response
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
 
-        $messages[] = 'Gênero editado com sucesso!';
+        $messages[] = 'Gênero atualizado com sucesso!';
         $response
             ->appendArray([
                 'messages' => $messages

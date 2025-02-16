@@ -75,6 +75,10 @@ class Genre
      */
     public function validateId()
     {
+        if (is_numeric($this->id) === false) {
+            throw new EntityInvalidValueException('O id ' . $this->id . ' não é um número.');
+        }
+
         if ($this->id < 1) {
             throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
         }
