@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Application\Services\GenreService;
@@ -105,17 +104,17 @@ class GenreController
             $params = $request->getParams();
 
             $isGenreIdSetted = isset($params['genreId']);
-            if ($isGenreIdSetted === false){
+            if ($isGenreIdSetted === false) {
                 $messages[] = 'O parâmetro genreId não foi informado na URL ou seu valor é null!';
             }
 
             $isNameFieldSetted = isset($body['name']);
-            if ($isNameFieldSetted === false){
+            if ($isNameFieldSetted === false) {
                 $messages[] = 'A chave name não foi informada ou seu valor é null!';
             }
 
             $hasUndefinedFields = $isGenreIdSetted === false || $isNameFieldSetted === false;
-            if ($hasUndefinedFields){                
+            if ($hasUndefinedFields) {
                 $response
                     ->appendArray([
                         'messages' => $messages
@@ -183,7 +182,7 @@ class GenreController
         $params = $request->getParams();
 
         $isGenreIdSetted = isset($params['genreId']);
-        if ($isGenreIdSetted === false){
+        if ($isGenreIdSetted === false) {
             $messages[] = 'O parâmetro genreId não foi informado ou seu valor é null!';
             $response
                 ->appendArray([
@@ -219,7 +218,7 @@ class GenreController
         }
 
         if ($genre === null) {
-            $messages[] = 'O gênero com o id '.$genreId.' não existe!';
+            $messages[] = 'O gênero com o id ' . $genreId . ' não existe!';
             $response
                 ->appendArray([
                     'messages' => $messages

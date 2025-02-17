@@ -40,7 +40,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         try {
             $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
-            if ($wasTheTransactionCreationSuccessful === false){
+            if ($wasTheTransactionCreationSuccessful === false) {
                 throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
             }
 
@@ -53,14 +53,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 VALUES 
                         (:name);'
             );
-            if ($insertStatement === false){
+            if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a transação de inserção!');
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
                 ':name' => $name
             ]);
-            if ($wasTheInsertStatementSuccessfullyExecuted === false){
+            if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a transação de inserção!');
             }
 
@@ -75,19 +75,19 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            if ($selectStatement === false){
+            if ($selectStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ':id' => $lastInsertedId
             ]);
-            if ($wasTheSelectStatementSuccessfullyExecuted === false){
+            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
             $fetchResult = $selectStatement->fetch();
-            if ($fetchResult === false){
+            if ($fetchResult === false) {
                 throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados!');
             }
 
@@ -124,7 +124,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
             }
 
@@ -167,14 +167,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
@@ -207,17 +207,17 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 FROM 
                     platform;'
             );
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
-            
+
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
             $result = $statement->fetchAll();
-            if ($result === false){
+            if ($result === false) {
                 return [];
             }
 
@@ -253,14 +253,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 WHERE 
                     name = :name;'
             );
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name
             ]);
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 

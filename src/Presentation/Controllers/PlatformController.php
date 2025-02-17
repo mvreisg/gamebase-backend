@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -51,7 +50,7 @@ class PlatformController
         try {
             $body = $request->parseBodyFromJSONString();
             $isNameSetted = isset($body['name']);
-            if ($isNameSetted === false){
+            if ($isNameSetted === false) {
                 throw new ControllerUndefinedValueException('A chave name não foi definida no JSON ou seu valor é null!');
             }
 
@@ -104,28 +103,28 @@ class PlatformController
         try {
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
-            
+
             $isPlatformIdSetted = isset($params['platformId']);
-            if ($isPlatformIdSetted === false){
+            if ($isPlatformIdSetted === false) {
                 $messages[] = 'O parâmetro platformId não foi informado na URL ou seu valor é null!';
             }
 
             $isNameSetted = isset($body['name']);
-            if ($isNameSetted === false){
+            if ($isNameSetted === false) {
                 $messages[] = 'A chave name não foi definida no JSON ou seu valor é null!';
             }
 
             $itHaveUndefinedKeys = $isPlatformIdSetted === false || $isNameSetted === false;
-            if ($itHaveUndefinedKeys){
-                throw new ControllerUndefinedValueException('Ocorreu um erro!'); 
-            }            
+            if ($itHaveUndefinedKeys) {
+                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+            }
 
             $platformId = $params['platformId'];
             $name = $body['name'];
 
             $wasTheUpdateSuccessful = $this->service->update($platformId, $name);
             if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .'. $platformId . '!');
+                throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .' . $platformId . '!');
             }
         } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
@@ -167,10 +166,10 @@ class PlatformController
         $data = [];
         $platform = null;
 
-        try {            
+        try {
             $params = $request->getParams();
             $isPlatformIdSetted = isset($params['platformId']);
-            if ($isPlatformIdSetted === false){
+            if ($isPlatformIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro platformId não está definido no JSON ou seu valor é null!');
             }
 

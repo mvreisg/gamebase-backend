@@ -6,7 +6,12 @@ use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
+use Throwable;
 
 /**
  * Game Genre service class.
@@ -37,7 +42,7 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function insert(int $genreId, int $gameId): GameGenre
+    public function insert(mixed $genreId, mixed $gameId): GameGenre
     {
         $gameGenre = new GameGenre();
         $gameGenre->setGenreId($genreId);
@@ -48,7 +53,7 @@ class GameGenreService
             $gameGenre->validateGenreId();
             $gameGenre = $this->repository->insert($gameGenre);
             return $gameGenre;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
             throw $e;
         }
     }
@@ -63,7 +68,7 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function update(int $id, int $genreId, int $gameId): bool
+    public function update(mixed $id, mixed $genreId, mixed $gameId): bool
     {
         $gameGenre = new GameGenre();
         $gameGenre->setId($id);
@@ -74,9 +79,9 @@ class GameGenreService
             $gameGenre->validateId();
             $gameGenre->validateGenreId();
             $gameGenre->validateGameId();
-            $wasItSuccessful = $this->repository->update($gameGenre);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
+            return $wasTheUpdateSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -89,38 +94,16 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function delete(int $id): bool
+    public function delete(mixed $id): bool
     {
         $gameGenre = new GameGenre();
         $gameGenre->setId($id);
 
         try {
             $gameGenre->validateId();
-            $wasItSuccessful = $this->repository->delete($gameGenre);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Deletes all Game Genres with the respective Game id.
-     * @param int $gameId The Game id.
-     * @return bool The success flag.
-     * @throws EntityInvalidValueException Throwed if the entity has an invalid value.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed if any error occurs.
-     */
-    public function deleteAllByGameId(int $gameId): bool
-    {
-        $gameGenre = new GameGenre();
-        $gameGenre->setGameId($gameId);
-
-        try {
-            $gameGenre->validateGameId();
-            $wasItSuccessful = $this->repository->deleteAllByGameId($gameGenre);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
+            return $wasTheDeleteSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -133,7 +116,7 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function findById(int $id): GameGenre|null
+    public function findById(mixed $id): GameGenre|null
     {
         $gameGenre = new GameGenre();
         $gameGenre->setId($id);
@@ -142,7 +125,7 @@ class GameGenreService
             $gameGenre->validateId();
             $gameGenre = $this->repository->findById($id);
             return $gameGenre;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -156,47 +139,9 @@ class GameGenreService
     public function findAll(): array
     {
         try {
-            $result = $this->repository->findAll();
-            return $result;
-        } catch (PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Finds all Game Genres with the respective Game id.
-     * @param int $gameId The Game id.
-     * @return array A list of the Game Genres.
-     * @throws EntityInvalidValueException Throwed if the entity has an invalid value.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed if any error occurs.
-     */
-    public function findAllGameGenresByGameId(int $gameId): array
-    {
-        $gameGenre = new GameGenre();
-        $gameGenre->setGameId($gameId);
-
-        try {
-            $gameGenre->validateGameId();
-            $gameGenres = $this->repository->findAllGameGenresByGameId($gameId);
+            $gameGenres = $this->repository->findAll();
             return $gameGenres;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns all Game Genres where the Game intersects with Genre based on the Game id.
-     * @return array A list of the Game Genres.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed if any error occurs.
-     */
-    public function intersectionBetweenGameAndGameGenreByGameId(): array
-    {
-        try {
-            $gameGenres = $this->repository->innerJoinBetweenGameAndGameGenreByGameId();
-            return $gameGenres;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
