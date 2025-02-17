@@ -347,10 +347,10 @@ class GameGenreController
         $messages = [];
         $data = [];
 
-        $result = null;
+        $gameGenres = null;
         try {
-            $result = $this->service->findAll();
-        } catch (PDOException | Exception $e) {
+            $gameGenres = $this->service->findAll();
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -361,18 +361,19 @@ class GameGenreController
             return;
         }
 
-        if ($result === null) {
+        $numberOfGameGenres = count($gameGenres);
+        if ($numberOfGameGenres === 0) {                
             $messages[] = 'Os vínculos entre gêneros e jogos procurados não existem!';
             $response
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
         }
 
-        foreach ($result as $gameGenre) {
+        foreach ($gameGenres as $gameGenre) {
             $gameGenreId = $gameGenre->getId();
             $gameGenreGameId = $gameGenre->getGameId();
             $gameGenreGenreId = $gameGenre->getGenreId();

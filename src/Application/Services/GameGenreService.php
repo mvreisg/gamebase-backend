@@ -139,9 +139,9 @@ class GameGenreService
     public function findAll(): array
     {
         try {
-            $result = $this->repository->findAll();
-            return $result;
-        } catch (PDOException | Exception $e) {
+            $gameGenres = $this->repository->findAll();
+            return $gameGenres;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

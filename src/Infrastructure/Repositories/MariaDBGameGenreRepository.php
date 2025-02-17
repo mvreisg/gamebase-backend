@@ -236,12 +236,24 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     public function findAll(): array
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM game_genre');
-            $statement->execute();
-            $result = $statement->fetchAll();
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game_genre'
+            );
+            if ($statement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            if ($result == false) {
-                return null;
+            $wasTheStatementSuccessfullyExecuted = $statement->execute();
+            if ($wasTheStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $result = $statement->fetchAll();
+            if ($result === false) {
+                return [];
             }
 
             $gameGenres = [];
@@ -256,7 +268,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             }
 
             return $gameGenres;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
