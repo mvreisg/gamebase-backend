@@ -279,33 +279,24 @@ class GamePlatformController
         $messages = [];
         $data = [];
 
-        $params = $request->getParams();
         try {
-            $id = $params['id'] ?? null;
-
-            $id = intval($id);
-
-            $gamePlatform = $this->service->findById($id);
-
-            if ($gamePlatform == false) {
-                $messages[] = 'A busca foi concluída e nenhum valor com o id ' . $id . ' foi encontrado!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->sendJSON();
-                return;
+            $params = $request->getParams();
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado ou seu valor é null!');
             }
 
-            $gamePlatformId = $gamePlatform->getId();
-            $gamePlatformPlatformId = $gamePlatform->getPlatformId();
-            $gamePlatformGameId = $gamePlatform->getGameId();
+            $id = $params['id'];
+            $gamePlatform = $this->service->findById($id);
+
+            if ($gamePlatform === null) {
+                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum valor com o id ' . $id . ' foi encontrado!');
+            }
 
             $data = [
-                'id' => $gamePlatformId,
-                'platformId' => $gamePlatformPlatformId,
-                'gameId' => $gamePlatformGameId
+                'id' => $gamePlatform->getId(),
+                'platformId' => $gamePlatform->getPlatformId(),
+                'gameId' => $gamePlatform->getGameId()
             ];
 
             $messages[] = 'Busca realizada com sucesso!';
@@ -317,7 +308,16 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (EntityInvalidValueException $e) {
+        } catch (HttpResourceNotFoundException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -326,7 +326,7 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

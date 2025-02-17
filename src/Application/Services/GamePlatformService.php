@@ -109,28 +109,6 @@ class GamePlatformService
     }
 
     /**
-     * Deletes all Game Platforms by the informed Game id.
-     * @param int $gameId The Game id.
-     * @return bool The success flag.
-     * @throws EntityInvalidValueException Throwed if any of the informed ids are invalid.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed in case of another error.
-     */
-    public function deleteAllByGameId(int $gameId): bool
-    {
-        $gamePlatform = new GamePlatform();
-        $gamePlatform->setGameId($gameId);
-
-        try {
-            $gamePlatform->validateGameId();
-            $wasItSuccessful = $this->repository->deleteAllByGameId($gamePlatform);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
      * Finds a Game Platform by the informed id.
      * @param int $id The id to search.
      * @return GamePlatform|null The Game Platform if found, else null.
@@ -138,7 +116,7 @@ class GamePlatformService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed in case of another error.
      */
-    public function findById(int $id): GamePlatform|null
+    public function findById(mixed $id): GamePlatform|null
     {
         $gamePlatform = new GamePlatform();
         $gamePlatform->setId($id);
@@ -146,7 +124,7 @@ class GamePlatformService
             $gamePlatform->validateId();
             $gamePlatform = $this->repository->findById($id);
             return $gamePlatform;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -161,43 +139,6 @@ class GamePlatformService
     {
         try {
             $gamePlatforms = $this->repository->findAll();
-            return $gamePlatforms;
-        } catch (PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Finds all Game Platforms by the informed Game id.
-     * @param int $gameId The Game id.
-     * @return array A list containing the Game Plaforms.
-     * @throws EntityInvalidValueException Throwed if any of the informed ids are invalid.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed in case of another error.
-     */
-    public function findAllGamePlatformsByGameId(int $gameId): array
-    {
-        $gamePlatform = new GamePlatform();
-        $gamePlatform->setGameId($gameId);
-        try {
-            $gamePlatform->validateId();
-            $gamePlatforms = $this->repository->findAllGamePlatformsByGameId($gameId);
-            return $gamePlatforms;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Finds all Game and Game Platform data intersected by Game id.
-     * @return array A list containing the data.
-     * @throws PDOException Throwed if a database connection error occurs.
-     * @throws Exception Throwed in case of another error.
-     */
-    public function intersectionBetweenGameAndGamePlatformByGameId(): array
-    {
-        try {
-            $gamePlatforms = $this->repository->innerJoinBetweenGameAndGamePlatformByGameId();
             return $gamePlatforms;
         } catch (PDOException | Exception $e) {
             throw $e;

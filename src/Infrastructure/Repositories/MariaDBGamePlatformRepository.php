@@ -181,34 +181,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     }
 
     /**
-     * Deletes all Game Platforms with the Game id.
-     * @param GamePlatform $gamePlatform The object containing the Game id.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function deleteAllByGameId(GamePlatform $gamePlatform): bool
-    {
-        $gameId = $gamePlatform->getGameId();
-
-        try {
-            $statement = $this->pdo->prepare(
-                'DELETE FROM
-                    game_platform
-                WHERE
-                    game_id = :gameId;'
-            );
-
-            $wasItSuccessful = $statement->execute([
-                'gameId' => $gameId
-            ]);
-
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
      * Find an Game Platform by its id.
      * @param int $id The game Platform id.
      * @return GamePlatform The found Game Platform, else null.
@@ -225,14 +197,19 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 WHERE
                     id = :id;'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            $statement->execute([
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao criar a execução de busca!');
+            }
 
             $result = $statement->fetch();
-
-            if ($result == false) {
+            if ($result === false) {
                 return null;
             }
 
@@ -242,7 +219,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $gamePlatform->setGameId($result['game_id']);
 
             return $gamePlatform;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -271,82 +248,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 $gamePlatform->setPlatformId($line['platform_id']);
                 $gamePlatform->setGameId($line['game_id']);
 
-                $gamePlatforms[] = $gamePlatform;
-            }
-
-            return $gamePlatforms;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns all Game Platforms with the Game id.
-     * @param int $gameId The Game id.
-     * @return array A list containing the Game Platforms.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function findAllGamePlatformsByGameId(int $gameId): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    game_platform 
-                WHERE 
-                    game_id = :gameId;'
-            );
-
-            $statement->execute([
-                ':gameId' => $gameId
-            ]);
-
-            $result = $statement->fetchAll();
-            $gamePlatforms = [];
-            foreach ($result as $row) {
-                $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($row['id']);
-                $gamePlatform->setGameId($row['game_id']);
-                $gamePlatform->setPlatformId($row['platform_id']);
-                $gamePlatforms[] = $gamePlatform;
-            }
-
-            return $gamePlatforms;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns all Game Platforms and Game data intersected by Game id.
-     * @return array A list containing the Game Platforms.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function innerJoinBetweenGameAndGamePlatformByGameId(): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT
-                    game_platform.id AS id,
-                    game_platform.game_id AS game_id,
-                    game_platform.platform_id AS platform_id
-                FROM
-                    game
-                INNER JOIN
-                    game_platform
-                ON
-                    game.id = game_platform.game_id;'
-            );
-            $statement->execute();
-            $result = $statement->fetchAll();
-
-            $gamePlatforms = [];
-            foreach ($result as $row) {
-                $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($row['id']);
-                $gamePlatform->setGameId($row['game_id']);
-                $gamePlatform->setPlatformId($row['platform_id']);
                 $gamePlatforms[] = $gamePlatform;
             }
 

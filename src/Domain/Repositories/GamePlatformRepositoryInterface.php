@@ -31,13 +31,6 @@ interface GamePlatformRepositoryInterface
     public function delete(GamePlatform $gamePlatform): bool;
 
     /**
-     * Deletes all Game Platforms with the Game id.
-     * @param GamePlatform $gamePlatform The object containing the Game id.
-     * @return bool The success flag.
-     */
-    public function deleteAllByGameId(GamePlatform $gamePlatform): bool;
-
-    /**
      * Find an Game Platform by its id.
      * @param int $id The game Platform id.
      * @return GamePlatform The found Game Platform, else null.
@@ -49,17 +42,4 @@ interface GamePlatformRepositoryInterface
      * @return array A list containing the Game Platforms.
      */
     public function findAll(): array;
-
-    /**
-     * Returns all Game Platforms with the Game id.
-     * @param int $gameId The Game id.
-     * @return array A list containing the Game Platforms.
-     */
-    public function findAllGamePlatformsByGameId(int $gameId): array;
-
-    /**
-     * Returns all Game Platforms and Game data intersected by Game id.
-     * @return array A list containing the Game Platforms.
-     */
-    public function innerJoinBetweenGameAndGamePlatformByGameId(): array;
 }
