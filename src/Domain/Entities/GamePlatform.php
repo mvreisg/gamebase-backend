@@ -12,17 +12,17 @@ class GamePlatform
     /**
      * @var int $id The entity id.
      */
-    private int $id;
+    private mixed $id;
 
     /**
      * @var int $platformId The Platform id.
      */
-    private int $platformId;
+    private mixed $platformId;
 
     /**
      * @var int $gameId The Game id.
      */
-    private int $gameId;
+    private mixed $gameId;
 
     /**
      * Game Platform entity class constructor.
@@ -31,7 +31,7 @@ class GamePlatform
      * @param int $gameId The Game id.
      * @return void
      */
-    public function __construct(int $id = 0, int $platformId = 0, int $gameId = 0)
+    public function __construct(mixed $id = 0, mixed $platformId = 0, mixed $gameId = 0)
     {
         $this->id = $id;
         $this->platformId = $platformId;
@@ -52,7 +52,7 @@ class GamePlatform
      * @param int $id The entity id.
      * @return void
      */
-    public function setId(int $id)
+    public function setId(mixed $id)
     {
         $this->id = $id;
     }
@@ -71,7 +71,7 @@ class GamePlatform
      * @param int $id The Platform id.
      * @return void
      */
-    public function setPlatformId(int $platformId)
+    public function setPlatformId(mixed $platformId)
     {
         $this->platformId = $platformId;
     }
@@ -90,7 +90,7 @@ class GamePlatform
      * @param int $id The Game id.
      * @return void
      */
-    public function setGameId(int $gameId)
+    public function setGameId(mixed $gameId)
     {
         $this->gameId = $gameId;
     }
@@ -102,6 +102,14 @@ class GamePlatform
      */
     public function validateId()
     {
+        if ($this->id === null) {
+            throw new EntityInvalidValueException('O id é null');
+        }
+
+        if (is_string($this->id) && is_numeric($this->id) === false) {
+            throw new EntityInvalidValueException('O id é inválido.');
+        }
+
         if ($this->id < 1) {
             throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
         }
@@ -114,6 +122,14 @@ class GamePlatform
      */
     public function validatePlatformId()
     {
+        if ($this->platformId === null) {
+            throw new EntityInvalidValueException('O platformId é null');
+        }
+
+        if (is_string($this->platformId) && is_numeric($this->platformId) === false) {
+            throw new EntityInvalidValueException('O platformId é inválido.');
+        }
+
         if ($this->platformId < 1) {
             throw new EntityInvalidValueException('O platformId ' . $this->platformId . ' é menor que um.');
         }
@@ -126,6 +142,14 @@ class GamePlatform
      */
     public function validateGameId()
     {
+        if ($this->gameId === null) {
+            throw new EntityInvalidValueException('O gameId é null');
+        }
+
+        if (is_string($this->gameId) && is_numeric($this->gameId) === false) {
+            throw new EntityInvalidValueException('O gameId é inválido.');
+        }
+
         if ($this->gameId < 1) {
             throw new EntityInvalidValueException('O gameId ' . $this->gameId . ' é menor que um.');
         }

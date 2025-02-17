@@ -6,6 +6,10 @@ use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
 
 /**
@@ -37,7 +41,7 @@ class GamePlatformService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed in case of another error.
      */
-    public function insert(int $platformId, int $gameId): GamePlatform
+    public function insert(mixed $platformId, mixed $gameId): GamePlatform
     {
         $gamePlatform = new GamePlatform();
         $gamePlatform->setPlatformId($platformId);
@@ -47,8 +51,9 @@ class GamePlatformService
             $gamePlatform->validatePlatformId();
             $gamePlatform->validateGameId();
             $gamePlatform = $this->repository->insert($gamePlatform);
+
             return $gamePlatform;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             throw $e;
         }
     }

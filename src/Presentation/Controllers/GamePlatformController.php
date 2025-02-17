@@ -8,7 +8,13 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatformService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 /**
@@ -40,52 +46,49 @@ class GamePlatformController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         $messages = [];
-
+        $data = [];
+        $gamePlatform = null;
         try {
             $body = $request->parseBodyFromJSONString();
 
-            $gameId = $body['gameId'] ?? null;
-            $platformsIds = $body['platformsIds'] ?? null;
+            $isGameIdSetted = isset($body['gameId']);
+            if ($isGameIdSetted === false) {
+                $messages[] = 'A chave gameId não existe ou seu valor é null!';
+            }
 
-            $gameId = intval($gameId);
-            $isPlaformsArrayIterable = is_iterable($platformsIds);
+            $isPlatformIdSetted = isset($body['platformsIds']);
+            if ($isPlatformIdSetted === false) {
+                $messages[] = 'A chave platformsIds não existe ou seu valor é null!';
+            }
 
-            if ($isPlaformsArrayIterable === false) {
-                $messages[] = 'O valor de platformsIds não é iterável!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+            $itHaveUndefinedValues = $isGameIdSetted === false || $isPlatformIdSetted === false;
+            if ($itHaveUndefinedValues) {
+                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+            }
+
+            $gameId = $body['gameId'];
+            $platformsIds = $body['platformsIds'];
+
+            $isPlatformsIdsArrayIterable = is_iterable($platformsIds);
+            if ($isPlatformsIdsArrayIterable === false) {
+                throw new ControllerInvalidValueException('O valor de platformsIds não é um array!');
+            }
+
+            $numberOfPlatformsIds = count($platformsIds);
+            if ($numberOfPlatformsIds === 0) {
+                throw new ControllerInvalidValueException('O array platformsIds está vazio!');
             }
 
             foreach ($platformsIds as $platformId) {
-                $platformId = intval($platformId);
-
                 $gamePlatform = $this->service->insert($platformId, $gameId);
-                if ($gamePlatform == false) {
-                    $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e plataforma. Contate o suporte.';
-                    $response
-                        ->appendArray([
-                            'messages' => $messages
-                        ])
-                        ->status(HttpRouter::STATUS_CODES[500])
-                        ->sendJSON();
-                    return;
-                }
             }
 
-            $messages[] = 'Vínculo entre jogo e plataforma inserido com sucesso!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[201])
-                ->sendJSON();
-            return;
-        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
+            $data = [
+                'id' => $gamePlatform->getId(),
+                'platformId' => $gamePlatform->getPlatformId(),
+                'gameId' => $gamePlatform->getGameId()
+            ];
+        } catch (HttpJsonParseException | ControllerUndefinedValueException | ControllerInvalidValueException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -94,7 +97,7 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -104,6 +107,16 @@ class GamePlatformController
                 ->sendJSON();
             return;
         }
+
+        $messages[] = 'Vínculo entre jogo e plataforma inserido com sucesso!';
+        $response
+            ->appendArray([
+                'messages' => $messages,
+                'data' => $data
+            ])
+            ->status(HttpRouter::STATUS_CODES[201])
+            ->sendJSON();
+        return;
     }
 
     /**

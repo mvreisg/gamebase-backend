@@ -6,6 +6,10 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
 /**
  * MariaDB Game Platform repository class.
@@ -36,26 +40,67 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
         try {
-            $statement = $this->pdo->prepare('INSERT INTO game_platform (platform_id, game_id) VALUES (:platformId, :gameId);');
-            $statement->execute([
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+            }
+
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    game_platform 
+                        (platform_id, game_id) 
+                VALUES 
+                    (:platformId, :gameId);'
+            );
+            if ($insertStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+            }
+
+            $wasTheInsertStatementExecutionSuccessful = $insertStatement->execute([
                 ':platformId' => $gamePlatform->getPlatformId(),
                 ':gameId' => $gamePlatform->getGameId()
             ]);
+            if ($wasTheInsertStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+            }
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
-            $statement = $this->pdo->prepare('SELECT * FROM game_platform WHERE id = :id;');
-            $statement->execute([
-                ':id' => $lastInsertId
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
+
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game_platform 
+                WHERE 
+                    id = :id;'
+            );
+            if ($selectStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a transação de busca!');
+            }
+
+            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+                ':id' => $lastInsertedId
             ]);
-            $result = $statement->fetch();
+            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a transação de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+            if ($fetchResult === false) {
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao realizar a busca dos dados!');
+            }
+
+            $this->pdo->commit();
 
             $gamePlatform = new GamePlatform();
-            $gamePlatform->setId($result['id']);
-            $gamePlatform->setPlatformId($result['platform_id']);
-            $gamePlatform->setGameId($result['game_id']);
+            $gamePlatform->setId($fetchResult['id']);
+            $gamePlatform->setPlatformId($fetchResult['platform_id']);
+            $gamePlatform->setGameId($fetchResult['game_id']);
 
             return $gamePlatform;
-        } catch (PDOException $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+            $this->pdo->rollBack();
             throw $e;
         }
     }

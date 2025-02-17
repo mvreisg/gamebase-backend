@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -362,7 +361,7 @@ class GameGenreController
         }
 
         $numberOfGameGenres = count($gameGenres);
-        if ($numberOfGameGenres === 0) {                
+        if ($numberOfGameGenres === 0) {
             $messages[] = 'Os vínculos entre gêneros e jogos procurados não existem!';
             $response
                 ->appendArray([

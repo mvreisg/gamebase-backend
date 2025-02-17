@@ -242,12 +242,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 FROM 
                     game_genre'
             );
-            if ($statement === false){
+            if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
-            if ($wasTheStatementSuccessfullyExecuted === false){
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
