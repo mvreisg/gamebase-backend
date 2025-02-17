@@ -272,16 +272,30 @@ class GameGenreController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $params = $request->getParams();
-
-        $id = $params['id'] ?? null;
-
         $gameGenre = null;
         try {
-            $id = intval($id);
+            $params = $request->getParams();
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
+            }
+
+            $id = $params['id'];
             $gameGenre = $this->service->findById($id);
-        } catch (EntityInvalidValueException $e) {
+
+            if ($gameGenre === null) {
+                throw new HttpResourceNotFoundException('O vínculo entre gênero e jogo procurado não existe!');
+            }
+        } catch (HttpResourceNotFoundException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -290,24 +304,13 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
                     'messages' => $messages
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
-            return;
-        }
-
-        if ($gameGenre === null) {
-            $messages[] = 'O vínculo entre gênero e jogo procurado não existe!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         }

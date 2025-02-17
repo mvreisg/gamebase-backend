@@ -185,31 +185,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     }
 
     /**
-     * Deletes all registers of Game Genre entity with the respective Game id binded to it.
-     * @param GameGenre $gameGenre The data containing the Game id.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function deleteAllByGameId(GameGenre $gameGenre): bool
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'DELETE FROM
-                        game_genre
-                    WHERE
-                        game_id = :gameId;'
-            );
-
-            $gameId = $gameGenre->getGameId();
-
-            $wasItSuccessful = $statement->execute([':gameId' => $gameId]);
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
      * Finds a Game Genre register by its id.
      * @param int $id The id to find.
      * @return GameGenre the found Game Genre.
@@ -218,13 +193,27 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     public function findById(int $id): GameGenre|null
     {
         try {
-            $statement = $this->pdo->prepare('SELECT * FROM game_genre WHERE id = :id');
-            $statement->execute([
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game_genre 
+                WHERE 
+                    id = :id'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
-            $result = $statement->fetch();
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
-            if ($result == false) {
+            $result = $statement->fetch();
+            if ($result === false) {
                 return null;
             }
 
@@ -234,7 +223,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $gameGenre->setGenreId($result['genre_id']);
 
             return $gameGenre;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -263,72 +252,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 $gameGenre->setGameId($row['game_id']);
                 $gameGenre->setGenreId($row['genre_id']);
 
-                $gameGenres[] = $gameGenre;
-            }
-
-            return $gameGenres;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Finds all the Game Genres entities that contains the respective Game id.
-     * @param int $gameId The Game id.
-     * @return array A list containing the Game Genre entities.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function findAllGameGenresByGameId(int $gameId): array
-    {
-        try {
-            $statement = $this->pdo->prepare('SELECT * FROM game_genre WHERE game_id = :gameId;');
-            $statement->execute([':gameId' => $gameId]);
-
-            $result = $statement->fetchAll();
-            $gameGenres = [];
-            foreach ($result as $row) {
-                $gameGenre = new GameGenre();
-                $gameGenre->setId($row['id']);
-                $gameGenre->setGameId($row['game_id']);
-                $gameGenre->setGenreId($row['genre_id']);
-                $gameGenres[] = $gameGenre;
-            }
-
-            return $gameGenres;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Makes a inner join between Game and Game Genre, returuning all registers with the Game id.
-     * @return array A list containing the game Genre entities.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function innerJoinBetweenGameAndGameGenreByGameId(): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT
-                        game_genre.id AS id,
-                        game_genre.game_id AS game_id,
-                        game_genre.genre_id AS genre_id
-                    FROM
-                        game
-                    INNER JOIN
-                        game_genre
-                    ON
-                        game.id = game_genre.game_id;'
-            );
-            $statement->execute();
-            $result = $statement->fetchAll();
-
-            $gameGenres = [];
-            foreach ($result as $row) {
-                $gameGenre = new GameGenre();
-                $gameGenre->setId($row['id']);
-                $gameGenre->setGameId($row['game_id']);
-                $gameGenre->setGenreId($row['genre_id']);
                 $gameGenres[] = $gameGenre;
             }
 
