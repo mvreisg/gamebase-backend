@@ -102,12 +102,12 @@ class GameGenre
      */
     public function validateId()
     {
-        if ($this->id === null){
+        if ($this->id === null) {
             throw new EntityInvalidValueException('O id é null.');
         }
 
         if (is_string($this->id)) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' não é um número.');
+            throw new EntityInvalidValueException('O id não é um número.');
         }
 
         if ($this->id < 1) {
@@ -122,12 +122,12 @@ class GameGenre
      */
     public function validateGenreId()
     {
-        if ($this->genreId === null){
+        if ($this->genreId === null) {
             throw new EntityInvalidValueException('O genreId é null.');
         }
 
         if (is_string($this->genreId)) {
-            throw new EntityInvalidValueException('O genreId ' . $this->genreId . ' não é um número.');
+            throw new EntityInvalidValueException('O genreId não é um número.');
         }
 
         if ($this->genreId < 1) {
@@ -142,12 +142,12 @@ class GameGenre
      */
     public function validateGameId()
     {
-        if ($this->gameId === null){
+        if ($this->gameId === null) {
             throw new EntityInvalidValueException('O gameId é null.');
         }
 
         if (is_string($this->gameId)) {
-            throw new EntityInvalidValueException('O gameId ' . $this->gameId . ' não é um número.');
+            throw new EntityInvalidValueException('O gameId não é um número.');
         }
 
         if ($this->gameId < 1) {

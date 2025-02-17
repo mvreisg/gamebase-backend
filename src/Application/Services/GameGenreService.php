@@ -68,7 +68,7 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function update(int $id, int $genreId, int $gameId): bool
+    public function update(mixed $id, mixed $genreId, mixed $gameId): bool
     {
         $gameGenre = new GameGenre();
         $gameGenre->setId($id);
@@ -79,9 +79,9 @@ class GameGenreService
             $gameGenre->validateId();
             $gameGenre->validateGenreId();
             $gameGenre->validateGameId();
-            $wasItSuccessful = $this->repository->update($gameGenre);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
+            return $wasTheUpdateSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }

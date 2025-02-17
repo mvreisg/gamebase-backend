@@ -170,7 +170,14 @@ class HttpRouter
 
         foreach ($explodedTuples as $tuple) {
             $list = explode('=', $tuple);
-            $queries[$list[0]] = $list[1];
+            $key = $list[0];
+            $value = $list[1];
+            if (ctype_digit($value) && is_numeric($value)) {
+                $value = intval($value);
+            } elseif (is_numeric($value)) {
+                $value = floatval($value);
+            }
+            $queries[$key] = $value;
         }
 
         return $queries;
@@ -210,7 +217,13 @@ class HttpRouter
             }
 
             if ($isValueEmpty === false) {
-                $params[$key] = $informedWord;
+                $value = $informedWord;
+                if (ctype_digit($value) && is_numeric($value)) {
+                    $value = intval($value);
+                } elseif (is_numeric($value)) {
+                    $value = floatval($value);
+                }
+                $params[$key] = $value;
             }
         }
 

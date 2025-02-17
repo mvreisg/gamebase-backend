@@ -43,9 +43,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         $genreId = $gameGenre->getGenreId();
         $gameId = $gameGenre->getGameId();
 
-        try {       
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();     
-            if ($wasTheTransactionSuccessfullyCreated === false){
+        try {
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
             }
 
@@ -56,7 +56,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 VALUES 
                     (:genreId, :gameId);'
             );
-            if ($insertStatement === false){
+            if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
             }
 
@@ -64,7 +64,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':genreId' => $genreId,
                 ':gameId' => $gameId
             ]);
-            if ($wasTheInsertStatementSuccessfullyExecuted === false){
+            if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
             }
 
@@ -79,19 +79,19 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            if ($selectStatement === false){
+            if ($selectStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ':id' => $lastInsertedId
             ]);
-            if ($wasTheSelectStatementSuccessfullyExecuted === false){
+            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
             }
 
             $fetchResult = $selectStatement->fetch();
-            if ($fetchResult === false){
+            if ($fetchResult === false) {
                 throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os valores!');
             }
 
@@ -101,7 +101,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $gameGenre->setId($fetchResult['id']);
             $gameGenre->setGenreId($fetchResult['genre_id']);
             $gameGenre->setGameId($fetchResult['game_id']);
-            
+
             return $gameGenre;
         } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
             $this->pdo->rollBack();
@@ -121,6 +121,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $id = $gameGenre->getId();
             $gameId = $gameGenre->getGameId();
             $genreId = $gameGenre->getGenreId();
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game_genre 
@@ -130,13 +131,18 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            $wasItSuccessful = $statement->execute([
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
+
+            $wasTheStatementExecutionSuccessful = $statement->execute([
                 ':id' => $id,
                 ':gameId' => $gameId,
                 ':genreId' => $genreId
             ]);
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+
+            return $wasTheStatementExecutionSuccessful;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
