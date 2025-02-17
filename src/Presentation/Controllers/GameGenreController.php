@@ -8,7 +8,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenreService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
+use Throwable;
 
 /**
  * Game Genre controller class.
@@ -40,45 +48,46 @@ class GameGenreController
         $messages = [];
         $data = [];
 
-        $body = $request->parseBodyFromJSONString();
-
-        $gameId = $body['gameId'] ?? null;
-        $genresIds = $body['genresIds'] ?? [];
-
-        if ($genresIds == false) {
-            $messages[] = 'Os ids de gêneros não foram informados.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
         try {
+            $body = $request->parseBodyFromJSONString();
+
+            $isGameIdSetted = isset($body['gameId']);
+            if ($isGameIdSetted === false){
+                $messages[] = 'A chave gameId não existe no JSON ou seu valor é null!';
+            }
+
+            $isGenresIdsSetted = isset($body['genresIds']);
+            if ($isGenresIdsSetted === false){
+                $messages[] = 'A chave genresIds não existe no JSON ou seu valor é null!';
+            }
+
+            $bodyHaveUndefinedValues = $isGameIdSetted === false || $isGenresIdsSetted === false;
+            if ($bodyHaveUndefinedValues){
+                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+            }
+
+            $gameId = $body['gameId'];
+            $genresIds = $body['genresIds'];
+            $isGenresIdsIterable = is_iterable($genresIds);
+            if ($isGenresIdsIterable === false){
+                throw new ControllerInvalidValueException('genresIds não é um array!');
+            }
+            
+            $numberOfGenresIds = count($genresIds);
+            if ($numberOfGenresIds === 0){
+                throw new ControllerInvalidValueException('O array genresIds está vazio!');
+            }
+
             foreach ($genresIds as $genreId) {
-                $gameId = intval($gameId);
-                $genreId = intval($genreId);
                 $gameGenre = $this->service->insert($genreId, $gameId);
+
                 $data[] = [
                     'id' => $gameGenre->getId(),
                     'gameId' => $gameGenre->getGameId(),
                     'genreId' => $gameGenre->getGenreId()
                 ];
-
-                if ($gameGenre == false) {
-                    $messages[] = 'Ocorreu um erro ao inserir o vínculo entre jogo e gênero. Contate o suporte.';
-                    $response
-                        ->appendArray([
-                            'messages' => $messages
-                        ])
-                        ->status(HttpRouter::STATUS_CODES[500])
-                        ->sendJSON();
-                    return;
-                }
             }
-        } catch (EntityInvalidValueException $e) {
+        } catch (ControllerInvalidValueException | ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -87,7 +96,7 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

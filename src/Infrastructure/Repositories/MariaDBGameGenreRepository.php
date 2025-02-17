@@ -6,6 +6,11 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 /**
  * MariaDB Game Genre repository.
@@ -38,28 +43,70 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         $genreId = $gameGenre->getGenreId();
         $gameId = $gameGenre->getGameId();
 
-        $newGameGenre = null;
-        try {
-            $statement = $this->pdo->prepare('INSERT INTO game_genre (genre_id, game_id) VALUES (:genreId, :gameId);');
-            $statement->execute([
+        try {       
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();     
+            if ($wasTheTransactionSuccessfullyCreated === false){
+                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+            }
+
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    game_genre 
+                        (genre_id, game_id) 
+                VALUES 
+                    (:genreId, :gameId);'
+            );
+            if ($insertStatement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+            }
+
+            $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
                 ':genreId' => $genreId,
                 ':gameId' => $gameId
             ]);
+            if ($wasTheInsertStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+            }
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
-            $statement = $this->pdo->prepare('SELECT * FROM game_genre WHERE id = :id;');
-            $statement->execute([':id' => $lastInsertId]);
-            $result = $statement->fetch();
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
 
-            $newGameGenre = new GameGenre();
-            $newGameGenre->setId($result['id']);
-            $newGameGenre->setGenreId($result['genre_id']);
-            $newGameGenre->setGameId($result['game_id']);
-        } catch (PDOException $e) {
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game_genre 
+                WHERE 
+                    id = :id;'
+            );
+            if ($selectStatement === false){
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+                ':id' => $lastInsertedId
+            ]);
+            if ($wasTheSelectStatementSuccessfullyExecuted === false){
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+            if ($fetchResult === false){
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os valores!');
+            }
+
+            $this->pdo->commit();
+
+            $gameGenre = new GameGenre();
+            $gameGenre->setId($fetchResult['id']);
+            $gameGenre->setGenreId($fetchResult['genre_id']);
+            $gameGenre->setGameId($fetchResult['game_id']);
+            
+            return $gameGenre;
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
+            $this->pdo->rollBack();
             throw $e;
         }
-
-        return $newGameGenre;
     }
 
     /**

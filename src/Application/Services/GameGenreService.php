@@ -6,7 +6,12 @@ use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
+use Throwable;
 
 /**
  * Game Genre service class.
@@ -37,7 +42,7 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function insert(int $genreId, int $gameId): GameGenre
+    public function insert(mixed $genreId, mixed $gameId): GameGenre
     {
         $gameGenre = new GameGenre();
         $gameGenre->setGenreId($genreId);
@@ -48,7 +53,7 @@ class GameGenreService
             $gameGenre->validateGenreId();
             $gameGenre = $this->repository->insert($gameGenre);
             return $gameGenre;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+        } catch (EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
             throw $e;
         }
     }
