@@ -233,26 +233,38 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT * FROM game_platform;'
+                'SELECT 
+                    * 
+                FROM 
+                    game_platform;'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            $statement->execute();
+            $wasTheStatementExecutionSuccessful = $statement->execute();
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetchAll();
+            if ($result === false) {
+                return [];
+            }
 
             $gamePlatforms = [];
 
-            foreach ($result as $line) {
+            foreach ($result as $row) {
                 $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($line['id']);
-                $gamePlatform->setPlatformId($line['platform_id']);
-                $gamePlatform->setGameId($line['game_id']);
+                $gamePlatform->setId($row['id']);
+                $gamePlatform->setPlatformId($row['platform_id']);
+                $gamePlatform->setGameId($row['game_id']);
 
                 $gamePlatforms[] = $gamePlatform;
             }
 
             return $gamePlatforms;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -351,6 +350,18 @@ class GamePlatformController
         try {
             $gamePlatforms = $this->service->findAll();
 
+            $isGamePlatformsIterable = is_iterable($gamePlatforms);
+            if ($isGamePlatformsIterable === false) {
+                $messages[] = 'A busca foi realizada com sucesso mas nenhum valor foi encontrado!';
+                $response
+                    ->appendArray([
+                        'messages' => $messages
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->sendJSON();
+                return;
+            }
+
             foreach ($gamePlatforms as $gamePlatform) {
                 $id = $gamePlatform->getId();
                 $platformId = $gamePlatform->getPlatformId();
@@ -371,7 +382,7 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

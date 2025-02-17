@@ -140,7 +140,7 @@ class GamePlatformService
         try {
             $gamePlatforms = $this->repository->findAll();
             return $gamePlatforms;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
