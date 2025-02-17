@@ -158,19 +158,28 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         try {
             $statement = $this->pdo->prepare(
                 'DELETE FROM
-                        game_genre
-                    WHERE
-                        id = :id;'
+                    game_genre
+                WHERE
+                    id = :id;'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de exclusão!');
+            }
 
             $id = $gameGenre->getId();
 
-            $wasItSuccessful = $statement->execute([
+            $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
+            if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de exclusão!');
+            }
 
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            $numberOfRowsAffected = $statement->rowCount();
+            $wasTheDeleteSuccessful = $numberOfRowsAffected > 0;
+
+            return $wasTheDeleteSuccessful;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

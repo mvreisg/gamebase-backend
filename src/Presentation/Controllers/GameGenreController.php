@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -211,27 +212,29 @@ class GameGenreController
     public function delete(HttpRequest $request, HttpResponse $response)
     {
         $messages = [];
-
-        $params = $request->getParams();
-
-        $id = $params['id'] ?? null;
-
         try {
-            $id = intval($id);
-
-            $wasItSuccessful = $this->service->delete($id);
-
-            if ($wasItSuccessful === false) {
-                $messages[] = 'Ocorreu um erro ao tentar deletar!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[500])
-                    ->sendJSON();
-                return;
+            $params = $request->getParams();
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
             }
-        } catch (EntityInvalidValueException $e) {
+
+            $id = $params['id'];
+
+            $wasTheDeleteSuccessful = $this->service->delete($id);
+            if ($wasTheDeleteSuccessful === false) {
+                throw new HttpResourceNotFoundException('Vínculo com o id ' . $id . ' não encontrado!');
+            }
+        } catch (HttpResourceNotFoundException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (HttpJsonParseException | ControllerOperationErrorException | ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -240,7 +243,7 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementExecutionFailureException | DatabaseStatementCreationFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

@@ -94,16 +94,16 @@ class GameGenreService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed if any error occurs.
      */
-    public function delete(int $id): bool
+    public function delete(mixed $id): bool
     {
         $gameGenre = new GameGenre();
         $gameGenre->setId($id);
 
         try {
             $gameGenre->validateId();
-            $wasItSuccessful = $this->repository->delete($gameGenre);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
+            return $wasTheDeleteSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
