@@ -106,7 +106,7 @@ class GamePlatform
             throw new EntityInvalidValueException('O id é null');
         }
 
-        if (is_string($this->id) && is_numeric($this->id) === false) {
+        if (is_string($this->id)) {
             throw new EntityInvalidValueException('O id é inválido.');
         }
 
@@ -126,7 +126,7 @@ class GamePlatform
             throw new EntityInvalidValueException('O platformId é null');
         }
 
-        if (is_string($this->platformId) && is_numeric($this->platformId) === false) {
+        if (is_string($this->platformId)) {
             throw new EntityInvalidValueException('O platformId é inválido.');
         }
 
@@ -146,7 +146,7 @@ class GamePlatform
             throw new EntityInvalidValueException('O gameId é null');
         }
 
-        if (is_string($this->gameId) && is_numeric($this->gameId) === false) {
+        if (is_string($this->gameId)) {
             throw new EntityInvalidValueException('O gameId é inválido.');
         }
 

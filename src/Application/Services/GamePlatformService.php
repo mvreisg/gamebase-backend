@@ -68,7 +68,7 @@ class GamePlatformService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed in case of another error.
      */
-    public function update(int $id, int $platformId, int $gameId): bool
+    public function update(mixed $id, mixed $platformId, mixed $gameId): bool
     {
         $gamePlatform = new GamePlatform();
         $gamePlatform->setId($id);
@@ -79,9 +79,9 @@ class GamePlatformService
             $gamePlatform->validateId();
             $gamePlatform->validatePlatformId();
             $gamePlatform->validateGameId();
-            $wasItSuccessful = $this->repository->update($gamePlatform);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheUpdateSuccessful = $this->repository->update($gamePlatform);
+            return $wasTheUpdateSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
