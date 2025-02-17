@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -214,34 +215,39 @@ class GamePlatformController
      */
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
-        $params = $request->getParams();
         try {
-            $id = $params['id'] ?? null;
+            $params = $request->getParams();
 
-            $id = intval($id);
-
-            $wasDeletionSuccessful = $this->service->delete($id);
-
-            if ($wasDeletionSuccessful) {
-                $messages[] = 'Vínculo entre jogos e plataformas deletado com sucesso!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->sendJSON();
-                return;
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado ou é null!');
             }
 
-            $messages[] = 'Ocorreu um erro ao deletar o vínculo entre jogo e plataforma!';
+            $id = $params['id'];
+            $wasDeletionSuccessful = $this->service->delete($id);
+
+            if ($wasDeletionSuccessful === false) {
+                throw new HttpResourceNotFoundException('O registro com o id ' . $id . ' não foi encontrado!');
+            }
+
+            $messages[] = 'Vínculo entre jogos e plataformas deletado com sucesso!';
             $response
                 ->appendArray([
                     'messages' => $messages
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
+                ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (HttpResourceNotFoundException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -250,7 +256,7 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (PDOException | Exception $e) {
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([

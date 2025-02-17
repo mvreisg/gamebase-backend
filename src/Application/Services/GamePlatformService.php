@@ -94,16 +94,16 @@ class GamePlatformService
      * @throws PDOException Throwed if a database connection error occurs.
      * @throws Exception Throwed in case of another error.
      */
-    public function delete(int $id): bool
+    public function delete(mixed $id): bool
     {
         $gamePlatform = new GamePlatform();
         $gamePlatform->setId($id);
 
         try {
             $gamePlatform->validateId();
-            $wasItSuccessful = $this->repository->delete($gamePlatform);
-            return $wasItSuccessful;
-        } catch (EntityInvalidValueException | PDOException | Exception $e) {
+            $wasTheDeletionSuccessful = $this->repository->delete($gamePlatform);
+            return $wasTheDeletionSuccessful;
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }

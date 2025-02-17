@@ -160,13 +160,22 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 WHERE
                     id = :id'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de exclusão!');
+            }
 
-            $wasItSuccessful = $statement->execute([
+            $wasTheStatementExecutionSuccessful = $statement->execute([
                 'id' => $id,
             ]);
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de exclusão!');
+            }
 
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            $numberOfAffectedLinesInTheRepository = $statement->rowCount();
+            $wasDeletionSuccessful = $numberOfAffectedLinesInTheRepository > 0;
+
+            return $wasDeletionSuccessful;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
