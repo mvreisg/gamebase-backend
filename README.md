@@ -50,7 +50,7 @@ To create the Phinx config file in the root folder (`/path/to/your/project/gameb
 
 <br/>
 
-Then create a database on MariaDB called **gamebase**.
+Then create a database on MariaDB called `gamebase`:
 
 ```sql
 CREATE DATABASE gamebase;
