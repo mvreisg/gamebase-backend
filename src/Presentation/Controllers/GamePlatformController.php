@@ -350,8 +350,8 @@ class GamePlatformController
         try {
             $gamePlatforms = $this->service->findAll();
 
-            $isGamePlatformsIterable = is_iterable($gamePlatforms);
-            if ($isGamePlatformsIterable === false) {
+            $numberOfGamePlatforms = count($gamePlatforms);
+            if ($numberOfGamePlatforms === 0) {
                 $messages[] = 'A busca foi realizada com sucesso mas nenhum valor foi encontrado!';
                 $response
                     ->appendArray([

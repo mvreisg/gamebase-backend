@@ -25,16 +25,16 @@ class GameRoutes
             $controller->insert($request, $response);
         });
 
+        $app->add('PUT', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+            $controller->update($request, $response);
+        });
+
         $app->add('GET', '/game', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findAll($request, $response);
         });
 
         $app->add('GET', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findById($request, $response);
-        });
-
-        $app->add('PUT', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
-            $controller->update($request, $response);
         });
     }
 }
