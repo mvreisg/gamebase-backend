@@ -6,6 +6,10 @@ use PDO;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
 /**
  * MariaDB Game Platform repository class.
@@ -36,26 +40,67 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
         try {
-            $statement = $this->pdo->prepare('INSERT INTO game_platform (platform_id, game_id) VALUES (:platformId, :gameId);');
-            $statement->execute([
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+            }
+
+            $insertStatement = $this->pdo->prepare(
+                'INSERT INTO 
+                    game_platform 
+                        (platform_id, game_id) 
+                VALUES 
+                    (:platformId, :gameId);'
+            );
+            if ($insertStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+            }
+
+            $wasTheInsertStatementExecutionSuccessful = $insertStatement->execute([
                 ':platformId' => $gamePlatform->getPlatformId(),
                 ':gameId' => $gamePlatform->getGameId()
             ]);
+            if ($wasTheInsertStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+            }
 
-            $lastInsertId = intval($this->pdo->lastInsertId());
-            $statement = $this->pdo->prepare('SELECT * FROM game_platform WHERE id = :id;');
-            $statement->execute([
-                ':id' => $lastInsertId
+            $lastInsertedId = $this->pdo->lastInsertId();
+            $lastInsertedId = intval($lastInsertedId);
+
+            $selectStatement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    game_platform 
+                WHERE 
+                    id = :id;'
+            );
+            if ($selectStatement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a transação de busca!');
+            }
+
+            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+                ':id' => $lastInsertedId
             ]);
-            $result = $statement->fetch();
+            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a transação de busca!');
+            }
+
+            $fetchResult = $selectStatement->fetch();
+            if ($fetchResult === false) {
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao realizar a busca dos dados!');
+            }
+
+            $this->pdo->commit();
 
             $gamePlatform = new GamePlatform();
-            $gamePlatform->setId($result['id']);
-            $gamePlatform->setPlatformId($result['platform_id']);
-            $gamePlatform->setGameId($result['game_id']);
+            $gamePlatform->setId($fetchResult['id']);
+            $gamePlatform->setPlatformId($fetchResult['platform_id']);
+            $gamePlatform->setGameId($fetchResult['game_id']);
 
             return $gamePlatform;
-        } catch (PDOException $e) {
+        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+            $this->pdo->rollBack();
             throw $e;
         }
     }
@@ -82,13 +127,18 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 WHERE 
                     id = :id;'
             );
-            $wasItSuccessful = $statement->execute([
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':platformId' => $platformId,
                 ':gameId' => $gameId,
                 ':id' => $id
             ]);
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+
+            return $wasTheStatementSuccessfullyExecuted;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -110,41 +160,22 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 WHERE
                     id = :id'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de exclusão!');
+            }
 
-            $wasItSuccessful = $statement->execute([
+            $wasTheStatementExecutionSuccessful = $statement->execute([
                 'id' => $id,
             ]);
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de exclusão!');
+            }
 
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
+            $numberOfAffectedLinesInTheRepository = $statement->rowCount();
+            $wasDeletionSuccessful = $numberOfAffectedLinesInTheRepository > 0;
 
-    /**
-     * Deletes all Game Platforms with the Game id.
-     * @param GamePlatform $gamePlatform The object containing the Game id.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function deleteAllByGameId(GamePlatform $gamePlatform): bool
-    {
-        $gameId = $gamePlatform->getGameId();
-
-        try {
-            $statement = $this->pdo->prepare(
-                'DELETE FROM
-                    game_platform
-                WHERE
-                    game_id = :gameId;'
-            );
-
-            $wasItSuccessful = $statement->execute([
-                'gameId' => $gameId
-            ]);
-
-            return $wasItSuccessful;
-        } catch (PDOException $e) {
+            return $wasDeletionSuccessful;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -166,14 +197,19 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 WHERE
                     id = :id;'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            $statement->execute([
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao criar a execução de busca!');
+            }
 
             $result = $statement->fetch();
-
-            if ($result == false) {
+            if ($result === false) {
                 return null;
             }
 
@@ -183,7 +219,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $gamePlatform->setGameId($result['game_id']);
 
             return $gamePlatform;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
@@ -197,102 +233,38 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT * FROM game_platform;'
-            );
-
-            $statement->execute();
-
-            $result = $statement->fetchAll();
-
-            $gamePlatforms = [];
-
-            foreach ($result as $line) {
-                $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($line['id']);
-                $gamePlatform->setPlatformId($line['platform_id']);
-                $gamePlatform->setGameId($line['game_id']);
-
-                $gamePlatforms[] = $gamePlatform;
-            }
-
-            return $gamePlatforms;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns all Game Platforms with the Game id.
-     * @param int $gameId The Game id.
-     * @return array A list containing the Game Platforms.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function findAllGamePlatformsByGameId(int $gameId): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    game_platform 
-                WHERE 
-                    game_id = :gameId;'
+                    game_platform;'
             );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
 
-            $statement->execute([
-                ':gameId' => $gameId
-            ]);
+            $wasTheStatementExecutionSuccessful = $statement->execute();
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
 
             $result = $statement->fetchAll();
+            if ($result === false) {
+                return [];
+            }
+
             $gamePlatforms = [];
+
             foreach ($result as $row) {
                 $gamePlatform = new GamePlatform();
                 $gamePlatform->setId($row['id']);
-                $gamePlatform->setGameId($row['game_id']);
                 $gamePlatform->setPlatformId($row['platform_id']);
+                $gamePlatform->setGameId($row['game_id']);
+
                 $gamePlatforms[] = $gamePlatform;
             }
 
             return $gamePlatforms;
-        } catch (PDOException $e) {
-            throw $e;
-        }
-    }
-
-    /**
-     * Returns all Game Platforms and Game data intersected by Game id.
-     * @return array A list containing the Game Platforms.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function innerJoinBetweenGameAndGamePlatformByGameId(): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT
-                    game_platform.id AS id,
-                    game_platform.game_id AS game_id,
-                    game_platform.platform_id AS platform_id
-                FROM
-                    game
-                INNER JOIN
-                    game_platform
-                ON
-                    game.id = game_platform.game_id;'
-            );
-            $statement->execute();
-            $result = $statement->fetchAll();
-
-            $gamePlatforms = [];
-            foreach ($result as $row) {
-                $gamePlatform = new GamePlatform();
-                $gamePlatform->setId($row['id']);
-                $gamePlatform->setGameId($row['game_id']);
-                $gamePlatform->setPlatformId($row['platform_id']);
-                $gamePlatforms[] = $gamePlatform;
-            }
-
-            return $gamePlatforms;
-        } catch (PDOException $e) {
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
