@@ -38,13 +38,13 @@ final class AddingActiveColumns extends AbstractMigration
             ->addColumn('is_active', 'boolean', [
                 'null' => false
             ])
-            ->update();      
-            
+            ->update();
+
         $genreTable = $this->table('genre');
         $genreTable
             ->addColumn('is_active', 'boolean', [
                 'null' => false
             ])
-            ->update();             
+            ->update();
     }
 }

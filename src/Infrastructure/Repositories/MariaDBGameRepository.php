@@ -45,11 +45,18 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $game->getName();
+            $isActive = $game->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    game (name) 
-                VALUES (:name);'
+                    game (
+                        name, 
+                        is_active
+                    ) 
+                VALUES (
+                    :name, 
+                    :isActive
+                );'
             );
 
             if ($insertStatement === false) {
@@ -57,7 +64,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
 
             if ($wasInsertExecutionASuccess === false) {
@@ -99,6 +107,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game();
             $game->setId($fetchResult['id']);
             $game->setName($fetchResult['name']);
+            $game->setIsActive($fetchResult['is_active']);
 
             return $game;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
@@ -117,13 +126,15 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         $id = $game->getId();
         $name = $game->getName();
+        $isActive = $game->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
@@ -134,7 +145,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $wasStatementExecutionSuccessful = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
@@ -155,9 +167,33 @@ class MariaDBGameRepository implements GameRepositoryInterface
      * @return bool Returns the success flag.
      * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    game
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':isActive' => $isActive,
+                ':id' => $id
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
+
+            return $wasTheUpdateSuccessfullyExecuted;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -199,6 +235,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game();
             $game->setId($result['id']);
             $game->setName($result['name']);
+            $game->setIsActive($result['is_active']);
 
             return $game;
         } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
@@ -242,6 +279,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 $game = new Game();
                 $game->setId($row['id']);
                 $game->setName($row['name']);
+                $game->setIsActive($row['is_active']);
                 $games[] = $game;
             }
 

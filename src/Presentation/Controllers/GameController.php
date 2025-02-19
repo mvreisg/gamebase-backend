@@ -13,6 +13,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 /**
  * The Game controller class.
@@ -49,18 +51,22 @@ class GameController
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
                 $messages[] = 'A chave name não foi informada ou seu valor é null!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                $messages[] = 'A chave isActive não foi informada ou seu valor é null!';
+            }
+
+            $hasUndefinedValues = $isNameFieldSetted === false || $isIsActiveFieldSetted === false;
+            if ($hasUndefinedValues) {
+                throw new ControllerUndefinedValueException('Ocorreu um erro!');
             }
 
             $name = $body['name'];
-            $game = $this->service->insert($name);
-        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+            $isActive = $body['isActive'];
+            $game = $this->service->insert($name, $isActive);
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -123,7 +129,12 @@ class GameController
                 $messages[] = 'A chave name não existe ou seu valor é null!';
             }
 
-            $hasUndefinedKeys = $isGameIdSetted === false || $isNameSetted === false;
+            $isIsActiveSetted = isset($body['isActive']);
+            if ($isIsActiveSetted === false) {
+                $messages[] = 'A chave isActive não foi definida no JSON ou seu valor é null!';
+            }
+
+            $hasUndefinedKeys = $isGameIdSetted === false || $isNameSetted === false || $isIsActiveSetted === false;
             if ($hasUndefinedKeys) {
                 $response
                     ->appendArray([
@@ -136,7 +147,8 @@ class GameController
 
             $gameId = $params['gameId'];
             $name = $body['name'];
-            $wasTheUpdateSuccessful = $this->service->update($gameId, $name);
+            $isActive = $body['isActive'];
+            $wasTheUpdateSuccessful = $this->service->update($gameId, $name, $isActive);
         } catch (HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
@@ -175,6 +187,65 @@ class GameController
             ])
             ->status(HttpRouter::STATUS_CODES[200])
             ->sendJSON();
+    }
+
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        $messages = [];
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isIdSetted = isset($params['gameId']);
+            if ($isIdSetted === false) {
+                $messages[] = 'O parâmetro gameId não foi informado ou seu valor é null!';
+            }
+
+            $isIsActiveSetted = isset($body['isActive']);
+            if ($isIsActiveSetted === false) {
+                $messages[] = 'A chave isActive não foi definida no JSON ou seu valor é null!';
+            }
+
+            $hasUndefinedValues = $isIdSetted === false || $isIsActiveSetted === false;
+            if ($hasUndefinedValues) {
+                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+            }
+
+            $id = $params['gameId'];
+            $isActive = $body['isActive'];
+
+            $wasTheUpdateSuccessful = $this->service->setIsActive($id, $isActive);
+            if ($wasTheUpdateSuccessful === false) {
+                throw new ControllerOperationErrorException('Ocorreu um erro ao alterar o estado do jogo com o id ' . $id);
+            }
+
+            $messages[] = 'Estado atualizado com sucesso!';
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $messages[] = $e->getMessage();
+            $response
+                ->appendArray([
+                    'messages' => $messages
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
     }
 
     /**
@@ -239,6 +310,7 @@ class GameController
         $data = [
             'id' => $game->getId(),
             'name' => $game->getName(),
+            'isActive' => $game->getIsActive()
         ];
 
         $messages[] = 'Jogo buscado com sucesso!';
@@ -289,10 +361,12 @@ class GameController
         foreach ($games as $game) {
             $gameId = $game->getId();
             $gameName = $game->getName();
+            $gameIsActive = $game->getIsActive();
 
             $data[] = [
                 'id' => $gameId,
-                'name' => $gameName
+                'name' => $gameName,
+                'isActive' => $gameIsActive
             ];
         }
 

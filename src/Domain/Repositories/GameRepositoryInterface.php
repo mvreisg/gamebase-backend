@@ -28,7 +28,7 @@ interface GameRepositoryInterface
      * @param int $id The respective id of the Game register that is wanted to be deleted.
      * @return bool Returns the success flag.
      */
-    public function delete(int $id): bool;
+    public function setIsActive(int $id, bool $isActive): bool;
 
     /**
      * Finds a Game register in the Game repository by its respective id and returns their Game object if it was found.
