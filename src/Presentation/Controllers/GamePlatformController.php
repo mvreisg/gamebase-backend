@@ -118,29 +118,22 @@ class GamePlatformController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $messages = [];
-
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                $messages[] = 'O parâmetro id não foi informado ou seu valor é nulo!';
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado ou seu valor é nulo!');
             }
 
             $isGameIdSetted = isset($body['gameId']);
             if ($isGameIdSetted === false) {
-                $messages[] = 'A chave gameId não existe ou seu valor é null!';
+                throw new ControllerUndefinedValueException('A chave gameId não existe ou seu valor é null!');
             }
 
             $isPlatformsIdsSetted = isset($body['platformsIds']);
             if ($isPlatformsIdsSetted === false) {
-                $messages[] = 'A chave platformsIds não existe ou seu valor é null!';
-            }
-
-            $itHaveUndefinedFields = $isIdSetted === false || $isGameIdSetted === false || $isPlatformsIdsSetted === false;
-            if ($itHaveUndefinedFields) {
-                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+                throw new ControllerUndefinedValueException('A chave platformsIds não existe ou seu valor é null!');
             }
 
             $id = $params['id'];
@@ -166,28 +159,25 @@ class GamePlatformController
                 throw new ControllerOperationErrorException('Ocorreu um erro ao realizar a atualização!');
             }
 
-            $messages[] = 'Vínculos entre jogos e plataformas editados com sucesso!';
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Vínculos entre jogos e plataformas editados com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
         } catch (ControllerUndefinedValueException | ControllerInvalidValueException | HttpJsonParseException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
