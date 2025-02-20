@@ -312,55 +312,46 @@ class GameGenreController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $gameGenres = null;
         try {
             $gameGenres = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfGameGenres = count($gameGenres);
+            if ($numberOfGameGenres === 0) {
+                throw new HttpResourceNotFoundException('Os vínculos entre gêneros e jogos procurados não existem!');
+            }
+
+            foreach ($gameGenres as $gameGenre) {
+                $data[] = [
+                    'id' => $gameGenre->getId(),
+                    'gameId' => $gameGenre->getGameId(),
+                    'genreId' => $gameGenre->getGenreId()
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Vínculo entre gênero e jogo encontrado com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfGameGenres = count($gameGenres);
-        if ($numberOfGameGenres === 0) {
-            $messages[] = 'Os vínculos entre gêneros e jogos procurados não existem!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($gameGenres as $gameGenre) {
-            $gameGenreId = $gameGenre->getId();
-            $gameGenreGameId = $gameGenre->getGameId();
-            $gameGenreGenreId = $gameGenre->getGenreId();
-
-            $data[] = [
-                'id' => $gameGenreId,
-                'gameId' => $gameGenreGameId,
-                'genreId' => $gameGenreGenreId
-            ];
-        }
-
-        $messages[] = 'Vínculo entre gênero e jogo encontrado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
-        return;
     }
 }
