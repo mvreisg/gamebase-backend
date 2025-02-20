@@ -192,9 +192,9 @@ class GameGenreController
      */
     public function delete(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
         try {
             $params = $request->getParams();
+
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
@@ -206,42 +206,39 @@ class GameGenreController
             if ($wasTheDeleteSuccessful === false) {
                 throw new HttpResourceNotFoundException('Vínculo com o id ' . $id . ' não encontrado!');
             }
-        } catch (HttpResourceNotFoundException $e) {
-            $messages[] = $e->getMessage();
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Vínculos entre jogos e gêneros deletado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (HttpJsonParseException | ControllerOperationErrorException | ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+        } catch (HttpJsonParseException | ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementExecutionFailureException | DatabaseStatementCreationFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $messages[] = 'Vínculos entre jogos e gêneros deletado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
