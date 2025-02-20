@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -151,74 +152,58 @@ class GenreController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
+        try {
+            $params = $request->getParams();
 
-        $params = $request->getParams();
+            $isGenreIdSetted = isset($params['genreId']);
+            if ($isGenreIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado ou seu valor é null!');
+            }
 
-        $isGenreIdSetted = isset($params['genreId']);
-        if ($isGenreIdSetted === false) {
-            $messages[] = 'O parâmetro genreId não foi informado ou seu valor é null!';
+            $genreId = $params['genreId'];
+
+            $genre = $this->service->findById($genreId);
+
+            if ($genre === null) {
+                throw new HttpResourceNotFoundException('O gênero com o id ' . $genreId . ' não existe!');
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gênero encontrado com sucesso!',
+                    'data' => [
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                    ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
+                ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        }
-
-        $genreId = $params['genreId'];
-        $genre = null;
-        try {
-            $genre = $this->service->findById($genreId);
-        } catch (EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+        } catch (HttpResourceNotFoundException $e) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($genre === null) {
-            $messages[] = 'O gênero com o id ' . $genreId . ' não existe!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
-        $genreId = $genre->getId();
-        $genreName = $genre->getName();
-
-        $data = [
-            'id' => $genreId,
-            'name' => $genreName,
-        ];
-
-        $messages[] = 'Gênero encontrado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
