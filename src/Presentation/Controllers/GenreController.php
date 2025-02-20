@@ -214,52 +214,48 @@ class GenreController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $genres = null;
         try {
             $genres = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfGenresFound = count($genres);
+            if ($numberOfGenresFound === 0) {
+                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum gênero foi encontrado.');
+            }
+
+            foreach ($genres as $genre) {
+                $genreId = $genre->getId();
+                $genreName = $genre->getName();
+
+                $data[] = [
+                    'id' => $genreId,
+                    'name' => $genreName
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gêneros buscados com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfGenresFound = count($genres);
-        if ($numberOfGenresFound === 0) {
-            $messages[] = 'A busca foi concluída e nenhum gênero foi encontrado.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($genres as $genre) {
-            $genreId = $genre->getId();
-            $genreName = $genre->getName();
-
-            $data[] = [
-                'id' => $genreId,
-                'name' => $genreName
-            ];
-        }
-
-        $messages[] = 'Gêneros buscados com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 }
