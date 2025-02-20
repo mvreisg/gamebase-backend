@@ -94,25 +94,18 @@ class PlatformController
      */
     public function update(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $wasTheUpdateSuccessful = false;
         try {
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
             $isPlatformIdSetted = isset($params['platformId']);
             if ($isPlatformIdSetted === false) {
-                $messages[] = 'O parâmetro platformId não foi informado na URL ou seu valor é null!';
+                throw new ControllerUndefinedValueException('O parâmetro platformId não foi informado na URL ou seu valor é null!');
             }
 
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false) {
-                $messages[] = 'A chave name não foi definida no JSON ou seu valor é null!';
-            }
-
-            $itHaveUndefinedKeys = $isPlatformIdSetted === false || $isNameSetted === false;
-            if ($itHaveUndefinedKeys) {
-                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+                throw new ControllerUndefinedValueException('A chave name não foi definida no JSON ou seu valor é null!');
             }
 
             $platformId = $params['platformId'];
@@ -122,33 +115,31 @@ class PlatformController
             if ($wasTheUpdateSuccessful === false) {
                 throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .' . $platformId . '!');
             }
-        } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataforma atualizada com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $messages[] = 'Plataforma atualizada com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
