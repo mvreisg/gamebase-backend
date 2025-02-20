@@ -28,7 +28,8 @@ class HttpRouter
     ];
 
     /**
-     * @var string NON_EXISTANT_ROUTE Value for a non-existant route. Needed by this class to send a 404 status if a route connot be found.
+     * @var string NON_EXISTANT_ROUTE Value for a non-existant route.
+     * Needed by this class to send a 404 status if a route connot be found.
      */
     public const NON_EXISTANT_ROUTE = '';
 
@@ -80,10 +81,16 @@ class HttpRouter
         }
         $body = file_get_contents('php://input');
 
-        $matchingMethods = array_filter($this->routes, fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD);
+        $matchingMethods = array_filter(
+            $this->routes,
+            fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD
+        );
 
         $exactlyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $item['route'] === $routePart);
-        $looselyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $this->matchRoute($item['route'], $routePart));
+        $looselyMatchedRoutes = array_filter(
+            $matchingMethods,
+            fn ($item) => $this->matchRoute($item['route'], $routePart)
+        );
 
         $numberOfExactlyMatchedRoutes = count($exactlyMatchedRoutes);
         $numberOfLooselyMatchedRoutes = count($looselyMatchedRoutes);
@@ -110,7 +117,8 @@ class HttpRouter
     }
 
     /**
-     * Method that gets two route names (the internal route defined in the code (the request route) and the actual requested route (the informed route)) and see if they match.
+     * Method that gets two route names (the internal route defined in the code (the request route) and
+     * the actual requested route (the informed route)) and see if they match.
      * @return bool Returns true if the values match, false otherwise.
      */
     private function matchRoute(string $requestRoute, string $informedRoute)
@@ -184,7 +192,8 @@ class HttpRouter
     }
 
     /**
-     * Method that gets the internal route defined in the code and the actual requested HTTP route and matches them to extract the parameters values from the actual requested route.
+     * Method that gets the internal route defined in the code and the actual requested HTTP route and
+     * matches them to extract the parameters values from the actual requested route.
      * @return Map<string,string> The map of parameters.
      */
     private function findRouteParameters(string $requestRoute, string $informedRoute)

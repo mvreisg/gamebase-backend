@@ -68,7 +68,12 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[201])
                 ->sendJSON();
             return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -76,7 +81,12 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -101,7 +111,9 @@ class GenreController
 
             $isGenreIdSetted = isset($params['genreId']);
             if ($isGenreIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado na URL ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro genreId não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $isNameFieldSetted = isset($body['name']);
@@ -114,7 +126,9 @@ class GenreController
 
             $wasAUpdateOcurred = $this->service->update($genreId, $name);
             if ($wasAUpdateOcurred === false) {
-                throw new HttpResourceNotFoundException('O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.');
+                throw new HttpResourceNotFoundException(
+                    'O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.'
+                );
             }
 
             $response
@@ -132,7 +146,12 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -140,7 +159,12 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -164,7 +188,9 @@ class GenreController
 
             $isGenreIdSetted = isset($params['genreId']);
             if ($isGenreIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro genreId não foi informado ou seu valor é null!'
+                );
             }
 
             $genreId = $params['genreId'];
@@ -202,7 +228,11 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -255,7 +285,11 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()

@@ -39,7 +39,10 @@ try {
     $app->add(
         HttpRouter::WILDCARD_METHOD,
         '/',
-        fn (HttpRequest $req, HttpResponse $res) => $res->status(HttpRouter::STATUS_CODES[200])->appendString('Servidor funcionando!')->send()
+        fn (HttpRequest $req, HttpResponse $res) => $res
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->appendString('Servidor funcionando!')
+            ->send()
     );
 
     $app->run();

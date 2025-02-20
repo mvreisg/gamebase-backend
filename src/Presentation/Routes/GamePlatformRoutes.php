@@ -23,19 +23,31 @@ class GamePlatformRoutes
             $controller->insert($request, $response);
         });
 
-        $app->add('PUT', '/game/platform/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PUT', '/game/platform/:id', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->update($request, $response);
         });
 
-        $app->add('DELETE', '/game/platform/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('DELETE', '/game/platform/:id', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->delete($request, $response);
         });
 
-        $app->add('GET', '/game/platform/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/game/platform/:id', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('GET', '/game/platform', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/game/platform', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->findAll($request, $response);
         });
     }

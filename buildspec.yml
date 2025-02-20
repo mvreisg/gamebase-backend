@@ -2,4 +2,8 @@ version: 0.2
 phases:
   install:
     commands:
-      - composer install    
+      - composer install
+  build:
+    commands:
+      - composer lint
+      - composer lint:fix    

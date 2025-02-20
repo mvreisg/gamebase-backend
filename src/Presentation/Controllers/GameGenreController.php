@@ -56,7 +56,9 @@ class GameGenreController
 
             $isGenresIdsSetted = isset($body['genresIds']);
             if ($isGenresIdsSetted === false) {
-                throw new ControllerUndefinedValueException('A chave genresIds não existe no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave genresIds não existe no JSON ou seu valor é null!'
+                );
             }
 
             $gameId = $body['gameId'];
@@ -90,7 +92,12 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[201])
                 ->sendJSON();
             return;
-        } catch (ControllerInvalidValueException | ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerInvalidValueException |
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -98,7 +105,14 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
+        } catch (
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -123,17 +137,23 @@ class GameGenreController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro id não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $isGameIdSetted = isset($body['gameId']);
             if ($isGameIdSetted === false) {
-                throw new ControllerUndefinedValueException('A chave gameId não foi informada no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave gameId não foi informada no JSON ou seu valor é null!'
+                );
             }
 
             $isGenresIdsSetted = isset($body['genresIds']);
             if ($isGenresIdsSetted === false) {
-                throw new ControllerUndefinedValueException('A chave genresIds não foi informada no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave genresIds não foi informada no JSON ou seu valor é null!'
+                );
             }
 
             $id = $params['id'];
@@ -172,7 +192,12 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (ControllerInvalidValueException | ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerInvalidValueException |
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -180,7 +205,12 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -204,7 +234,9 @@ class GameGenreController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro id não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $id = $params['id'];
@@ -237,7 +269,11 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementExecutionFailureException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementExecutionFailureException |
+            DatabaseStatementCreationFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -261,7 +297,9 @@ class GameGenreController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro id não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $id = $params['id'];
@@ -300,7 +338,11 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -351,7 +393,11 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()

@@ -55,7 +55,14 @@ class GenreService
             }
             $genre = $this->repository->insert($genre);
             return $genre;
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -82,11 +89,19 @@ class GenreService
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do gênero a ser atualizado já existe no repositório!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome do gênero a ser atualizado já existe no repositório!'
+                );
             }
             $wasItSuccessful = $this->repository->update($genre);
             return $wasItSuccessful;
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -108,7 +123,12 @@ class GenreService
             $genre->setId($id);
             $genre = $this->repository->findById($id);
             return $genre;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -124,7 +144,11 @@ class GenreService
         try {
             $genres = $this->repository->findAll();
             return $genres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

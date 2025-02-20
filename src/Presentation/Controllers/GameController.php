@@ -49,12 +49,16 @@ class GameController
 
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                throw new ControllerUndefinedValueException('A chave name não foi informada no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave name não foi informada no JSON ou seu valor é null!'
+                );
             }
 
             $isIsActiveFieldSetted = isset($body['isActive']);
             if ($isIsActiveFieldSetted === false) {
-                throw new ControllerUndefinedValueException('A chave isActive não foi informada no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave isActive não foi informada no JSON ou seu valor é null!'
+                );
             }
 
             $name = $body['name'];
@@ -75,7 +79,12 @@ class GameController
                 ->sendJSON();
 
             return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -83,7 +92,12 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -126,7 +140,9 @@ class GameController
 
             $wasSomeUpdateHappened = $this->service->update($gameId, $name, $isActive);
             if ($wasSomeUpdateHappened === false) {
-                throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id informado é váildo.');
+                throw new HttpResourceNotFoundException(
+                    'A atualização não aconteceu. Verifique se o id informado é váildo.'
+                );
             }
 
             $response
@@ -136,7 +152,13 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (HttpResourceNotFoundException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+        } catch (
+            HttpResourceNotFoundException |
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            DatabaseDuplicatedEntryException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -144,7 +166,12 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -163,12 +190,16 @@ class GameController
 
             $isIdSetted = isset($params['gameId']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro gameId não foi informado ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro gameId não foi informado ou seu valor é null!'
+                );
             }
 
             $isIsActiveSetted = isset($body['isActive']);
             if ($isIsActiveSetted === false) {
-                throw new ControllerUndefinedValueException('A chave isActive não foi definida no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave isActive não foi definida no JSON ou seu valor é null!'
+                );
             }
 
             $id = $params['gameId'];
@@ -176,7 +207,9 @@ class GameController
 
             $wasTheUpdateSuccessful = $this->service->setIsActive($id, $isActive);
             if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Ocorreu um erro ao alterar o estado do jogo com o id ' . $id);
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro ao alterar o estado do jogo com o id ' . $id
+                );
             }
 
             $response
@@ -194,7 +227,12 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -217,7 +255,9 @@ class GameController
 
             $isGameIdSetted = isset($params['gameId']);
             if ($isGameIdSetted === false) {
-                throw new ControllerUndefinedValueException('O id do jogo não foi informado na URL ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O id do jogo não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $gameId = $params['gameId'];
@@ -225,7 +265,9 @@ class GameController
             $game = $this->service->findById($gameId);
 
             if ($game === null) {
-                throw new HttpResourceNotFoundException('O registro de jogo com o id ' . $gameId . ' não pôde ser encontrado!');
+                throw new HttpResourceNotFoundException(
+                    'O registro de jogo com o id ' . $gameId . ' não pôde ser encontrado!'
+                );
             }
 
             $response
@@ -256,7 +298,12 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -310,7 +357,11 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()

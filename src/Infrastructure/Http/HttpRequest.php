@@ -107,7 +107,9 @@ class HttpRequest
         $isAssociative = true;
         $result = json_decode($this->body, $isAssociative);
         if ($result == false) {
-            throw new HttpJsonParseException('Erro ao fazer a decodificação de uma string JSON para uma estrutura de dados PHP.');
+            throw new HttpJsonParseException(
+                'Erro ao fazer a decodificação de uma string JSON para uma estrutura de dados PHP.'
+            );
         }
         return $result;
     }

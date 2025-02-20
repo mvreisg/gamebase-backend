@@ -51,7 +51,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             if ($insertStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de inserção!'
+                );
             }
 
             $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
@@ -59,7 +61,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasInsertStatementExecutedSuccessfully === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de inserção!'
+                );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
@@ -83,7 +87,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasSelectStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao tentar executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao tentar executar a declaração de busca!'
+                );
             }
 
             $fetchResult = $selectStatement->fetch();
@@ -99,7 +105,12 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre->setName($fetchResult['name']);
 
             return $genre;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -127,7 +138,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
@@ -135,14 +148,20 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 ':id' => $id
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
             }
 
             $numberOfAffectedLines = $statement->rowCount();
             $wasTheRepositoryAffected = $numberOfAffectedLines > 0;
 
             return $wasTheRepositoryAffected;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -185,7 +204,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -198,7 +219,11 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre->setName($result['name']);
 
             return $genre;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -225,7 +250,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -244,7 +271,11 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             return $genres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -276,14 +307,20 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasTheStatementExecutedSuccessfully === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $numberOfAffectedLines = $statement->rowCount();
             $hasDuplicatedNames = $numberOfAffectedLines > 0;
 
             return $hasDuplicatedNames;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

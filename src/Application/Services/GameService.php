@@ -54,11 +54,20 @@ class GameService
             $validatedName = $game->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do jogo a ser inserido já existe no banco de dados!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome do jogo a ser inserido já existe no banco de dados!'
+                );
             }
             $game = $this->repository->insert($game);
             return $game;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | DatabaseDuplicatedEntryException | PDOException | EntityInvalidValueException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            DatabaseDuplicatedEntryException |
+            PDOException |
+            EntityInvalidValueException $e
+        ) {
             throw $e;
         }
     }
@@ -91,7 +100,13 @@ class GameService
             }
             $wasSomeUpdateHappened = $this->repository->update($game);
             return $wasSomeUpdateHappened;
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -107,7 +122,12 @@ class GameService
             $game->setIsActive($isActive);
             $wasTheUpdateSuccessful = $this->repository->setIsActive($id, $isActive);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -129,7 +149,13 @@ class GameService
             $game->setId($id);
             $game = $this->repository->findById($id);
             return $game;
-        } catch (EntityInvalidValueException | DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -145,7 +171,11 @@ class GameService
         try {
             $games = $this->repository->findAll();
             return $games;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

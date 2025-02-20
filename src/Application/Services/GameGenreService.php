@@ -53,7 +53,15 @@ class GameGenreService
             $gameGenre->setGameId($gameId);
             $gameGenre = $this->repository->insert($gameGenre);
             return $gameGenre;
-        } catch (EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             throw $e;
         }
     }
@@ -81,7 +89,12 @@ class GameGenreService
             $gameGenre->setGameId($gameId);
             $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -103,7 +116,12 @@ class GameGenreService
             $gameGenre->setId($id);
             $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
             return $wasTheDeleteSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -125,7 +143,12 @@ class GameGenreService
             $gameGenre->setId($id);
             $gameGenre = $this->repository->findById($id);
             return $gameGenre;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -141,7 +164,11 @@ class GameGenreService
         try {
             $gameGenres = $this->repository->findAll();
             return $gameGenres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
