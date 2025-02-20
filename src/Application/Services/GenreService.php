@@ -44,10 +44,10 @@ class GenreService
     public function insert(mixed $name): Genre
     {
         $genre = new Genre();
-        $genre->setName($name);
 
         try {
-            $genre->validateName();
+            $genre->validateName($name);
+            $genre->setName($name);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -73,12 +73,12 @@ class GenreService
     public function update(mixed $id, mixed $name): bool
     {
         $genre = new Genre();
-        $genre->setId($id);
-        $genre->setName($name);
 
         try {
-            $genre->validateId();
-            $genre->validateName();
+            $genre->validateId($id);
+            $genre->validateName($name);
+            $genre->setId($id);
+            $genre->setName($name);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -102,10 +102,10 @@ class GenreService
     public function findById(mixed $id): Genre|null
     {
         $genre = new Genre();
-        $genre->setId($id);
 
         try {
-            $genre->validateId();
+            $genre->validateId($id);
+            $genre->setId($id);
             $genre = $this->repository->findById($id);
             return $genre;
         } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {

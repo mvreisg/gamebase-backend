@@ -18,12 +18,10 @@
         "robmorgan/phinx": "^0.16.6"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.68",
-        "overtrue/phplint": "9.5"
+        "friendsofphp/php-cs-fixer": "^3.68"
     },
     "scripts": {
-	    "format": "vendor/bin/php-cs-fixer fix",
-        "lint": "vendor/bin/phplint lint",
+	    "format": "vendor/bin/php-cs-fixer fix",        
         "phinx": "vendor/bin/phinx"
     }
 }

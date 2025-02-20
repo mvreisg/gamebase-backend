@@ -44,10 +44,10 @@ class PlatformService
     public function insert(mixed $name): Platform
     {
         $platform = new Platform();
-        $platform->setName($name);
 
         try {
-            $platform->validateName();
+            $platform->validateName($name);
+            $platform->setName($name);
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -73,12 +73,12 @@ class PlatformService
     public function update(mixed $id, mixed $name): bool
     {
         $platform = new Platform();
-        $platform->setId($id);
-        $platform->setName($name);
 
         try {
-            $platform->validateId();
-            $platform->validateName();
+            $platform->validateId($id);
+            $platform->validateName($name);
+            $platform->setId($id);
+            $platform->setName($name);
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -101,9 +101,10 @@ class PlatformService
     public function findById(mixed $id): Platform|null
     {
         $platform = new Platform();
-        $platform->setId($id);
+
         try {
-            $platform->validateId();
+            $platform->validateId($id);
+            $platform->setId($id);
             $platform = $this->repository->findById($id);
             return $platform;
         } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
