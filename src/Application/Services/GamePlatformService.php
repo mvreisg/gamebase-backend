@@ -81,7 +81,7 @@ class GamePlatformService
             $gamePlatform->validateGameId();
             $wasTheUpdateSuccessful = $this->repository->update($gamePlatform);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

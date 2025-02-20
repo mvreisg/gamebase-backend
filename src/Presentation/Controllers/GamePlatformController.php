@@ -156,7 +156,7 @@ class GamePlatformController
             }
 
             if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Ocorreu um erro ao realizar a atualização!');
+                throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
             }
 
             $response
@@ -164,6 +164,14 @@ class GamePlatformController
                     'message' => 'Vínculos entre jogos e plataformas editados com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
         } catch (ControllerUndefinedValueException | ControllerInvalidValueException | HttpJsonParseException | EntityInvalidValueException $e) {
@@ -174,7 +182,7 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()

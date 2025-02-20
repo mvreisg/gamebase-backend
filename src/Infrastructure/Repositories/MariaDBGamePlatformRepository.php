@@ -136,9 +136,14 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 ':gameId' => $gameId,
                 ':id' => $id
             ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
 
-            return $wasTheStatementSuccessfullyExecuted;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+            $numberOfAffectedLinesInTheRepository = $statement->rowCount();
+            $wasTheDatabaseAffected = $numberOfAffectedLinesInTheRepository > 0;
+            return $wasTheDatabaseAffected;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }
