@@ -312,48 +312,42 @@ class GamePlatformController
      */
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
-        $messages = [];
-        $data = [];
         try {
             $gamePlatforms = $this->service->findAll();
 
             $numberOfGamePlatforms = count($gamePlatforms);
             if ($numberOfGamePlatforms === 0) {
-                $messages[] = 'A busca foi realizada com sucesso mas nenhum valor foi encontrado!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->sendJSON();
-                return;
+                throw new HttpResourceNotFoundException('A busca foi realizada com sucesso mas nenhum valor foi encontrado!');
             }
 
             foreach ($gamePlatforms as $gamePlatform) {
-                $id = $gamePlatform->getId();
-                $platformId = $gamePlatform->getPlatformId();
-                $gameId = $gamePlatform->getGameId();
                 $data[] = [
-                    'id' => $id,
-                    'platformId' => $platformId,
-                    'gameId' => $gameId
+                    'id' => $gamePlatform->getId(),
+                    'platformId' => $gamePlatform->getPlatformId(),
+                    'gameId' => $gamePlatform->getGameId()
                 ];
             }
 
-            $messages[] = 'Busca realizada com sucesso!';
             $response
                 ->appendArray([
-                    'messages' => $messages,
+                    'message' => 'Busca realizada com sucesso!',
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (HttpResourceNotFoundException $e) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
