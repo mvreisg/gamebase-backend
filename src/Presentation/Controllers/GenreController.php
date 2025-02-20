@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
@@ -93,75 +94,53 @@ class GenreController
      */
     public function update(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-
         try {
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
             $isGenreIdSetted = isset($params['genreId']);
             if ($isGenreIdSetted === false) {
-                $messages[] = 'O parâmetro genreId não foi informado na URL ou seu valor é null!';
+                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado na URL ou seu valor é null!');
             }
 
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                $messages[] = 'A chave name não foi informada ou seu valor é null!';
-            }
-
-            $hasUndefinedFields = $isGenreIdSetted === false || $isNameFieldSetted === false;
-            if ($hasUndefinedFields) {
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+                throw new ControllerUndefinedValueException('A chave name não foi informada ou seu valor é null!');
             }
 
             $genreId = $params['genreId'];
             $name = $body['name'];
 
             $wasTheUpdateASuccess = $this->service->update($genreId, $name);
-        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
-            $messages[] = $e->getMessage();
+
+            if ($wasTheUpdateASuccess === false) {
+                throw new ControllerOperationErrorException('Ocorreu uma falha na atualização!');
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gênero atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($wasTheUpdateASuccess === false) {
-            $messages[] = 'Ocorreu uma falha na atualização!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
-            return;
-        }
-
-        $messages[] = 'Gênero atualizado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
