@@ -44,11 +44,9 @@ class PlatformController
      */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-        $platform = null;
         try {
             $body = $request->parseBodyFromJSONString();
+
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false) {
                 throw new ControllerUndefinedValueException('A chave name não foi definida no JSON ou seu valor é null!');
@@ -56,6 +54,18 @@ class PlatformController
 
             $name = $body['name'];
             $platform = $this->service->insert($name);
+
+            $response
+                ->appendArray([
+                    'message' => 'Plataforma incluída com sucesso!',
+                    'data' => [
+                        'id' => $platform->getId(),
+                        'name' => $platform->getName()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $messages[] = $e->getMessage();
             $response
@@ -75,20 +85,6 @@ class PlatformController
                 ->sendJSON();
             return;
         }
-
-        $data = [
-            'id' => $platform->getId(),
-            'name' => $platform->getName()
-        ];
-
-        $messages[] = 'Plataforma incluída com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[201])
-            ->sendJSON();
     }
 
     /**
