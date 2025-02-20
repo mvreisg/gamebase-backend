@@ -154,8 +154,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $numberOfLinesAffected = $statement->rowCount();
-            $wasUpdateSuccessful = $numberOfLinesAffected > 0;
-            return $wasUpdateSuccessful;
+            $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
+            return $wasSomeUpdateHappened;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }

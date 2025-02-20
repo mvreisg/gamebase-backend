@@ -89,8 +89,8 @@ class GameService
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException('O nome do jogo a ser atualizado já existe no repositório!');
             }
-            $wasItSuccessful = $this->repository->update($game);
-            return $wasItSuccessful;
+            $wasSomeUpdateHappened = $this->repository->update($game);
+            return $wasSomeUpdateHappened;
         } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }

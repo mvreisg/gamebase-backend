@@ -124,10 +124,9 @@ class GameController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->update($gameId, $name, $isActive);
-
-            if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Os dados do jogo não puderam ser atualizados.');
+            $wasSomeUpdateHappened = $this->service->update($gameId, $name, $isActive);
+            if ($wasSomeUpdateHappened === false) {
+                throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id informado é váildo.');
             }
 
             $response
@@ -137,7 +136,7 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+        } catch (HttpResourceNotFoundException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
