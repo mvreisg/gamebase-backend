@@ -134,8 +134,14 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 ':name' => $name,
                 ':id' => $id
             ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
 
-            return $wasTheUpdateSuccessfullyExecuted;
+            $numberOfAffectedLines = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfAffectedLines > 0;
+
+            return $wasTheRepositoryAffected;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }

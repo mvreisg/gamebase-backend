@@ -47,10 +47,10 @@ class GameGenreService
         $gameGenre = new GameGenre();
 
         try {
+            $gameGenre->validateGenreId($genreId);
             $gameGenre->validateGameId($gameId);
-            $gameGenre->validateGenreId($gameGenre);
-            $gameGenre->setGameId($gameId);
             $gameGenre->setGenreId($genreId);
+            $gameGenre->setGameId($gameId);
             $gameGenre = $this->repository->insert($gameGenre);
             return $gameGenre;
         } catch (EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {

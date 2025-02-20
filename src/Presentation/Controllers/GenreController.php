@@ -112,10 +112,9 @@ class GenreController
             $genreId = $params['genreId'];
             $name = $body['name'];
 
-            $wasTheUpdateASuccess = $this->service->update($genreId, $name);
-
-            if ($wasTheUpdateASuccess === false) {
-                throw new ControllerOperationErrorException('Ocorreu uma falha na atualização!');
+            $wasAUpdateOcurred = $this->service->update($genreId, $name);
+            if ($wasAUpdateOcurred === false) {
+                throw new HttpResourceNotFoundException('O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.');
             }
 
             $response
@@ -123,6 +122,14 @@ class GenreController
                     'message' => 'Gênero atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
