@@ -202,43 +202,39 @@ class GamePlatformController
             }
 
             $id = $params['id'];
-            $wasDeletionSuccessful = $this->service->delete($id);
 
+            $wasDeletionSuccessful = $this->service->delete($id);
             if ($wasDeletionSuccessful === false) {
                 throw new HttpResourceNotFoundException('O registro com o id ' . $id . ' não foi encontrado!');
             }
 
-            $messages[] = 'Vínculo entre jogos e plataformas deletado com sucesso!';
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Vínculo entre jogos e plataformas deletado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
