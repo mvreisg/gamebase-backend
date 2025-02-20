@@ -12,17 +12,17 @@ class GameGenre
     /**
      * @var int $id The id of the entity.
      */
-    private mixed $id;
+    private int $id;
 
     /**
      * @var int $genreId The Genre id of the entity.
      */
-    private mixed $genreId;
+    private int $genreId;
 
     /**
      * @var int $gameId The Game id of the entity.
      */
-    private mixed $gameId;
+    private int $gameId;
 
     /**
      * Game Genre entity class constructor.
@@ -31,7 +31,7 @@ class GameGenre
      * @param int $gameId [Optional] - The Game id of the entity.
      * @return void
      */
-    public function __construct(mixed $id = 0, mixed $genreId = 0, mixed $gameId = 0)
+    public function __construct(int $id = 0, int $genreId = 0, int $gameId = 0)
     {
         $this->id = $id;
         $this->genreId = $genreId;
@@ -52,7 +52,7 @@ class GameGenre
      * @param int $id The id of the entity.
      * @return void
      */
-    public function setId(mixed $id)
+    public function setId(int $id)
     {
         $this->id = $id;
     }
@@ -71,7 +71,7 @@ class GameGenre
      * @param int $genreId The Genre id of the entity.
      * @return void
      */
-    public function setGenreId(mixed $genreId)
+    public function setGenreId(int $genreId)
     {
         $this->genreId = $genreId;
     }
@@ -90,7 +90,7 @@ class GameGenre
      * @param int $gameId The Game id of the entity.
      * @return void
      */
-    public function setGameId(mixed $gameId)
+    public function setGameId(int $gameId)
     {
         $this->gameId = $gameId;
     }
@@ -100,18 +100,26 @@ class GameGenre
      * @throws EntityInvalidValueException Throwed if the id is invalid.
      * @return void
      */
-    public function validateId()
+    public function validateId(mixed $id)
     {
-        if ($this->id === null) {
-            throw new EntityInvalidValueException('O id é null.');
+        if ($id === null) {
+            throw new EntityInvalidValueException('O id é null!');
         }
 
-        if (is_string($this->id)) {
-            throw new EntityInvalidValueException('O id não é um número.');
+        if (is_numeric($id) === false) {
+            throw new EntityInvalidValueException('O id não é um número!');
         }
 
-        if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
+        if (is_string($id)) {
+            throw new EntityInvalidValueException('O id é uma string!');
+        }
+
+        if (is_bool($id)) {
+            throw new EntityInvalidValueException('O id é um valor booleano!');
+        }
+
+        if ($id < 1) {
+            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
         }
     }
 
@@ -120,18 +128,26 @@ class GameGenre
      * @throws EntityInvalidValueException Throwed if the Genre id is invalid.
      * @return void
      */
-    public function validateGenreId()
+    public function validateGenreId(mixed $genreId)
     {
-        if ($this->genreId === null) {
-            throw new EntityInvalidValueException('O genreId é null.');
+        if ($genreId === null) {
+            throw new EntityInvalidValueException('O genreId é null!');
         }
 
-        if (is_string($this->genreId)) {
-            throw new EntityInvalidValueException('O genreId não é um número.');
+        if (is_numeric($genreId) === false) {
+            throw new EntityInvalidValueException('O genreId não é um número!');
         }
 
-        if ($this->genreId < 1) {
-            throw new EntityInvalidValueException('O genreId ' . $this->genreId . ' é menor que um.');
+        if (is_string($genreId)) {
+            throw new EntityInvalidValueException('O genreId é uma string!');
+        }
+
+        if (is_bool($genreId)) {
+            throw new EntityInvalidValueException('O genreId é um valor booleano!');
+        }
+
+        if ($genreId < 1) {
+            throw new EntityInvalidValueException('O genreId ' . $genreId . ' deve ser maior que 0.');
         }
     }
 
@@ -140,18 +156,26 @@ class GameGenre
      * @throws EntityInvalidValueException Throwed if the Game id is invalid.
      * @return void
      */
-    public function validateGameId()
+    public function validateGameId(mixed $gameId)
     {
-        if ($this->gameId === null) {
-            throw new EntityInvalidValueException('O gameId é null.');
+        if ($gameId === null) {
+            throw new EntityInvalidValueException('O gameId é null!');
         }
 
-        if (is_string($this->gameId)) {
-            throw new EntityInvalidValueException('O gameId não é um número.');
+        if (is_numeric($gameId) === false) {
+            throw new EntityInvalidValueException('O gameId não é um número!');
         }
 
-        if ($this->gameId < 1) {
-            throw new EntityInvalidValueException('O gameId ' . $this->gameId . ' é menor que um.');
+        if (is_string($gameId)) {
+            throw new EntityInvalidValueException('O gameId é uma string!');
+        }
+
+        if (is_bool($gameId)) {
+            throw new EntityInvalidValueException('O gameId é um valor booleano!');
+        }
+
+        if ($gameId < 1) {
+            throw new EntityInvalidValueException('O gameId ' . $gameId . ' deve ser maior que 0.');
         }
     }
 }

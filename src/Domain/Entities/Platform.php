@@ -12,12 +12,12 @@ class Platform
     /**
      * @var int $id The Platform id.
      */
-    private mixed $id;
+    private int $id;
 
     /**
      * @var string $name The Platform name.
      */
-    private mixed $name;
+    private string $name;
 
     /**
      * Platform entity class constructor.
@@ -35,7 +35,7 @@ class Platform
      * Gets the id of the Platform.
      * @return int The Platform id.
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -45,7 +45,7 @@ class Platform
      * @param int $id The Platform id.
      * @return void
      */
-    public function setId(mixed $id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -54,7 +54,7 @@ class Platform
      * Gets the name of the Platform.
      * @return string The name of the Platform.
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -64,7 +64,7 @@ class Platform
      * @param string $name The platform name.
      * @return void
      */
-    public function setName(mixed $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -73,14 +73,26 @@ class Platform
      * Validates if the id is valid.
      * @throws EntityInvalidValueException Throwed if the id is invalid.
      */
-    public function validateId()
+    public function validateId(mixed $id): void
     {
-        if (is_numeric($this->id) === false) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' não é um número.');
+        if ($id === null) {
+            throw new EntityInvalidValueException('O id é null!');
         }
 
-        if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
+        if (is_numeric($id) === false) {
+            throw new EntityInvalidValueException('O id não é um número!');
+        }
+
+        if (is_string($id)) {
+            throw new EntityInvalidValueException('O id é uma string!');
+        }
+
+        if (is_bool($id)) {
+            throw new EntityInvalidValueException('O id é um valor booleano!');
+        }
+
+        if ($id < 1) {
+            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
         }
     }
 
@@ -88,19 +100,19 @@ class Platform
      * Validates the name of the Platform.
      * @throws EntityInvalidValueException Throwed if the name is invalid.
      */
-    public function validateName()
+    public function validateName(mixed $name): void
     {
-        if ($this->name === null) {
+        if ($name === null) {
             throw new EntityInvalidValueException('O nome é null.');
         }
 
-        if (is_string($this->name) === false) {
+        if (is_string($name) === false) {
             throw new EntityInvalidValueException('O nome não é uma string.');
         }
 
-        $this->name = trim($this->name);
+        $name = trim($name);
 
-        if ($this->name === '') {
+        if ($name === '') {
             throw new EntityInvalidValueException('O nome está vazio.');
         }
     }

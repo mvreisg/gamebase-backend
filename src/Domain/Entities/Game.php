@@ -88,18 +88,22 @@ class Game
      * Method to validate the id of the Game, throwing an exception if the id is invalid.
      * @throws EntityInvalidValueException Throwed if the id is invalid.
      */
-    public function validateId(mixed $id)
+    public function validateId(mixed $id): void
     {
         if ($id === null) {
-            throw new EntityInvalidValueException('O id ' . $id . ' é null.');
-        }
-
-        if (is_string($id)) {
-            throw new EntityInvalidValueException('O id ' . $id . ' é uma string.');
+            throw new EntityInvalidValueException('O id é null!');
         }
 
         if (is_numeric($id) === false) {
-            throw new EntityInvalidValueException('O id ' . $id . ' não é um número.');
+            throw new EntityInvalidValueException('O id não é um número!');
+        }
+
+        if (is_string($id)) {
+            throw new EntityInvalidValueException('O id é uma string!');
+        }
+
+        if (is_bool($id)) {
+            throw new EntityInvalidValueException('O id é um valor booleano!');
         }
 
         if ($id < 1) {
@@ -111,7 +115,7 @@ class Game
      * Method to validate the name of the Game, throwing an exception if the name is invalid.
      * @throws EntityInvalidValueException Throwed if the name is invalid.
      */
-    public function validateName(mixed $name)
+    public function validateName(mixed $name): void
     {
         if ($name === null) {
             throw new EntityInvalidValueException('O nome é null.');
@@ -128,7 +132,7 @@ class Game
         }
     }
 
-    public function validateIsActive(mixed $isActive)
+    public function validateIsActive(mixed $isActive): void
     {
         if ($isActive === null) {
             throw new EntityInvalidValueException('isActive é null!');
