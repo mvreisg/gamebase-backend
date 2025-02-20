@@ -81,7 +81,7 @@ class GameGenreService
             $gameGenre->setGameId($gameId);
             $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

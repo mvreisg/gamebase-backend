@@ -152,9 +152,8 @@ class GameGenreController
 
             foreach ($genresIds as $genreId) {
                 $wasTheUpdateSuccessful = $this->service->update($id, $genreId, $gameId);
-
                 if ($wasTheUpdateSuccessful === false) {
-                    throw new ControllerOperationErrorException('Ocorreu um erro ao executar a atualização do vínculo com id ' . $id . ', gameId ' . $gameId . ' e genreId ' . $genreId);
+                    throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
                 }
             }
 
@@ -165,6 +164,14 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
         } catch (ControllerInvalidValueException | ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
@@ -173,7 +180,7 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (ControllerOperationErrorException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()

@@ -140,9 +140,15 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':gameId' => $gameId,
                 ':genreId' => $genreId
             ]);
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
 
-            return $wasTheStatementExecutionSuccessful;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+            $numberOfRowsAffected = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfRowsAffected > 0;
+
+            return $wasTheRepositoryAffected;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
             throw $e;
         }
     }

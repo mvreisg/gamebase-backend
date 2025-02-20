@@ -150,13 +150,11 @@ class GamePlatformController
                 throw new ControllerInvalidValueException('O valor de platformsIds é um array vazio!');
             }
 
-            $wasTheUpdateSuccessful = false;
             foreach ($platformsIds as $platformId) {
                 $wasTheUpdateSuccessful = $this->service->update($id, $platformId, $gameId);
-            }
-
-            if ($wasTheUpdateSuccessful === false) {
-                throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
+                if ($wasTheUpdateSuccessful === false) {
+                    throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
+                }
             }
 
             $response
