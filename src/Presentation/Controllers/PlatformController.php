@@ -210,52 +210,45 @@ class PlatformController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $platforms = null;
         try {
             $platforms = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfPlatforms = count($platforms);
+            if ($numberOfPlatforms === 0) {
+                throw new HttpResourceNotFoundException('A busca foi concluída e nenhuma plataforma foi encontrada.');
+            }
+
+            foreach ($platforms as $platform) {
+                $data[] = [
+                    'id' => $platform->getId(),
+                    'name' => $platform->getName(),
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataformas buscadas com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfPlatforms = count($platforms);
-        if ($numberOfPlatforms === 0) {
-            $messages[] = 'A busca foi concluída e nenhuma plataforma foi encontrada.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($platforms as $platform) {
-            $platformId = $platform->getId();
-            $platformName = $platform->getName();
-
-            $data[] = [
-                'id' => $platformId,
-                'name' => $platformName,
-            ];
-        }
-
-        $messages[] = 'Plataformas buscadas com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 }
