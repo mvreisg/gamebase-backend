@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -149,66 +150,57 @@ class PlatformController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-        $platform = null;
-
         try {
             $params = $request->getParams();
+
             $isPlatformIdSetted = isset($params['platformId']);
             if ($isPlatformIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro platformId não está definido no JSON ou seu valor é null!');
             }
 
             $platformId = $params['platformId'];
+
             $platform = $this->service->findById($platformId);
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+            if ($platform === null) {
+                throw new HttpResourceNotFoundException('A plataforma procurada não foi encontrada!');
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataforma encontrada com sucesso!',
+                    'data' => [
+                        'id' => $platform->getId(),
+                        'name' => $platform->getName(),
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($platform === null) {
-            $messages[] = 'A plataforma procurada não foi encontrada!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
-            return;
-        }
-
-        $platformId = $platform->getId();
-        $platformName = $platform->getName();
-
-        $data = [
-            'id' => $platformId,
-            'name' => $platformName,
-        ];
-
-        $messages[] = 'Plataforma encontrada com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
