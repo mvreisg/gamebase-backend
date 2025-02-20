@@ -249,69 +249,59 @@ class GameGenreController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $gameGenre = null;
         try {
             $params = $request->getParams();
+
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL ou seu valor é null!');
             }
 
             $id = $params['id'];
+
             $gameGenre = $this->service->findById($id);
 
             if ($gameGenre === null) {
                 throw new HttpResourceNotFoundException('O vínculo entre gênero e jogo procurado não existe!');
             }
-        } catch (HttpResourceNotFoundException $e) {
-            $messages[] = $e->getMessage();
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Vínculo entre gênero e jogo encontrado com sucesso!',
+                    'data' => [
+                        'id' => $gameGenre->getId(),
+                        'gameId' => $gameGenre->getGameId(),
+                        'genreId' => $gameGenre->getGenreId()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
-        } catch (HttpJsonParseException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $gameGenreId = $gameGenre->getId();
-        $gameGenreGameId = $gameGenre->getGameId();
-        $gameGenreGenreId = $gameGenre->getGenreId();
-
-        $data = [
-            'id' => $gameGenreId,
-            'gameId' => $gameGenreGameId,
-            'genreId' => $gameGenreGenreId
-        ];
-
-        $messages[] = 'Vínculo entre gênero e jogo encontrado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
-        return;
     }
 
     /**
