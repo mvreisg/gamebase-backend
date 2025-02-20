@@ -114,7 +114,7 @@ class PlatformController
 
             $wasTheUpdateSuccessful = $this->service->update($platformId, $name);
             if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .' . $platformId . '!');
+                throw new HttpResourceNotFoundException('Não foi possível atualizar a plataforma com o id ' . $platformId . '!');
             }
 
             $response
@@ -122,6 +122,14 @@ class PlatformController
                     'message' => 'Plataforma atualizada com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
                 ->sendJSON();
             return;
         } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {

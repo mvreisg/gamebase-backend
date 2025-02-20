@@ -132,8 +132,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ':name' => $name,
                 ':id' => $id
             ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
 
-            return $wasTheStatementSuccessfullyExecuted;
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
+
+            return $wasTheRepositoryAffected;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
