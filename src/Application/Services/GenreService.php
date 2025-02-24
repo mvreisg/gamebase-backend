@@ -106,6 +106,26 @@ class GenreService
         }
     }
 
+    public function setIsActive(mixed $id, mixed $isActive): bool
+    {
+        $genre = new Genre();
+        try {
+            $genre->validateId($id);
+            $genre->validateIsActive($isActive);
+            $genre->setId($id);
+            $genre->setIsActive($isActive);
+            $wasSuccessful = $this->repository->setIsActive($id, $isActive);
+            return $wasSuccessful;
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
     /**
      * Finds a Genre already registered in the repository by its id.
      * @param int $id The id of the Genre.
