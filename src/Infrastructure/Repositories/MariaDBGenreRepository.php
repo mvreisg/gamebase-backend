@@ -42,12 +42,19 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $genre->getName();
+            $isActive = $genre->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    genre (name) 
+                    genre (
+                        name,
+                        is_active
+                    ) 
                 VALUES 
-                    (:name);'
+                    (
+                        :name,
+                        :isActive
+                    );'
             );
 
             if ($insertStatement === false) {
@@ -57,7 +64,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
 
             if ($wasInsertStatementExecutedSuccessfully === false) {
@@ -103,6 +111,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($fetchResult['id']);
             $genre->setName($fetchResult['name']);
+            $genre->setIsActive($fetchResult['is_active']);
 
             return $genre;
         } catch (
@@ -126,13 +135,15 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         $id = $genre->getId();
         $name = $genre->getName();
+        $isActive = $genre->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     genre 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
@@ -145,7 +156,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -172,9 +184,44 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
      * @return bool The success flag.
      * @throws PDOException Throwed if a database error occurs.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    genre
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $numberOfAffectedLines = $statement->rowCount();
+            $wasItSuccessful = $numberOfAffectedLines > 0;
+
+            return $wasItSuccessful;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
     }
 
     /**
@@ -217,6 +264,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($result['id']);
             $genre->setName($result['name']);
+            $genre->setIsActive($result['is_active']);
 
             return $genre;
         } catch (
@@ -267,6 +315,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 $genre = new Genre();
                 $genre->setId($row['id']);
                 $genre->setName($row['name']);
+                $genre->setIsActive($row['is_active']);
                 $genres[] = $genre;
             }
 

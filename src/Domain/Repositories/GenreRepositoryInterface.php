@@ -23,12 +23,7 @@ interface GenreRepositoryInterface
      */
     public function update(Genre $genre): bool;
 
-    /**
-     * Deletes a Genre from the repository by its id.
-     * @param int $id The Genre id to be deleted.
-     * @return bool The success flag.
-     */
-    public function delete(int $id): bool;
+    public function setIsActive(int $id, bool $isActive): bool;
 
     /**
      * Finds a Genre in the repository by its id.
