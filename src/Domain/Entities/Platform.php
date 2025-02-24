@@ -19,16 +19,19 @@ class Platform
      */
     private string $name;
 
+    private bool $isActive;
+
     /**
      * Platform entity class constructor.
      * @param int $id [optional] The Platform id.
      * @param string $name [optional] The Platform name.
      * @return void
      */
-    public function __construct(int $id = 0, string $name = '')
+    public function __construct(int $id = 0, string $name = '', bool $isActive = false)
     {
         $this->id = $id;
         $this->name = $name;
+        $this->isActive = $isActive;
     }
 
     /**
@@ -67,6 +70,16 @@ class Platform
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): void
+    {
+        $this->isActive = $isActive;
     }
 
     /**
@@ -114,6 +127,21 @@ class Platform
 
         if ($name === '') {
             throw new EntityInvalidValueException('O nome está vazio.');
+        }
+    }
+
+    public function validateIsActive(mixed $isActive): void
+    {
+        if ($isActive === null) {
+            throw new EntityInvalidValueException('isActive é null!');
+        }
+
+        if (is_string($isActive)) {
+            throw new EntityInvalidValueException('isActive é uma string!');
+        }
+
+        if (is_numeric($isActive)) {
+            throw new EntityInvalidValueException('isActive é numérico!');
         }
     }
 }

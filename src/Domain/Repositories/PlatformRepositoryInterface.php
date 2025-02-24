@@ -28,7 +28,7 @@ interface PlatformRepositoryInterface
      * @param int $id The id of the register to be deleted.
      * @return bool The success flag.
      */
-    public function delete(int $id): bool;
+    public function setIsActive(int $id, bool $isActive): bool;
 
     /**
      * Finds a Platform in the repository by its id.

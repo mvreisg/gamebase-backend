@@ -45,13 +45,20 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $name = $platform->getName();
+            $isActive = $platform->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
                     platform 
-                        (name) 
+                        (
+                            name,
+                            is_active
+                        ) 
                 VALUES 
-                        (:name);'
+                        (
+                            :name,
+                            :isActive
+                        );'
             );
             if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException(
@@ -60,7 +67,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -102,6 +110,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($fetchResult['id']);
             $platform->setName($fetchResult['name']);
+            $platform->setIsActive($fetchResult['is_active']);
 
             return $platform;
         } catch (
@@ -126,13 +135,15 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         $id = $platform->getId();
         $name = $platform->getName();
+        $isActive = $platform->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     platform 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
@@ -144,7 +155,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -167,9 +179,41 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @return bool The success flag.
      * @throws PDOException Throwed in case of database error.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    platform
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            return $wasTheUpdateSuccessfullyExecuted;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
     }
 
     /**
@@ -210,6 +254,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($result['id']);
             $platform->setName($result['name']);
+            $platform->setIsActive($result['is_active']);
 
             return $platform;
         } catch (
@@ -257,6 +302,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 $platform = new Platform();
                 $platform->setId($row['id']);
                 $platform->setName($row['name']);
+                $platform->setIsActive($row['is_active']);
                 $platforms[] = $platform;
             }
 

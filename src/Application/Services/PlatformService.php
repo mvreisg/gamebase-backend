@@ -41,13 +41,15 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(mixed $name): Platform
+    public function insert(mixed $name, mixed $isActive): Platform
     {
         $platform = new Platform();
 
         try {
             $platform->validateName($name);
+            $platform->validateIsActive($isActive);
             $platform->setName($name);
+            $platform->setIsActive($isActive);
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -80,15 +82,17 @@ class PlatformService
      * @throws PDOException Throwed in case of PDO error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(mixed $id, mixed $name): bool
+    public function update(mixed $id, mixed $name, mixed $isActive): bool
     {
         $platform = new Platform();
 
         try {
             $platform->validateId($id);
             $platform->validateName($name);
+            $platform->validateIsActive($isActive);
             $platform->setId($id);
             $platform->setName($name);
+            $platform->setIsActive($isActive);
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -102,6 +106,26 @@ class PlatformService
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function setIsActive(mixed $id, mixed $isActive): bool
+    {
+        $platform = new Platform();
+        try {
+            $platform->validateId($id);
+            $platform->validateIsActive($isActive);
+            $platform->setId($id);
+            $platform->setIsActive($isActive);
+            $wasSuccessful = $this->repository->setIsActive($id, $isActive);
+            return $wasSuccessful;
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
             PDOException $e
         ) {
             throw $e;

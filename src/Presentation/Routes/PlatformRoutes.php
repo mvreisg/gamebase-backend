@@ -36,6 +36,13 @@ class PlatformRoutes
             $controller->findById($request, $response);
         });
 
+        $app->add('PATCH', '/platform/:platformId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
+            $controller->setIsActive($request, $response);
+        });
+
         $app->add('PUT', '/platform/:platformId', function (
             HttpRequest $request,
             HttpResponse $response

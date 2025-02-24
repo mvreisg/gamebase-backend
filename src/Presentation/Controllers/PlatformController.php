@@ -55,15 +55,23 @@ class PlatformController
                 );
             }
 
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null');
+            }
+
             $name = $body['name'];
-            $platform = $this->service->insert($name);
+            $isActive = $body['isActive'];
+
+            $platform = $this->service->insert($name, $isActive);
 
             $response
                 ->appendArray([
                     'message' => 'Plataforma incluída com sucesso!',
                     'data' => [
                         'id' => $platform->getId(),
-                        'name' => $platform->getName()
+                        'name' => $platform->getName(),
+                        'isActive' => $platform->getIsActive()
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
@@ -126,10 +134,16 @@ class PlatformController
                 );
             }
 
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
+            }
+
             $platformId = $params['platformId'];
             $name = $body['name'];
+            $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->update($platformId, $name);
+            $wasTheUpdateSuccessful = $this->service->update($platformId, $name, $isActive);
             if ($wasTheUpdateSuccessful === false) {
                 throw new HttpResourceNotFoundException(
                     'Não foi possível atualizar a plataforma com o id ' . $platformId . '!'
@@ -176,6 +190,67 @@ class PlatformController
         }
     }
 
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isPlatformIdSetted = isset($params['platformId']);
+            if ($isPlatformIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro platformId não foi informado na URL!');
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
+            }
+
+            $platformId = $params['platformId'];
+            $isActive = $body['isActive'];
+
+            $wasItSuccessful = $this->service->setIsActive($platformId, $isActive);
+            if ($wasItSuccessful === false) {
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro ao alterar o estado de ativo da plataforma!'
+                );
+            }
+
+            $response
+                ->appendArray([
+                    'message' => 'Estado atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
+
     /**
      * Method that handles the HTTP request and response of a Platform search by its id.
      * @param HttpRequest $request The HTTP request object.
@@ -208,6 +283,7 @@ class PlatformController
                     'data' => [
                         'id' => $platform->getId(),
                         'name' => $platform->getName(),
+                        'isActive' => $platform->getIsActive()
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
@@ -265,6 +341,7 @@ class PlatformController
                 $data[] = [
                     'id' => $platform->getId(),
                     'name' => $platform->getName(),
+                    'isActive' => $platform->getIsActive()
                 ];
             }
 
