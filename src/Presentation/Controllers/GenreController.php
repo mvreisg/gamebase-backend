@@ -53,16 +53,23 @@ class GenreController
                 throw new ControllerUndefinedValueException('A chave name não existe ou seu valor é null');
             }
 
-            $name = $body['name'];
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null');
+            }
 
-            $genre = $this->service->insert($name);
+            $name = $body['name'];
+            $isActive = $body['isActive'];
+
+            $genre = $this->service->insert($name, $isActive);
 
             $response
                 ->appendArray([
                     'message' => 'Gênero inserido com sucesso!',
                     'data' => [
                         'id' => $genre->getId(),
-                        'name' => $genre->getName()
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
@@ -121,10 +128,16 @@ class GenreController
                 throw new ControllerUndefinedValueException('A chave name não foi informada ou seu valor é null!');
             }
 
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
+            }
+
             $genreId = $params['genreId'];
             $name = $body['name'];
+            $isActive = $body['isActive'];
 
-            $wasAUpdateOcurred = $this->service->update($genreId, $name);
+            $wasAUpdateOcurred = $this->service->update($genreId, $name, $isActive);
             if ($wasAUpdateOcurred === false) {
                 throw new HttpResourceNotFoundException(
                     'O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.'
@@ -151,6 +164,65 @@ class GenreController
             HttpJsonParseException |
             EntityInvalidValueException |
             DatabaseDuplicatedEntryException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
+
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isGenreIdSetted = isset($params['genreId']);
+            if ($isGenreIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado na URL!');
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
+            }
+
+            $genreId = $params['genreId'];
+            $isActive = $body['isActive'];
+
+            $wasItSuccessful = $this->service->setIsActive($genreId, $isActive);
+            if ($wasItSuccessful === false) {
+                throw new ControllerOperationErrorException('Ocorreu um erro ao alterar o estado de ativo do genero!');
+            }
+
+            $response
+                ->appendArray([
+                    'message' => 'Estado atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
         ) {
             $response
                 ->appendArray([
@@ -207,6 +279,7 @@ class GenreController
                     'data' => [
                         'id' => $genre->getId(),
                         'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
@@ -260,12 +333,10 @@ class GenreController
             }
 
             foreach ($genres as $genre) {
-                $genreId = $genre->getId();
-                $genreName = $genre->getName();
-
                 $data[] = [
-                    'id' => $genreId,
-                    'name' => $genreName
+                    'id' => $genre->getId(),
+                    'name' => $genre->getName(),
+                    'isActive' => $genre->getIsActive()
                 ];
             }
 

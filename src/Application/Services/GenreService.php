@@ -41,13 +41,15 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(mixed $name): Genre
+    public function insert(mixed $name, mixed $isActive): Genre
     {
         $genre = new Genre();
 
         try {
             $genre->validateName($name);
+            $genre->validateIsActive($isActive);
             $genre->setName($name);
+            $genre->setIsActive($isActive);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -77,15 +79,17 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(mixed $id, mixed $name): bool
+    public function update(mixed $id, mixed $name, mixed $isActive): bool
     {
         $genre = new Genre();
 
         try {
             $genre->validateId($id);
             $genre->validateName($name);
+            $genre->validateIsActive($isActive);
             $genre->setId($id);
             $genre->setName($name);
+            $genre->setIsActive($isActive);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
