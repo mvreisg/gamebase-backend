@@ -29,6 +29,13 @@ class GenreRoutes
             $controller->findAll($request, $response);
         });
 
+        $app->add('PATCH', '/genre/:genreId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
+            $controller->setIsActive($request, $response);
+        });
+
         $app->add('GET', '/genre/:genreId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findById($request, $response);
         });

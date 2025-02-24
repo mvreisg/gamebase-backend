@@ -211,10 +211,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            $numberOfAffectedLines = $statement->rowCount();
-            $wasItSuccessful = $numberOfAffectedLines > 0;
-
-            return $wasItSuccessful;
+            return $wasTheUpdateSuccessfullyExecuted;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
