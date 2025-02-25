@@ -209,10 +209,13 @@ class PlatformController
             $platformId = $params['platformId'];
             $isActive = $body['isActive'];
 
-            $wasItSuccessful = $this->service->setIsActive($platformId, $isActive);
-            if ($wasItSuccessful === false) {
+            $wasTheUpdateOcurred = $this->service->setIsActive($platformId, $isActive);
+            if ($wasTheUpdateOcurred === false) {
                 throw new ControllerOperationErrorException(
-                    'Ocorreu um erro ao alterar o estado de ativo da plataforma!'
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $platformId .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
                 );
             }
 

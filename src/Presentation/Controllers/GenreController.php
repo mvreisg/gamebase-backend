@@ -207,9 +207,14 @@ class GenreController
             $genreId = $params['genreId'];
             $isActive = $body['isActive'];
 
-            $wasItSuccessful = $this->service->setIsActive($genreId, $isActive);
-            if ($wasItSuccessful === false) {
-                throw new ControllerOperationErrorException('Ocorreu um erro ao alterar o estado de ativo do genero!');
+            $wasTheUpdateOcurred = $this->service->setIsActive($genreId, $isActive);
+            if ($wasTheUpdateOcurred === false) {
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $genreId .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
+                );
             }
 
             $response

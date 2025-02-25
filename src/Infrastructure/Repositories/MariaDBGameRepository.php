@@ -193,7 +193,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 SET
                     is_active = :isActive
                 WHERE
-                    id = :id;'
+                    id = :id
+                AND
+                    is_active <> :isActive;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException(
@@ -211,7 +213,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 );
             }
 
-            return $wasTheUpdateSuccessfullyExecuted;
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

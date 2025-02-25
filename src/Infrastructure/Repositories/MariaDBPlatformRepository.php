@@ -206,7 +206,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 );
             }
 
-            return $wasTheUpdateSuccessfullyExecuted;
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

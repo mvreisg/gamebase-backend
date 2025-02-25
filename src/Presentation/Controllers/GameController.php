@@ -205,10 +205,13 @@ class GameController
             $id = $params['gameId'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->setIsActive($id, $isActive);
-            if ($wasTheUpdateSuccessful === false) {
+            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            if ($wasTheUpdateOcurred === false) {
                 throw new ControllerOperationErrorException(
-                    'Ocorreu um erro ao alterar o estado do jogo com o id ' . $id
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $id .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
                 );
             }
 
