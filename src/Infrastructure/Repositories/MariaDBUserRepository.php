@@ -277,7 +277,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 return [];
             }
 
-            $games = [];
+            $users = [];
             foreach ($result as $row) {
                 $user = new User();
                 $user->setId($row['id']);

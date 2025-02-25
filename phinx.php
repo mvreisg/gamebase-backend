@@ -2,7 +2,11 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
-Dotenv\Dotenv::createImmutable(__DIR__)->load();
+try {
+    Dotenv\Dotenv::createImmutable(__DIR__)->load();
+} catch (Throwable $e) {
+    print_r('Erro ao carregar o .env em phinx.php');
+}
 
 return
 [

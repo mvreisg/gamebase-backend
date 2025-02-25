@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
 // Includes the class autoloader.
 include_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -29,12 +30,14 @@ try {
     $gamePlatformRoutes = new GamePlatformRoutes();
     $genreRoutes = new GenreRoutes();
     $platformRoutes = new PlatformRoutes();
+    $userRoutes = new UserRoutes();
 
     $gameRoutes->register($app);
     $gameGenreRoutes->register($app);
     $gamePlatformRoutes->register($app);
     $genreRoutes->register($app);
     $platformRoutes->register($app);
+    $userRoutes->register($app);
 
     $app->add(
         HttpRouter::WILDCARD_METHOD,
