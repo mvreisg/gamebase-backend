@@ -200,6 +200,55 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
+    public function findByUserName(mixed $userName): User|null
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    user 
+                WHERE 
+                    username = :userName;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':userName' => $userName
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $result = $statement->fetch();
+
+            if ($result === false) {
+                return null;
+            }
+
+            $user = new User();
+            $user->setId($result['id']);
+            $user->setUserName($result['username']);
+            $user->setPassword($result['password']);
+            $user->setIsActive($result['is_active']);
+
+            return $user;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
     public function findById(mixed $id): User|null
     {
         try {

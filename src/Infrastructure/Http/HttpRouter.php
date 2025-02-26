@@ -16,6 +16,7 @@ class HttpRouter
         201 => 'HTTP/1.1 201 Created',
         204 => 'HTTP/1.1 204 No Content',
         400 => 'HTTP/1.1 400 Bad Request',
+        403 => 'HTTP/1.1 403 Forbidden',
         404 => 'HTTP/1.1 404 Not Found',
         500 => 'HTTP/1.1 500 Internal Server Error'
     ];

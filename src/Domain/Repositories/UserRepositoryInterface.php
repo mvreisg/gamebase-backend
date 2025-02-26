@@ -14,6 +14,8 @@ interface UserRepositoryInterface
 
     public function findById(int $id): User|null;
 
+    public function findByUserName(string $userName): User|null;
+
     public function findAll(): array;
 
     public function hasDuplicatedUserName(string $name): bool;
