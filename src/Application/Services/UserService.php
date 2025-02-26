@@ -2,6 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use Mvreisg\GamebaseBackend\Domain\Encryption\EncrypterInterface;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
@@ -14,10 +15,12 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 class UserService
 {
     private UserRepositoryInterface $repository;
+    private EncrypterInterface $encrypter;
 
-    public function __construct(UserRepositoryInterface $repository)
+    public function __construct(UserRepositoryInterface $repository, EncrypterInterface $encrypter)
     {
         $this->repository = $repository;
+        $this->encrypter = $encrypter;
     }
 
     public function insert(mixed $userName, mixed $passWord, mixed $isActive): User
@@ -38,6 +41,9 @@ class UserService
                     'O nome do usuário a ser inserido já existe no banco de dados!'
                 );
             }
+            $plainPassword = $user->getPassWord();
+            $encodedPassword = $this->encrypter->encrypt($plainPassword);
+            $user->setPassword($encodedPassword);
             $user = $this->repository->insert($user);
             return $user;
         } catch (
@@ -70,6 +76,9 @@ class UserService
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException('O nome do jogo a ser atualizado já existe no repositório!');
             }
+            $plainPassword = $user->getPassWord();
+            $encodedPassword = $this->encrypter->encrypt($plainPassword);
+            $user->setPassword($encodedPassword);
             $wasSomeUpdateHappened = $this->repository->update($user);
             return $wasSomeUpdateHappened;
         } catch (
