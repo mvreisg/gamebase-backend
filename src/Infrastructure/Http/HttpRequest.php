@@ -35,6 +35,8 @@ class HttpRequest
      */
     private string $body;
 
+    private array $headers;
+
     /**
      * HTTP request class constructor.
      * @param string $method The request method.
@@ -43,13 +45,20 @@ class HttpRequest
      * @param Map<string,string> $params The request route parameters.
      * @param string $body The request body.
      */
-    public function __construct(string $method, string $route, $queries = [], $params = [], string $body = '')
-    {
+    public function __construct(
+        string $method,
+        string $route,
+        $queries = [],
+        $params = [],
+        string $body = '',
+        array $headers = []
+    ) {
         $this->method = $method;
         $this->route = $route;
         $this->queries = $queries;
         $this->params = $params;
         $this->body = $body;
+        $this->headers = $headers;
     }
 
     /**
@@ -95,6 +104,11 @@ class HttpRequest
     public function getBody()
     {
         return $this->body;
+    }
+
+    public function getHeaders()
+    {
+        return $this->headers;
     }
 
     /**

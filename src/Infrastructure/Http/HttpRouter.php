@@ -81,6 +81,7 @@ class HttpRouter
             $queryPart = $explodedPath[1];
         }
         $body = file_get_contents('php://input');
+        $headers = getallheaders();
 
         $matchingMethods = array_filter(
             $this->routes,
@@ -99,7 +100,7 @@ class HttpRouter
         if ($numberOfExactlyMatchedRoutes === 1) {
             $item = array_pop($exactlyMatchedRoutes);
             $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, [], $body);
+            $request = new HttpRequest($method, $routePart, $queries, [], $body, $headers);
             $response = new HttpResponse();
             call_user_func_array($item['callback'], [$request, $response]);
             return;
@@ -107,7 +108,7 @@ class HttpRouter
             $item = array_pop($looselyMatchedRoutes);
             $params = $this->findRouteParameters($item['route'], $routePart);
             $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, $params, $body);
+            $request = new HttpRequest($method, $routePart, $queries, $params, $body, $headers);
             $response = new HttpResponse();
             call_user_func_array($item['callback'], [$request, $response]);
             return;
