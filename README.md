@@ -8,9 +8,9 @@ Uses [Composer](https://getcomposer.org/) as the project package manager.
 
 Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr/).
 
-Uses [Sodium](https://www.php.net/manual/en/sodium.installation.php) as the password encrypter.
+Uses [Sodium](https://www.php.net/manual/en/sodium.installation.php) as the secret mantainer.
 
-Uses [JWT](https://jwt.io/) for sessions.
+Uses [JWT](https://jwt.io/) and [Redis](https://redis.io/) for sessions.
 
 ## Installation
 
