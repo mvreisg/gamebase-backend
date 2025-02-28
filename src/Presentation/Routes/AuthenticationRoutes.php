@@ -18,8 +18,12 @@ class AuthenticationRoutes
     {
         $controller = AuthenticationControllerFactory::get();
 
-        $app->add('POST', '/authenticate', function (HttpRequest $request, HttpResponse $response) use ($controller) {
-            $controller->handleAutenticationCheck($request, $response);
+        $app->add('POST', '/auth/login', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+            $controller->handleLogin($request, $response);
+        });
+
+        $app->add('POST', '/auth/validate', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+            $controller->handleValidation($request, $response);
         });
     }
 }

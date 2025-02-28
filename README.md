@@ -8,6 +8,10 @@ Uses [Composer](https://getcomposer.org/) as the project package manager.
 
 Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr/).
 
+Uses [Sodium](https://www.php.net/manual/en/sodium.installation.php) as the password encrypter.
+
+Uses [JWT](https://jwt.io/) for sessions.
+
 ## Installation
 
 ***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
@@ -81,6 +85,13 @@ composer lint
 ```
 
 To make a linting operation on the code, checking by errors.
+<br/>
+
+```
+composer lint:fix
+```
+
+To make a linting operation on the code, trying to fix the errors.
 <br/>
 
 ```

@@ -9,6 +9,6 @@ class SessionException extends Exception
 {
     public function __construct(string $message = '', int $code = 0, Throwable|null $cause = null)
     {
-        self::__construct($message, $code, $cause);
+        parent::__construct($message, $code, $cause);
     }
 }

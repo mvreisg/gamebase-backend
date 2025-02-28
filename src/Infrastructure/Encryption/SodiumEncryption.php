@@ -2,13 +2,13 @@
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption;
 
-use Mvreisg\GamebaseBackend\Domain\Encryption\EncrypterInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionErrorException;
 use Random\RandomException;
 use SodiumException;
 use Throwable;
 
-class SodiumEncrypter implements EncrypterInterface
+class SodiumEncryption implements EncryptionInterface
 {
     public function encrypt(string $text): string
     {

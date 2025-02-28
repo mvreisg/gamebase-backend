@@ -15,7 +15,6 @@ use Throwable;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
-use Mvreisg\GamebaseBackend\Presentation\Routes\SessionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
 // Includes the class autoloader.
@@ -34,7 +33,6 @@ try {
     $platformRoutes = new PlatformRoutes();
     $userRoutes = new UserRoutes();
     $authenticationRoutes = new AuthenticationRoutes();
-    $sessionRoutes = new SessionRoutes();
 
     $gameRoutes->register($app);
     $gameGenreRoutes->register($app);
@@ -43,7 +41,6 @@ try {
     $platformRoutes->register($app);
     $userRoutes->register($app);
     $authenticationRoutes->register($app);
-    $sessionRoutes->register($app);
 
     $app->add(
         HttpRouter::WILDCARD_METHOD,

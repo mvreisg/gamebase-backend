@@ -2,7 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Domain\Encryption;
 
-interface EncrypterInterface
+interface EncryptionInterface
 {
     public function encrypt(string $text): string;
 

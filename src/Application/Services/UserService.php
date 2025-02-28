@@ -2,7 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Encryption\EncrypterInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use PDOException;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
@@ -15,9 +15,9 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 class UserService
 {
     private UserRepositoryInterface $repository;
-    private EncrypterInterface $encrypter;
+    private EncryptionInterface $encrypter;
 
-    public function __construct(UserRepositoryInterface $repository, EncrypterInterface $encrypter)
+    public function __construct(UserRepositoryInterface $repository, EncryptionInterface $encrypter)
     {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
@@ -121,6 +121,26 @@ class UserService
             $user->validateId($id);
             $user->setId($id);
             $user = $this->repository->findById($id);
+            return $user;
+        } catch (
+            EntityInvalidValueException |
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function findByUserName(mixed $userName): User|null
+    {
+        $user = new User();
+
+        try {
+            $user->validateUserName($userName);
+            $user->setUserName($userName);
+            $user = $this->repository->findByUserName($userName);
             return $user;
         } catch (
             EntityInvalidValueException |

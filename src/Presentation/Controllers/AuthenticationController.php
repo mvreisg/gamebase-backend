@@ -2,7 +2,10 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpForbiddenException;
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\UserService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
@@ -16,14 +19,16 @@ use PDOException;
 
 class AuthenticationController
 {
-    private AuthenticationService $service;
+    private AuthenticationService $authService;
+    private UserService $userService;
 
-    public function __construct(AuthenticationService $service)
+    public function __construct(AuthenticationService $authService, UserService $userService)
     {
-        $this->service = $service;
+        $this->authService = $authService;
+        $this->userService = $userService;
     }
 
-    public function handleAutenticationCheck(HttpRequest $request, HttpResponse $response): void
+    public function handleLogin(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $body = $request->parseBodyFromJSONString();
@@ -41,19 +46,27 @@ class AuthenticationController
             $userName = $body['username'];
             $passWord = $body['password'];
 
-            $hasCredentials = $this->service->checkIfItHasCredentials($userName, $passWord);
+            $hasCredentials = $this->authService->checkIfItHasCredentials($userName, $passWord);
+
+            $user = $this->userService->findByUserName($userName);
+            $userId = $user->getId();
 
             if ($hasCredentials) {
+                $jwtToken = $this->authService->generateToken($userId);
+
                 $response
+                    ->appendArray([
+                        'token' => $jwtToken
+                    ])
                     ->status(HttpRouter::STATUS_CODES[200])
-                    ->sendJSON();
+                    ->send();
                 return;
             }
             $response
                 ->appendArray([
                     'message' => 'Verifique seu nome de usuário ou senha!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[403])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
@@ -69,6 +82,68 @@ class AuthenticationController
             return;
         } catch (
             EncryptionErrorException |
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
+
+    public function handleValidation(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $body = $request->parseBodyFromJSONString();
+            $isTokenSetted = isset($body['token']);
+            if ($isTokenSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave token não foi definida no JSON ou seu valor é null!'
+                );
+            }
+
+            $token = $body['token'];
+
+            $userId = $this->authService->validateToken($token);
+
+            $user = $this->userService->findById($userId);
+            if ($user === null) {
+                throw new HttpForbiddenException('O token é inválido!');
+            }
+
+            $response
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            HttpForbiddenException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[403])
+                ->sendJSON();
+            return;
+        } catch (
+            SessionException |
+            EntityInvalidValueException |
+            ControllerUndefinedValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
