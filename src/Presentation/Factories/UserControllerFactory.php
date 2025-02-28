@@ -3,7 +3,7 @@
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\UserService;
-use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\MariaDBConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBUserRepository;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\UserController;

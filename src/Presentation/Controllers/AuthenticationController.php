@@ -3,14 +3,13 @@
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpForbiddenException;
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\UserService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -19,17 +18,16 @@ use PDOException;
 
 class AuthenticationController
 {
-    private AuthenticationService $authService;
-    private UserService $userService;
+    private AuthenticationService $service;
 
-    public function __construct(AuthenticationService $authService, UserService $userService)
+    public function __construct(AuthenticationService $service)
     {
-        $this->authService = $authService;
-        $this->userService = $userService;
+        $this->service = $service;
     }
 
     public function handleLogin(HttpRequest $request, HttpResponse $response): void
     {
+        $userName = null;
         try {
             $body = $request->parseBodyFromJSONString();
 
@@ -46,27 +44,50 @@ class AuthenticationController
             $userName = $body['username'];
             $passWord = $body['password'];
 
-            $hasCredentials = $this->authService->checkIfItHasCredentials($userName, $passWord);
+            $hasSession = $this->service->checkIfHasSession($userName);
+            if ($hasSession) {
+                $token = $this->service->getSessionToken($userName);
+                $isTokenValid = $this->service->validateToken($token);
+                if ($isTokenValid) {
+                    $response
+                        ->appendArray([
+                            'message' => 'Já existe uma sessão!',
+                            'token' => $token
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[200])
+                        ->send();
+                    return;
+                }
+            }
 
-            $user = $this->userService->findByUserName($userName);
-            $userId = $user->getId();
-
-            if ($hasCredentials) {
-                $jwtToken = $this->authService->generateToken($userId);
-
+            $hasCredentials = $this->service->login($userName, $passWord);
+            if ($hasCredentials === false) {
                 $response
                     ->appendArray([
-                        'token' => $jwtToken
+                        'message' => 'Verifique seu nome de usuário ou senha!'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->status(HttpRouter::STATUS_CODES[401])
+                    ->sendJSON();
                 return;
             }
+
+            $token = $this->service->generateToken($userName);
             $response
                 ->appendArray([
-                    'message' => 'Verifique seu nome de usuário ou senha!'
+                    'token' => $token
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->send();
+            return;
+        } catch (
+            SessionException $e
+        ) {
+            $this->service->logoff($userName);
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (
@@ -110,11 +131,9 @@ class AuthenticationController
 
             $token = $body['token'];
 
-            $userId = $this->authService->validateToken($token);
-
-            $user = $this->userService->findById($userId);
-            if ($user === null) {
-                throw new HttpForbiddenException('O token é inválido!');
+            $isValid = $this->service->validateToken($token);
+            if ($isValid === false) {
+                throw new HttpUnauthorizedException('Usuário não possui sessão!');
             }
 
             $response
@@ -122,17 +141,17 @@ class AuthenticationController
                 ->sendJSON();
             return;
         } catch (
-            HttpForbiddenException $e
+            SessionException |
+            HttpUnauthorizedException $e
         ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[403])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
-            SessionException |
             EntityInvalidValueException |
             ControllerUndefinedValueException $e
         ) {

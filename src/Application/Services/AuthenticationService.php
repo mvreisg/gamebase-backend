@@ -20,6 +20,7 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
+use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 use Throwable;
 use UnexpectedValueException;
 
@@ -27,14 +28,19 @@ class AuthenticationService
 {
     private UserRepositoryInterface $repository;
     private EncryptionInterface $encrypter;
+    private UserCacheInterface $cache;
 
-    public function __construct(UserRepositoryInterface $repository, EncryptionInterface $encrypter)
-    {
+    public function __construct(
+        UserRepositoryInterface $repository,
+        EncryptionInterface $encrypter,
+        UserCacheInterface $cache
+    ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
+        $this->cache = $cache;
     }
 
-    public function checkIfItHasCredentials(mixed $userName, mixed $passWord): bool
+    public function login(mixed $userName, mixed $passWord): bool
     {
         try {
             $requestUser = new User();
@@ -68,31 +74,61 @@ class AuthenticationService
         }
     }
 
-    public function generateToken(int $userId): string
+    public function checkIfHasSession(string $userName): bool
+    {
+        $token = $this->cache->get($userName);
+        if ($token === '') {
+            return false;
+        }
+        return true;
+    }
+
+    public function generateToken(string $userName): string
     {
         try {
             $secretKey = $_SERVER['JWT_SECRET'];
             $issuedAt = new DateTimeImmutable();
             $expireAt = $issuedAt->modify('+60 seconds')->getTimestamp();
 
+            $sub = $this->encrypter->encrypt($userName);
+
             $payload = [
                 'iat' => $issuedAt->getTimestamp(),
                 'exp' => $expireAt,
-                'sub' => $userId
+                'sub' => $sub
             ];
 
-            return JWT::encode($payload, $secretKey, 'HS256');
+            $cached = $this->cache->get($userName);
+            if ($cached !== '') {
+                return $cached;
+            }
+
+            $token = JWT::encode($payload, $secretKey, 'HS256');
+
+            $this->cache->set($userName, $token);
+
+            return $token;
         } catch (Throwable $e) {
             throw $e;
         }
     }
 
-    public function validateToken(string $token): int
+    public function validateToken(string $token): bool
     {
         try {
             $secretKey = $_SERVER['JWT_SECRET'];
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-            return $decoded->sub;
+
+            $sub = $decoded->sub;
+            $userName = $this->encrypter->decrypt($sub);
+            $cached = $this->cache->get($userName);
+            $isValid = $cached !== '';
+
+            if ($isValid === false) {
+                $this->cache->set($userName, null);
+            }
+
+            return $isValid;
         } catch (InvalidArgumentException $e) {
             throw new SessionException('Objeto key inválido!', 0, $e);
         } catch (DomainException $e) {
@@ -106,5 +142,15 @@ class AuthenticationService
         } catch (ExpiredException $e) {
             throw new SessionException('JWT expirado!', 0, $e);
         }
+    }
+
+    public function getSessionToken(string $userName)
+    {
+        return $this->cache->get($userName);
+    }
+
+    public function logoff(string $userName)
+    {
+        $this->cache->set($userName, '');
     }
 }

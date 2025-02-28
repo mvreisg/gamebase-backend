@@ -1,6 +1,6 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Database;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Connections;
 
 use PDO;
 

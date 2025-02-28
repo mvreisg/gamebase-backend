@@ -3,7 +3,7 @@
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
-use Mvreisg\GamebaseBackend\Infrastructure\Database\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\MariaDBConnection;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\PlatformController;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBPlatformRepository;
 
