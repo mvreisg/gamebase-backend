@@ -114,8 +114,8 @@ class HttpRouter
             call_user_func_array($item['callback'], [$request, $response]);
             return;
         } else {
-            print('Rota não encontrada!');
             header(self::STATUS_CODES[404]);
+            print('Rota não encontrada!');
         }
     }
 

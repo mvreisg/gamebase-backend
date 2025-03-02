@@ -12,70 +12,27 @@ Uses [Sodium](https://www.php.net/manual/en/sodium.installation.php) as the secr
 
 Uses [JWT](https://jwt.io/) and [Redis](https://redis.io/) for sessions.
 
-## Installation
+Uses [Docker](https://www.docker.com/) as the container image creator.
 
-***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
+## Run with Docker
 
-- Make sure you have PHP 8.2.12 installed.
-- Make sure you have a Apache HTTP server installed.
-- Make sure you have MariaDB installed.
-- Make sure you have Composer installed globally and configured in the PATH environment.
-- Clone the project.
-
-<hr/>
-
-### Setup
-
-Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
-
-Set a virtual host to `path/to/this/project/gamebase-backend/public` to make it properly work.
-
-<hr/>
-
-### Run
-
-First, run:
+If you have Docker installed, simply run
 
 ```
-composer install
+docker-compose up
 ```
 
-To install the dependencies.
-
-<br/>
-
-Then run:
+and
 
 ```
-composer phinx init .
+docker exec -it gamebase-backend vendor/bin/phinx migrate
 ```
 
-To create the Phinx config file in the root folder (`/path/to/your/project/gamebase-backend`).
+to run the database migrations then listen to **8080**.
 
-<br/>
+<p><b>MariaDB</b> uses port <b>3312</b> instead of <b>3306.</b></p>
 
-Then create a database on MariaDB called `gamebase`:
-
-```sql
-CREATE DATABASE gamebase;
-```
-
-<br/>
-
-Also run:
-
-```
-composer phinx migrate
-```
-
-To make Phinx create the database tables.
-
-
-After that, just access [localhost](http://localhost) to see the server status.
-
-<hr/>
-
-### Other commands
+### Commands
 
 See *composer.json*.
 <br/>
