@@ -10,7 +10,7 @@ class RedisConnection
     {
         return new Client([
             'scheme' => 'tcp',
-            'host' => '172.24.105.188',
+            'host' => $_SERVER['REDIS_HOST'],
             'port' => 6379,
         ]);
     }
