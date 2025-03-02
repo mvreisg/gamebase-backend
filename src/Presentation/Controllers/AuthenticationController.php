@@ -3,7 +3,6 @@
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
@@ -84,7 +83,6 @@ class AuthenticationController
             return;
         } catch (
             AuthenticationException |
-            SessionException |
             ControllerInvalidValueException |
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
@@ -137,7 +135,7 @@ class AuthenticationController
                 ->sendJSON();
             return;
         } catch (
-            SessionException |
+            AuthenticationException |
             HttpUnauthorizedException $e
         ) {
             $response
