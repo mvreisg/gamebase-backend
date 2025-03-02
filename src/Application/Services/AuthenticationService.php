@@ -19,6 +19,7 @@ use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 use Throwable;
@@ -77,9 +78,14 @@ class AuthenticationService
     public function checkIfHasSession(string $userName): bool
     {
         $token = $this->cache->get($userName);
+        if ($token === null) {
+            return false;
+        }
+
         if ($token === '') {
             return false;
         }
+
         return true;
     }
 
@@ -98,14 +104,7 @@ class AuthenticationService
                 'sub' => $sub
             ];
 
-            $cached = $this->cache->get($userName);
-            if ($cached !== '') {
-                return $cached;
-            }
-
             $token = JWT::encode($payload, $secretKey, 'HS256');
-
-            $this->cache->set($userName, $token);
 
             return $token;
         } catch (Throwable $e) {
@@ -122,13 +121,18 @@ class AuthenticationService
             $sub = $decoded->sub;
             $userName = $this->encrypter->decrypt($sub);
             $cached = $this->cache->get($userName);
-            $isValid = $cached !== '';
 
-            if ($isValid === false) {
-                $this->cache->set($userName, null);
+            if ($cached === null) {
+                throw new AuthenticationException('O token é nulo!');
             }
 
-            return $isValid;
+            if ($cached === '') {
+                throw new AuthenticationException('O token está vazio!');
+            }
+
+            return true;
+        } catch (AuthenticationException $e) {
+            throw $e;
         } catch (InvalidArgumentException $e) {
             throw new SessionException('Objeto key inválido!', 0, $e);
         } catch (DomainException $e) {
@@ -144,13 +148,31 @@ class AuthenticationService
         }
     }
 
-    public function getSessionToken(string $userName)
+    public function setSessionToken(string $userName, string $token)
     {
-        return $this->cache->get($userName);
+        $this->cache->set($userName, $token);
+    }
+
+    public function getSessionToken(string $userName): string
+    {
+        try {
+            $cached = $this->cache->get($userName);
+            if ($cached === null) {
+                throw new AuthenticationException('O token é nulo!');
+            }
+
+            if ($cached === '') {
+                throw new AuthenticationException('O token é vazio!');
+            }
+
+            return $cached;
+        } catch (AuthenticationException $e) {
+            throw $e;
+        }
     }
 
     public function logoff(string $userName)
     {
-        $this->cache->set($userName, '');
+        $this->cache->set($userName, null);
     }
 }
