@@ -44,16 +44,22 @@ class GamePlatformService
     public function insert(mixed $platformId, mixed $gameId): GamePlatform
     {
         $gamePlatform = new GamePlatform();
-        $gamePlatform->setPlatformId($platformId);
-        $gamePlatform->setGameId($gameId);
 
         try {
-            $gamePlatform->validatePlatformId();
-            $gamePlatform->validateGameId();
+            $gamePlatform->validatePlatformId($platformId);
+            $gamePlatform->validateGameId($gameId);
+            $gamePlatform->setPlatformId($platformId);
+            $gamePlatform->setGameId($gameId);
             $gamePlatform = $this->repository->insert($gamePlatform);
 
             return $gamePlatform;
-        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -71,17 +77,22 @@ class GamePlatformService
     public function update(mixed $id, mixed $platformId, mixed $gameId): bool
     {
         $gamePlatform = new GamePlatform();
-        $gamePlatform->setId($id);
-        $gamePlatform->setPlatformId($platformId);
-        $gamePlatform->setGameId($gameId);
 
         try {
-            $gamePlatform->validateId();
-            $gamePlatform->validatePlatformId();
-            $gamePlatform->validateGameId();
+            $gamePlatform->validateId($id);
+            $gamePlatform->validatePlatformId($platformId);
+            $gamePlatform->validateGameId($gameId);
+            $gamePlatform->setId($id);
+            $gamePlatform->setPlatformId($platformId);
+            $gamePlatform->setGameId($gameId);
             $wasTheUpdateSuccessful = $this->repository->update($gamePlatform);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -97,10 +108,10 @@ class GamePlatformService
     public function delete(mixed $id): bool
     {
         $gamePlatform = new GamePlatform();
-        $gamePlatform->setId($id);
 
         try {
-            $gamePlatform->validateId();
+            $gamePlatform->validateId($id);
+            $gamePlatform->setId($id);
             $wasTheDeletionSuccessful = $this->repository->delete($gamePlatform);
             return $wasTheDeletionSuccessful;
         } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
@@ -119,12 +130,17 @@ class GamePlatformService
     public function findById(mixed $id): GamePlatform|null
     {
         $gamePlatform = new GamePlatform();
-        $gamePlatform->setId($id);
         try {
-            $gamePlatform->validateId();
+            $gamePlatform->validateId($id);
+            $gamePlatform->setId($id);
             $gamePlatform = $this->repository->findById($id);
             return $gamePlatform;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -140,7 +156,11 @@ class GamePlatformService
         try {
             $gamePlatforms = $this->repository->findAll();
             return $gamePlatforms;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

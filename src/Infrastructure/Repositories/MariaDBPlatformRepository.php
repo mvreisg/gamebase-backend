@@ -45,23 +45,35 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $name = $platform->getName();
+            $isActive = $platform->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
                     platform 
-                        (name) 
+                        (
+                            name,
+                            is_active
+                        ) 
                 VALUES 
-                        (:name);'
+                        (
+                            :name,
+                            :isActive
+                        );'
             );
             if ($insertStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a transação de inserção!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a transação de inserção!'
+                );
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a transação de inserção!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a transação de inserção!'
+                );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
@@ -83,7 +95,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ':id' => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $fetchResult = $selectStatement->fetch();
@@ -96,9 +110,16 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($fetchResult['id']);
             $platform->setName($fetchResult['name']);
+            $platform->setIsActive($fetchResult['is_active']);
 
             return $platform;
-        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -114,26 +135,39 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         $id = $platform->getId();
         $name = $platform->getName();
+        $isActive = $platform->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     platform 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
 
-            return $wasTheStatementSuccessfullyExecuted;
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
+
+            return $wasTheRepositoryAffected;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
@@ -145,9 +179,42 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
      * @return bool The success flag.
      * @throws PDOException Throwed in case of database error.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    platform
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
     }
 
     /**
@@ -175,7 +242,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ':id' => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -186,9 +255,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($result['id']);
             $platform->setName($result['name']);
+            $platform->setIsActive($result['is_active']);
 
             return $platform;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -213,7 +287,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -227,11 +303,16 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 $platform = new Platform();
                 $platform->setId($row['id']);
                 $platform->setName($row['name']);
+                $platform->setIsActive($row['is_active']);
                 $platforms[] = $platform;
             }
 
             return $platforms;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -261,13 +342,19 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ':name' => $name
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $numberOfAffectedRows = $statement->rowCount();
             $hasDuplicatedNames = $numberOfAffectedRows > 0;
             return $hasDuplicatedNames;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

@@ -45,15 +45,23 @@ class GameGenreService
     public function insert(mixed $genreId, mixed $gameId): GameGenre
     {
         $gameGenre = new GameGenre();
-        $gameGenre->setGenreId($genreId);
-        $gameGenre->setGameId($gameId);
 
         try {
-            $gameGenre->validateGameId();
-            $gameGenre->validateGenreId();
+            $gameGenre->validateGenreId($genreId);
+            $gameGenre->validateGameId($gameId);
+            $gameGenre->setGenreId($genreId);
+            $gameGenre->setGameId($gameId);
             $gameGenre = $this->repository->insert($gameGenre);
             return $gameGenre;
-        } catch (EntityInvalidValueException | DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             throw $e;
         }
     }
@@ -71,17 +79,22 @@ class GameGenreService
     public function update(mixed $id, mixed $genreId, mixed $gameId): bool
     {
         $gameGenre = new GameGenre();
-        $gameGenre->setId($id);
-        $gameGenre->setGenreId($genreId);
-        $gameGenre->setGameId($gameId);
 
         try {
-            $gameGenre->validateId();
-            $gameGenre->validateGenreId();
-            $gameGenre->validateGameId();
+            $gameGenre->validateId($id);
+            $gameGenre->validateGenreId($genreId);
+            $gameGenre->validateGameId($gameId);
+            $gameGenre->setId($id);
+            $gameGenre->setGenreId($genreId);
+            $gameGenre->setGameId($gameId);
             $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
             return $wasTheUpdateSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -97,13 +110,18 @@ class GameGenreService
     public function delete(mixed $id): bool
     {
         $gameGenre = new GameGenre();
-        $gameGenre->setId($id);
 
         try {
-            $gameGenre->validateId();
+            $gameGenre->validateId($id);
+            $gameGenre->setId($id);
             $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
             return $wasTheDeleteSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -119,13 +137,18 @@ class GameGenreService
     public function findById(mixed $id): GameGenre|null
     {
         $gameGenre = new GameGenre();
-        $gameGenre->setId($id);
 
         try {
-            $gameGenre->validateId();
+            $gameGenre->validateId($id);
+            $gameGenre->setId($id);
             $gameGenre = $this->repository->findById($id);
             return $gameGenre;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -141,7 +164,11 @@ class GameGenreService
         try {
             $gameGenres = $this->repository->findAll();
             return $gameGenres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

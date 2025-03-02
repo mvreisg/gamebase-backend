@@ -37,7 +37,7 @@ final class MyFirstMigration extends AbstractMigration
         $gameTable = $this->table('game');
         $gameTable
             ->addColumn('name', 'string', [
-                'limit' => 400, 
+                'limit' => 400,
                 'null' => false
             ])
             ->addIndex('name', [
@@ -49,7 +49,7 @@ final class MyFirstMigration extends AbstractMigration
         $platformTable = $this->table('platform');
         $platformTable
             ->addColumn('name', 'string', [
-                'limit' => 100, 
+                'limit' => 100,
                 'null' => false
             ])
             ->addIndex('name', [
@@ -61,7 +61,7 @@ final class MyFirstMigration extends AbstractMigration
         $genreTable = $this->table('genre');
         $genreTable
             ->addColumn('name', 'string', [
-                'limit' => 100, 
+                'limit' => 100,
                 'null' => false
             ])
             ->addIndex('name', [
@@ -72,40 +72,40 @@ final class MyFirstMigration extends AbstractMigration
         $gamePlatformTable = $this->table('game_platform');
         $gamePlatformTable
             ->addColumn('game_id', 'integer', [
-                'null' => false, 
+                'null' => false,
                 'signed' => false
             ])
             ->addForeignKey('game_id', 'game', 'id', [
-                'delete'=> 'RESTRICT', 
-                'update'=> 'RESTRICT'
+                'delete' => 'RESTRICT',
+                'update' => 'RESTRICT'
             ])
             ->addColumn('platform_id', 'integer', [
-                'null' => false, 
+                'null' => false,
                 'signed' => false
-            ])            
+            ])
             ->addForeignKey('platform_id', 'platform', 'id', [
-                'delete'=> 'RESTRICT', 
-                'update'=> 'RESTRICT'
+                'delete' => 'RESTRICT',
+                'update' => 'RESTRICT'
             ])
             ->create();
 
         $gameGenreTable = $this->table('game_genre');
         $gameGenreTable
             ->addColumn('game_id', 'integer', [
-                'null' => false, 
+                'null' => false,
                 'signed' => false
             ])
             ->addForeignKey('game_id', 'game', 'id', [
-                'delete'=> 'RESTRICT', 
-                'update'=> 'RESTRICT'
+                'delete' => 'RESTRICT',
+                'update' => 'RESTRICT'
             ])
             ->addColumn('genre_id', 'integer', [
-                'null' => false, 
+                'null' => false,
                 'signed' => false
-            ])            
+            ])
             ->addForeignKey('genre_id', 'genre', 'id', [
-                'delete'=> 'RESTRICT', 
-                'update'=> 'RESTRICT'
+                'delete' => 'RESTRICT',
+                'update' => 'RESTRICT'
             ])
             ->create();
     }

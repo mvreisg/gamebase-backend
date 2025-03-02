@@ -29,11 +29,24 @@ class PlatformRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('GET', '/platform/:platformId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/platform/:platformId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('PUT', '/platform/:platformId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PATCH', '/platform/:platformId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
+            $controller->setIsActive($request, $response);
+        });
+
+        $app->add('PUT', '/platform/:platformId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->update($request, $response);
         });
     }

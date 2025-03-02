@@ -29,6 +29,10 @@ class GameRoutes
             $controller->update($request, $response);
         });
 
+        $app->add('PATCH', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+            $controller->setIsActive($request, $response);
+        });
+
         $app->add('GET', '/game', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findAll($request, $response);
         });

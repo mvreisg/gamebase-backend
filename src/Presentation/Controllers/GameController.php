@@ -13,6 +13,9 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 /**
  * The Game controller class.
@@ -41,63 +44,68 @@ class GameController
      */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-
-        $game = null;
         try {
             $body = $request->parseBodyFromJSONString();
+
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                $messages[] = 'A chave name não foi informada ou seu valor é null!';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+                throw new ControllerUndefinedValueException(
+                    'A chave name não foi informada no JSON ou seu valor é null!'
+                );
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave isActive não foi informada no JSON ou seu valor é null!'
+                );
             }
 
             $name = $body['name'];
-            $game = $this->service->insert($name);
-        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
-            $messages[] = $e->getMessage();
+            $isActive = $body['isActive'];
+
+            $game = $this->service->insert($name, $isActive);
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Registro de jogo inserido com sucesso!',
+                    'data' => [
+                        'id' => $game->getId(),
+                        'name' => $game->getName(),
+                        'isActive' => $game->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($game == false) {
-            $messages[] = 'Ocorreu um erro ao inserir o jogo. Contate o suporte.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
-            return;
-        }
-
-        $messages[] = 'Jogo inserido com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[201])
-            ->sendJSON();
     }
 
     /**
@@ -107,74 +115,135 @@ class GameController
      */
     public function update(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $wasTheUpdateSuccessful = false;
         try {
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
             $isGameIdSetted = isset($params['gameId']);
             if ($isGameIdSetted === false) {
-                $messages[] = 'A chave gameId não existe ou seu valor é null!';
+                throw new ControllerUndefinedValueException('A chave gameId não existe ou seu valor é null!');
             }
 
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false) {
-                $messages[] = 'A chave name não existe ou seu valor é null!';
+                throw new ControllerUndefinedValueException('A chave name não existe ou seu valor é null!');
             }
 
-            $hasUndefinedKeys = $isGameIdSetted === false || $isNameSetted === false;
-            if ($hasUndefinedKeys) {
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+            $isIsActiveSetted = isset($body['isActive']);
+            if ($isIsActiveSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
             }
 
             $gameId = $params['gameId'];
             $name = $body['name'];
-            $wasTheUpdateSuccessful = $this->service->update($gameId, $name);
-        } catch (HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+            $isActive = $body['isActive'];
+
+            $wasSomeUpdateHappened = $this->service->update($gameId, $name, $isActive);
+            if ($wasSomeUpdateHappened === false) {
+                throw new HttpResourceNotFoundException(
+                    'A atualização não aconteceu. Verifique se o id informado é váildo.'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Dados do jogo atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            HttpResourceNotFoundException |
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            DatabaseDuplicatedEntryException |
+            EntityInvalidValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
+    }
 
-        if ($wasTheUpdateSuccessful === false) {
-            $messages[] = 'Os dados do jogo não puderam ser atualizados.';
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isIdSetted = isset($params['gameId']);
+            if ($isIdSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro gameId não foi informado ou seu valor é null!'
+                );
+            }
+
+            $isIsActiveSetted = isset($body['isActive']);
+            if ($isIsActiveSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave isActive não foi definida no JSON ou seu valor é null!'
+                );
+            }
+
+            $id = $params['gameId'];
+            $isActive = $body['isActive'];
+
+            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            if ($wasTheUpdateOcurred === false) {
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $id .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Estado atualizado com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[404])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $messages[] = 'Dados do jogo atualizado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
@@ -184,71 +253,68 @@ class GameController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $params = $request->getParams();
-
-        $isGameIdSetted = isset($params['gameId']);
-        if ($isGameIdSetted === false) {
-            $messages[] = 'O id do jogo não foi informado na URL!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
-        $gameId = $params['gameId'];
-        $game = null;
         try {
+            $params = $request->getParams();
+
+            $isGameIdSetted = isset($params['gameId']);
+            if ($isGameIdSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'O id do jogo não foi informado na URL ou seu valor é null!'
+                );
+            }
+
+            $gameId = $params['gameId'];
+
             $game = $this->service->findById($gameId);
-        } catch (EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+
+            if ($game === null) {
+                throw new HttpResourceNotFoundException(
+                    'O registro de jogo com o id ' . $gameId . ' não pôde ser encontrado!'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Jogo buscado com sucesso!',
+                    'data' => [
+                        'id' => $game->getId(),
+                        'name' => $game->getName(),
+                        'isActive' => $game->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($game === null) {
-            $messages[] = 'O registro com o gameId ' . $gameId . ' não foi encontrado.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
-            return;
-        }
-
-        $data = [
-            'id' => $game->getId(),
-            'name' => $game->getName(),
-        ];
-
-        $messages[] = 'Jogo buscado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
@@ -258,51 +324,54 @@ class GameController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-
-        $games = null;
         try {
             $games = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfGamesFound = count($games);
+            if ($numberOfGamesFound === 0) {
+                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum jogo foi encontrado.');
+            }
+
+            foreach ($games as $game) {
+                $gameId = $game->getId();
+                $gameName = $game->getName();
+                $gameIsActive = $game->getIsActive();
+
+                $data[] = [
+                    'id' => $gameId,
+                    'name' => $gameName,
+                    'isActive' => $gameIsActive
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Jogos buscados com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfGamesFound = count($games);
-        if ($numberOfGamesFound === 0) {
-            $messages[] = 'A busca foi concluída e nenhum jogo foi encontrado.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($games as $game) {
-            $gameId = $game->getId();
-            $gameName = $game->getName();
-
-            $data[] = [
-                'id' => $gameId,
-                'name' => $gameName
-            ];
-        }
-
-        $messages[] = 'Jogos buscados com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 }

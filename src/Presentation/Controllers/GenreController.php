@@ -12,6 +12,9 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 /**
@@ -42,51 +45,63 @@ class GenreController
      */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $genre = null;
         try {
             $body = $request->parseBodyFromJSONString();
+
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                $messages[] = 'A chave name não existe ou seu valor é null';
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+                throw new ControllerUndefinedValueException('A chave name não existe ou seu valor é null');
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null');
             }
 
             $name = $body['name'];
-            $genre = $this->service->insert($name);
-        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
-            $messages[] = $e->getMessage();
+            $isActive = $body['isActive'];
+
+            $genre = $this->service->insert($name, $isActive);
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gênero inserido com sucesso!',
+                    'data' => [
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
-            $messages = $e->getMessage();
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $messages[] = 'Gênero inserido com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[201])
-            ->sendJSON();
     }
 
     /**
@@ -97,75 +112,144 @@ class GenreController
      */
     public function update(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-
         try {
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
             $isGenreIdSetted = isset($params['genreId']);
             if ($isGenreIdSetted === false) {
-                $messages[] = 'O parâmetro genreId não foi informado na URL ou seu valor é null!';
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro genreId não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                $messages[] = 'A chave name não foi informada ou seu valor é null!';
+                throw new ControllerUndefinedValueException('A chave name não foi informada ou seu valor é null!');
             }
 
-            $hasUndefinedFields = $isGenreIdSetted === false || $isNameFieldSetted === false;
-            if ($hasUndefinedFields) {
-                $response
-                    ->appendArray([
-                        'messages' => $messages
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[400])
-                    ->sendJSON();
-                return;
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
             }
 
             $genreId = $params['genreId'];
             $name = $body['name'];
+            $isActive = $body['isActive'];
 
-            $wasTheUpdateASuccess = $this->service->update($genreId, $name);
-        } catch (HttpJsonParseException | EntityInvalidValueException | DatabaseDuplicatedEntryException $e) {
-            $messages[] = $e->getMessage();
+            $wasAUpdateOcurred = $this->service->update($genreId, $name, $isActive);
+            if ($wasAUpdateOcurred === false) {
+                throw new HttpResourceNotFoundException(
+                    'O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gênero atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
+    }
 
-        if ($wasTheUpdateASuccess === false) {
-            $messages[] = 'Ocorreu uma falha na atualização!';
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isGenreIdSetted = isset($params['genreId']);
+            if ($isGenreIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado na URL!');
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
+            }
+
+            $genreId = $params['genreId'];
+            $isActive = $body['isActive'];
+
+            $wasTheUpdateOcurred = $this->service->setIsActive($genreId, $isActive);
+            if ($wasTheUpdateOcurred === false) {
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $genreId .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Estado atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $messages[] = 'Gênero atualizado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
@@ -176,74 +260,65 @@ class GenreController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $params = $request->getParams();
-
-        $isGenreIdSetted = isset($params['genreId']);
-        if ($isGenreIdSetted === false) {
-            $messages[] = 'O parâmetro genreId não foi informado ou seu valor é null!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
-        $genreId = $params['genreId'];
-        $genre = null;
         try {
+            $params = $request->getParams();
+
+            $isGenreIdSetted = isset($params['genreId']);
+            if ($isGenreIdSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro genreId não foi informado ou seu valor é null!'
+                );
+            }
+
+            $genreId = $params['genreId'];
+
             $genre = $this->service->findById($genreId);
-        } catch (EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+
+            if ($genre === null) {
+                throw new HttpResourceNotFoundException('O gênero com o id ' . $genreId . ' não existe!');
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gênero encontrado com sucesso!',
+                    'data' => [
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($genre === null) {
-            $messages[] = 'O gênero com o id ' . $genreId . ' não existe!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        }
-
-        $genreId = $genre->getId();
-        $genreName = $genre->getName();
-
-        $data = [
-            'id' => $genreId,
-            'name' => $genreName,
-        ];
-
-        $messages[] = 'Gênero encontrado com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
@@ -254,52 +329,50 @@ class GenreController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $genres = null;
         try {
             $genres = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfGenresFound = count($genres);
+            if ($numberOfGenresFound === 0) {
+                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum gênero foi encontrado.');
+            }
+
+            foreach ($genres as $genre) {
+                $data[] = [
+                    'id' => $genre->getId(),
+                    'name' => $genre->getName(),
+                    'isActive' => $genre->getIsActive()
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Gêneros buscados com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfGenresFound = count($genres);
-        if ($numberOfGenresFound === 0) {
-            $messages[] = 'A busca foi concluída e nenhum gênero foi encontrado.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($genres as $genre) {
-            $genreId = $genre->getId();
-            $genreName = $genre->getName();
-
-            $data[] = [
-                'id' => $genreId,
-                'name' => $genreName
-            ];
-        }
-
-        $messages[] = 'Gêneros buscados com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 }

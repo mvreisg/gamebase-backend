@@ -12,17 +12,17 @@ class GamePlatform
     /**
      * @var int $id The entity id.
      */
-    private mixed $id;
+    private int $id;
 
     /**
      * @var int $platformId The Platform id.
      */
-    private mixed $platformId;
+    private int $platformId;
 
     /**
      * @var int $gameId The Game id.
      */
-    private mixed $gameId;
+    private int $gameId;
 
     /**
      * Game Platform entity class constructor.
@@ -31,7 +31,7 @@ class GamePlatform
      * @param int $gameId The Game id.
      * @return void
      */
-    public function __construct(mixed $id = 0, mixed $platformId = 0, mixed $gameId = 0)
+    public function __construct(int $id = 0, int $platformId = 0, int $gameId = 0)
     {
         $this->id = $id;
         $this->platformId = $platformId;
@@ -52,7 +52,7 @@ class GamePlatform
      * @param int $id The entity id.
      * @return void
      */
-    public function setId(mixed $id)
+    public function setId(int $id)
     {
         $this->id = $id;
     }
@@ -71,7 +71,7 @@ class GamePlatform
      * @param int $id The Platform id.
      * @return void
      */
-    public function setPlatformId(mixed $platformId)
+    public function setPlatformId(int $platformId)
     {
         $this->platformId = $platformId;
     }
@@ -90,7 +90,7 @@ class GamePlatform
      * @param int $id The Game id.
      * @return void
      */
-    public function setGameId(mixed $gameId)
+    public function setGameId(int $gameId)
     {
         $this->gameId = $gameId;
     }
@@ -100,18 +100,26 @@ class GamePlatform
      * @throws EntityInvalidValueException Throwed if the id is not valid.
      * @return void
      */
-    public function validateId()
+    public function validateId(mixed $id)
     {
-        if ($this->id === null) {
-            throw new EntityInvalidValueException('O id é null');
+        if ($id === null) {
+            throw new EntityInvalidValueException('O id é null!');
         }
 
-        if (is_string($this->id)) {
-            throw new EntityInvalidValueException('O id é inválido.');
+        if (is_numeric($id) === false) {
+            throw new EntityInvalidValueException('O id não é um número!');
         }
 
-        if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é menor que um.');
+        if (is_string($id)) {
+            throw new EntityInvalidValueException('O id é uma string!');
+        }
+
+        if (is_bool($id)) {
+            throw new EntityInvalidValueException('O id é um valor booleano!');
+        }
+
+        if ($id < 1) {
+            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
         }
     }
 
@@ -120,18 +128,26 @@ class GamePlatform
      * @throws EntityInvalidValueException Throwed if the id is not valid.
      * @return void
      */
-    public function validatePlatformId()
+    public function validatePlatformId(mixed $platformId)
     {
-        if ($this->platformId === null) {
-            throw new EntityInvalidValueException('O platformId é null');
+        if ($platformId === null) {
+            throw new EntityInvalidValueException('O platformId é null!');
         }
 
-        if (is_string($this->platformId)) {
-            throw new EntityInvalidValueException('O platformId é inválido.');
+        if (is_numeric($platformId) === false) {
+            throw new EntityInvalidValueException('O platformId não é um número!');
         }
 
-        if ($this->platformId < 1) {
-            throw new EntityInvalidValueException('O platformId ' . $this->platformId . ' é menor que um.');
+        if (is_string($platformId)) {
+            throw new EntityInvalidValueException('O platformId é uma string!');
+        }
+
+        if (is_bool($platformId)) {
+            throw new EntityInvalidValueException('O platformId é um valor booleano!');
+        }
+
+        if ($platformId < 1) {
+            throw new EntityInvalidValueException('O platformId ' . $platformId . ' deve ser maior que 0.');
         }
     }
 
@@ -140,18 +156,26 @@ class GamePlatform
      * @throws EntityInvalidValueException Throwed if the id is not valid.
      * @return void
      */
-    public function validateGameId()
+    public function validateGameId(mixed $gameId)
     {
-        if ($this->gameId === null) {
-            throw new EntityInvalidValueException('O gameId é null');
+        if ($gameId === null) {
+            throw new EntityInvalidValueException('O gameId é null!');
         }
 
-        if (is_string($this->gameId)) {
-            throw new EntityInvalidValueException('O gameId é inválido.');
+        if (is_numeric($gameId) === false) {
+            throw new EntityInvalidValueException('O gameId não é um número!');
         }
 
-        if ($this->gameId < 1) {
-            throw new EntityInvalidValueException('O gameId ' . $this->gameId . ' é menor que um.');
+        if (is_string($gameId)) {
+            throw new EntityInvalidValueException('O gameId é uma string!');
+        }
+
+        if (is_bool($gameId)) {
+            throw new EntityInvalidValueException('O gameId é um valor booleano!');
+        }
+
+        if ($gameId < 1) {
+            throw new EntityInvalidValueException('O gameId ' . $gameId . ' deve ser maior que 0.');
         }
     }
 }

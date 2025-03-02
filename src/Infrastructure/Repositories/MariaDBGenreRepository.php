@@ -42,24 +42,36 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $genre->getName();
+            $isActive = $genre->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    genre (name) 
+                    genre (
+                        name,
+                        is_active
+                    ) 
                 VALUES 
-                    (:name);'
+                    (
+                        :name,
+                        :isActive
+                    );'
             );
 
             if ($insertStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de inserção!'
+                );
             }
 
             $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
 
             if ($wasInsertStatementExecutedSuccessfully === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de inserção!'
+                );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
@@ -83,7 +95,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasSelectStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao tentar executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao tentar executar a declaração de busca!'
+                );
             }
 
             $fetchResult = $selectStatement->fetch();
@@ -97,9 +111,15 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($fetchResult['id']);
             $genre->setName($fetchResult['name']);
+            $genre->setIsActive($fetchResult['is_active']);
 
             return $genre;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -115,28 +135,45 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         $id = $genre->getId();
         $name = $genre->getName();
+        $isActive = $genre->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     genre 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
 
-            return $wasTheUpdateSuccessfullyExecuted;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $numberOfAffectedLines = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfAffectedLines > 0;
+
+            return $wasTheRepositoryAffected;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -147,9 +184,42 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
      * @return bool The success flag.
      * @throws PDOException Throwed if a database error occurs.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    genre
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
     }
 
     /**
@@ -179,7 +249,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -190,9 +262,14 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($result['id']);
             $genre->setName($result['name']);
+            $genre->setIsActive($result['is_active']);
 
             return $genre;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -219,7 +296,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -234,11 +313,16 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 $genre = new Genre();
                 $genre->setId($row['id']);
                 $genre->setName($row['name']);
+                $genre->setIsActive($row['is_active']);
                 $genres[] = $genre;
             }
 
             return $genres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -270,14 +354,20 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             ]);
 
             if ($wasTheStatementExecutedSuccessfully === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $numberOfAffectedLines = $statement->rowCount();
             $hasDuplicatedNames = $numberOfAffectedLines > 0;
 
             return $hasDuplicatedNames;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

@@ -1,8 +1,8 @@
-DirectoryIndex app.php
+DirectoryIndex index.php
 
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ app.php [L,QSA]
+RewriteRule ^(.*)$ index.php [L,QSA]
 
 Options -Indexes

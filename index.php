@@ -14,13 +14,15 @@ use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
 // Includes the class autoloader.
-include_once dirname(__DIR__) . '/vendor/autoload.php';
+include_once __DIR__ . '/vendor/autoload.php';
 
 try {
     // Loads the .env file.
-    Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
+    Dotenv\Dotenv::createImmutable(__DIR__)->load();
 
     $app = new HttpRouter();
 
@@ -29,21 +31,28 @@ try {
     $gamePlatformRoutes = new GamePlatformRoutes();
     $genreRoutes = new GenreRoutes();
     $platformRoutes = new PlatformRoutes();
+    $userRoutes = new UserRoutes();
+    $authenticationRoutes = new AuthenticationRoutes();
 
     $gameRoutes->register($app);
     $gameGenreRoutes->register($app);
     $gamePlatformRoutes->register($app);
     $genreRoutes->register($app);
     $platformRoutes->register($app);
+    $userRoutes->register($app);
+    $authenticationRoutes->register($app);
 
     $app->add(
         HttpRouter::WILDCARD_METHOD,
         '/',
-        fn (HttpRequest $req, HttpResponse $res) => $res->status(HttpRouter::STATUS_CODES[200])->appendString('Servidor funcionando!')->send()
+        fn (HttpRequest $req, HttpResponse $res) => $res
+            ->status(HttpRouter::STATUS_CODES[200])
+            ->appendString('Servidor funcionando!')
+            ->send()
     );
 
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
-    print('Ocorreu um erro. Contate o suporte.');
     header(HttpRouter::STATUS_CODES[500]);
+    print_r($e);
 }

@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -44,19 +45,44 @@ class PlatformController
      */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-        $platform = null;
         try {
             $body = $request->parseBodyFromJSONString();
+
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false) {
-                throw new ControllerUndefinedValueException('A chave name não foi definida no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave name não foi definida no JSON ou seu valor é null!'
+                );
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null');
             }
 
             $name = $body['name'];
-            $platform = $this->service->insert($name);
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
+            $isActive = $body['isActive'];
+
+            $platform = $this->service->insert($name, $isActive);
+
+            $response
+                ->appendArray([
+                    'message' => 'Plataforma incluída com sucesso!',
+                    'data' => [
+                        'id' => $platform->getId(),
+                        'name' => $platform->getName(),
+                        'isActive' => $platform->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            DatabaseDuplicatedEntryException |
+            EntityInvalidValueException $e
+        ) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -65,7 +91,13 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $messages[] = $e->getMessage();
             $response
                 ->appendArray([
@@ -75,20 +107,6 @@ class PlatformController
                 ->sendJSON();
             return;
         }
-
-        $data = [
-            'id' => $platform->getId(),
-            'name' => $platform->getName()
-        ];
-
-        $messages[] = 'Plataforma incluída com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[201])
-            ->sendJSON();
     }
 
     /**
@@ -98,61 +116,142 @@ class PlatformController
      */
     public function update(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $wasTheUpdateSuccessful = false;
         try {
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
             $isPlatformIdSetted = isset($params['platformId']);
             if ($isPlatformIdSetted === false) {
-                $messages[] = 'O parâmetro platformId não foi informado na URL ou seu valor é null!';
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro platformId não foi informado na URL ou seu valor é null!'
+                );
             }
 
             $isNameSetted = isset($body['name']);
             if ($isNameSetted === false) {
-                $messages[] = 'A chave name não foi definida no JSON ou seu valor é null!';
+                throw new ControllerUndefinedValueException(
+                    'A chave name não foi definida no JSON ou seu valor é null!'
+                );
             }
 
-            $itHaveUndefinedKeys = $isPlatformIdSetted === false || $isNameSetted === false;
-            if ($itHaveUndefinedKeys) {
-                throw new ControllerUndefinedValueException('Ocorreu um erro!');
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
             }
 
             $platformId = $params['platformId'];
             $name = $body['name'];
+            $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->update($platformId, $name);
+            $wasTheUpdateSuccessful = $this->service->update($platformId, $name, $isActive);
             if ($wasTheUpdateSuccessful === false) {
-                throw new ControllerOperationErrorException('Não foi possível atualizar a plataforma com o id .' . $platformId . '!');
+                throw new HttpResourceNotFoundException(
+                    'Não foi possível atualizar a plataforma com o id ' . $platformId . '!'
+                );
             }
-        } catch (ControllerOperationErrorException | ControllerUndefinedValueException | HttpJsonParseException | DatabaseDuplicatedEntryException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataforma atualizada com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            DatabaseDuplicatedEntryException |
+            EntityInvalidValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
+    }
 
-        $messages[] = 'Plataforma atualizada com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
+    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $params = $request->getParams();
+            $body = $request->parseBodyFromJSONString();
+
+            $isPlatformIdSetted = isset($params['platformId']);
+            if ($isPlatformIdSetted === false) {
+                throw new ControllerUndefinedValueException('O parâmetro platformId não foi informado na URL!');
+            }
+
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
+            }
+
+            $platformId = $params['platformId'];
+            $isActive = $body['isActive'];
+
+            $wasTheUpdateOcurred = $this->service->setIsActive($platformId, $isActive);
+            if ($wasTheUpdateOcurred === false) {
+                throw new ControllerOperationErrorException(
+                    'Ocorreu um erro! Verifique se o id ' .
+                    $platformId .
+                    ' existe ' .
+                    'ou se o valor de atividade foi modificado!'
+                );
+            }
+
+            $response
+                ->appendArray([
+                    'message' => 'Estado atualizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            ControllerOperationErrorException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
     }
 
     /**
@@ -162,66 +261,66 @@ class PlatformController
      */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-        $platform = null;
-
         try {
             $params = $request->getParams();
+
             $isPlatformIdSetted = isset($params['platformId']);
             if ($isPlatformIdSetted === false) {
-                throw new ControllerUndefinedValueException('O parâmetro platformId não está definido no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro platformId não está definido no JSON ou seu valor é null!'
+                );
             }
 
             $platformId = $params['platformId'];
+
             $platform = $this->service->findById($platformId);
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $messages[] = $e->getMessage();
+            if ($platform === null) {
+                throw new HttpResourceNotFoundException(
+                    'A plataforma procurada não foi encontrada!'
+                );
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataforma encontrada com sucesso!',
+                    'data' => [
+                        'id' => $platform->getId(),
+                        'name' => $platform->getName(),
+                        'isActive' => $platform->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
                 ->sendJSON();
             return;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        if ($platform === null) {
-            $messages[] = 'A plataforma procurada não foi encontrada!';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
-            return;
-        }
-
-        $platformId = $platform->getId();
-        $platformName = $platform->getName();
-
-        $data = [
-            'id' => $platformId,
-            'name' => $platformName,
-        ];
-
-        $messages[] = 'Plataforma encontrada com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 
     /**
@@ -231,52 +330,52 @@ class PlatformController
      */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
-        $messages = [];
-        $data = [];
-
-        $platforms = null;
         try {
             $platforms = $this->service->findAll();
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
-            $messages[] = $e->getMessage();
+
+            $numberOfPlatforms = count($platforms);
+            if ($numberOfPlatforms === 0) {
+                throw new HttpResourceNotFoundException(
+                    'A busca foi concluída e nenhuma plataforma foi encontrada.'
+                );
+            }
+
+            foreach ($platforms as $platform) {
+                $data[] = [
+                    'id' => $platform->getId(),
+                    'name' => $platform->getName(),
+                    'isActive' => $platform->getIsActive()
+                ];
+            }
+
             $response
                 ->appendArray([
-                    'messages' => $messages
+                    'message' => 'Plataformas buscadas com sucesso!',
+                    'data' => $data
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->sendJSON();
+            return;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
                 ->sendJSON();
             return;
         }
-
-        $numberOfPlatforms = count($platforms);
-        if ($numberOfPlatforms === 0) {
-            $messages[] = 'A busca foi concluída e nenhuma plataforma foi encontrada.';
-            $response
-                ->appendArray([
-                    'messages' => $messages
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
-        }
-
-        foreach ($platforms as $platform) {
-            $platformId = $platform->getId();
-            $platformName = $platform->getName();
-
-            $data[] = [
-                'id' => $platformId,
-                'name' => $platformName,
-            ];
-        }
-
-        $messages[] = 'Plataformas buscadas com sucesso!';
-        $response
-            ->appendArray([
-                'messages' => $messages,
-                'data' => $data
-            ])
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->sendJSON();
     }
 }

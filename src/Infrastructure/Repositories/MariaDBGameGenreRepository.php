@@ -57,7 +57,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     (:genreId, :gameId);'
             );
             if ($insertStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de inserção!'
+                );
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
@@ -65,7 +67,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':gameId' => $gameId
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de inserção!'
+                );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
@@ -87,7 +91,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':id' => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $fetchResult = $selectStatement->fetch();
@@ -103,7 +109,14 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $gameGenre->setGameId($fetchResult['game_id']);
 
             return $gameGenre;
-        } catch (DatabaseTransactionCreationFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException | Throwable $e) {
+        } catch (
+            DatabaseTransactionCreationFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -132,7 +145,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id;'
             );
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
@@ -140,9 +155,21 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':gameId' => $gameId,
                 ':genreId' => $genreId
             ]);
+            if ($wasTheStatementExecutionSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
 
-            return $wasTheStatementExecutionSuccessful;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+            $numberOfRowsAffected = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfRowsAffected > 0;
+
+            return $wasTheRepositoryAffected;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -163,7 +190,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id;'
             );
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de exclusão!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de exclusão!'
+                );
             }
 
             $id = $gameGenre->getId();
@@ -172,14 +201,20 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':id' => $id
             ]);
             if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de exclusão!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de exclusão!'
+                );
             }
 
             $numberOfRowsAffected = $statement->rowCount();
             $wasTheDeleteSuccessful = $numberOfRowsAffected > 0;
 
             return $wasTheDeleteSuccessful;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -209,7 +244,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ':id' => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -223,7 +260,11 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $gameGenre->setGenreId($result['genre_id']);
 
             return $gameGenre;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -248,7 +289,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -268,7 +311,11 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             }
 
             return $gameGenres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

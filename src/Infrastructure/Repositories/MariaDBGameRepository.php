@@ -45,23 +45,35 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $game->getName();
+            $isActive = $game->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    game (name) 
-                VALUES (:name);'
+                    game (
+                        name, 
+                        is_active
+                    ) 
+                VALUES (
+                    :name, 
+                    :isActive
+                );'
             );
 
             if ($insertStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de inserção!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de inserção!'
+                );
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':name' => $name
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
 
             if ($wasInsertExecutionASuccess === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de inserção!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de inserção!'
+                );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
@@ -85,7 +97,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             ]);
 
             if ($wasSelectExecutionASuccess === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $fetchResult = $selectStatement->fetch();
@@ -99,9 +113,15 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game();
             $game->setId($fetchResult['id']);
             $game->setName($fetchResult['name']);
+            $game->setIsActive($fetchResult['is_active']);
 
             return $game;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -117,13 +137,15 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         $id = $game->getId();
         $name = $game->getName();
+        $isActive = $game->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game 
                 SET 
-                    name = :name 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
@@ -134,17 +156,24 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $wasStatementExecutionSuccessful = $statement->execute([
                 ':name' => $name,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $numberOfLinesAffected = $statement->rowCount();
-            $wasUpdateSuccessful = $numberOfLinesAffected > 0;
-            return $wasUpdateSuccessful;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+            $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
+            return $wasSomeUpdateHappened;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -155,9 +184,44 @@ class MariaDBGameRepository implements GameRepositoryInterface
      * @return bool Returns the success flag.
      * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function delete(int $id): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
-        return false;
+        try {
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    game
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id
+                AND
+                    is_active <> :isActive;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':isActive' => $isActive,
+                ':id' => $id
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
     }
 
     /**
@@ -187,7 +251,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -199,9 +265,15 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game();
             $game->setId($result['id']);
             $game->setName($result['name']);
+            $game->setIsActive($result['is_active']);
 
             return $game;
-        } catch (DatabaseFetchFailureException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -228,7 +300,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $wasTheStatementExecutionSuccessful = $statement->execute();
 
             if ($wasTheStatementExecutionSuccessful === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -242,11 +316,16 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 $game = new Game();
                 $game->setId($row['id']);
                 $game->setName($row['name']);
+                $game->setIsActive($row['is_active']);
                 $games[] = $game;
             }
 
             return $games;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -270,7 +349,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao tentar criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao tentar criar a declaração de busca!'
+                );
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
@@ -278,14 +359,20 @@ class MariaDBGameRepository implements GameRepositoryInterface
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao tentar executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao tentar executar a declaração de busca!'
+                );
             }
 
             $numberOfLinesAffected = $statement->rowCount();
             $hasDuplicatedNames = $numberOfLinesAffected > 0;
 
             return $hasDuplicatedNames;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

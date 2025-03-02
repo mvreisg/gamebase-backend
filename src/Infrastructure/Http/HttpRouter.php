@@ -16,6 +16,8 @@ class HttpRouter
         201 => 'HTTP/1.1 201 Created',
         204 => 'HTTP/1.1 204 No Content',
         400 => 'HTTP/1.1 400 Bad Request',
+        401 => 'HTTP/1.1 401 Unauthorized',
+        403 => 'HTTP/1.1 403 Forbidden',
         404 => 'HTTP/1.1 404 Not Found',
         500 => 'HTTP/1.1 500 Internal Server Error'
     ];
@@ -28,7 +30,8 @@ class HttpRouter
     ];
 
     /**
-     * @var string NON_EXISTANT_ROUTE Value for a non-existant route. Needed by this class to send a 404 status if a route connot be found.
+     * @var string NON_EXISTANT_ROUTE Value for a non-existant route.
+     * Needed by this class to send a 404 status if a route connot be found.
      */
     public const NON_EXISTANT_ROUTE = '';
 
@@ -79,11 +82,18 @@ class HttpRouter
             $queryPart = $explodedPath[1];
         }
         $body = file_get_contents('php://input');
+        $headers = getallheaders();
 
-        $matchingMethods = array_filter($this->routes, fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD);
+        $matchingMethods = array_filter(
+            $this->routes,
+            fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD
+        );
 
         $exactlyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $item['route'] === $routePart);
-        $looselyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $this->matchRoute($item['route'], $routePart));
+        $looselyMatchedRoutes = array_filter(
+            $matchingMethods,
+            fn ($item) => $this->matchRoute($item['route'], $routePart)
+        );
 
         $numberOfExactlyMatchedRoutes = count($exactlyMatchedRoutes);
         $numberOfLooselyMatchedRoutes = count($looselyMatchedRoutes);
@@ -91,7 +101,7 @@ class HttpRouter
         if ($numberOfExactlyMatchedRoutes === 1) {
             $item = array_pop($exactlyMatchedRoutes);
             $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, [], $body);
+            $request = new HttpRequest($method, $routePart, $queries, [], $body, $headers);
             $response = new HttpResponse();
             call_user_func_array($item['callback'], [$request, $response]);
             return;
@@ -99,18 +109,19 @@ class HttpRouter
             $item = array_pop($looselyMatchedRoutes);
             $params = $this->findRouteParameters($item['route'], $routePart);
             $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, $params, $body);
+            $request = new HttpRequest($method, $routePart, $queries, $params, $body, $headers);
             $response = new HttpResponse();
             call_user_func_array($item['callback'], [$request, $response]);
             return;
         } else {
-            print('Rota não encontrada!');
             header(self::STATUS_CODES[404]);
+            print('Rota não encontrada!');
         }
     }
 
     /**
-     * Method that gets two route names (the internal route defined in the code (the request route) and the actual requested route (the informed route)) and see if they match.
+     * Method that gets two route names (the internal route defined in the code (the request route) and
+     * the actual requested route (the informed route)) and see if they match.
      * @return bool Returns true if the values match, false otherwise.
      */
     private function matchRoute(string $requestRoute, string $informedRoute)
@@ -184,7 +195,8 @@ class HttpRouter
     }
 
     /**
-     * Method that gets the internal route defined in the code and the actual requested HTTP route and matches them to extract the parameters values from the actual requested route.
+     * Method that gets the internal route defined in the code and the actual requested HTTP route and
+     * matches them to extract the parameters values from the actual requested route.
      * @return Map<string,string> The map of parameters.
      */
     private function findRouteParameters(string $requestRoute, string $informedRoute)

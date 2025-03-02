@@ -5,4 +5,6 @@ phases:
       - composer install
   build:
     commands:
-      - composer lint      
+      - composer format
+      - composer lint
+      - composer lint:fix    

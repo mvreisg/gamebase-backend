@@ -28,7 +28,10 @@ class GameGenreRoutes
             $controller->update($request, $response);
         });
 
-        $app->add('DELETE', '/game/genre/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('DELETE', '/game/genre/:id', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->delete($request, $response);
         });
 

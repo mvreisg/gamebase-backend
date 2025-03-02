@@ -41,13 +41,15 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function insert(mixed $name): Genre
+    public function insert(mixed $name, mixed $isActive): Genre
     {
         $genre = new Genre();
-        $genre->setName($name);
 
         try {
-            $genre->validateName();
+            $genre->validateName($name);
+            $genre->validateIsActive($isActive);
+            $genre->setName($name);
+            $genre->setIsActive($isActive);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -55,7 +57,14 @@ class GenreService
             }
             $genre = $this->repository->insert($genre);
             return $genre;
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | DatabaseFetchFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            DatabaseFetchFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -70,23 +79,53 @@ class GenreService
      * @throws PDOException Throwed in case of database connection error.
      * @throws Exception Throwed in case of error.
      */
-    public function update(mixed $id, mixed $name): bool
+    public function update(mixed $id, mixed $name, mixed $isActive): bool
     {
         $genre = new Genre();
-        $genre->setId($id);
-        $genre->setName($name);
 
         try {
-            $genre->validateId();
-            $genre->validateName();
+            $genre->validateId($id);
+            $genre->validateName($name);
+            $genre->validateIsActive($isActive);
+            $genre->setId($id);
+            $genre->setName($name);
+            $genre->setIsActive($isActive);
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do gênero a ser atualizado já existe no repositório!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome do gênero a ser atualizado já existe no repositório!'
+                );
             }
             $wasItSuccessful = $this->repository->update($genre);
             return $wasItSuccessful;
-        } catch (EntityInvalidValueException | DatabaseDuplicatedEntryException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function setIsActive(mixed $id, mixed $isActive): bool
+    {
+        $genre = new Genre();
+        try {
+            $genre->validateId($id);
+            $genre->validateIsActive($isActive);
+            $genre->setId($id);
+            $genre->setIsActive($isActive);
+            $wasSuccessful = $this->repository->setIsActive($id, $isActive);
+            return $wasSuccessful;
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -102,13 +141,18 @@ class GenreService
     public function findById(mixed $id): Genre|null
     {
         $genre = new Genre();
-        $genre->setId($id);
 
         try {
-            $genre->validateId();
+            $genre->validateId($id);
+            $genre->setId($id);
             $genre = $this->repository->findById($id);
             return $genre;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            EntityInvalidValueException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -124,7 +168,11 @@ class GenreService
         try {
             $genres = $this->repository->findAll();
             return $genres;
-        } catch (DatabaseStatementCreationFailureException | DatabaseStatementExecutionFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

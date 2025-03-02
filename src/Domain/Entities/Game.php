@@ -12,22 +12,14 @@ class Game
     /**
      * @var int $id The Game id.
      */
-    private mixed $id;
+    private int $id;
 
     /**
      * @var string $name The Game name.
      */
-    private mixed $name;
+    private string $name;
 
-    /**
-     * @var array $genres The Game Genres objects list.
-     */
-    private array $genres;
-
-    /**
-     * @var array $platforms The Game Platforms objects list.
-     */
-    private array $platforms;
+    private bool $isActive;
 
     /**
      * The Game class constructor.
@@ -37,19 +29,18 @@ class Game
      * @param array $platforms [optional] The Game Genres objects list.
      * @return void
      */
-    public function __construct(int $id = 0, string $name = '', array $genres = [], array $platforms = [])
+    public function __construct(int $id = 0, string $name = '', bool $isActive = false)
     {
         $this->id = $id;
         $this->name = $name;
-        $this->genres = $genres;
-        $this->platforms = $platforms;
+        $this->isActive = $isActive;
     }
 
     /**
      * The Game id getter.
      * @return int The Game id.
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -59,7 +50,7 @@ class Game
      * @param int $id The Game id.
      * @return void
      */
-    public function setId(mixed $id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -68,7 +59,7 @@ class Game
      * The Game name getter.
      * @return string The Game name.
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -78,60 +69,45 @@ class Game
      * @param string $name The Game name.
      * @return void
      */
-    public function setName(mixed $name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * The Game Genres objects list getter.
-     * @return array The Game Genres objects list.
-     */
-    public function getGenres()
+    public function getIsActive(): bool
     {
-        return $this->genres;
+        return $this->isActive;
     }
 
-    /**
-     * The Game Genres objects list setter.
-     * @param array $genres The Game Genres objects list.
-     * @return void
-     */
-    public function setGenres(array $genres)
+    public function setIsActive(bool $isActive): void
     {
-        $this->genres = $genres;
-    }
-
-    /**
-     * The Game Platforms objects list getter.
-     * @return array The Game Platforms objects list.
-     */
-    public function getPlatforms()
-    {
-        return $this->platforms;
-    }
-
-    /**
-     * The Game Platforms objects list setter.
-     * @param array $platforms The Game Platforms objects list.
-     */
-    public function setPlatforms(array $platforms)
-    {
-        $this->platforms = $platforms;
+        $this->isActive = $isActive;
     }
 
     /**
      * Method to validate the id of the Game, throwing an exception if the id is invalid.
      * @throws EntityInvalidValueException Throwed if the id is invalid.
      */
-    public function validateId()
+    public function validateId(mixed $id): void
     {
-        if (is_numeric($this->id) === false) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' é inválido.');
+        if ($id === null) {
+            throw new EntityInvalidValueException('O id é null!');
         }
 
-        if ($this->id < 1) {
-            throw new EntityInvalidValueException('O id ' . $this->id . ' deve ser maior que 0.');
+        if (is_numeric($id) === false) {
+            throw new EntityInvalidValueException('O id não é um número!');
+        }
+
+        if (is_string($id)) {
+            throw new EntityInvalidValueException('O id é uma string!');
+        }
+
+        if (is_bool($id)) {
+            throw new EntityInvalidValueException('O id é um valor booleano!');
+        }
+
+        if ($id < 1) {
+            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
         }
     }
 
@@ -139,20 +115,35 @@ class Game
      * Method to validate the name of the Game, throwing an exception if the name is invalid.
      * @throws EntityInvalidValueException Throwed if the name is invalid.
      */
-    public function validateName()
+    public function validateName(mixed $name): void
     {
-        if ($this->name === null) {
-            throw new EntityInvalidValueException('O nome é nulo.');
+        if ($name === null) {
+            throw new EntityInvalidValueException('O nome é null.');
         }
 
-        if (is_string($this->name) === false) {
+        if (is_string($name) === false) {
             throw new EntityInvalidValueException('O nome não é uma string.');
         }
 
-        $this->name = trim($this->name);
+        $name = trim($name);
 
-        if ($this->name === '') {
+        if ($name === '') {
             throw new EntityInvalidValueException('O nome está vazio.');
+        }
+    }
+
+    public function validateIsActive(mixed $isActive): void
+    {
+        if ($isActive === null) {
+            throw new EntityInvalidValueException('isActive é null!');
+        }
+
+        if (is_string($isActive)) {
+            throw new EntityInvalidValueException('isActive é uma string!');
+        }
+
+        if (is_numeric($isActive)) {
+            throw new EntityInvalidValueException('isActive é numérico!');
         }
     }
 }

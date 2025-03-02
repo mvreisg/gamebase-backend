@@ -35,6 +35,8 @@ class HttpRequest
      */
     private string $body;
 
+    private array $headers;
+
     /**
      * HTTP request class constructor.
      * @param string $method The request method.
@@ -43,13 +45,20 @@ class HttpRequest
      * @param Map<string,string> $params The request route parameters.
      * @param string $body The request body.
      */
-    public function __construct(string $method, string $route, $queries = [], $params = [], string $body = '')
-    {
+    public function __construct(
+        string $method,
+        string $route,
+        $queries = [],
+        $params = [],
+        string $body = '',
+        array $headers = []
+    ) {
         $this->method = $method;
         $this->route = $route;
         $this->queries = $queries;
         $this->params = $params;
         $this->body = $body;
+        $this->headers = $headers;
     }
 
     /**
@@ -97,6 +106,11 @@ class HttpRequest
         return $this->body;
     }
 
+    public function getHeaders()
+    {
+        return $this->headers;
+    }
+
     /**
      * Method that gets the body as a string in json format, and parses it to a PHP data structure.
      * @return mixed The content of the parsed JSON string body as a PHP data structure.
@@ -107,7 +121,9 @@ class HttpRequest
         $isAssociative = true;
         $result = json_decode($this->body, $isAssociative);
         if ($result == false) {
-            throw new HttpJsonParseException('Erro ao fazer a decodificação de uma string JSON para uma estrutura de dados PHP.');
+            throw new HttpJsonParseException(
+                'Erro ao fazer a decodificação de uma string JSON para uma estrutura de dados PHP.'
+            );
         }
         return $result;
     }
