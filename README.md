@@ -60,7 +60,50 @@ Set a *Virtual Host* to `path/to/this/project/gamebase-backend/` to make it prop
 
 <hr/>
 
-### Commands
+### Run
+
+First, run:
+
+```
+composer install
+```
+
+To install the dependencies.
+
+<br/>
+
+Then run:
+
+```
+composer phinx init .
+```
+
+To create the Phinx config file in the root folder (`/path/to/your/project/gamebase-backend`).
+
+<br/>
+
+Then create a database on MariaDB called `gamebase`:
+
+```sql
+CREATE DATABASE gamebase;
+```
+
+<br/>
+
+Also run:
+
+```
+composer phinx migrate
+```
+
+To make Phinx create the database tables.
+
+
+After that, just access [localhost](http://localhost:80) to see the server status.
+
+<hr/>
+
+## Commands
 
 See *composer.json*.
 <br/>

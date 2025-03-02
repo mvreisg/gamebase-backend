@@ -2,6 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -13,6 +14,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
+use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
@@ -72,6 +74,7 @@ class AuthenticationController
             }
 
             $token = $this->service->generateToken($userName);
+            $this->service->setSessionToken($userName, $token);
             $response
                 ->appendArray([
                     'token' => $token
@@ -80,20 +83,13 @@ class AuthenticationController
                 ->send();
             return;
         } catch (
-            SessionException $e
-        ) {
-            $this->service->logoff($userName);
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
-            return;
-        } catch (
+            AuthenticationException |
+            SessionException |
+            ControllerInvalidValueException |
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
         ) {
+            $this->service->logoff($userName);
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
