@@ -16,6 +16,14 @@ Uses [Docker](https://www.docker.com/) as the container image creator.
 
 ## Run with Docker
 
+### Setup
+
+Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
+
+<hr/>
+
+### Run 
+
 If you have Docker installed, simply run
 
 ```
@@ -28,9 +36,29 @@ and
 docker exec -it gamebase-backend vendor/bin/phinx migrate
 ```
 
-to run the database migrations then listen to **8080**.
+to run the database migrations, then listen to **8080** on the client.
 
-<p><b>MariaDB</b> uses port <b>3312</b> instead of <b>3306.</b></p>
+<i><p><b>MariaDB</b> uses port <b>3312</b> instead of <b>3306.</b></p></i>
+
+## Run locally
+
+***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
+
+- Make sure you have PHP 8.2.12 installed.
+- Make sure you have a Apache HTTP server installed.
+- Make sure you have MariaDB installed.
+- Make sure you have Composer installed globally and configured in the PATH environment.
+- Clone the project.
+
+<hr/>
+
+### Setup
+
+Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
+
+Set a *Virtual Host* to `path/to/this/project/gamebase-backend/` to make it properly work.
+
+<hr/>
 
 ### Commands
 
