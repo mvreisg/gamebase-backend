@@ -42,7 +42,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $genre->getName();
-            $isActive = $genre->getIsActive();
+            $isActive = (int)$genre->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -135,7 +135,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         $id = $genre->getId();
         $name = $genre->getName();
-        $isActive = $genre->getIsActive();
+        $isActive = (int)$genre->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(

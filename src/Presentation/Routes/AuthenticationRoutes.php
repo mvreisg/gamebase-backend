@@ -25,5 +25,9 @@ class AuthenticationRoutes
         $app->add('POST', '/auth/validate', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->handleValidation($request, $response);
         });
+
+        $app->add('POST', '/auth/logoff', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+            $controller->handleLogoff($request, $response);
+        });
     }
 }

@@ -26,7 +26,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $userName = $user->getUserName();
             $passWord = $user->getPassWord();
-            $isActive = $user->getIsActive();
+            $isActive = (int)$user->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -117,7 +117,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         $id = $user->getId();
         $userName = $user->getUserName();
         $passWord = $user->getPassWord();
-        $isActive = $user->getIsActive();
+        $isActive = (int)$user->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(

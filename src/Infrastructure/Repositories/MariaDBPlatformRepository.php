@@ -45,7 +45,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $name = $platform->getName();
-            $isActive = $platform->getIsActive();
+            $isActive = (int)$platform->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -135,7 +135,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         $id = $platform->getId();
         $name = $platform->getName();
-        $isActive = $platform->getIsActive();
+        $isActive = (int)$platform->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(

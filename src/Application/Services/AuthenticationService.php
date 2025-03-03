@@ -88,12 +88,13 @@ class AuthenticationService
         return true;
     }
 
-    public function generateToken(string $userName): string
+    public function generateToken(string $userName, bool $oneWeek): string
     {
         try {
+            $time = $oneWeek ? '+1 week' : '+1 day';
             $secretKey = $_SERVER['JWT_SECRET'];
             $issuedAt = new DateTimeImmutable();
-            $expireAt = $issuedAt->modify('+60 seconds')->getTimestamp();
+            $expireAt = $issuedAt->modify($time)->getTimestamp();
 
             $payload = [
                 'iat' => $issuedAt->getTimestamp(),
@@ -108,6 +109,32 @@ class AuthenticationService
             return $token;
         } catch (Throwable $e) {
             throw $e;
+        }
+    }
+
+    public function decodeToken(string $token): string
+    {
+        try {
+            $token = $this->encrypter->decrypt($token);
+
+            $secretKey = $_SERVER['JWT_SECRET'];
+            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
+
+            return $decoded->sub;
+        } catch (AuthenticationException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+            throw new AuthenticationException('Objeto key inválido!', 0, $e);
+        } catch (DomainException $e) {
+            throw new AuthenticationException('JWT malformado!', 0, $e);
+        } catch (UnexpectedValueException $e) {
+            throw new AuthenticationException('JWT inválido!', 0, $e);
+        } catch (SignatureInvalidException $e) {
+            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
+        } catch (BeforeValidException  $e) {
+            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
+        } catch (ExpiredException $e) {
+            throw new AuthenticationException('JWT expirado!', 0, $e);
         }
     }
 
@@ -171,8 +198,19 @@ class AuthenticationService
         }
     }
 
-    public function logoff(string $userName)
+    public function logoff(string $userName): bool
     {
+        $value = $this->cache->get($userName);
+        if ($value === null) {
+            return false;
+        }
+
+        if ($value === '') {
+            return false;
+        }
+
         $this->cache->set($userName, null);
+
+        return true;
     }
 }
