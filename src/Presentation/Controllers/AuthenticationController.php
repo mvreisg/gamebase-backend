@@ -42,8 +42,14 @@ class AuthenticationController
                 throw new ControllerUndefinedValueException('A chave password não existe ou seu valor é null!');
             }
 
+            $isOneWeekFieldSetted = isset($body['oneWeek']);
+            if ($isOneWeekFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave oneWeek não existe ou seu valor é null!');
+            }
+
             $userName = $body['username'];
             $passWord = $body['password'];
+            $oneWeek = $body['oneWeek'];
 
             $hasSession = $this->service->checkIfHasSession($userName);
             if ($hasSession) {
@@ -72,11 +78,11 @@ class AuthenticationController
                 return;
             }
 
-            $token = $this->service->generateToken($userName);
+            $token = $this->service->generateToken($userName, $oneWeek);
             $this->service->setSessionToken($userName, $token);
             $response
                 ->appendArray([
-                    'message' => 'Login realizado com sucesso!',
+                    'message' => 'Login realizado com sucesso! Durará ' . ($oneWeek ? '1 semana' : '1 dia') . '.',
                     'token' => $token
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
@@ -190,15 +196,19 @@ class AuthenticationController
             $token = $body['token'];
 
             $userName = $this->service->decodeToken($token);
-            $this->service->logoff($userName);
+            $wasTheLogoffMade = $this->service->logoff($userName);
 
-            $response
-                ->appendArray([
-                    'message' => 'Logoff realizado com sucesso!'
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
-            return;
+            if ($wasTheLogoffMade) {
+                $response
+                    ->appendArray([
+                        'message' => 'Logoff realizado com sucesso!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->sendJSON();
+                return;
+            } else {
+                throw new HttpUnauthorizedException('Usuário não possui sessão para realizar o logoff!');
+            }
         } catch (
             AuthenticationException |
             HttpUnauthorizedException $e

@@ -88,12 +88,13 @@ class AuthenticationService
         return true;
     }
 
-    public function generateToken(string $userName): string
+    public function generateToken(string $userName, bool $oneWeek): string
     {
         try {
+            $time = $oneWeek ? '+1 week' : '+1 day';
             $secretKey = $_SERVER['JWT_SECRET'];
             $issuedAt = new DateTimeImmutable();
-            $expireAt = $issuedAt->modify('+60 seconds')->getTimestamp();
+            $expireAt = $issuedAt->modify($time)->getTimestamp();
 
             $payload = [
                 'iat' => $issuedAt->getTimestamp(),
@@ -197,8 +198,19 @@ class AuthenticationService
         }
     }
 
-    public function logoff(string $userName)
+    public function logoff(string $userName): bool
     {
+        $value = $this->cache->get($userName);
+        if ($value === null) {
+            return false;
+        }
+
+        if ($value === '') {
+            return false;
+        }
+
         $this->cache->set($userName, null);
+
+        return true;
     }
 }
