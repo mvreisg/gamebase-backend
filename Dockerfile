@@ -7,15 +7,21 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libcurl4-openssl-dev \
     pkg-config \
-    git && \
+    git \
+    redis-server && \
     docker-php-ext-install pdo pdo_mysql mysqli sodium
 
-RUN a2enmod rewrite
+RUN pecl install redis && \
+    docker-php-ext-enable redis
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN a2enmod rewrite
 
 EXPOSE 80
 
 WORKDIR /var/www/html
 
 COPY . /var/www/html
+
+RUN composer install
