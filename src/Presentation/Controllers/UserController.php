@@ -2,6 +2,8 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use PDOException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Application\Services\UserService;
@@ -14,16 +16,19 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 class UserController
 {
     private UserService $service;
+    private AuthenticationService $authService;
 
-    public function __construct(UserService $service)
+    public function __construct(UserService $service, AuthenticationService $authService)
     {
         $this->service = $service;
+        $this->authService = $authService;
     }
 
     /**
@@ -35,6 +40,10 @@ class UserController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
 
             $isUserNameFieldSetted = isset($body['username']);
@@ -78,6 +87,14 @@ class UserController
                 ->sendJSON();
 
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (
             ControllerUndefinedValueException |
             HttpJsonParseException |
@@ -115,6 +132,10 @@ class UserController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
@@ -157,6 +178,14 @@ class UserController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (
             HttpResourceNotFoundException |
             ControllerUndefinedValueException |
@@ -190,6 +219,10 @@ class UserController
     public function setIsActive(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
@@ -227,6 +260,14 @@ class UserController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
@@ -259,6 +300,10 @@ class UserController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isUserIdSetted = isset($params['userId']);
@@ -289,6 +334,14 @@ class UserController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -331,6 +384,10 @@ class UserController
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $users = $this->service->findAll();
 
             $numberOfUsersFound = count($users);
@@ -353,6 +410,14 @@ class UserController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
