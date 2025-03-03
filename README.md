@@ -45,8 +45,9 @@ to run the database migrations, then listen to **8080** on the client.
 ***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
 
 - Make sure you have PHP 8.2.12 installed.
-- Make sure you have a Apache HTTP server installed.
+- Make sure you have a Apache HTTP server installed (because of .htaccess file).
 - Make sure you have MariaDB installed.
+- Make sure you have Redis installed.
 - Make sure you have Composer installed globally and configured in the PATH environment.
 - Clone the project.
 

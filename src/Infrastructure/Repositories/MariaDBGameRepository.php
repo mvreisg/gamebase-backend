@@ -45,7 +45,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $this->pdo->beginTransaction();
 
             $name = $game->getName();
-            $isActive = $game->getIsActive();
+            $isActive = (int)$game->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -137,7 +137,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         $id = $game->getId();
         $name = $game->getName();
-        $isActive = $game->getIsActive();
+        $isActive = (int)$game->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
