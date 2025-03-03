@@ -163,6 +163,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
+            $isActive = (int)$isActive;
+
             $statement = $this->pdo->prepare(
                 'UPDATE
                     user

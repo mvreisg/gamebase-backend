@@ -182,6 +182,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
+            $isActive = (int)$isActive;
+
             $statement = $this->pdo->prepare(
                 'UPDATE
                     platform
