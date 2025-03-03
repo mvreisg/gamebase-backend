@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
@@ -89,6 +90,7 @@ class AuthenticationController
                 ->send();
             return;
         } catch (
+            HttpJsonParseException |
             AuthenticationException |
             ControllerInvalidValueException |
             ControllerUndefinedValueException |
@@ -156,6 +158,7 @@ class AuthenticationController
                 ->sendJSON();
             return;
         } catch (
+            HttpJsonParseException |
             EntityInvalidValueException |
             ControllerUndefinedValueException $e
         ) {
@@ -221,6 +224,7 @@ class AuthenticationController
                 ->sendJSON();
             return;
         } catch (
+            HttpJsonParseException |
             EntityInvalidValueException |
             ControllerUndefinedValueException $e
         ) {

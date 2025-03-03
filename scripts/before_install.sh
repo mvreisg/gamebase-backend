@@ -1,5 +1,5 @@
 #!/bin/bash
 sudo docker compose down
-sudo rm -rf /home/ubuntu/gamebase-backend
-sudo mkdir /home/ubuntu/gamebase-backend
-sudo cp /home/ubuntu/.env /home/ubuntu/gamebase-backend/.env
+sudo rm -rf /var/www/html
+sudo mkdir /var/www/html
+sudo cp /home/ubuntu/.env /var/www/html/.env
