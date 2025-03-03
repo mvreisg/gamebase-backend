@@ -16,6 +16,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 EXPOSE 80
 
-WORKDIR /var/www/html
+WORKDIR /home/ubuntu/gamebase-backend
 
-COPY . /var/www/html
+COPY . /home/ubuntu/gamebase-backend
