@@ -2,6 +2,8 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -13,6 +15,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -28,14 +31,16 @@ class GameGenreController
      * @var GameGenreService $service The service to be used by this controller.
      */
     private GameGenreService $service;
+    private AuthenticationService $authService;
 
     /**
      * Game Genre controller class controller.
      * @param GameGenreService $service The service to be used by this controller.
      */
-    public function __construct(GameGenreService $service)
+    public function __construct(GameGenreService $service, AuthenticationService $authService)
     {
         $this->service = $service;
+        $this->authService = $authService;
     }
 
     /**
@@ -47,6 +52,10 @@ class GameGenreController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
 
             $isGameIdSetted = isset($body['gameId']);
@@ -92,6 +101,14 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[201])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (
             ControllerInvalidValueException |
             ControllerUndefinedValueException |
@@ -132,6 +149,10 @@ class GameGenreController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
@@ -184,6 +205,14 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (HttpResourceNotFoundException $e) {
             $response
                 ->appendArray([
@@ -230,6 +259,10 @@ class GameGenreController
     public function delete(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isIdSetted = isset($params['id']);
@@ -251,6 +284,14 @@ class GameGenreController
                     'message' => 'Vínculos entre jogos e gêneros deletado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -293,6 +334,10 @@ class GameGenreController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isIdSetted = isset($params['id']);
@@ -320,6 +365,14 @@ class GameGenreController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -362,6 +415,10 @@ class GameGenreController
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $gameGenres = $this->service->findAll();
 
             $numberOfGameGenres = count($gameGenres);
@@ -383,6 +440,14 @@ class GameGenreController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {

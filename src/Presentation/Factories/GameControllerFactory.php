@@ -24,8 +24,8 @@ class GameControllerFactory
     public static function get(): GameController
     {
         $gameRepository = new MariaDBGameRepository(MariaDBConnection::get());
-        $userRepository = new MariaDBUserRepository(MariaDBConnection::get());
         $gameService = new GameService($gameRepository);
+        $userRepository = new MariaDBUserRepository(MariaDBConnection::get());
         $encrypter = new SodiumEncryption();
         $userCache = new RedisUserCache(RedisConnection::get());
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
