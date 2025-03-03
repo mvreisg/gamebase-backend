@@ -132,6 +132,70 @@ class AuthenticationController
             }
 
             $response
+                ->appendArray([
+                    'message' => 'Usuário possui sessão ativa'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (
+            AuthenticationException |
+            HttpUnauthorizedException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
+        } catch (
+            EntityInvalidValueException |
+            ControllerUndefinedValueException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->sendJSON();
+            return;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->sendJSON();
+            return;
+        }
+    }
+
+    public function handleLogoff(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $body = $request->parseBodyFromJSONString();
+            $isTokenSetted = isset($body['token']);
+            if ($isTokenSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave token não foi definida no JSON ou seu valor é null!'
+                );
+            }
+
+            $token = $body['token'];
+
+            $userName = $this->service->decodeToken($token);
+            $this->service->logoff($userName);
+
+            $response
+                ->appendArray([
+                    'message' => 'Logoff realizado com sucesso!'
+                ])
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;

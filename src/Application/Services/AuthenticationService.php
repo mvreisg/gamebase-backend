@@ -111,6 +111,32 @@ class AuthenticationService
         }
     }
 
+    public function decodeToken(string $token): string
+    {
+        try {
+            $token = $this->encrypter->decrypt($token);
+
+            $secretKey = $_SERVER['JWT_SECRET'];
+            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
+
+            return $decoded->sub;
+        } catch (AuthenticationException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+            throw new AuthenticationException('Objeto key inválido!', 0, $e);
+        } catch (DomainException $e) {
+            throw new AuthenticationException('JWT malformado!', 0, $e);
+        } catch (UnexpectedValueException $e) {
+            throw new AuthenticationException('JWT inválido!', 0, $e);
+        } catch (SignatureInvalidException $e) {
+            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
+        } catch (BeforeValidException  $e) {
+            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
+        } catch (ExpiredException $e) {
+            throw new AuthenticationException('JWT expirado!', 0, $e);
+        }
+    }
+
     public function validateToken(string $token): bool
     {
         try {
