@@ -76,6 +76,7 @@ class AuthenticationController
             $this->service->setSessionToken($userName, $token);
             $response
                 ->appendArray([
+                    'message' => 'Login realizado com sucesso!',
                     'token' => $token
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
