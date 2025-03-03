@@ -12,8 +12,6 @@ use Mvreisg\GamebaseBackend\Presentation\Routes\PlatformRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\GameGenreRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
@@ -42,17 +40,8 @@ try {
     $userRoutes->register($app);
     $authenticationRoutes->register($app);
 
-    $app->add(
-        HttpRouter::WILDCARD_METHOD,
-        '/',
-        fn (HttpRequest $req, HttpResponse $res) => $res
-            ->status(HttpRouter::STATUS_CODES[200])
-            ->appendString('Servidor funcionando!')
-            ->send()
-    );
-
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
     header(HttpRouter::STATUS_CODES[500]);
-    print_r($e);
+    print_r('Ocorreu um erro. Contate o suporte.');
 }

@@ -2,6 +2,8 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Application\Services\GenreService;
@@ -13,6 +15,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -26,15 +29,17 @@ class GenreController
      * @var GenreService $service The service to be used by this controller.
      */
     private GenreService $service;
+    private AuthenticationService $authService;
 
     /**
      * Genre controller class constructor.
      * @param GenreService $service The service to be used by this controller.
      * @return void
      */
-    public function __construct(GenreService $service)
+    public function __construct(GenreService $service, AuthenticationService $authService)
     {
         $this->service = $service;
+        $this->authService = $authService;
     }
 
     /**
@@ -46,6 +51,10 @@ class GenreController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
 
             $isNameFieldSetted = isset($body['name']);
@@ -73,6 +82,14 @@ class GenreController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
@@ -113,6 +130,10 @@ class GenreController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
@@ -149,6 +170,14 @@ class GenreController
                     'message' => 'Gênero atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -191,6 +220,10 @@ class GenreController
     public function setIsActive(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
@@ -222,6 +255,14 @@ class GenreController
                     'message' => 'Estado atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
@@ -261,6 +302,10 @@ class GenreController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isGenreIdSetted = isset($params['genreId']);
@@ -288,6 +333,14 @@ class GenreController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -330,6 +383,10 @@ class GenreController
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $genres = $this->service->findAll();
 
             $numberOfGenresFound = count($genres);
@@ -351,6 +408,14 @@ class GenreController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {

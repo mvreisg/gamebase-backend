@@ -20,7 +20,6 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Exceptions\SessionException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 use Throwable;
 use UnexpectedValueException;
@@ -96,15 +95,15 @@ class AuthenticationService
             $issuedAt = new DateTimeImmutable();
             $expireAt = $issuedAt->modify('+60 seconds')->getTimestamp();
 
-            $sub = $this->encrypter->encrypt($userName);
-
             $payload = [
                 'iat' => $issuedAt->getTimestamp(),
                 'exp' => $expireAt,
-                'sub' => $sub
+                'sub' => $userName
             ];
 
             $token = JWT::encode($payload, $secretKey, 'HS256');
+
+            $token = $this->encrypter->encrypt($token);
 
             return $token;
         } catch (Throwable $e) {
@@ -115,11 +114,12 @@ class AuthenticationService
     public function validateToken(string $token): bool
     {
         try {
+            $token = $this->encrypter->decrypt($token);
+
             $secretKey = $_SERVER['JWT_SECRET'];
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
 
-            $sub = $decoded->sub;
-            $userName = $this->encrypter->decrypt($sub);
+            $userName = $decoded->sub;
             $cached = $this->cache->get($userName);
 
             if ($cached === null) {
@@ -134,17 +134,17 @@ class AuthenticationService
         } catch (AuthenticationException $e) {
             throw $e;
         } catch (InvalidArgumentException $e) {
-            throw new SessionException('Objeto key inválido!', 0, $e);
+            throw new AuthenticationException('Objeto key inválido!', 0, $e);
         } catch (DomainException $e) {
-            throw new SessionException('JWT malformado!', 0, $e);
+            throw new AuthenticationException('JWT malformado!', 0, $e);
         } catch (UnexpectedValueException $e) {
-            throw new SessionException('JWT inválido!', 0, $e);
+            throw new AuthenticationException('JWT inválido!', 0, $e);
         } catch (SignatureInvalidException $e) {
-            throw new SessionException('Falha na verificação de assinatura do JWT', 0, $e);
+            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
         } catch (BeforeValidException  $e) {
-            throw new SessionException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
+            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
         } catch (ExpiredException $e) {
-            throw new SessionException('JWT expirado!', 0, $e);
+            throw new AuthenticationException('JWT expirado!', 0, $e);
         }
     }
 

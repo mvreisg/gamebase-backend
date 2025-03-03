@@ -2,6 +2,8 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use PDOException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Application\Services\GameService;
@@ -14,6 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
@@ -26,14 +29,16 @@ class GameController
      * @var GameService $service The service to be used by the controller.
      */
     private GameService $service;
+    private AuthenticationService $authService;
 
     /**
      * The Game controller class constructor.
      * @param GameService $service The service to be used by the controller.
      */
-    public function __construct(GameService $service)
+    public function __construct(GameService $service, AuthenticationService $authService)
     {
         $this->service = $service;
+        $this->authService = $authService;
     }
 
     /**
@@ -45,6 +50,10 @@ class GameController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
 
             $isNameFieldSetted = isset($body['name']);
@@ -78,6 +87,14 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[201])
                 ->sendJSON();
 
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -116,6 +133,10 @@ class GameController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
@@ -152,6 +173,14 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (
             HttpResourceNotFoundException |
             ControllerUndefinedValueException |
@@ -185,6 +214,10 @@ class GameController
     public function setIsActive(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
@@ -222,6 +255,14 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
                 ->appendArray([
@@ -254,6 +295,10 @@ class GameController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isGameIdSetted = isset($params['gameId']);
@@ -283,6 +328,14 @@ class GameController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -325,6 +378,10 @@ class GameController
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $games = $this->service->findAll();
 
             $numberOfGamesFound = count($games);
@@ -350,6 +407,14 @@ class GameController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {

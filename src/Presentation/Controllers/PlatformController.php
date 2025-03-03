@@ -2,6 +2,8 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -14,6 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -27,15 +30,17 @@ class PlatformController
      * @var PlatformService $service The service to be user by this controller.
      */
     private PlatformService $service;
+    private AuthenticationService $authService;
 
     /**
      * Platform controller class constructor.
      * @param PlatformService $service The service to be user by this controller.
      * @return void
      */
-    public function __construct(PlatformService $service)
+    public function __construct(PlatformService $service, AuthenticationService $authService)
     {
         $this->service = $service;
+        $this->authService = $authService;
     }
 
     /**
@@ -46,6 +51,10 @@ class PlatformController
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $body = $request->parseBodyFromJSONString();
 
             $isNameSetted = isset($body['name']);
@@ -75,6 +84,14 @@ class PlatformController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
@@ -117,6 +134,10 @@ class PlatformController
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
@@ -157,6 +178,14 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[200])
                 ->sendJSON();
             return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->sendJSON();
+            return;
         } catch (HttpResourceNotFoundException $e) {
             $response
                 ->appendArray([
@@ -193,6 +222,10 @@ class PlatformController
     public function setIsActive(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
@@ -224,6 +257,14 @@ class PlatformController
                     'message' => 'Estado atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (
@@ -262,6 +303,10 @@ class PlatformController
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $params = $request->getParams();
 
             $isPlatformIdSetted = isset($params['platformId']);
@@ -290,6 +335,14 @@ class PlatformController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {
@@ -331,6 +384,10 @@ class PlatformController
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
             $platforms = $this->service->findAll();
 
             $numberOfPlatforms = count($platforms);
@@ -354,6 +411,14 @@ class PlatformController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
+                ->sendJSON();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
                 ->sendJSON();
             return;
         } catch (HttpResourceNotFoundException $e) {

@@ -2,10 +2,15 @@
 
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
+use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\PlatformService;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\RedisUserCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Connections\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\RedisConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\PlatformController;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBPlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBUserRepository;
 
 /**
  * Platform controller factory class.
@@ -18,9 +23,13 @@ class PlatformControllerFactory
      */
     public static function get(): PlatformController
     {
-        $repository = new MariaDBPlatformRepository(MariaDBConnection::get());
-        $service = new PlatformService($repository);
-        $controller = new PlatformController($service);
+        $platformRepository = new MariaDBPlatformRepository(MariaDBConnection::get());
+        $platformService = new PlatformService($platformRepository);
+        $userRepository = new MariaDBUserRepository(MariaDBConnection::get());
+        $encrypter = new SodiumEncryption();
+        $userCache = new RedisUserCache(RedisConnection::get());
+        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
+        $controller = new PlatformController($platformService, $authService);
         return $controller;
     }
 }
