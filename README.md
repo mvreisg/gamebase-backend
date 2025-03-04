@@ -18,19 +18,27 @@ Uses [Docker](https://www.docker.com/) as the container image creator.
 
 ### Setup
 
-Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
+Make sure to create a `.env` file in the root directory with the values specified in `.env.example`.
 
 <hr/>
 
 ### Run 
 
-If you have Docker installed, simply run
+If you have Docker installed, run
 
 ```
 docker-compose up --build -d
 ```
 
-and:
+or:
+
+```
+docker compose up --build -d
+```
+
+It will depends on your Docker version.
+
+Make sure all the containers were successfully initiated, the run:
 
 ```
 docker exec -it gamebase-backend composer phinx migrate
@@ -58,8 +66,7 @@ After that, just access ["/auth/login"](http://localhost:80/auth/login) on your 
 - Make sure you have Redis installed.
 - Make sure you have Composer installed globally and configured in the PATH environment.
 - Clone the project.
-
-Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
+- Make sure to create a `.env` file in the root directory with the values specified in `.env.example`.
 
 <hr/>
 
