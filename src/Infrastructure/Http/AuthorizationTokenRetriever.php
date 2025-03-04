@@ -13,7 +13,7 @@ class AuthorizationTokenRetriever
                 throw new AuthenticationException('É necessário informar o token de autenticação!');
             }
             $bearer = $headers['Authorization'];
-            $token = substr($bearer, 6);
+            $token = substr($bearer, 7);
             return $token;
         } catch (AuthenticationException $e) {
             throw $e;
