@@ -27,20 +27,28 @@ Make sure you have a `.env` file in the root directory with the values specified
 If you have Docker installed, simply run
 
 ```
-docker-compose up
+docker-compose up --build -d
 ```
 
-and
+and:
 
 ```
-docker exec -it gamebase-backend vendor/bin/phinx migrate
+docker exec -it gamebase-backend composer phinx migrate
 ```
 
-to run the database migrations, then listen to **8080** on the client.
+to run the database migrations, and:
 
-<i><p><b>MariaDB</b> uses port <b>3312</b> instead of <b>3306.</b></p></i>
+```
+docker exec -it gamebase-backend composer phinx seed:run
+```
+
+to insert the root user to the database. 
+
+After that, just access ["/auth/login"](http://localhost:80/auth/login) on your API client..
 
 ## Run locally
+
+### Setup
 
 ***On Windows**, You can install PHP, Apache and MariaDB using [XAMPP](https://www.apachefriends.org/)*.
 
@@ -51,13 +59,7 @@ to run the database migrations, then listen to **8080** on the client.
 - Make sure you have Composer installed globally and configured in the PATH environment.
 - Clone the project.
 
-<hr/>
-
-### Setup
-
 Make sure you have a `.env` file in the root directory with the values specified in `.env.example`.
-
-Set a *Virtual Host* to `path/to/this/project/gamebase-backend/` to make it properly work.
 
 <hr/>
 
@@ -69,62 +71,50 @@ First, run:
 composer install
 ```
 
-To install the dependencies.
-
-<br/>
-
-Then run:
-
-```
-composer phinx init .
-```
-
-To create the Phinx config file in the root folder (`/path/to/your/project/gamebase-backend`).
-
-<br/>
-
-Then create a database on MariaDB called `gamebase`:
+to install the dependencies, then create a database called `gamebase`:
 
 ```sql
 CREATE DATABASE gamebase;
 ```
 
-<br/>
-
-Also run:
+After, run:
 
 ```
 composer phinx migrate
 ```
 
-To make Phinx create the database tables.
+to make Phinx run the migrations, and:
 
+```
+composer phinx seed:run
+```
 
-After that, just access [localhost](http://localhost:80) to see the server status.
+to make Phinx insert the root user on the database.
+
+After that, just access ["/auth/login"](http://localhost:80/auth/login) on your API client.
 
 <hr/>
 
 ## Commands
 
-See *composer.json*.
-<br/>
+See *composer.json* on the project root folder.
+
+All the operations follows the PSR-12 patterns by [PHP-FIG](https://www.php-fig.org/psr/).
 
 ```
 composer lint
 ```
 
-To make a linting operation on the code, checking by errors.
-<br/>
+Makes a linting operation on the code, checking by errors.
 
 ```
 composer lint:fix
 ```
 
-To make a linting operation on the code, trying to fix the errors.
-<br/>
+Makes a linting operation on the code, trying to fix the errors.
 
 ```
 composer format
 ```
 
-To make a code formatting in the source code.
+Makes a text formatting in the source code.
