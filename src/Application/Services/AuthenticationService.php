@@ -58,7 +58,7 @@ class AuthenticationService
 
             $fetchedAndEncodedPassWord = $fetchUser->getPassWord();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);
-
+            
             $doTheTwoPassWordsMatchesEqually = strcmp($requestPassWord, $decodedPassword) === 0;
 
             return $doTheTwoPassWordsMatchesEqually;
@@ -104,8 +104,6 @@ class AuthenticationService
 
             $token = JWT::encode($payload, $secretKey, 'HS256');
 
-            $token = $this->encrypter->encrypt($token);
-
             return $token;
         } catch (Throwable $e) {
             throw $e;
@@ -115,8 +113,6 @@ class AuthenticationService
     public function decodeToken(string $token): string
     {
         try {
-            $token = $this->encrypter->decrypt($token);
-
             $secretKey = $_SERVER['JWT_SECRET'];
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
 
@@ -141,9 +137,7 @@ class AuthenticationService
     public function validateToken(string $token): bool
     {
         try {
-            $token = $this->encrypter->decrypt($token);
-
-            $secretKey = $_SERVER['JWT_SECRET'];
+            $secretKey = $_SERVER['JWT_SECRET'];            
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
 
             $userName = $decoded->sub;

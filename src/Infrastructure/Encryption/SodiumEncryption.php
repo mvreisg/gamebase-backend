@@ -15,11 +15,10 @@ class SodiumEncryption implements EncryptionInterface
         try {
             $key = $_SERVER['SODIUM_CRYPTO_SECRETBOX_KEY'];
             $key = sodium_hex2bin($key);
-            $nonceBytes = $_SERVER['SODIUM_CRYPTO_SECRETBOX_NONCEBYTES'];
-            $nonce = random_bytes($nonceBytes);
-            $encryptedText = sodium_crypto_secretbox($text, $nonce, $key);
-            $finalText = base64_encode($nonce . $encryptedText);
-            return $finalText;
+            $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+            $encrypted = sodium_crypto_secretbox($text, $nonce, $key);
+            $secret = base64_encode($nonce . $encrypted);
+            return $secret;
         } catch (RandomException | SodiumException | Throwable $e) {
             throw new EncryptionErrorException('Erro ao fazer a criptografia!', 0, $e);
         }
@@ -30,12 +29,19 @@ class SodiumEncryption implements EncryptionInterface
         try {
             $key = $_SERVER['SODIUM_CRYPTO_SECRETBOX_KEY'];
             $key = sodium_hex2bin($key);
-            $nonceBytes = $_SERVER['SODIUM_CRYPTO_SECRETBOX_NONCEBYTES'];
-            $decodedText = base64_decode($secret);
-            $nonce = mb_substr($decodedText, 0, $nonceBytes, '8bit');
-            $encryptedText = mb_substr($decodedText, $nonceBytes, null, '8bit');
-            $text = sodium_crypto_secretbox_open($encryptedText, $nonce, $key);
+            $opened = base64_decode($secret, true);
+            if ($opened === false){
+                throw new EncryptionErrorException('Erro ao fazer a descriptografia');
+            }
+            $nonce = substr($opened, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+            $encrypted = substr($opened, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+            $text = sodium_crypto_secretbox_open($encrypted, $nonce, $key);
+            if ($text === false){
+                throw new EncryptionErrorException('Erro ao fazer a descriptografia!');
+            }
             return $text;
+        } catch (EncryptionErrorException $e){
+            throw $e;
         } catch (SodiumException | Throwable $e) {
             throw new EncryptionErrorException('Erro ao fazer a descriptografia!', 0, $e);
         }
