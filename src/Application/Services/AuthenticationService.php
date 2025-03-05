@@ -21,7 +21,6 @@ use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
-use Throwable;
 use UnexpectedValueException;
 
 class AuthenticationService
@@ -76,21 +75,30 @@ class AuthenticationService
 
     public function checkIfHasSession(string $userName): bool
     {
-        $token = $this->cache->get($userName);
-        if ($token === null) {
-            return false;
-        }
+        try {
+            $user = new User();
+            $user->validateUserName($userName);
 
-        if ($token === '') {
-            return false;
-        }
+            $token = $this->cache->get($userName);
+            if ($token === null) {
+                return false;
+            }
 
-        return true;
+            if ($token === '') {
+                return false;
+            }
+
+            return true;
+        } catch (EntityInvalidValueException $e) {
+            throw $e;
+        }
     }
 
     public function generateToken(string $userName, bool $oneWeek): string
     {
         try {
+            $user = new User();
+            $user->validateUserName($userName);
             $time = $oneWeek ? '+1 week' : '+1 day';
             $secretKey = $_SERVER['JWT_SECRET'];
             $issuedAt = new DateTimeImmutable();
@@ -105,7 +113,7 @@ class AuthenticationService
             $token = JWT::encode($payload, $secretKey, 'HS256');
 
             return $token;
-        } catch (Throwable $e) {
+        } catch (EntityInvalidValueException $e) {
             throw $e;
         }
     }
@@ -113,6 +121,9 @@ class AuthenticationService
     public function decodeToken(string $token): string
     {
         try {
+            if ($token === '') {
+                throw new AuthenticationException('O token está vazio!');
+            }
             $secretKey = $_SERVER['JWT_SECRET'];
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
 
@@ -169,14 +180,30 @@ class AuthenticationService
         }
     }
 
-    public function setSessionToken(string $userName, string $token)
+    public function setSessionToken(string $userName, string $token): void
     {
-        $this->cache->set($userName, $token);
+        try {
+            $user = new User();
+            $user->validateUserName($userName);
+
+            if ($token === '') {
+                throw new AuthenticationException('O token está vazio!');
+            }
+            $this->cache->set($userName, $token);
+        } catch (
+            AuthenticationException |
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }
     }
 
     public function getSessionToken(string $userName): string
     {
         try {
+            $user = new User();
+            $user->validateUserName($userName);
+
             $cached = $this->cache->get($userName);
             if ($cached === null) {
                 throw new AuthenticationException('O token é nulo!');
@@ -187,24 +214,34 @@ class AuthenticationService
             }
 
             return $cached;
-        } catch (AuthenticationException $e) {
+        } catch (
+            AuthenticationException |
+            EntityInvalidValueException $e
+        ) {
             throw $e;
         }
     }
 
     public function logoff(string $userName): bool
     {
-        $value = $this->cache->get($userName);
-        if ($value === null) {
-            return false;
+        try {
+            $user = new User();
+            $user->validateUserName($userName);
+
+            $value = $this->cache->get($userName);
+            if ($value === null) {
+                return false;
+            }
+
+            if ($value === '') {
+                return false;
+            }
+
+            $this->cache->set($userName, null);
+
+            return true;
+        } catch (EntityInvalidValueException $e) {
+            throw $e;
         }
-
-        if ($value === '') {
-            return false;
-        }
-
-        $this->cache->set($userName, null);
-
-        return true;
     }
 }

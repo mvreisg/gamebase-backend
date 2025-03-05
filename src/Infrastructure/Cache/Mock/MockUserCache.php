@@ -20,6 +20,9 @@ class MockUserCache implements UserCacheInterface
 
     public function get(string $userName): string|null
     {
-        return $this->data[$userName];
+        if (isset($this->data[$userName])) {
+            return $this->data[$userName];
+        }
+        return null;
     }
 }
