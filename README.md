@@ -125,3 +125,9 @@ composer format
 ```
 
 Makes a text formatting in the source code.
+
+```
+composer test
+```
+
+Runs the PHPUnit Test Suite.
