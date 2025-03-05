@@ -1,6 +1,6 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;

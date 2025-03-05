@@ -1,29 +1,29 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Game;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
 /**
- * MariaDB platform repository class.
+ * The MariaDB Game repository class.
  */
-class MariaDBPlatformRepository implements PlatformRepositoryInterface
+class MariaDBGameRepository implements GameRepositoryInterface
 {
     /**
-     * @var PDO $pdo The database conntection object.
+     * @var PDO $pdo The PDO object to make database actions.
      */
     private PDO $pdo;
 
     /**
-     * MariaDB platform repository class constructor.
-     * @param PDO $pdo The database conntection object.
+     * The MariaDB Game repository class constructor.
+     * @param PDO $pdo The PDO object to make dabatase actions.
+     * @return void
      */
     public function __construct(PDO $pdo)
     {
@@ -31,48 +31,48 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     }
 
     /**
-     * Inserts a new Platform into the repository.
-     * @param Platform $platform The Platform to be inserted.
-     * @return Platform A copy of the inserted Platform.
-     * @throws PDOException Throwed in case of database error.
+     * Inserts a Game into the repository.
+     * @param Game $game The Game object containing the data to be inserted into the repository.
+     * @return Game The inserted Game object clone.
+     * @throws DatabaseStatementCreationFailureException Throwed in case PDO tries to create a statement then fails.
+     * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
+     * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function insert(Platform $platform): Platform
+    public function insert(Game $game): Game
     {
         try {
-            $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
-            if ($wasTheTransactionCreationSuccessful === false) {
-                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
-            }
+            $this->pdo->beginTransaction();
 
-            $name = $platform->getName();
-            $isActive = (int)$platform->getIsActive();
+            $name = $game->getName();
+            $isActive = (int)$game->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    platform 
-                        (
-                            name,
-                            is_active
-                        ) 
-                VALUES 
-                        (
-                            :name,
-                            :isActive
-                        );'
+                    game (
+                        name, 
+                        is_active
+                    ) 
+                VALUES (
+                    :name, 
+                    :isActive
+                );'
             );
+
             if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a transação de inserção!'
+                    'Ocorreu um erro ao criar a declaração de inserção!'
                 );
             }
 
-            $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
+            $wasInsertExecutionASuccess = $insertStatement->execute([
                 ':name' => $name,
                 ':isActive' => $isActive
             ]);
-            if ($wasTheInsertStatementSuccessfullyExecuted === false) {
+
+            if ($wasInsertExecutionASuccess === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a transação de inserção!'
+                    'Ocorreu um erro ao executar a declaração de inserção!'
                 );
             }
 
@@ -83,38 +83,40 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    platform 
+                    game 
                 WHERE 
                     id = :id;'
             );
+
             if ($selectStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
-            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
+            $wasSelectExecutionASuccess = $selectStatement->execute([
                 ':id' => $lastInsertedId
             ]);
-            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
+
+            if ($wasSelectExecutionASuccess === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
             $fetchResult = $selectStatement->fetch();
+
             if ($fetchResult === false) {
-                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados!');
+                throw new DatabaseFetchFailureException('Ocorreu uma falha ao realizar a busca!');
             }
 
             $this->pdo->commit();
 
-            $platform = new Platform();
-            $platform->setId($fetchResult['id']);
-            $platform->setName($fetchResult['name']);
-            $platform->setIsActive($fetchResult['is_active']);
+            $game = new Game();
+            $game->setId($fetchResult['id']);
+            $game->setName($fetchResult['name']);
+            $game->setIsActive($fetchResult['is_active']);
 
-            return $platform;
+            return $game;
         } catch (
-            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
@@ -126,58 +128,61 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     }
 
     /**
-     * Updates an existing Platform in the repository.
-     * @param Platform $platform The Platform data to be updated.
-     * @return bool The success flag.
-     * @throws PDOException Throwed in case of database error.
+     * Updates a Game register in the Game repository.
+     * @param Game $game The Game object containing the data to be updated into the repository.
+     * @return bool Returns the success flag.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function update(Platform $platform): bool
+    public function update(Game $game): bool
     {
-        $id = $platform->getId();
-        $name = $platform->getName();
-        $isActive = (int)$platform->getIsActive();
+        $id = $game->getId();
+        $name = $game->getName();
+        $isActive = (int)$game->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
-                    platform 
+                    game 
                 SET 
                     name = :name, 
                     is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
+
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de atualização!'
-                );
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+            $wasStatementExecutionSuccessful = $statement->execute([
                 ':name' => $name,
                 ':id' => $id,
                 ':isActive' => $isActive
             ]);
-            if ($wasTheStatementSuccessfullyExecuted === false) {
+
+            if ($wasStatementExecutionSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de atualização!'
+                    'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
             $numberOfLinesAffected = $statement->rowCount();
-            $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
-
-            return $wasTheRepositoryAffected;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+            $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
+            return $wasSomeUpdateHappened;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
 
     /**
-     * Deletes an existing Platform in the repository.
-     * @param int $id The id of the register to be deleted.
-     * @return bool The success flag.
-     * @throws PDOException Throwed in case of database error.
+     * Deletes a Game registed in the Game repository by the id.
+     * @param int $id The respective id of the Game register that is wanted to be deleted.
+     * @return bool Returns the success flag.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
     public function setIsActive(int $id, bool $isActive): bool
     {
@@ -186,11 +191,13 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $statement = $this->pdo->prepare(
                 'UPDATE
-                    platform
+                    game
                 SET
                     is_active = :isActive
                 WHERE
-                    id = :id;'
+                    id = :id
+                AND
+                    is_active <> :isActive;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException(
@@ -199,8 +206,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $isActive
+                ':isActive' => $isActive,
+                ':id' => $id
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -220,22 +227,23 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     }
 
     /**
-     * Finds a Platform in the repository by its id.
-     * @param int $id The id to search for.
-     * @return Platform|null Returns the Platform if found, else returns null.
-     * @throws PDOException Throwed in case of database error.
+     * Finds a Game register in the Game repository by its respective id and returns their Game object if it was found.
+     * @param int $id The id of the Game register that is wanted to be found.
+     * @return Game|null Returns the Game object if id is founded, else returns null.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
-    public function findById(int $id): Platform|null
+    public function findById(mixed $id): Game|null
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    platform 
+                    game 
                 WHERE 
                     id = :id;'
             );
+
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
@@ -243,6 +251,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
+
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
@@ -250,17 +259,19 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $result = $statement->fetch();
+
             if ($result === false) {
                 return null;
             }
 
-            $platform = new Platform();
-            $platform->setId($result['id']);
-            $platform->setName($result['name']);
-            $platform->setIsActive($result['is_active']);
+            $game = new Game();
+            $game->setId($result['id']);
+            $game->setName($result['name']);
+            $game->setIsActive($result['is_active']);
 
-            return $platform;
+            return $game;
         } catch (
+            DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -270,9 +281,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     }
 
     /**
-     * Finds all Platforms in the repository.
-     * @return array A list containing all the founded repositories.
-     * @throws PDOException Throwed in case of database error.
+     * Finds all the Game registers in the repository.
+     * @return array Returns all Games registers found in the Game repository in a list.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
     public function findAll(): array
     {
@@ -281,35 +292,37 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    platform;'
+                    game;'
             );
+
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
-            $wasTheStatementSuccessfullyExecuted = $statement->execute();
-            if ($wasTheStatementSuccessfullyExecuted === false) {
+            $wasTheStatementExecutionSuccessful = $statement->execute();
+
+            if ($wasTheStatementExecutionSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
             $result = $statement->fetchAll();
+
             if ($result === false) {
                 return [];
             }
 
-            $platforms = [];
-
+            $games = [];
             foreach ($result as $row) {
-                $platform = new Platform();
-                $platform->setId($row['id']);
-                $platform->setName($row['name']);
-                $platform->setIsActive($row['is_active']);
-                $platforms[] = $platform;
+                $game = new Game();
+                $game->setId($row['id']);
+                $game->setName($row['name']);
+                $game->setIsActive($row['is_active']);
+                $games[] = $game;
             }
 
-            return $platforms;
+            return $games;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -320,10 +333,10 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     }
 
     /**
-     * Check if the name already exists in the repository.
-     * @param string $name The name to be searched.
-     * @return bool True if it already exists, else returns false.
-     * @throws PDOException Throwed in case of database error.
+     * Checks if a register with the name already exists in the repository.
+     * @param string $name The Game name.
+     * @return bool Returns true if the register already exists, else false.
+     * @throws PDOException Throwed if a PDO database action error occurs.
      */
     public function hasDuplicatedNames(string $name): bool
     {
@@ -332,25 +345,30 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    platform 
+                    game 
                 WHERE 
                     name = :name;'
             );
+
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao tentar criar a declaração de busca!'
+                );
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':name' => $name
             ]);
+
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
+                    'Ocorreu um erro ao tentar executar a declaração de busca!'
                 );
             }
 
-            $numberOfAffectedRows = $statement->rowCount();
-            $hasDuplicatedNames = $numberOfAffectedRows > 0;
+            $numberOfLinesAffected = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfLinesAffected > 0;
+
             return $hasDuplicatedNames;
         } catch (
             DatabaseStatementCreationFailureException |

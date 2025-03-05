@@ -7,6 +7,11 @@
             "Mvreisg\\GamebaseBackend\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Mvreisg\\GamebaseBackend\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Marcus Vinicius",
@@ -21,12 +26,14 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.68",
-        "squizlabs/php_codesniffer": "^3.0" 
+        "squizlabs/php_codesniffer": "^3.0",
+        "phpunit/phpunit": "^11.5" 
     },
     "scripts": {
 	    "format": "vendor/bin/php-cs-fixer fix",        
         "lint": "vendor/bin/phpcs --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
         "lint:fix": "vendor/bin/phpcbf --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
-        "phinx": "vendor/bin/phinx"
+        "phinx": "vendor/bin/phinx",
+        "test": "vendor/bin/phpunit ./tests --testdox"
     }
 }

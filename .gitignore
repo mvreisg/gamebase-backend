@@ -9,3 +9,6 @@
 
 # PHP Lint
 .phplint.cache
+
+# PHPUnit
+.phpunit.result.cache

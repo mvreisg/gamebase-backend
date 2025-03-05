@@ -4,13 +4,13 @@ namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatformService;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\RedisUserCache;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Connections\MariaDBConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Connections\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\GamePlatformController;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBGamePlatformRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDBUserRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGamePlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
 /**
  * Game Platform controller factory class.

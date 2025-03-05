@@ -30,17 +30,17 @@ class SodiumEncryption implements EncryptionInterface
             $key = $_SERVER['SODIUM_CRYPTO_SECRETBOX_KEY'];
             $key = sodium_hex2bin($key);
             $opened = base64_decode($secret, true);
-            if ($opened === false){
+            if ($opened === false) {
                 throw new EncryptionErrorException('Erro ao fazer a descriptografia');
             }
             $nonce = substr($opened, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
             $encrypted = substr($opened, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
             $text = sodium_crypto_secretbox_open($encrypted, $nonce, $key);
-            if ($text === false){
+            if ($text === false) {
                 throw new EncryptionErrorException('Erro ao fazer a descriptografia!');
             }
             return $text;
-        } catch (EncryptionErrorException $e){
+        } catch (EncryptionErrorException $e) {
             throw $e;
         } catch (SodiumException | Throwable $e) {
             throw new EncryptionErrorException('Erro ao fazer a descriptografia!', 0, $e);

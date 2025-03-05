@@ -1,62 +1,78 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
-class MariaDBUserRepository implements UserRepositoryInterface
+/**
+ * MariaDB platform repository class.
+ */
+class MariaDBPlatformRepository implements PlatformRepositoryInterface
 {
+    /**
+     * @var PDO $pdo The database conntection object.
+     */
     private PDO $pdo;
 
+    /**
+     * MariaDB platform repository class constructor.
+     * @param PDO $pdo The database conntection object.
+     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    public function insert(User $user): User
+    /**
+     * Inserts a new Platform into the repository.
+     * @param Platform $platform The Platform to be inserted.
+     * @return Platform A copy of the inserted Platform.
+     * @throws PDOException Throwed in case of database error.
+     */
+    public function insert(Platform $platform): Platform
     {
         try {
-            $this->pdo->beginTransaction();
+            $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
+            if ($wasTheTransactionCreationSuccessful === false) {
+                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+            }
 
-            $userName = $user->getUserName();
-            $passWord = $user->getPassWord();
-            $isActive = (int)$user->getIsActive();
+            $name = $platform->getName();
+            $isActive = (int)$platform->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    user (
-                        username, 
-                        password,
-                        is_active
-                    ) 
-                VALUES (
-                    :userName, 
-                    :passWord, 
-                    :isActive
-                );'
+                    platform 
+                        (
+                            name,
+                            is_active
+                        ) 
+                VALUES 
+                        (
+                            :name,
+                            :isActive
+                        );'
             );
-
             if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de inserção!'
+                    'Ocorreu um erro ao criar a transação de inserção!'
                 );
             }
 
-            $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':userName' => $userName,
-                ':passWord' => $passWord,
+            $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
+                ':name' => $name,
                 ':isActive' => $isActive
             ]);
-
-            if ($wasInsertExecutionASuccess === false) {
+            if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de inserção!'
+                    'Ocorreu um erro ao executar a transação de inserção!'
                 );
             }
 
@@ -67,41 +83,38 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    user 
+                    platform 
                 WHERE 
                     id = :id;'
             );
-
             if ($selectStatement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
-            $wasSelectExecutionASuccess = $selectStatement->execute([
+            $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ':id' => $lastInsertedId
             ]);
-
-            if ($wasSelectExecutionASuccess === false) {
+            if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
             $fetchResult = $selectStatement->fetch();
-
             if ($fetchResult === false) {
-                throw new DatabaseFetchFailureException('Ocorreu uma falha ao realizar a busca!');
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados!');
             }
 
             $this->pdo->commit();
 
-            $user = new User();
-            $user->setId($fetchResult['id']);
-            $user->setUserName($fetchResult['username']);
-            $user->setPassword($fetchResult['password']);
-            $user->setIsActive($fetchResult['is_active']);
+            $platform = new Platform();
+            $platform->setId($fetchResult['id']);
+            $platform->setName($fetchResult['name']);
+            $platform->setIsActive($fetchResult['is_active']);
 
-            return $user;
+            return $platform;
         } catch (
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
@@ -112,54 +125,60 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function update(User $user): bool
+    /**
+     * Updates an existing Platform in the repository.
+     * @param Platform $platform The Platform data to be updated.
+     * @return bool The success flag.
+     * @throws PDOException Throwed in case of database error.
+     */
+    public function update(Platform $platform): bool
     {
-        $id = $user->getId();
-        $userName = $user->getUserName();
-        $passWord = $user->getPassWord();
-        $isActive = (int)$user->getIsActive();
+        $id = $platform->getId();
+        $name = $platform->getName();
+        $isActive = (int)$platform->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
-                    user 
+                    platform 
                 SET 
-                    username = :userName, 
-                    password = :passWord, 
+                    name = :name, 
                     is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
-
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
-            $wasStatementExecutionSuccessful = $statement->execute([
-                ':userName' => $userName,
-                ':passWord' => $passWord,
-                ':isActive' => $isActive,
-                ':id' => $id
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':name' => $name,
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
-
-            if ($wasStatementExecutionSuccessful === false) {
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
+                    'Ocorreu um erro ao executar a declaração de atualização!'
                 );
             }
 
             $numberOfLinesAffected = $statement->rowCount();
-            $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
-            return $wasSomeUpdateHappened;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
+
+            return $wasTheRepositoryAffected;
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
 
+    /**
+     * Deletes an existing Platform in the repository.
+     * @param int $id The id of the register to be deleted.
+     * @return bool The success flag.
+     * @throws PDOException Throwed in case of database error.
+     */
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
@@ -167,13 +186,11 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $statement = $this->pdo->prepare(
                 'UPDATE
-                    user
+                    platform
                 SET
                     is_active = :isActive
                 WHERE
-                    id = :id
-                AND
-                    is_active <> :isActive;'
+                    id = :id;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException(
@@ -182,8 +199,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':isActive' => $isActive,
-                ':id' => $id
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -202,67 +219,23 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findByUserName(mixed $userName): User|null
+    /**
+     * Finds a Platform in the repository by its id.
+     * @param int $id The id to search for.
+     * @return Platform|null Returns the Platform if found, else returns null.
+     * @throws PDOException Throwed in case of database error.
+     */
+    public function findById(int $id): Platform|null
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    user 
-                WHERE 
-                    username = :userName;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
-            ]);
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $result = $statement->fetch();
-
-            if ($result === false) {
-                return null;
-            }
-
-            $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
-
-            return $user;
-        } catch (
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function findById(mixed $id): User|null
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    user 
+                    platform 
                 WHERE 
                     id = :id;'
             );
-
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
@@ -270,7 +243,6 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
                 ':id' => $id
             ]);
-
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
@@ -278,20 +250,17 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $result = $statement->fetch();
-
             if ($result === false) {
                 return null;
             }
 
-            $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
+            $platform = new Platform();
+            $platform->setId($result['id']);
+            $platform->setName($result['name']);
+            $platform->setIsActive($result['is_active']);
 
-            return $user;
+            return $platform;
         } catch (
-            DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -300,6 +269,11 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
+    /**
+     * Finds all Platforms in the repository.
+     * @return array A list containing all the founded repositories.
+     * @throws PDOException Throwed in case of database error.
+     */
     public function findAll(): array
     {
         try {
@@ -307,38 +281,35 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    user;'
+                    platform;'
             );
-
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
-            $wasTheStatementExecutionSuccessful = $statement->execute();
-
-            if ($wasTheStatementExecutionSuccessful === false) {
+            $wasTheStatementSuccessfullyExecuted = $statement->execute();
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
             $result = $statement->fetchAll();
-
             if ($result === false) {
                 return [];
             }
 
-            $users = [];
+            $platforms = [];
+
             foreach ($result as $row) {
-                $user = new User();
-                $user->setId($row['id']);
-                $user->setUserName($row['username']);
-                $user->setPassword($row['password']);
-                $user->setIsActive($row['is_active']);
-                $users[] = $user;
+                $platform = new Platform();
+                $platform->setId($row['id']);
+                $platform->setName($row['name']);
+                $platform->setIsActive($row['is_active']);
+                $platforms[] = $platform;
             }
 
-            return $users;
+            return $platforms;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -348,37 +319,38 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function hasDuplicatedUserName(string $userName): bool
+    /**
+     * Check if the name already exists in the repository.
+     * @param string $name The name to be searched.
+     * @return bool True if it already exists, else returns false.
+     * @throws PDOException Throwed in case of database error.
+     */
+    public function hasDuplicatedNames(string $name): bool
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    user 
+                    platform 
                 WHERE 
-                    username = :userName;'
+                    name = :name;'
             );
-
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao tentar criar a declaração de busca!'
-                );
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
+                ':name' => $name
             ]);
-
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao tentar executar a declaração de busca!'
+                    'Ocorreu um erro ao executar a declaração de busca!'
                 );
             }
 
-            $numberOfLinesAffected = $statement->rowCount();
-            $hasDuplicatedNames = $numberOfLinesAffected > 0;
-
+            $numberOfAffectedRows = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfAffectedRows > 0;
             return $hasDuplicatedNames;
         } catch (
             DatabaseStatementCreationFailureException |

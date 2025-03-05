@@ -65,6 +65,10 @@ class User
             throw new EntityInvalidValueException('id é null!');
         }
 
+        if (is_iterable($id)) {
+            throw new EntityInvalidValueException('id é array!');
+        }
+
         if (is_string($id)) {
             throw new EntityInvalidValueException('id é string!');
         }
@@ -116,6 +120,10 @@ class User
     {
         if ($isActive === null) {
             throw new EntityInvalidValueException('isActive é null!');
+        }
+
+        if (is_iterable($isActive)) {
+            throw new EntityInvalidValueException('isActive é array!');
         }
 
         if (is_string($isActive)) {

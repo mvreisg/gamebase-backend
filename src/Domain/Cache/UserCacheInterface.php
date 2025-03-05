@@ -2,11 +2,9 @@
 
 namespace Mvreisg\GamebaseBackend\Domain\Cache;
 
-use Predis\Response\Status;
-
 interface UserCacheInterface
 {
-    public function set(string $userName, mixed $token): Status|null;
+    public function set(string $userName, mixed $token): void;
 
     public function get(string $userName): string|null;
 }
