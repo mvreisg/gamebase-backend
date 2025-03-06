@@ -19,8 +19,7 @@ class SodiumEncryption implements EncryptionInterface
             $encrypted = sodium_crypto_secretbox($text, $nonce, $key);
             $secret = base64_encode($nonce . $encrypted);
             return $secret;
-        } catch (RandomException | SodiumException | Throwable $e) {
-            var_dump($e);
+        } catch (RandomException | SodiumException | Throwable $e) {            
             throw new EncryptionErrorException('Erro ao fazer a criptografia!', 0, $e);
         }
     }
