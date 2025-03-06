@@ -4,7 +4,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantValueException;
 
 class MockPlatformRepository implements PlatformRepositoryInterface
 {
@@ -39,9 +38,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'A plataforma com o id ' . $platform->getId() . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $modifiedPlatform = $this->data[$index];
@@ -65,9 +62,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'A plataforma com o id ' . $id . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $findedPlatform = $this->data[$index];

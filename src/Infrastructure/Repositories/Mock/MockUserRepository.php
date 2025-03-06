@@ -4,7 +4,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantValueException;
 
 class MockUserRepository implements UserRepositoryInterface
 {
@@ -40,9 +39,7 @@ class MockUserRepository implements UserRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O usuário com o id ' . $user->getId() . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $modifiedUser = $this->data[$index];
@@ -67,9 +64,7 @@ class MockUserRepository implements UserRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O usuário com o id ' . $id . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $findedUser = $this->data[$index];

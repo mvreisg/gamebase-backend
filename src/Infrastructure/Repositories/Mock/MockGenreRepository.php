@@ -4,7 +4,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantValueException;
 
 class MockGenreRepository implements GenreRepositoryInterface
 {
@@ -39,9 +38,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O gênero com o id ' . $genre->getId() . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $modifiedGenre = $this->data[$index];
@@ -65,9 +62,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O gênero com o id ' . $id . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $findedGenre = $this->data[$index];

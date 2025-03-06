@@ -7,7 +7,6 @@ use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
 class UserServiceTest extends TestCase
@@ -267,10 +266,10 @@ class UserServiceTest extends TestCase
         $encrypter = new SodiumEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
-        $this->expectException(DatabaseUnexistantValueException::class);
-
         $userService->insert('test', 'test', true);
-        $userService->update(2, 'test2', 'test2', true);
+        $result = $userService->update(2, 'test2', 'test2', true);
+
+        $this->assertFalse($result);
     }
 
     public function testIfUpdateFailsWithInvalidId()
@@ -563,10 +562,10 @@ class UserServiceTest extends TestCase
         $encrypter = new SodiumEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
-        $this->expectException(DatabaseUnexistantValueException::class);
-
         $userService->insert('test', 'test', true);
-        $userService->setIsActive(2, false);
+        $result = $userService->setIsActive(2, false);
+
+        $this->assertFalse($result);
     }
 
     public function testIfSettingIsActiveWithNullIdFails()

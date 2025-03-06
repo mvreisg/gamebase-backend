@@ -4,7 +4,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantValueException;
 
 class MockGameRepository implements GameRepositoryInterface
 {
@@ -39,9 +38,7 @@ class MockGameRepository implements GameRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O jogo com o id ' . $game->getId() . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $modifiedGame = $this->data[$index];
@@ -65,9 +62,7 @@ class MockGameRepository implements GameRepositoryInterface
         }
 
         if ($index === null) {
-            throw new DatabaseUnexistantValueException(
-                'O jogo com o id ' . $id . ' não existe no repositório!'
-            );
+            return false;
         }
 
         $findedGame = $this->data[$index];
