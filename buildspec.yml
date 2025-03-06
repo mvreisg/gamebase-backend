@@ -10,9 +10,13 @@ image: "php:8.2-apache"
 phases:
   install:
     commands:
-      - composer install --dev
+      - apt-get update
+      - apt-get install -y libphp-sodium php8.2-sodium
+      - composer install --dev 
   build:
     commands:
+      - php -m | grep sodium
+      - php -r "if (function_exists('sodium_crypto_secretbox')) { echo 'Sodium está funcionando!'; } else { echo 'Sodium NÃO está disponível!'; }"
       - composer format
       - composer lint
       - composer lint:fix  
