@@ -10,12 +10,8 @@ phases:
     commands:
       - composer install --dev
   build:
-      commands:
-      - echo "Listando variáveis de ambiente disponíveis..."
-      - env
-      - printenv
-      - echo "Listando variáveis do $_SERVER no PHP..."
-      - php -r 'print_r($_SERVER);'
+    commands:
+      - php -m
       - composer format
       - composer lint
       - composer lint:fix  
