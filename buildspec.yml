@@ -11,8 +11,9 @@ phases:
   install:
     commands:
       - apt-get update
-      - apt-get install -y libphp-sodium php8.2-sodium
-      - composer install --dev 
+      - apt-get install -y libsodium-dev
+      - docker-php-ext-install sodium
+      - composer install --dev
   build:
     commands:
       - php -m | grep sodium
