@@ -11,7 +11,7 @@ phases:
       - composer install --dev
   build:
     commands:
-      - cat /etc/os-release
+      - apt-get update && apt-get install -y php8.2-sodium
       - composer format
       - composer lint
       - composer lint:fix  
