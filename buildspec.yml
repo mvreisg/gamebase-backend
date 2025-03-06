@@ -8,9 +8,16 @@ env:
 phases:
   install:
     commands:
-      - composer install
+      - echo "Instalando dependências do sistema..."
+      - apt-get update
+      - apt-get install -y libsodium-dev zip git unzip libxml2-dev libicu-dev
+      - pecl install sodium
+      - echo "extension=sodium.so" > /etc/php/7.4/cli/conf.d/40-sodium.ini
+      - composer install --dev 
   build:
-    commands:      
+    commands:   
+      - php -m | grep sodium
+      - php -r "if (function_exists('sodium_crypto_secretbox')) { echo 'Sodium está funcionando!'; } else { echo 'Sodium NÃO está disponível!'; }"   
       - composer format
       - composer lint
       - composer lint:fix  
