@@ -13,7 +13,6 @@ phases:
       - composer install --dev
   build:
     commands:
-      - php -m | grep sodium
       - composer format
       - composer lint
       - composer lint:fix  
