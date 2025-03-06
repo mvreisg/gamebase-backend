@@ -11,8 +11,9 @@ phases:
   install:
     commands:
       - apt-get update
-      - apt-get install -y libsodium-dev
-      - docker-php-ext-install sodium
+      - apt-get install -y libsodium-dev libpng-dev zip git unzip libxml2-dev libicu-dev
+      - pecl install -f sodium
+      - echo "extension=sodium.so" >> /usr/local/etc/php/conf.d/40-sodium.ini
       - composer install --dev
   build:
     commands:
