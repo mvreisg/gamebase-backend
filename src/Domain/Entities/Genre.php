@@ -92,6 +92,10 @@ class Genre
             throw new EntityInvalidValueException('O id é null!');
         }
 
+        if (is_iterable($id)) {
+            throw new EntityInvalidValueException('O id é array!');
+        }
+
         if (is_numeric($id) === false) {
             throw new EntityInvalidValueException('O id não é um número!');
         }
@@ -134,6 +138,10 @@ class Genre
     {
         if ($isActive === null) {
             throw new EntityInvalidValueException('isActive é null!');
+        }
+
+        if (is_iterable($isActive)) {
+            throw new EntityInvalidValueException('isActive é array!');
         }
 
         if (is_string($isActive)) {
