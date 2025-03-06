@@ -138,6 +138,10 @@ class Game
             throw new EntityInvalidValueException('isActive é null!');
         }
 
+        if (is_iterable($isActive)) {
+            throw new EntityInvalidValueException('isActive é array');
+        }
+
         if (is_string($isActive)) {
             throw new EntityInvalidValueException('isActive é uma string!');
         }
