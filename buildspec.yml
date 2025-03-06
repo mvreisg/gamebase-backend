@@ -11,11 +11,7 @@ phases:
       - composer install --dev
   build:
     commands:
-      - echo "Verificando arquivos ini..."
-      - php --ini
-      - echo "Tentando habilitar a extensão Sodium..."
-      - echo "extension=sodium.so" >> $(php --ini | grep "Loaded Configuration File" | awk '{print $4}')
-      - php -m | grep sodium
+      - cat /etc/os-release
       - composer format
       - composer lint
       - composer lint:fix  
