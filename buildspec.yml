@@ -10,7 +10,7 @@ phases:
     commands:
       - echo "Instalando dependências do sistema..."
       - apt-get update
-      - apt-get install -y libsodium-dev zip git unzip libxml2-dev libicu-dev
+      - apt-get install -y libsodium-dev zip git unzip libxml2-dev libicu-dev php-pear php-dev
       - pecl install sodium
       - echo "extension=sodium.so" > /etc/php/7.4/cli/conf.d/40-sodium.ini
       - composer install --dev 
