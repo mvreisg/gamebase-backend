@@ -12,9 +12,10 @@ phases:
     commands:
       - apt-get update
       - apt-get install -y libsodium-dev libpng-dev zip git unzip libxml2-dev libicu-dev
+      - apt-get install -y php-pear php-dev
       - pecl install -f sodium
       - echo "extension=sodium.so" >> /usr/local/etc/php/conf.d/40-sodium.ini
-      - composer install --dev
+      - composer install --dev 
   build:
     commands:
       - php -m | grep sodium
