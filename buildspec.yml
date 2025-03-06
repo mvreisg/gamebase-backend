@@ -3,6 +3,7 @@ phases:
   install:
     commands:
       - composer install --dev
+      - composer global require phpunit/phpunit
   build:
     commands:
       - composer format
