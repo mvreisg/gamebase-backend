@@ -12,15 +12,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
-/**
- * Genre controller factory class.
- */
 class GenreControllerFactory
 {
-    /**
-     * Static method that returns the Genre controller using the Factory pattern.
-     * @return GenreController The Genre controller instance.
-     */
     public static function get(): GenreController
     {
         $genreRepository = new MariaDBGenreRepository(MariaDBConnection::get());

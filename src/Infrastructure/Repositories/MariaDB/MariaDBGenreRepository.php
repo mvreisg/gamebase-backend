@@ -10,32 +10,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
-/**
- * The MariaDB Genre repository.
- */
 class MariaDBGenreRepository implements GenreRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The object to make database actions.
-     */
     private PDO $pdo;
 
-    /**
-     * The MariaDB Genre repository constructor.
-     * @param PDO $pdo The object to make database actions.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a new Genre into the repository
-     * @param Genre $genre The Genre to be inserted.
-     * @return Genre A copy of the Genre inserted.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function insert(Genre $genre): Genre
     {
         try {
@@ -125,12 +108,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    /**
-     * Updates a Genre already created in the repository.
-     * @param Genre $genre The genre data to update.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function update(Genre $genre): bool
     {
         $id = $genre->getId();
@@ -178,12 +155,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    /**
-     * Deletes a Genre from the repository by its id.
-     * @param int $id The Genre id to be deleted.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
@@ -224,12 +195,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    /**
-     * Finds a Genre in the repository by its id.
-     * @param int $id The Genre id.
-     * @return Genre|null Returns the Genre if it finds, else returns null.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function findById(int $id): Genre|null
     {
         try {
@@ -276,11 +241,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    /**
-     * Find all the Genre registers in the repository.
-     * @return array A list of genres.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function findAll(): array
     {
         try {
@@ -329,12 +289,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    /**
-     * Checks if the name passed already exists in the repository.
-     * @param string $name The name to check.
-     * @return bool True if already exists, else false.
-     * @throws PDOException Throwed if a database error occurs.
-     */
     public function hasDuplicatedNames(string $name): bool
     {
         try {

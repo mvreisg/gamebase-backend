@@ -21,35 +21,17 @@ use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorExce
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
-/**
- * Game Platform controller class.
- */
 class GamePlatformController
 {
-    /**
-     * @var GamePlatformService $service The service to be used by this controller.
-     */
     private GamePlatformService $service;
-
     private AuthenticationService $authService;
 
-    /**
-     * Game Platform controller class constructor.
-     * @param GamePlatformService $service The service to be used by this controller.
-     * @return void
-     */
     public function __construct(GamePlatformService $service, AuthenticationService $authService)
     {
         $this->service = $service;
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Platform insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
@@ -138,12 +120,6 @@ class GamePlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Platform update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
@@ -242,12 +218,6 @@ class GamePlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Platform deletion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
         try {
@@ -311,12 +281,6 @@ class GamePlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Platform find by id.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
@@ -391,12 +355,6 @@ class GamePlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a find of all Game Platforms.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {

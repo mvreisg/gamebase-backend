@@ -10,35 +10,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
-/**
- * The MariaDB Game repository class.
- */
 class MariaDBGameRepository implements GameRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The PDO object to make database actions.
-     */
     private PDO $pdo;
 
-    /**
-     * The MariaDB Game repository class constructor.
-     * @param PDO $pdo The PDO object to make dabatase actions.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a Game into the repository.
-     * @param Game $game The Game object containing the data to be inserted into the repository.
-     * @return Game The inserted Game object clone.
-     * @throws DatabaseStatementCreationFailureException Throwed in case PDO tries to create a statement then fails.
-     * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
-     * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function insert(Game $game): Game
     {
         try {
@@ -127,12 +107,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Updates a Game register in the Game repository.
-     * @param Game $game The Game object containing the data to be updated into the repository.
-     * @return bool Returns the success flag.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function update(Game $game): bool
     {
         $id = $game->getId();
@@ -178,12 +152,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Deletes a Game registed in the Game repository by the id.
-     * @param int $id The respective id of the Game register that is wanted to be deleted.
-     * @return bool Returns the success flag.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
@@ -226,12 +194,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Finds a Game register in the Game repository by its respective id and returns their Game object if it was found.
-     * @param int $id The id of the Game register that is wanted to be found.
-     * @return Game|null Returns the Game object if id is founded, else returns null.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function findById(mixed $id): Game|null
     {
         try {
@@ -280,11 +242,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Finds all the Game registers in the repository.
-     * @return array Returns all Games registers found in the Game repository in a list.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function findAll(): array
     {
         try {
@@ -332,12 +289,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Checks if a register with the name already exists in the repository.
-     * @param string $name The Game name.
-     * @return bool Returns true if the register already exists, else false.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function hasDuplicatedNames(string $name): bool
     {
         try {

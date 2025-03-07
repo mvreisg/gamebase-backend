@@ -7,14 +7,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Factories\GamePlatformControllerFactory;
 
-/**
- * Game Platform routes class.
- */
 class GamePlatformRoutes
 {
-    /**
-     * Method that registers the routes in the HTTP router.
-     */
     public function register(HttpRouter $app)
     {
         $controller = GamePlatformControllerFactory::get();

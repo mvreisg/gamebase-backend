@@ -22,33 +22,17 @@ use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueExce
 use PDOException;
 use Throwable;
 
-/**
- * Game Genre controller class.
- */
 class GameGenreController
 {
-    /**
-     * @var GameGenreService $service The service to be used by this controller.
-     */
     private GameGenreService $service;
     private AuthenticationService $authService;
 
-    /**
-     * Game Genre controller class controller.
-     * @param GameGenreService $service The service to be used by this controller.
-     */
     public function __construct(GameGenreService $service, AuthenticationService $authService)
     {
         $this->service = $service;
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Genre insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -140,12 +124,6 @@ class GameGenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Genre update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -250,12 +228,6 @@ class GameGenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Genre deletion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function delete(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -325,12 +297,6 @@ class GameGenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game Genre search by the id.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -406,12 +372,6 @@ class GameGenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a search of all Game Genres.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {

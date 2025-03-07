@@ -15,11 +15,9 @@ use Throwable;
 use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
-// Includes the class autoloader.
 include_once __DIR__ . '/vendor/autoload.php';
 
 try {
-    // Loads the .env file.
     Dotenv\Dotenv::createImmutable(__DIR__)->load();
 
     $app = new HttpRouter();

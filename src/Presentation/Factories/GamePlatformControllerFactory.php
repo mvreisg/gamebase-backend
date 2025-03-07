@@ -12,15 +12,8 @@ use Mvreisg\GamebaseBackend\Presentation\Controllers\GamePlatformController;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGamePlatformRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
-/**
- * Game Platform controller factory class.
- */
 class GamePlatformControllerFactory
 {
-    /**
-     * Static method that returns an instance of Game Platform controller.
-     * @return GamePlatformController The instance.
-     */
     public static function get(): GamePlatformController
     {
         $gamePlatformRepository = new MariaDBGamePlatformRepository(MariaDBConnection::get());

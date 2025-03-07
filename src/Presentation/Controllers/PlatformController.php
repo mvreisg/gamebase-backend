@@ -21,33 +21,17 @@ use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorExce
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
-/**
- * Platform controller class.
- */
 class PlatformController
 {
-    /**
-     * @var PlatformService $service The service to be user by this controller.
-     */
     private PlatformService $service;
     private AuthenticationService $authService;
 
-    /**
-     * Platform controller class constructor.
-     * @param PlatformService $service The service to be user by this controller.
-     * @return void
-     */
     public function __construct(PlatformService $service, AuthenticationService $authService)
     {
         $this->service = $service;
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Platform insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -126,11 +110,6 @@ class PlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Platform update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -295,11 +274,6 @@ class PlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Platform search by its id.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -376,11 +350,6 @@ class PlatformController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a retrieval of all Platform.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {

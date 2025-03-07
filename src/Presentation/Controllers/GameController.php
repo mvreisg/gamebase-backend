@@ -20,33 +20,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
-/**
- * The Game controller class.
- */
 class GameController
 {
-    /**
-     * @var GameService $service The service to be used by the controller.
-     */
     private GameService $service;
     private AuthenticationService $authService;
 
-    /**
-     * The Game controller class constructor.
-     * @param GameService $service The service to be used by the controller.
-     */
     public function __construct(GameService $service, AuthenticationService $authService)
     {
         $this->service = $service;
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -125,11 +109,6 @@ class GameController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -287,11 +266,6 @@ class GameController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game being found by the id.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP resposne object.
-     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -370,11 +344,6 @@ class GameController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a search for all Game registers.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP resposne object.
-     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {

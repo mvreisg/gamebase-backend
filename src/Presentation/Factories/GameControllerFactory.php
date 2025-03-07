@@ -12,15 +12,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGameRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
-/**
- * Game controller factory class.
- */
 class GameControllerFactory
 {
-    /**
-     * Static method with the factory pattern to return the game controller.
-     * @return GameController The instance.
-     */
     public static function get(): GameController
     {
         $gameRepository = new MariaDBGameRepository(MariaDBConnection::get());

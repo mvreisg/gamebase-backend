@@ -12,32 +12,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Throwable;
 
-/**
- * MariaDB Game Genre repository.
- */
 class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The database connection class object.
-     */
     private PDO $pdo;
 
-    /**
-     * MariaDB game Genre repository class constructor.
-     * @param PDO $pdo The database connection class object.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a new Game Genre entity into the repository.
-     * @param GameGenre $gameGenre The eneity to be inserted.
-     * @return GameGenre a copy of the inserted entity.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function insert(GameGenre $gameGenre): GameGenre
     {
         $genreId = $gameGenre->getGenreId();
@@ -122,12 +105,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Updates an existing register of a Game Genre entity in the repository.
-     * @param GameGenre $gameGenre The data to be updated.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function update(GameGenre $gameGenre): bool
     {
         try {
@@ -174,12 +151,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Deletes an existing register of a Game Genre entity in the repository.
-     * @param GameGenre $gameGenre The data to be deleted.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function delete(GameGenre $gameGenre): bool
     {
         try {
@@ -219,12 +190,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Finds a Game Genre register by its id.
-     * @param int $id The id to find.
-     * @return GameGenre the found Game Genre.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function findById(int $id): GameGenre|null
     {
         try {
@@ -269,11 +234,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Finds all Game Genre registers
-     * @return array A list of all the Game Genres.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function findAll(): array
     {
         try {

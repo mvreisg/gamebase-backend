@@ -11,32 +11,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 
-/**
- * MariaDB Game Platform repository class.
- */
 class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The database connection class object.
-     */
     private PDO $pdo;
 
-    /**
-     * MariaDB Game Platform repository class constructor.
-     * @param PDO $pdo The database connection class object.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a new Game Platform and returns a copy of the object.
-     * @param GamePlatform $gamePlatform The object to be inserted.
-     * @return GamePlatform The copy of the inserted object.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
         try {
@@ -117,12 +100,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    /**
-     * Updates an existing Game Platform, returning the success flag.
-     * @param GamePlatform $gamePlatform The object to be updated.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function update(GamePlatform $gamePlatform): bool
     {
         $id = $gamePlatform->getId();
@@ -168,12 +145,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    /**
-     * Deletes an existing Game Platform, returning the success flag.
-     * @param GamePlatform $gamePlatform The object containing the data necessary for the deletion.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function delete(GamePlatform $gamePlatform): bool
     {
         $id = $gamePlatform->getId();
@@ -209,12 +180,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    /**
-     * Find an Game Platform by its id.
-     * @param int $id The game Platform id.
-     * @return GamePlatform The found Game Platform, else null.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function findById(int $id): GamePlatform|null
     {
         try {
@@ -257,11 +222,6 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    /**
-     * Find all Game Platforms.
-     * @return array A list containing the Game Platforms.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function findAll(): array
     {
         try {
