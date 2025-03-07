@@ -8,7 +8,10 @@ env:
 phases:
   install:
     commands:   
-      - php -r "if (extension_loaded('sodium')) { echo 'Sodium is loaded'; } else { echo 'Sodium is NOT loaded'; }"   
+      - apt-get update
+      - apt-get install -y libsodium-dev
+      - docker-php-ext-install sodium
+      - php -r "if (extension_loaded('sodium')) { echo 'Sodium is loaded'; } else { echo 'Sodium is NOT loaded'; }"     
       - composer install
   build:
     commands:   
