@@ -34,7 +34,7 @@ class PlatformService
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
-                    'O nome da plataforma a ser inserida já existe no banco de dados!'
+                    'O nome da plataforma a ser inserida já existe no repositório!'
                 );
             }
             $platform = $this->repository->insert($platform);

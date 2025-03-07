@@ -33,7 +33,7 @@ class GameService
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
-                    'O nome do jogo a ser inserido já existe no banco de dados!'
+                    'O nome do jogo a ser inserido já existe no repositório!'
                 );
             }
             $game = $this->repository->insert($game);

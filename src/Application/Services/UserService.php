@@ -38,7 +38,7 @@ class UserService
             $hasDuplicatedNames = $this->repository->hasDuplicatedUserName($validatedUserName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
-                    'O nome do usuário a ser inserido já existe no banco de dados!'
+                    'O nome do usuário a ser inserido já existe no repositório!'
                 );
             }
             $plainPassword = $user->getPassWord();
@@ -74,7 +74,9 @@ class UserService
             $validatedUserName = $user->getUserName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedUserName($validatedUserName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do jogo a ser atualizado já existe no repositório!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome do usuário a ser atualizado já existe no repositório!'
+                );
             }
             $plainPassword = $user->getPassWord();
             $encodedPassword = $this->encrypter->encrypt($plainPassword);

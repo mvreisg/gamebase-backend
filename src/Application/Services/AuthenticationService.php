@@ -9,7 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionException;
 use PDOException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -62,7 +62,7 @@ class AuthenticationService
 
             return $doTheTwoPassWordsMatchesEqually;
         } catch (
-            EncryptionErrorException |
+            EncryptionException |
             EntityInvalidValueException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
