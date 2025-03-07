@@ -5,12 +5,11 @@ env:
     SODIUM_CRYPTO_SECRETBOX_KEY: b49cb41a2cff8db4f99ea27c7d80a4073337108c228535da506970fd1fbc34e8
     JWT_SECRET: batata
 
-image: php:8.2-apache
-
 phases:
   install:
-    commands:      
-      - composer install --dev 
+    commands:   
+      - php -r "if (extension_loaded('sodium')) { echo 'Sodium is loaded'; } else { echo 'Sodium is NOT loaded'; }"   
+      - composer install
   build:
     commands:   
       - composer format
