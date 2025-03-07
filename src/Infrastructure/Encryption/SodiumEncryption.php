@@ -44,7 +44,7 @@ class SodiumEncryption implements EncryptionInterface
                 throw new EncryptionException('Erro ao fazer a descriptografia!');
             }
             return $text;
-        } catch (EncryptionException $e) {        
+        } catch (EncryptionException $e) {
             throw $e;
         } catch (SodiumException $e) {
             throw new EncryptionException('Erro ao fazer a descriptografia!', 4, $e);
