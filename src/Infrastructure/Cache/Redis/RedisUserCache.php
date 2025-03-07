@@ -1,10 +1,9 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Cache;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis;
 
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 use Predis\Client;
-use Predis\Response\Status;
 
 class RedisUserCache implements UserCacheInterface
 {
@@ -15,9 +14,9 @@ class RedisUserCache implements UserCacheInterface
         $this->redis = $redis;
     }
 
-    public function set(string $userName, mixed $cache): Status|null
+    public function set(string $userName, mixed $cache): void
     {
-        return $this->redis->set($userName, $cache);
+        $this->redis->set($userName, $cache);
     }
 
     public function get(string $userName): string|null

@@ -31,12 +31,6 @@ class UserController
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -124,11 +118,6 @@ class UserController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     */
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -292,11 +281,6 @@ class UserController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Game being found by the id.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP resposne object.
-     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -376,11 +360,6 @@ class UserController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a search for all Game registers.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP resposne object.
-     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {

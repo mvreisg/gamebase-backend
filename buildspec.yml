@@ -1,10 +1,17 @@
 version: 0.2
+
+env:
+  variables:
+    SODIUM_CRYPTO_SECRETBOX_KEY: b49cb41a2cff8db4f99ea27c7d80a4073337108c228535da506970fd1fbc34e8
+    JWT_SECRET: batata
+
 phases:
   install:
-    commands:
+    commands:       
       - composer install
   build:
-    commands:
+    commands:   
       - composer format
       - composer lint
-      - composer lint:fix    
+      - composer lint:fix  
+      - composer test  

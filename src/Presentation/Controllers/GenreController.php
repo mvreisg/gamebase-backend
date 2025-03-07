@@ -20,34 +20,17 @@ use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorExce
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
-/**
- * Genre controller class.
- */
 class GenreController
 {
-    /**
-     * @var GenreService $service The service to be used by this controller.
-     */
     private GenreService $service;
     private AuthenticationService $authService;
 
-    /**
-     * Genre controller class constructor.
-     * @param GenreService $service The service to be used by this controller.
-     * @return void
-     */
     public function __construct(GenreService $service, AuthenticationService $authService)
     {
         $this->service = $service;
         $this->authService = $authService;
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Genre insertion.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -121,12 +104,6 @@ class GenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Genre update.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function update(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -293,12 +270,6 @@ class GenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a Genre finding.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findById(HttpRequest $request, HttpResponse $response)
     {
         try {
@@ -374,12 +345,6 @@ class GenreController
         }
     }
 
-    /**
-     * Method that handles the HTTP request and response of a finding of all Genres.
-     * @param HttpRequest $request The HTTP request object.
-     * @param HttpResponse $response The HTTP response object.
-     * @return void
-     */
     public function findAll(HttpRequest $request, HttpResponse $response)
     {
         try {

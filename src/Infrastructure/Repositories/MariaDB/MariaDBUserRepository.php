@@ -1,60 +1,43 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
-/**
- * The MariaDB Game repository class.
- */
-class MariaDBGameRepository implements GameRepositoryInterface
+class MariaDBUserRepository implements UserRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The PDO object to make database actions.
-     */
     private PDO $pdo;
 
-    /**
-     * The MariaDB Game repository class constructor.
-     * @param PDO $pdo The PDO object to make dabatase actions.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a Game into the repository.
-     * @param Game $game The Game object containing the data to be inserted into the repository.
-     * @return Game The inserted Game object clone.
-     * @throws DatabaseStatementCreationFailureException Throwed in case PDO tries to create a statement then fails.
-     * @throws DatabaseStatementExecutionFailureException Throwed in case of a PDO execute fails.
-     * @throws DatabaseFetchErrorException Throwed if the PDO fails to fetch data from the database.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
-    public function insert(Game $game): Game
+    public function insert(User $user): User
     {
         try {
             $this->pdo->beginTransaction();
 
-            $name = $game->getName();
-            $isActive = (int)$game->getIsActive();
+            $userName = $user->getUserName();
+            $passWord = $user->getPassWord();
+            $isActive = (int)$user->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    game (
-                        name, 
+                    user (
+                        username, 
+                        password,
                         is_active
                     ) 
                 VALUES (
-                    :name, 
+                    :userName, 
+                    :passWord, 
                     :isActive
                 );'
             );
@@ -66,7 +49,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':name' => $name,
+                ':userName' => $userName,
+                ':passWord' => $passWord,
                 ':isActive' => $isActive
             ]);
 
@@ -83,7 +67,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    game 
+                    user 
                 WHERE 
                     id = :id;'
             );
@@ -110,12 +94,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $this->pdo->commit();
 
-            $game = new Game();
-            $game->setId($fetchResult['id']);
-            $game->setName($fetchResult['name']);
-            $game->setIsActive($fetchResult['is_active']);
+            $user = new User();
+            $user->setId($fetchResult['id']);
+            $user->setUserName($fetchResult['username']);
+            $user->setPassword($fetchResult['password']);
+            $user->setIsActive($fetchResult['is_active']);
 
-            return $game;
+            return $user;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -127,24 +112,20 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Updates a Game register in the Game repository.
-     * @param Game $game The Game object containing the data to be updated into the repository.
-     * @return bool Returns the success flag.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
-    public function update(Game $game): bool
+    public function update(User $user): bool
     {
-        $id = $game->getId();
-        $name = $game->getName();
-        $isActive = (int)$game->getIsActive();
+        $id = $user->getId();
+        $userName = $user->getUserName();
+        $passWord = $user->getPassWord();
+        $isActive = (int)$user->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
-                    game 
+                    user 
                 SET 
-                    name = :name, 
+                    username = :userName, 
+                    password = :passWord, 
                     is_active = :isActive 
                 WHERE 
                     id = :id;'
@@ -155,9 +136,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
-                ':name' => $name,
-                ':id' => $id,
-                ':isActive' => $isActive
+                ':userName' => $userName,
+                ':passWord' => $passWord,
+                ':isActive' => $isActive,
+                ':id' => $id
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
@@ -178,12 +160,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Deletes a Game registed in the Game repository by the id.
-     * @param int $id The respective id of the Game register that is wanted to be deleted.
-     * @return bool Returns the success flag.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
@@ -191,7 +167,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $statement = $this->pdo->prepare(
                 'UPDATE
-                    game
+                    user
                 SET
                     is_active = :isActive
                 WHERE
@@ -226,20 +202,63 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Finds a Game register in the Game repository by its respective id and returns their Game object if it was found.
-     * @param int $id The id of the Game register that is wanted to be found.
-     * @return Game|null Returns the Game object if id is founded, else returns null.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
-    public function findById(mixed $id): Game|null
+    public function findByUserName(mixed $userName): User|null
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    game 
+                    user 
+                WHERE 
+                    username = :userName;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':userName' => $userName
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $result = $statement->fetch();
+
+            if ($result === false) {
+                return null;
+            }
+
+            $user = new User();
+            $user->setId($result['id']);
+            $user->setUserName($result['username']);
+            $user->setPassword($result['password']);
+            $user->setIsActive($result['is_active']);
+
+            return $user;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function findById(mixed $id): User|null
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    user 
                 WHERE 
                     id = :id;'
             );
@@ -264,12 +283,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 return null;
             }
 
-            $game = new Game();
-            $game->setId($result['id']);
-            $game->setName($result['name']);
-            $game->setIsActive($result['is_active']);
+            $user = new User();
+            $user->setId($result['id']);
+            $user->setUserName($result['username']);
+            $user->setPassword($result['password']);
+            $user->setIsActive($result['is_active']);
 
-            return $game;
+            return $user;
         } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
@@ -280,11 +300,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Finds all the Game registers in the repository.
-     * @return array Returns all Games registers found in the Game repository in a list.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
     public function findAll(): array
     {
         try {
@@ -292,7 +307,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    game;'
+                    user;'
             );
 
             if ($statement === false) {
@@ -313,16 +328,17 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 return [];
             }
 
-            $games = [];
+            $users = [];
             foreach ($result as $row) {
-                $game = new Game();
-                $game->setId($row['id']);
-                $game->setName($row['name']);
-                $game->setIsActive($row['is_active']);
-                $games[] = $game;
+                $user = new User();
+                $user->setId($row['id']);
+                $user->setUserName($row['username']);
+                $user->setPassword($row['password']);
+                $user->setIsActive($row['is_active']);
+                $users[] = $user;
             }
 
-            return $games;
+            return $users;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -332,22 +348,16 @@ class MariaDBGameRepository implements GameRepositoryInterface
         }
     }
 
-    /**
-     * Checks if a register with the name already exists in the repository.
-     * @param string $name The Game name.
-     * @return bool Returns true if the register already exists, else false.
-     * @throws PDOException Throwed if a PDO database action error occurs.
-     */
-    public function hasDuplicatedNames(string $name): bool
+    public function hasDuplicatedUserName(string $userName): bool
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    game 
+                    user 
                 WHERE 
-                    name = :name;'
+                    username = :userName;'
             );
 
             if ($statement === false) {
@@ -357,7 +367,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':name' => $name
+                ':userName' => $userName
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {

@@ -5,18 +5,8 @@ namespace Mvreisg\GamebaseBackend\Domain\Exceptions;
 use Exception;
 use Throwable;
 
-/**
- * Entity invalid value exception class.
- * Throwed when a entity property value is invalid.
- */
 class EntityInvalidValueException extends Exception
 {
-    /**
-     * Entity invalid value exception class constructor.
-     * @param string $message The exception message.
-     * @param int $code The exception code.
-     * @param Throwable|null $cause The exception cause object.
-     */
     public function __construct(string $message, int $code = 0, Throwable|null $cause = null)
     {
         parent::__construct($message, $code, $cause);

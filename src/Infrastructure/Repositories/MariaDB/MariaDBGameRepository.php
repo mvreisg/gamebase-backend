@@ -1,16 +1,16 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Game;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 
-class MariaDBUserRepository implements UserRepositoryInterface
+class MariaDBGameRepository implements GameRepositoryInterface
 {
     private PDO $pdo;
 
@@ -19,25 +19,22 @@ class MariaDBUserRepository implements UserRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function insert(User $user): User
+    public function insert(Game $game): Game
     {
         try {
             $this->pdo->beginTransaction();
 
-            $userName = $user->getUserName();
-            $passWord = $user->getPassWord();
-            $isActive = (int)$user->getIsActive();
+            $name = $game->getName();
+            $isActive = (int)$game->getIsActive();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    user (
-                        username, 
-                        password,
+                    game (
+                        name, 
                         is_active
                     ) 
                 VALUES (
-                    :userName, 
-                    :passWord, 
+                    :name, 
                     :isActive
                 );'
             );
@@ -49,8 +46,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':userName' => $userName,
-                ':passWord' => $passWord,
+                ':name' => $name,
                 ':isActive' => $isActive
             ]);
 
@@ -67,7 +63,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    user 
+                    game 
                 WHERE 
                     id = :id;'
             );
@@ -94,13 +90,12 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $this->pdo->commit();
 
-            $user = new User();
-            $user->setId($fetchResult['id']);
-            $user->setUserName($fetchResult['username']);
-            $user->setPassword($fetchResult['password']);
-            $user->setIsActive($fetchResult['is_active']);
+            $game = new Game();
+            $game->setId($fetchResult['id']);
+            $game->setName($fetchResult['name']);
+            $game->setIsActive($fetchResult['is_active']);
 
-            return $user;
+            return $game;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -112,20 +107,18 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function update(User $user): bool
+    public function update(Game $game): bool
     {
-        $id = $user->getId();
-        $userName = $user->getUserName();
-        $passWord = $user->getPassWord();
-        $isActive = (int)$user->getIsActive();
+        $id = $game->getId();
+        $name = $game->getName();
+        $isActive = (int)$game->getIsActive();
 
         try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
-                    user 
+                    game 
                 SET 
-                    username = :userName, 
-                    password = :passWord, 
+                    name = :name, 
                     is_active = :isActive 
                 WHERE 
                     id = :id;'
@@ -136,10 +129,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
-                ':userName' => $userName,
-                ':passWord' => $passWord,
-                ':isActive' => $isActive,
-                ':id' => $id
+                ':name' => $name,
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
@@ -167,7 +159,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $statement = $this->pdo->prepare(
                 'UPDATE
-                    user
+                    game
                 SET
                     is_active = :isActive
                 WHERE
@@ -202,63 +194,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findByUserName(mixed $userName): User|null
+    public function findById(mixed $id): Game|null
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    user 
-                WHERE 
-                    username = :userName;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
-            ]);
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $result = $statement->fetch();
-
-            if ($result === false) {
-                return null;
-            }
-
-            $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
-
-            return $user;
-        } catch (
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function findById(mixed $id): User|null
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    user 
+                    game 
                 WHERE 
                     id = :id;'
             );
@@ -283,13 +226,12 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 return null;
             }
 
-            $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
+            $game = new Game();
+            $game->setId($result['id']);
+            $game->setName($result['name']);
+            $game->setIsActive($result['is_active']);
 
-            return $user;
+            return $game;
         } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
@@ -307,7 +249,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    user;'
+                    game;'
             );
 
             if ($statement === false) {
@@ -328,17 +270,16 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 return [];
             }
 
-            $users = [];
+            $games = [];
             foreach ($result as $row) {
-                $user = new User();
-                $user->setId($row['id']);
-                $user->setUserName($row['username']);
-                $user->setPassword($row['password']);
-                $user->setIsActive($row['is_active']);
-                $users[] = $user;
+                $game = new Game();
+                $game->setId($row['id']);
+                $game->setName($row['name']);
+                $game->setIsActive($row['is_active']);
+                $games[] = $game;
             }
 
-            return $users;
+            return $games;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -348,16 +289,16 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function hasDuplicatedUserName(string $userName): bool
+    public function hasDuplicatedNames(string $name): bool
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    user 
+                    game 
                 WHERE 
-                    username = :userName;'
+                    name = :name;'
             );
 
             if ($statement === false) {
@@ -367,7 +308,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
+                ':name' => $name
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {

@@ -8,7 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
@@ -105,7 +105,7 @@ class AuthenticationController
                 ->sendJSON();
             return;
         } catch (
-            EncryptionErrorException |
+            EncryptionException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

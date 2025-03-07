@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
@@ -12,35 +11,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use PDOException;
 
-/**
- * Genre service class.
- */
 class GenreService
 {
-    /**
-     * @var GenreRepositoryInterface $repository The repository to be used by this service.
-     */
     private GenreRepositoryInterface $repository;
 
-    /**
-     * Genre service class repository.
-     * @param GenreRepositoryInterface $repository The repository to be used by this service.
-     * @return void
-     */
     public function __construct(GenreRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    /**
-     * Inserts a nem Genre into the repository.
-     * @param string $name The name of the Genre.
-     * @return Genre A copy of the created Genre object.
-     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws EntityInvalidValueException Throwed in case of entity error.
-     * @throws PDOException Throwed in case of database connection error.
-     * @throws Exception Throwed in case of error.
-     */
     public function insert(mixed $name, mixed $isActive): Genre
     {
         $genre = new Genre();
@@ -69,16 +48,6 @@ class GenreService
         }
     }
 
-    /**
-     * Updates a Genre already registered in the repository.
-     * @param int $id The id of the Genre.
-     * @param string $name The name of the Genre.
-     * @return Genre A copy of the created Genre object.
-     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws EntityInvalidValueException Throwed in case of entity error.
-     * @throws PDOException Throwed in case of database connection error.
-     * @throws Exception Throwed in case of error.
-     */
     public function update(mixed $id, mixed $name, mixed $isActive): bool
     {
         $genre = new Genre();
@@ -130,14 +99,6 @@ class GenreService
         }
     }
 
-    /**
-     * Finds a Genre already registered in the repository by its id.
-     * @param int $id The id of the Genre.
-     * @return Genre|null The Genre object if founded, else returns null.
-     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws PDOException Throwed in case of database connection error.
-     * @throws Exception Throwed in case of error.
-     */
     public function findById(mixed $id): Genre|null
     {
         $genre = new Genre();
@@ -157,12 +118,6 @@ class GenreService
         }
     }
 
-    /**
-     * Finda all the Genres in the repository.
-     * @return array The list of Genres.
-     * @throws PDOException Throwed in case of database error.
-     * @throws Exception Throwed in case of error.
-     */
     public function findAll(): array
     {
         try {

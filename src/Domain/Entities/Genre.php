@@ -4,29 +4,14 @@ namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 
-/**
- * Genre entity class.
- */
 class Genre
 {
-    /**
-     * @var int $id The Genre id.
-     */
     private int $id;
 
-    /**
-     * @var string $name The Genre name.
-     */
     private string $name;
 
     private bool $isActive;
 
-    /**
-     * Genre entity class constructor.
-     * @param int $id [optional] The Genre id.
-     * @param string $name [optional] The Genre name.
-     * @return void
-     */
     public function __construct(int $id = 0, string $name = '', bool $isActive = false)
     {
         $this->id = $id;
@@ -34,39 +19,21 @@ class Genre
         $this->isActive = $isActive;
     }
 
-    /**
-     * Gets the Genre id.
-     * @return int The Genre id.
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * Sets the Genre id.
-     * @param int $id The genre id.
-     * @return void
-     */
     public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * Gets the Genre name.
-     * @return string The Genre name.
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * Sets the Genre name.
-     * @param string $name The Genre name.
-     * @return void
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
@@ -82,14 +49,14 @@ class Genre
         $this->isActive = $isActive;
     }
 
-    /**
-     * Method that validates the id of the Genre.
-     * @throws EntityInvalidValueException Throwed if the id is invalid.
-     */
     public function validateId(mixed $id): void
     {
         if ($id === null) {
             throw new EntityInvalidValueException('O id é null!');
+        }
+
+        if (is_iterable($id)) {
+            throw new EntityInvalidValueException('O id é array!');
         }
 
         if (is_numeric($id) === false) {
@@ -109,10 +76,6 @@ class Genre
         }
     }
 
-    /**
-     * Method that validates the name of the Genre.
-     * @throws EntityInvalidValueException Throwed if the name is invalid.
-     */
     public function validateName(mixed $name): void
     {
         if ($name === null) {
@@ -134,6 +97,10 @@ class Genre
     {
         if ($isActive === null) {
             throw new EntityInvalidValueException('isActive é null!');
+        }
+
+        if (is_iterable($isActive)) {
+            throw new EntityInvalidValueException('isActive é array!');
         }
 
         if (is_string($isActive)) {

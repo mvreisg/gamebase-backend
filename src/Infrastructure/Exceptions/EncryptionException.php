@@ -5,7 +5,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Exceptions;
 use Exception;
 use Throwable;
 
-class EncryptionErrorException extends Exception
+class EncryptionException extends Exception
 {
     public function __construct(string $message, int $code = 0, Throwable|null $cause = null)
     {

@@ -2,7 +2,6 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Exception;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
@@ -13,34 +12,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
 
-/**
- * Platform service class.
- */
 class PlatformService
 {
-    /**
-     * @var PlatformRepositoryInterface $repository The repository to be used by this service.
-     */
     private PlatformRepositoryInterface $repository;
 
-    /**
-     * Platform service class constructor.
-     * @param PlatformRepositoryInterface $repository The repository to be used by this service.
-     */
     public function __construct(PlatformRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    /**
-     * Inserts a new Platform
-     * @param string $name The name of the Platform.
-     * @return Platform A copy of the inserted Platform.
-     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws EntityInvalidValueException Throwed in case of entity error.
-     * @throws PDOException Throwed in case of PDO error.
-     * @throws Exception Throwed in case of error.
-     */
     public function insert(mixed $name, mixed $isActive): Platform
     {
         $platform = new Platform();
@@ -54,7 +34,7 @@ class PlatformService
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
-                    'O nome da plataforma a ser inserida já existe no banco de dados!'
+                    'O nome da plataforma a ser inserida já existe no repositório!'
                 );
             }
             $platform = $this->repository->insert($platform);
@@ -72,16 +52,6 @@ class PlatformService
         }
     }
 
-    /**
-     * Updates a Platform
-     * @param int $id The id of the Platform.
-     * @param string $name The name of the Platform.
-     * @return Platform A copy of the inserted Platform.
-     * @throws DatabaseDuplicatedEntryException Throwed in case of database error.
-     * @throws EntityInvalidValueException Throwed in case of entity error.
-     * @throws PDOException Throwed in case of PDO error.
-     * @throws Exception Throwed in case of error.
-     */
     public function update(mixed $id, mixed $name, mixed $isActive): bool
     {
         $platform = new Platform();
@@ -132,13 +102,6 @@ class PlatformService
         }
     }
 
-    /**
-     * Finds a Platform by its id.
-     * @param int $id The id of the Platform.
-     * @return Platform|null Returns the Platform if found, else return null.
-     * @throws PDOException Throwed in case of PDO error.
-     * @throws Exception Throwed in case of error.
-     */
     public function findById(mixed $id): Platform|null
     {
         $platform = new Platform();
@@ -158,12 +121,6 @@ class PlatformService
         }
     }
 
-    /**
-     * Finds all Platforms.
-     * @return array Returns the Platform list.
-     * @throws PDOException Throwed in case of PDO error.
-     * @throws Exception Throwed in case of error.
-     */
     public function findAll(): array
     {
         try {

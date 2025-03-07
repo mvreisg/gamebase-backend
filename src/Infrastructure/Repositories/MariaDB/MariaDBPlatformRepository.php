@@ -1,74 +1,62 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use Throwable;
 
-/**
- * MariaDB Game Genre repository.
- */
-class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
+class MariaDBPlatformRepository implements PlatformRepositoryInterface
 {
-    /**
-     * @var PDO $pdo The database connection class object.
-     */
     private PDO $pdo;
 
-    /**
-     * MariaDB game Genre repository class constructor.
-     * @param PDO $pdo The database connection class object.
-     * @return void
-     */
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Inserts a new Game Genre entity into the repository.
-     * @param GameGenre $gameGenre The eneity to be inserted.
-     * @return GameGenre a copy of the inserted entity.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function insert(GameGenre $gameGenre): GameGenre
+    public function insert(Platform $platform): Platform
     {
-        $genreId = $gameGenre->getGenreId();
-        $gameId = $gameGenre->getGameId();
-
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
-            if ($wasTheTransactionSuccessfullyCreated === false) {
+            $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
+            if ($wasTheTransactionCreationSuccessful === false) {
                 throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
             }
 
+            $name = $platform->getName();
+            $isActive = (int)$platform->getIsActive();
+
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    game_genre 
-                        (genre_id, game_id) 
+                    platform 
+                        (
+                            name,
+                            is_active
+                        ) 
                 VALUES 
-                    (:genreId, :gameId);'
+                        (
+                            :name,
+                            :isActive
+                        );'
             );
             if ($insertStatement === false) {
                 throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de inserção!'
+                    'Ocorreu um erro ao criar a transação de inserção!'
                 );
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':genreId' => $genreId,
-                ':gameId' => $gameId
+                ':name' => $name,
+                ':isActive' => $isActive
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de inserção!'
+                    'Ocorreu um erro ao executar a transação de inserção!'
                 );
             }
 
@@ -79,7 +67,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    game_genre 
+                    platform 
                 WHERE 
                     id = :id;'
             );
@@ -98,49 +86,42 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $fetchResult = $selectStatement->fetch();
             if ($fetchResult === false) {
-                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os valores!');
+                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados!');
             }
 
             $this->pdo->commit();
 
-            $gameGenre = new GameGenre();
-            $gameGenre->setId($fetchResult['id']);
-            $gameGenre->setGenreId($fetchResult['genre_id']);
-            $gameGenre->setGameId($fetchResult['game_id']);
+            $platform = new Platform();
+            $platform->setId($fetchResult['id']);
+            $platform->setName($fetchResult['name']);
+            $platform->setIsActive($fetchResult['is_active']);
 
-            return $gameGenre;
+            return $platform;
         } catch (
             DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
+            PDOException $e
         ) {
             $this->pdo->rollBack();
             throw $e;
         }
     }
 
-    /**
-     * Updates an existing register of a Game Genre entity in the repository.
-     * @param GameGenre $gameGenre The data to be updated.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function update(GameGenre $gameGenre): bool
+    public function update(Platform $platform): bool
     {
-        try {
-            $id = $gameGenre->getId();
-            $gameId = $gameGenre->getGameId();
-            $genreId = $gameGenre->getGenreId();
+        $id = $platform->getId();
+        $name = $platform->getName();
+        $isActive = (int)$platform->getIsActive();
 
+        try {
             $statement = $this->pdo->prepare(
                 'UPDATE 
-                    game_genre 
+                    platform 
                 SET 
-                    genre_id = :genreId, 
-                    game_id = :gameId 
+                    name = :name, 
+                    is_active = :isActive 
                 WHERE 
                     id = :id;'
             );
@@ -150,66 +131,57 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 );
             }
 
-            $wasTheStatementExecutionSuccessful = $statement->execute([
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':name' => $name,
                 ':id' => $id,
-                ':gameId' => $gameId,
-                ':genreId' => $genreId
+                ':isActive' => $isActive
             ]);
-            if ($wasTheStatementExecutionSuccessful === false) {
+            if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de atualização!'
                 );
             }
 
-            $numberOfRowsAffected = $statement->rowCount();
-            $wasTheRepositoryAffected = $numberOfRowsAffected > 0;
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
 
             return $wasTheRepositoryAffected;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
 
-    /**
-     * Deletes an existing register of a Game Genre entity in the repository.
-     * @param GameGenre $gameGenre The data to be deleted.
-     * @return bool The success flag.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function delete(GameGenre $gameGenre): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         try {
+            $isActive = (int)$isActive;
+
             $statement = $this->pdo->prepare(
-                'DELETE FROM
-                    game_genre
+                'UPDATE
+                    platform
+                SET
+                    is_active = :isActive
                 WHERE
                     id = :id;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de exclusão!'
+                    'Ocorreu um erro ao criar a declaração de atualização!'
                 );
             }
 
-            $id = $gameGenre->getId();
-
-            $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
             ]);
-            if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de exclusão!'
+                    'Ocorreu um erro ao executar a declaração de atualização!'
                 );
             }
 
-            $numberOfRowsAffected = $statement->rowCount();
-            $wasTheDeleteSuccessful = $numberOfRowsAffected > 0;
-
-            return $wasTheDeleteSuccessful;
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -219,22 +191,16 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Finds a Game Genre register by its id.
-     * @param int $id The id to find.
-     * @return GameGenre the found Game Genre.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
-    public function findById(int $id): GameGenre|null
+    public function findById(int $id): Platform|null
     {
         try {
             $statement = $this->pdo->prepare(
                 'SELECT 
                     * 
                 FROM 
-                    game_genre 
+                    platform 
                 WHERE 
-                    id = :id'
+                    id = :id;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
@@ -254,12 +220,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 return null;
             }
 
-            $gameGenre = new GameGenre();
-            $gameGenre->setId($result['id']);
-            $gameGenre->setGameId($result['game_id']);
-            $gameGenre->setGenreId($result['genre_id']);
+            $platform = new Platform();
+            $platform->setId($result['id']);
+            $platform->setName($result['name']);
+            $platform->setIsActive($result['is_active']);
 
-            return $gameGenre;
+            return $platform;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -269,11 +235,6 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    /**
-     * Finds all Game Genre registers
-     * @return array A list of all the Game Genres.
-     * @throws PDOException Throwed if a database connection error occurs.
-     */
     public function findAll(): array
     {
         try {
@@ -281,7 +242,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    game_genre'
+                    platform;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
@@ -299,18 +260,53 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 return [];
             }
 
-            $gameGenres = [];
+            $platforms = [];
 
             foreach ($result as $row) {
-                $gameGenre = new GameGenre();
-                $gameGenre->setId($row['id']);
-                $gameGenre->setGameId($row['game_id']);
-                $gameGenre->setGenreId($row['genre_id']);
-
-                $gameGenres[] = $gameGenre;
+                $platform = new Platform();
+                $platform->setId($row['id']);
+                $platform->setName($row['name']);
+                $platform->setIsActive($row['is_active']);
+                $platforms[] = $platform;
             }
 
-            return $gameGenres;
+            return $platforms;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function hasDuplicatedNames(string $name): bool
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    platform 
+                WHERE 
+                    name = :name;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':name' => $name
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $numberOfAffectedRows = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfAffectedRows > 0;
+            return $hasDuplicatedNames;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
