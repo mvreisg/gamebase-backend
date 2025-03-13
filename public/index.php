@@ -15,10 +15,10 @@ use Throwable;
 use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
-include_once __DIR__ . '/vendor/autoload.php';
+include_once dirname(__DIR__) . '/vendor/autoload.php';
 
 try {
-    Dotenv\Dotenv::createImmutable(__DIR__)->load();
+    Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();
 
     $app = new HttpRouter();
 
@@ -41,5 +41,5 @@ try {
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
     header(HttpRouter::STATUS_CODES[500]);
-    print_r('Ocorreu um erro. Contate o suporte.');
+    print('Ocorreu um erro. Contate o suporte. Código ' . $e->getCode() . '.' . PHP_EOL);
 }
