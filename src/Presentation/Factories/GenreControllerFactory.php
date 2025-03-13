@@ -8,7 +8,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
 use Mvreisg\GamebaseBackend\Presentation\Controllers\GenreController;
 use Mvreisg\GamebaseBackend\Infrastructure\Connections\MariaDBConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Connections\RedisConnection;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
@@ -19,7 +19,7 @@ class GenreControllerFactory
         $genreRepository = new MariaDBGenreRepository(MariaDBConnection::get());
         $genreService = new GenreService($genreRepository);
         $userRepository = new MariaDBUserRepository(MariaDBConnection::get());
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userCache = new RedisUserCache(RedisConnection::get());
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $controller = new GenreController($genreService, $authService);

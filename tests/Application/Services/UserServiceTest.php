@@ -5,7 +5,7 @@ namespace Mvreisg\GamebaseBackend\Application\Services;
 use PHPUnit\Framework\TestCase;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
@@ -18,7 +18,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertSuccessfullyReturnsAUserObject()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $user = $userService->insert('test', 'test', true);
@@ -28,7 +28,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertWithDuplicatedNamesFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(DatabaseDuplicatedEntryException::class);
@@ -45,7 +45,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithNullName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -56,7 +56,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithArrayName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -67,7 +67,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithEmptyNameString()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -78,7 +78,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithANumberOnNameParameter()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -89,7 +89,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithABooleanOnNameParameter()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -105,7 +105,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithNullPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -116,7 +116,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithArrayPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -127,7 +127,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithEmptyStringPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -138,7 +138,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithANumberOnPasswordParameter()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -149,7 +149,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithABooleanOnPasswordParameter()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -165,7 +165,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithNullIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -176,7 +176,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithArrayIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -187,7 +187,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithNumberIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -198,7 +198,7 @@ class UserServiceTest extends TestCase
     public function testIfInsertFailsWithStringIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -213,7 +213,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateSuccessfullyHappensWithOneUser()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -223,7 +223,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateWithDuplicatedNamesFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(DatabaseDuplicatedEntryException::class);
@@ -235,7 +235,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateSuccessfullyHappensWithTwoUsers()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -246,7 +246,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateSuccessfullyHappensWithTenUsers()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         for ($i = 0; $i < 10; $i++) {
@@ -263,7 +263,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithUnexistantId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -275,7 +275,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithInvalidId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -287,7 +287,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNullId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -299,7 +299,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithArrayId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -311,7 +311,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithStringId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -323,7 +323,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithBooleanId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -340,7 +340,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNullName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -352,7 +352,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNumberName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -364,7 +364,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithArrayName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -376,7 +376,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithEmptyName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -388,7 +388,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithBooleanName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -405,7 +405,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNullPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -417,7 +417,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNumberPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -429,7 +429,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithArrayPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -441,7 +441,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithEmptyPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -453,7 +453,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithBooleanPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -470,7 +470,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNullIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -482,7 +482,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithNumberIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -494,7 +494,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithArrayIsActive()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -506,7 +506,7 @@ class UserServiceTest extends TestCase
     public function testIfUpdateFailsWithStringPassword()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -522,7 +522,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithSameValueFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -532,7 +532,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithDifferentValueSucceds()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -547,7 +547,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithInvalidIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -559,7 +559,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithNonExistantIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -571,7 +571,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithNullIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -583,7 +583,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithStringIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -595,7 +595,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithBooleanIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -607,7 +607,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithArrayIdFails()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -624,7 +624,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithNullValue()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -636,7 +636,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithNumberValue()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -648,7 +648,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithArrayValue()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -660,7 +660,7 @@ class UserServiceTest extends TestCase
     public function testIfSettingIsActiveWithStringValue()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -676,7 +676,7 @@ class UserServiceTest extends TestCase
     public function testIfItFindsByIdWithSuccess()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -686,7 +686,7 @@ class UserServiceTest extends TestCase
     public function testIfItFindsByIdWithSuccessWithTenUsers()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         for ($i = 0; $i < 10; $i++) {
@@ -698,7 +698,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithUnexistantId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -708,7 +708,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithInvalidId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -720,7 +720,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithNullId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -732,7 +732,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithStringId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -744,7 +744,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithBooleanId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -756,7 +756,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithArrayId()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -772,7 +772,7 @@ class UserServiceTest extends TestCase
     public function testIfItFindsByUserNameWithSuccess()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -782,7 +782,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindByUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $userService->insert('test', 'test', true);
@@ -792,7 +792,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithEmptyUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -804,7 +804,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithNullUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -816,7 +816,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithArrayUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -828,7 +828,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithNumberUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -840,7 +840,7 @@ class UserServiceTest extends TestCase
     public function testIfItCannotFindWithBooleanUserName()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->expectException(EntityInvalidValueException::class);
@@ -856,7 +856,7 @@ class UserServiceTest extends TestCase
     public function testIfFindAllSuccedsWithZeroUsers()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         $this->assertEmpty($userService->findAll());
@@ -865,7 +865,7 @@ class UserServiceTest extends TestCase
     public function testIfFindAllSuccedsWithTenUsers()
     {
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
         for ($i = 0; $i < 10; $i++) {

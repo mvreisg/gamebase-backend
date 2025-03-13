@@ -5,7 +5,7 @@ namespace Mvreisg\GamebaseBackend\Application\Services;
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\MockUserCache;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +19,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -31,7 +31,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -43,7 +43,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -55,7 +55,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
 
         $this->assertFalse($authService->login('test', 'test'));
@@ -65,7 +65,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -80,7 +80,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -94,7 +94,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -106,7 +106,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -118,7 +118,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -132,7 +132,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -146,7 +146,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -160,7 +160,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -174,7 +174,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -188,7 +188,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -202,7 +202,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -216,7 +216,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -234,7 +234,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -247,7 +247,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -260,7 +260,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -279,7 +279,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -295,7 +295,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -315,7 +315,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -332,7 +332,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -350,7 +350,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -366,7 +366,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -383,7 +383,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -399,7 +399,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -421,7 +421,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -438,7 +438,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -461,7 +461,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -480,7 +480,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -499,7 +499,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -519,7 +519,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -543,7 +543,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -562,7 +562,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
@@ -581,7 +581,7 @@ class AuthenticationServiceTest extends TestCase
     {
         $userCache = new MockUserCache();
         $userRepository = new MockUserRepository();
-        $encrypter = new SodiumEncryption();
+        $encrypter = new DefuseEncryption();
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\SodiumEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Phinx\Seed\AbstractSeed;
 
 class AddingFirstUser extends AbstractSeed
@@ -20,7 +20,7 @@ class AddingFirstUser extends AbstractSeed
         $data = [
             [
                 'username' => $_SERVER['APP_ROOT_USERNAME'],
-                'password' => (new SodiumEncryption())->encrypt($_SERVER['APP_ROOT_PASSWORD']),
+                'password' => (new DefuseEncryption())->encrypt($_SERVER['APP_ROOT_PASSWORD']),
                 'is_active' => 1
             ]
         ];
