@@ -17,6 +17,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN a2enmod rewrite
 
+COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
+
+RUN service apache2 restart
+
 EXPOSE 80
 EXPOSE 6379
 EXPOSE 3312
@@ -24,3 +28,5 @@ EXPOSE 3312
 WORKDIR /var/www/html
 
 COPY . /var/www/html
+
+CMD ["apachectl", "-D", "FOREGROUND"]
