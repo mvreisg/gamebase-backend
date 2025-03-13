@@ -8,7 +8,7 @@ Uses [Composer](https://getcomposer.org/) as the project package manager.
 
 Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr/).
 
-Uses [Sodium](https://www.php.net/manual/en/sodium.installation.php) as the secret mantainer.
+Uses <s>Sodium</s> [Defuse PHP Encryption](https://github.com/defuse/php-encryption) as the encrypter.</s>
 
 Uses [JWT](https://jwt.io/) and [Redis](https://redis.io/) for sessions.
 
