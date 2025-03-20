@@ -51,13 +51,4 @@ class HttpResponse
         }
         print($this->body);
     }
-        
-    public function sendJSON()
-    {
-        header(HttpRouter::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
-        foreach ($this->headers as $header) {
-            header($header);
-        }
-        print($this->body);
-    }
 }

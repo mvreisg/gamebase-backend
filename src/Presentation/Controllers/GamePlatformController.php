@@ -80,7 +80,7 @@ class GamePlatformController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -88,7 +88,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             HttpJsonParseException |
@@ -101,7 +101,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseTransactionCreationFailureException |
@@ -115,7 +115,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -171,7 +171,7 @@ class GamePlatformController
                     'message' => 'Vínculos entre jogos e plataformas editados com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -179,7 +179,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -187,7 +187,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -200,7 +200,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerOperationErrorException |
@@ -213,7 +213,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -244,7 +244,7 @@ class GamePlatformController
                     'message' => 'Vínculo entre jogos e plataformas deletado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -252,7 +252,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -260,7 +260,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
@@ -268,7 +268,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             $response
@@ -276,7 +276,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -314,7 +314,7 @@ class GamePlatformController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -322,7 +322,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -330,7 +330,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $response
@@ -338,7 +338,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -350,7 +350,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -385,7 +385,7 @@ class GamePlatformController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -393,7 +393,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -401,7 +401,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -413,7 +413,7 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
