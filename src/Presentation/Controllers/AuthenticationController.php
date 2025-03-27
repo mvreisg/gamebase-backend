@@ -96,7 +96,6 @@ class AuthenticationController
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
         ) {
-            $this->service->logoff($userName);
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
