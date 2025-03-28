@@ -52,8 +52,6 @@ docker exec -it gamebase-backend composer phinx seed:run
 
 to insert the root user to the database. 
 
-After that, just access ["/auth/login"](http://localhost:80/auth/login) on your API client..
-
 ## Run locally
 
 ### Setup
@@ -97,8 +95,6 @@ composer phinx seed:run
 ```
 
 to make Phinx insert the root user on the database.
-
-After that, just access ["/auth/login"](http://localhost:80/auth/login) on your API client.
 
 <hr/>
 
