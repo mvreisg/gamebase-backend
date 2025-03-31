@@ -16,8 +16,7 @@ class HttpRouter
     ];
 
     public const HEADERS = [
-        'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json; charset=utf-8',
-        'ACCESS_CONTROL_ALLOW_ORIGIN' => 'Access-Control-Allow-Origin: http://localhost:8081',
+        'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json; charset=utf-8',        
         'ACCESS_CONTROL_ALLOW_METHODS' => 'Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT',
         'ACCESS_CONTROL_ALLOW_HEADERS' => 'Access-Control-Allow-Headers: Content-Type, Authorization',
         'ACCESS_CONTROL_ALLOW_CREDENTIALS' => 'Access-Control-Allow-Credentials: true',
@@ -40,7 +39,7 @@ class HttpRouter
 
     public function run()
     {
-        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_ORIGIN']);
+        header('Access-Control-Allow-Origin: ' . $_SERVER['FRONTEND_ADDRESS']);
         header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_METHODS']);
         header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_HEADERS']);
         header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_CREDENTIALS']);
