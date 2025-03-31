@@ -68,7 +68,7 @@ class PlatformController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -76,7 +76,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -90,7 +90,7 @@ class PlatformController
                     'messages' => $messages
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseTransactionCreationFailureException |
@@ -105,7 +105,7 @@ class PlatformController
                     'messages' => $messages
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -155,7 +155,7 @@ class PlatformController
                     'message' => 'Plataforma atualizada com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -163,7 +163,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -171,7 +171,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerOperationErrorException |
@@ -185,7 +185,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             $response
@@ -193,7 +193,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -236,7 +236,7 @@ class PlatformController
                     'message' => 'Estado atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -244,7 +244,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -256,7 +256,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerOperationErrorException |
@@ -269,7 +269,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -309,7 +309,7 @@ class PlatformController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -317,7 +317,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -325,7 +325,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $response
@@ -333,7 +333,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -345,7 +345,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -380,7 +380,7 @@ class PlatformController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -388,7 +388,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -396,7 +396,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -408,7 +408,7 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }

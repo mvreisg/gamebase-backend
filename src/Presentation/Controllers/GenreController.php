@@ -65,7 +65,7 @@ class GenreController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[201])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -73,7 +73,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -86,7 +86,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -99,7 +99,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -147,7 +147,7 @@ class GenreController
                     'message' => 'Gênero atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -155,7 +155,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -163,7 +163,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -176,7 +176,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerOperationErrorException |
@@ -189,7 +189,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -232,7 +232,7 @@ class GenreController
                     'message' => 'Estado atualizado com sucesso!'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -240,7 +240,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -252,7 +252,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             ControllerOperationErrorException |
@@ -265,7 +265,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -304,7 +304,7 @@ class GenreController
                     ]
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -312,7 +312,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -320,7 +320,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
             $response
@@ -328,7 +328,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -340,7 +340,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -373,7 +373,7 @@ class GenreController
                     'data' => $data
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -381,7 +381,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (HttpResourceNotFoundException $e) {
             $response
@@ -389,7 +389,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[404])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -401,7 +401,7 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }

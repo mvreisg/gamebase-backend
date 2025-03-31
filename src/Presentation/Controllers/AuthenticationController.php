@@ -75,7 +75,7 @@ class AuthenticationController
                         'message' => 'Verifique seu nome de usuário ou senha!'
                     ])
                     ->status(HttpRouter::STATUS_CODES[401])
-                    ->sendJSON();
+                    ->send();
                 return;
             }
 
@@ -96,13 +96,12 @@ class AuthenticationController
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
         ) {
-            $this->service->logoff($userName);
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             EncryptionException |
@@ -116,7 +115,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -144,7 +143,7 @@ class AuthenticationController
                     'message' => 'Usuário possui sessão ativa'
                 ])
                 ->status(HttpRouter::STATUS_CODES[200])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             AuthenticationException |
@@ -155,7 +154,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             HttpJsonParseException |
@@ -167,7 +166,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -180,7 +179,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }
@@ -207,7 +206,7 @@ class AuthenticationController
                         'message' => 'Logoff realizado com sucesso!'
                     ])
                     ->status(HttpRouter::STATUS_CODES[200])
-                    ->sendJSON();
+                    ->send();
                 return;
             } else {
                 throw new HttpUnauthorizedException('Usuário não possui sessão para realizar o logoff!');
@@ -221,7 +220,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             HttpJsonParseException |
@@ -233,7 +232,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[400])
-                ->sendJSON();
+                ->send();
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -246,7 +245,7 @@ class AuthenticationController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[500])
-                ->sendJSON();
+                ->send();
             return;
         }
     }

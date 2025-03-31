@@ -16,7 +16,10 @@ class HttpRouter
     ];
 
     public const HEADERS = [
-        'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json'
+        'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json; charset=utf-8',        
+        'ACCESS_CONTROL_ALLOW_METHODS' => 'Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT',
+        'ACCESS_CONTROL_ALLOW_HEADERS' => 'Access-Control-Allow-Headers: Content-Type, Authorization',
+        'ACCESS_CONTROL_ALLOW_CREDENTIALS' => 'Access-Control-Allow-Credentials: true',
     ];
 
     public const NON_EXISTANT_ROUTE = '';
@@ -36,6 +39,17 @@ class HttpRouter
 
     public function run()
     {
+        header('Access-Control-Allow-Origin: ' . $_SERVER['FRONTEND_ADDRESS']);
+        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_METHODS']);
+        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_HEADERS']);
+        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_CREDENTIALS']);
+        header(HttpRouter::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(204);
+            exit();
+        }
+
         $path = $_SERVER['REQUEST_URI'];
 
         $method = $_SERVER['REQUEST_METHOD'];
