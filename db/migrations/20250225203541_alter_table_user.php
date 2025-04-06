@@ -6,9 +6,6 @@ use Phinx\Migration\AbstractMigration;
 
 final class AlterTableUser extends AbstractMigration
 {
-    /**
-     * Migrate Up.
-     */
     public function up()
     {
         $table = $this->table('user');
@@ -17,9 +14,6 @@ final class AlterTableUser extends AbstractMigration
             ->save();
     }
 
-    /**
-     * Migrate Down.
-     */
     public function down()
     {
         $table = $this->table('user');
