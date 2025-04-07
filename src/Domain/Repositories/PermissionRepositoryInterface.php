@@ -14,7 +14,7 @@ interface PermissionRepositoryInterface
 
     public function findAll(): array;
 
-    public function setIsActive(bool $isActive): bool;
+    public function setIsActive(int $id, bool $isActive): bool;
 
     public function hasDuplicatedNames(string $name): bool;
 }
