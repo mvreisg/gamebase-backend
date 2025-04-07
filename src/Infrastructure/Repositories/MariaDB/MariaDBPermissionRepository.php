@@ -121,35 +121,168 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     public function update(Permission $permission): bool
     {
         try {
-            return true;
-        } catch (PDOException $e) {
-            throw $e;
-        }
+            $id = $permission->getId();
+            $name = $permission->getName();
+            $isActive = $permission->getIsActive();
+
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    permission
+                SET
+                    name = :name,
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+            }
+
+            $wasTheUpdateSuccessful = $statement->execute([
+                ':name' => $name,
+                ':isActive' => $isActive,
+                ':id' => $id
+            ]);
+
+            if ($wasTheUpdateSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+            }
+
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasTheDatabaseAffected = $numberOfLinesAffected > 0;
+            return $wasTheDatabaseAffected;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e) {
+                throw $e;
+            }
     }
 
     public function findById(int $id): Permission|null
     {
         try {
-            return null;
-        } catch (PDOException $e) {
-            throw $e;
-        }
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM
+                    permission
+                WHERE
+                    id = :id;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheFetchSuccessful = $statement->execute([
+                ':id' => $id
+            ]);
+
+            if ($wasTheFetchSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $result = $statement->fetch();
+
+            if ($result === false) {
+                return null;
+            }
+
+            $permission = new Permission();
+            $permission->setId($result['id']);
+            $permission->setName($result['name']);
+            $permission->setIsActive($result['is_active']);
+
+            return $permission;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e) {
+                throw $e;
+            }
     }
 
     public function findAll(): array
     {
         try {
-            return [];
-        } catch (PDOException $e) {
-            throw $e;
-        }
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    *
+                FROM
+                    permission;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheSelectSuccessful = $statement->execute();
+            if ($wasTheSelectSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+            }
+
+            $result = $statement->fetchAll();
+
+            if ($result === false) {
+                return [];
+            }
+
+            $permissions = [];
+            foreach ($result as $row) {
+                $permission = new Permission();
+                $permission->setId($row['id']);
+                $permission->setName($row['name']);
+                $permission->setIsActive($row['is_active']);
+                $permissions[] = $permission;
+            }
+
+            return $permissions;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e) {
+                throw $e;
+            }
     }
 
-    public function setIsActive(bool $isActive): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            return true;
-        } catch (PDOException $e) {
+            $isActive = (int)$isActive;
+
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    permission
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
@@ -157,8 +290,38 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     public function hasDuplicatedNames(string $name): bool
     {
         try {
-            return true;
-        } catch (PDOException $e) {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    permission 
+                WHERE 
+                    name = :name;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementExecutedSuccessfully = $statement->execute([
+                ':name' => $name
+            ]);
+
+            if ($wasTheStatementExecutedSuccessfully === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $numberOfAffectedLines = $statement->rowCount();
+            $hasDuplicatedNames = $numberOfAffectedLines > 0;
+
+            return $hasDuplicatedNames;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }
