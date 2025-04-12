@@ -49,18 +49,18 @@ class Permission
         $this->isActive = $isActive;
     }
 
-    public function validateId(int $id)
+    public function validateId()
     {
-        if ($id <= 0) {
+        if ($this->id <= 0) {
             throw new EntityInvalidValueException('id deve ser maior que 0!');
         }
     }
 
-    public function validateName(string $name)
+    public function validateName()
     {
-        $name = trim($name);
+        $this->name = trim($this->name);
 
-        if ($name === '') {
+        if ($this->name === '') {
             throw new EntityInvalidValueException('name está vazio!');
         }
     }
