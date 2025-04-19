@@ -29,11 +29,17 @@ class UserRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('GET', '/user/find/id/:userId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/user/find/id/:userId', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('GET', '/user/find/userName/:userName', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/user/find/userName/:userName', function (
+            HttpRequest $request,
+            HttpResponse $response
+        ) use ($controller) {
             $controller->findByUserName($request, $response);
         });
     }

@@ -32,7 +32,9 @@ class PermissionService
             $validatedName = $permission->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome da permissão a ser inserida já existe no repositório!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome da permissão a ser inserida já existe no repositório!'
+                );
             }
 
             $permissionCopy = $this->repository->insert($permission);
@@ -43,9 +45,10 @@ class PermissionService
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
             EntityInvalidValueException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function update(int $id, string $name, bool $isActive): bool
@@ -57,7 +60,9 @@ class PermissionService
             $validatedName = $permission->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome da permissão a ser atualizada já existe no repositório!');
+                throw new DatabaseDuplicatedEntryException(
+                    'O nome da permissão a ser atualizada já existe no repositório!'
+                );
             }
 
             $wasTheUpdateSuccessful = $this->repository->update($permission);
@@ -67,9 +72,10 @@ class PermissionService
             DatabaseStatementExecutionFailureException |
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
@@ -84,9 +90,10 @@ class PermissionService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             EntityInvalidValueException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function findById(int $id): Permission
@@ -101,9 +108,10 @@ class PermissionService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             EntityInvalidValueException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function findAll(): array
@@ -114,8 +122,9 @@ class PermissionService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 }

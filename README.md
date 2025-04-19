@@ -114,13 +114,7 @@ Makes a linting operation on the code, checking by errors.
 composer lint:fix
 ```
 
-Makes a linting operation on the code, trying to fix the errors.
-
-```
-composer format
-```
-
-Makes a text formatting in the source code.
+Fixes the errors and throw warnings.
 
 ```
 composer test

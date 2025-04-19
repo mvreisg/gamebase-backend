@@ -112,10 +112,11 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 $this->pdo->rollBack();
                 throw $e;
-            }
+        }
     }
 
     public function update(Permission $permission): bool
@@ -136,7 +137,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de atualização!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
             }
 
             $wasTheUpdateSuccessful = $statement->execute([
@@ -146,7 +149,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             ]);
 
             if ($wasTheUpdateSuccessful === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de atualização!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
             }
 
             $numberOfLinesAffected = $statement->rowCount();
@@ -155,9 +160,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function findById(int $id): Permission|null
@@ -173,7 +179,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasTheFetchSuccessful = $statement->execute([
@@ -181,7 +189,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             ]);
 
             if ($wasTheFetchSuccessful === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetch();
@@ -199,9 +209,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function findAll(): array
@@ -215,12 +226,16 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasTheSelectSuccessful = $statement->execute();
             if ($wasTheSelectSuccessful === false) {
-                throw new DatabaseStatementExecutionFailureException('Ocorreu um erro ao executar a declaração de busca!');
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
             }
 
             $result = $statement->fetchAll();
@@ -242,9 +257,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e) {
+            PDOException $e
+        ) {
                 throw $e;
-            }
+        }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
@@ -300,7 +316,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasTheStatementExecutedSuccessfully = $statement->execute([
