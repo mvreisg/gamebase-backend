@@ -57,13 +57,15 @@ class PermissionService
             $permission = new Permission($id, $name, $isActive);
             $permission->validateId();
             $permission->validateName();
-            $validatedName = $permission->getName();
+            /*
+            $validatedName = $permission->getName();            
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome da permissão a ser atualizada já existe no repositório!'
                 );
             }
+            */
 
             $wasTheUpdateSuccessful = $this->repository->update($permission);
             return $wasTheUpdateSuccessful;
