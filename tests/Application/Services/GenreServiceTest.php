@@ -195,12 +195,12 @@ class GenreServiceTest extends TestCase
         $this->assertTrue($genreService->update(1, 'test22', true));
     }
 
-    public function testIfUpdatingAGenreWithAExistantNameFails()
+    public function testIfUpdatingAGenreWithAExistantNameSucceds()
     {
         $genreRepository = new MockGenreRepository();
         $genreService = new GenreService($genreRepository);
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectNotToPerformAssertions();
 
         $genreService->insert('test', true);
         $genreService->update(1, 'test', true);

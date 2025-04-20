@@ -58,7 +58,7 @@ class PermissionService
             $permission->validateId();
             $permission->validateName();
             /*
-            $validatedName = $permission->getName();            
+            $validatedName = $permission->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(

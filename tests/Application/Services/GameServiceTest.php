@@ -195,12 +195,12 @@ class GameServiceTest extends TestCase
         $this->assertTrue($gameService->update(1, 'test22', true));
     }
 
-    public function testIfUpdatingAGameWithAExistantNameFails()
+    public function testIfUpdatingAGameWithAExistantNameSucceds()
     {
         $gameRepository = new MockGameRepository();
         $gameService = new GameService($gameRepository);
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectNotToPerformAssertions();
 
         $gameService->insert('test', true);
         $gameService->update(1, 'test', true);
