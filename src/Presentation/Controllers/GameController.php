@@ -140,9 +140,13 @@ class GameController
 
             $wasSomeUpdateHappened = $this->service->update($gameId, $name, $isActive);
             if ($wasSomeUpdateHappened === false) {
-                throw new HttpResourceNotFoundException(
-                    'A atualização não aconteceu. Verifique se o id informado é váildo.'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhuma linha afetada.'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response

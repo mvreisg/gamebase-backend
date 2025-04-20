@@ -61,11 +61,13 @@ class GameService
             $game->setId($id);
             $game->setName($name);
             $game->setIsActive($isActive);
-            $validatedName = $game->getName();
+            /*
+            $validatedName = $game->getName();            
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException('O nome do jogo a ser atualizado já existe no repositório!');
             }
+            */
             $wasSomeUpdateHappened = $this->repository->update($game);
             return $wasSomeUpdateHappened;
         } catch (
