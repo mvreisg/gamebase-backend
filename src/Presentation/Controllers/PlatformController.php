@@ -145,9 +145,13 @@ class PlatformController
 
             $wasTheUpdateSuccessful = $this->service->update($platformId, $name, $isActive);
             if ($wasTheUpdateSuccessful === false) {
-                throw new HttpResourceNotFoundException(
-                    'Não foi possível atualizar a plataforma com o id ' . $platformId . '!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhuma linha afetada.'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
