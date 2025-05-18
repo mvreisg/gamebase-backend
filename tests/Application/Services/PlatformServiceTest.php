@@ -195,12 +195,12 @@ class PlatformServiceTest extends TestCase
         $this->assertTrue($platformService->update(1, 'test22', true));
     }
 
-    public function testIfUpdatingAPlatformWithAExistantNameFails()
+    public function testIfUpdatingAPlatformWithAExistantNameSucceds()
     {
         $platformRepository = new MockPlatformRepository();
         $platformService = new PlatformService($platformRepository);
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectNotToPerformAssertions();
 
         $platformService->insert('test', true);
         $platformService->update(1, 'test', true);

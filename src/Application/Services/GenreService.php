@@ -59,6 +59,7 @@ class GenreService
             $genre->setId($id);
             $genre->setName($name);
             $genre->setIsActive($isActive);
+            /*
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -66,6 +67,7 @@ class GenreService
                     'O nome do gênero a ser atualizado já existe no repositório!'
                 );
             }
+            */
             $wasItSuccessful = $this->repository->update($genre);
             return $wasItSuccessful;
         } catch (

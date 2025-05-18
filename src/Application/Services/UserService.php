@@ -71,13 +71,14 @@ class UserService
             $user->setUserName($userName);
             $user->setPassword($passWord);
             $user->setIsActive($isActive);
+            /*
             $validatedUserName = $user->getUserName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedUserName($validatedUserName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome do usuário a ser atualizado já existe no repositório!'
                 );
-            }
+            }*/
             $plainPassword = $user->getPassWord();
             $encodedPassword = $this->encrypter->encrypt($plainPassword);
             $user->setPassword($encodedPassword);

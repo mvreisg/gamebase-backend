@@ -137,9 +137,13 @@ class GenreController
 
             $wasAUpdateOcurred = $this->service->update($genreId, $name, $isActive);
             if ($wasAUpdateOcurred === false) {
-                throw new HttpResourceNotFoundException(
-                    'O gênero com o id ' . $genreId . ' não foi atualizado! Verifique se o registro realmente existe.'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhuma linha afetada.'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response

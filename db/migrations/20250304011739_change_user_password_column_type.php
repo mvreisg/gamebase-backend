@@ -6,9 +6,6 @@ use Phinx\Migration\AbstractMigration;
 
 final class ChangeUserPasswordColumnType extends AbstractMigration
 {
-    /**
-     * Migrate Up.
-     */
     public function up()
     {
         $users = $this->table('user');

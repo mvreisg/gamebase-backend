@@ -155,9 +155,13 @@ class UserController
 
             $wasSomeUpdateHappened = $this->service->update($userId, $userName, $passWord, $isActive);
             if ($wasSomeUpdateHappened === false) {
-                throw new HttpResourceNotFoundException(
-                    'A atualização não aconteceu. Verifique se o id informado é váildo.'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhuma linha afetada.'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -304,6 +308,85 @@ class UserController
             if ($user === null) {
                 throw new HttpResourceNotFoundException(
                     'O registro de usuário com o id ' . $userId . ' não pôde ser encontrado!'
+                );
+            }
+
+            $response
+                ->appendArray([
+                    'message' => 'Usuário buscado com sucesso!',
+                    'data' => [
+                        'id' => $user->getId(),
+                        'username' => $user->getUserName(),
+                        'password' => $user->getPassWord(),
+                        'isActive' => $user->getIsActive()
+                    ]
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->send();
+            return;
+        } catch (AuthenticationException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[401])
+                ->send();
+            return;
+        } catch (HttpResourceNotFoundException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[404])
+                ->send();
+            return;
+        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[400])
+                ->send();
+            return;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+            $response
+                ->appendArray([
+                    'message' => $e->getMessage()
+                ])
+                ->status(HttpRouter::STATUS_CODES[500])
+                ->send();
+            return;
+        }
+    }
+
+    public function findByUserName(HttpRequest $request, HttpResponse $response)
+    {
+        try {
+            $headers = $request->getHeaders();
+            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($token);
+
+            $params = $request->getParams();
+
+            $isUserNameSetted = isset($params['userName']);
+            if ($isUserNameSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'O nome de usuário não foi informado na URL ou seu valor é null!'
+                );
+            }
+
+            $userName = $params['userName'];
+
+            $user = $this->service->findByUserName($userName);
+
+            if ($user === null) {
+                throw new HttpResourceNotFoundException(
+                    'O registro de usuário com o nome de usuário ' . $userName . ' não pôde ser encontrado!'
                 );
             }
 

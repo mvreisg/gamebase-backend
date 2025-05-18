@@ -63,6 +63,7 @@ class PlatformService
             $platform->setId($id);
             $platform->setName($name);
             $platform->setIsActive($isActive);
+            /*
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -70,6 +71,7 @@ class PlatformService
                     'O nome da plataforma a ser atualizada já existe no repositório!'
                 );
             }
+            */
             $wasTheUpdateSuccessful = $this->repository->update($platform);
             return $wasTheUpdateSuccessful;
         } catch (

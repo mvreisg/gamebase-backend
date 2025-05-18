@@ -220,13 +220,13 @@ class UserServiceTest extends TestCase
         $this->assertTrue($userService->update(1, 'test2', 'test2', true));
     }
 
-    public function testIfUpdateWithDuplicatedNamesFails()
+    public function testIfUpdateWithDuplicatedNamesSucceds()
     {
         $userRepository = new MockUserRepository();
         $encrypter = new DefuseEncryption();
         $userService = new UserService($userRepository, $encrypter);
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectNotToPerformAssertions();
 
         $userService->insert('test', 'test', true);
         $userService->update(1, 'test', 'test', true);

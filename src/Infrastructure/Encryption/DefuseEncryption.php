@@ -4,10 +4,11 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption;
 
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Defuse\Crypto\Key;
-use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionException;
 use TypeError;
 
 class DefuseEncryption implements EncryptionInterface
@@ -20,10 +21,11 @@ class DefuseEncryption implements EncryptionInterface
             $encrypted = Crypto::encrypt($text, $key);
             return $encrypted;
         } catch (
+            BadFormatException |
             EnvironmentIsBrokenException |
             TypeError $e
         ) {
-            throw new AuthenticationException('Ocorreu um erro na criptografia!', 1, $e);
+            throw new EncryptionException('Ocorreu um erro na criptografia!', 1, $e);
         }
     }
 
@@ -35,11 +37,12 @@ class DefuseEncryption implements EncryptionInterface
             $text = Crypto::decrypt($secret, $key);
             return $text;
         } catch (
+            BadFormatException |
             EnvironmentIsBrokenException |
             WrongKeyOrModifiedCiphertextException |
             TypeError $e
         ) {
-            throw new AuthenticationException('Ocorreu um erro na criptografia!', 2, $e);
+            throw new EncryptionException('Ocorreu um erro na criptografia!' . $e->getMessage(), 2, $e);
         }
     }
 }
