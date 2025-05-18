@@ -52,20 +52,17 @@ class AuthenticationController
             $passWord = $body['password'];
             $oneWeek = $body['oneWeek'];
 
-            $hasSession = $this->service->checkIfHasSession($userName);
-            if ($hasSession) {
-                $token = $this->service->getSessionToken($userName);
-                $isTokenValid = $this->service->validateToken($token);
-                if ($isTokenValid) {
-                    $response
-                        ->appendArray([
-                            'message' => 'Já existe uma sessão!',
-                            'token' => $token
-                        ])
-                        ->status(HttpRouter::STATUS_CODES[200])
-                        ->send();
-                    return;
-                }
+            $token = $this->service->getSessionToken($userName);
+            if ($token !== null && $token !== "") {
+                $this->service->validateToken($userName, $token);
+                $response
+                    ->appendArray([
+                        'message' => 'Já existe uma sessão!',
+                        'token' => $token
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $hasCredentials = $this->service->login($userName, $passWord);
@@ -131,13 +128,17 @@ class AuthenticationController
                 );
             }
 
-            $token = $body['token'];
-
-            $isValid = $this->service->validateToken($token);
-            if ($isValid === false) {
-                throw new HttpUnauthorizedException('Usuário não possui sessão!');
+            $isUserNameSetted = isset($body['username']);
+            if ($isUserNameSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave username não foi definida no JSON ou seu valor é null!'
+                );
             }
 
+            $token = $body['token'];
+            $userName = $body['username'];
+
+            $this->service->validateToken($userName, $token);
             $response
                 ->appendArray([
                     'message' => 'Usuário possui sessão ativa'
@@ -195,22 +196,26 @@ class AuthenticationController
                 );
             }
 
-            $token = $body['token'];
-
-            $userName = $this->service->decodeToken($token);
-            $wasTheLogoffMade = $this->service->logoff($userName);
-
-            if ($wasTheLogoffMade) {
-                $response
-                    ->appendArray([
-                        'message' => 'Logoff realizado com sucesso!'
-                    ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
-                return;
-            } else {
-                throw new HttpUnauthorizedException('Usuário não possui sessão para realizar o logoff!');
+            $isUserNameSetted = isset($body['username']);
+            if ($isUserNameSetted === false) {
+                throw new ControllerUndefinedValueException(
+                    'A chave username não foi definida no JSON ou seu valor é null!'
+                );
             }
+
+            $token = $body['token'];
+            $userName = $body['username'];
+
+            $this->service->validateToken($userName, $token);
+            $this->service->logoff($userName);
+
+            $response
+                ->appendArray([
+                    'message' => 'Logoff realizado com sucesso!'
+                ])
+                ->status(HttpRouter::STATUS_CODES[200])
+                ->send();
+            return;
         } catch (
             AuthenticationException |
             HttpUnauthorizedException $e

@@ -359,7 +359,7 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $this->assertTrue($authService->checkIfHasSession('test'));
+        $this->assertTrue($authService->getSessionToken('test'));
     }
 
     public function testIfItDoesNotHaveSessionEvenWithValidUsername()
@@ -376,7 +376,7 @@ class AuthenticationServiceTest extends TestCase
         $authService->login('test', 'test');
         $token = $authService->generateToken('test', true);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
+        $authService->getSessionToken('test');
     }
 
     public function testIfItDoesNotHaveSessionWithAUnexistantUsername()
@@ -392,7 +392,7 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $this->assertFalse($authService->checkIfHasSession('test2'));
+        $this->assertFalse($authService->getSessionToken('test2'));
     }
 
     public function testIfItDoesNotHaveSessionWithAEmptyUsername()
@@ -410,7 +410,7 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('');
+        $authService->getSessionToken('');
     }
 
     //
@@ -425,13 +425,15 @@ class AuthenticationServiceTest extends TestCase
         $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
         $userService = new UserService($userRepository, $encrypter);
 
+        $this->expectException(AuthenticationException::class);
+
         $userService->insert('test', 'test', true);
         $authService->login('test', 'test');
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $this->assertTrue($authService->validateToken($token));
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
     }
 
     public function testIfAInvalidTokenFailsToValidate()
@@ -449,8 +451,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken('batatapotato');
+        $authService->getSessionToken('test');
+        $authService->validateToken('batatapotato', $token);
     }
 
     //
@@ -470,8 +472,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $sub = $authService->decodeToken($token);
         $this->assertEquals('test', $sub);
     }
@@ -489,8 +491,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $sub = $authService->decodeToken($token);
         $this->assertNotEquals('batatapotato', $sub);
     }
@@ -510,8 +512,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $authService->decodeToken('batatapotato');
     }
 
@@ -530,8 +532,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $authService->decodeToken('');
     }
 
@@ -552,10 +554,10 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $userName = $authService->decodeToken($token);
-        $this->assertTrue($authService->logoff($userName));
+        $this->assertTrue($authService->logoff($userName->sub));
     }
 
     public function testIfLogoffFailsWithUnexistantUserName()
@@ -571,10 +573,10 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $userName = $authService->decodeToken($token);
-        $this->assertFalse($authService->logoff('batatapotato'));
+        $this->assertFalse($authService->logoff($userName->sub));
     }
 
     public function testIfLogoffFailsWithEmptyUserName()
@@ -592,8 +594,8 @@ class AuthenticationServiceTest extends TestCase
         $token = $authService->generateToken('test', true);
         $authService->setSessionToken('test', $token);
         $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
+        $authService->getSessionToken('test');
+        $authService->validateToken('test', $token);
         $userName = $authService->decodeToken($token);
         $authService->logoff('');
     }

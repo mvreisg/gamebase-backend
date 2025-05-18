@@ -16,6 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\UserNameRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -36,7 +37,8 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $userName = UserNameRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($userName, $token);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -109,7 +111,8 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $userName = UserNameRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($userName, $token);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -203,7 +206,8 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $userName = UserNameRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($userName, $token);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -279,7 +283,8 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $userName = UserNameRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($userName, $token);
 
             $params = $request->getParams();
 
@@ -354,7 +359,8 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $userName = UserNameRetriever::getFromHeaders($headers);
+            $this->authService->validateToken($userName, $token);
 
             $genres = $this->service->findAll();
 
