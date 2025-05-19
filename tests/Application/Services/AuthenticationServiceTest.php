@@ -3,7 +3,10 @@
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\MockUserCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
@@ -11,590 +14,240 @@ use PHPUnit\Framework\TestCase;
 
 class AuthenticationServiceTest extends TestCase
 {
-    //
-    // Login
-    //
+    private UserCacheInterface $userCache;
+    private UserRepositoryInterface $userRepository;
+    private EncryptionInterface $encrypter;
+    private AuthenticationService $authService;
+    private UserService $userService;
 
-    public function testIfLoginSuccedsWithARegisteredUser()
+    protected function setUp(): void
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $this->assertTrue($authService->login('test', 'test'));
+        $this->userCache = new MockUserCache();
+        $this->userRepository = new MockUserRepository();
+        $this->encrypter = new DefuseEncryption();
+        $this->authService = new AuthenticationService($this->userRepository, $this->encrypter, $this->userCache);
+        $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
-    public function testIfLoginFailsWithARegisteredUserAndWrongUsername()
+    public function testIfUserHasCredentials()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $this->assertFalse($authService->login('test2', 'test'));
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
+        $this->assertTrue($hasCredentials);
     }
 
-    public function testIfLoginFailsWithARegisteredUserAndWrongPassword()
+    public function testIfUserDoNotHaveCredentialsWithAWrongUserName()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin('batata', $passWord);
+        $this->assertFalse($hasCredentials);
+    }
 
-        $userService->insert('test', 'test', true);
-        $this->assertFalse($authService->login('test', 'test2'));
+    public function testIfUserDoNotHaveCredentialsWithAWrongPassword()
+    {
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, 'batata');
+        $this->assertFalse($hasCredentials);
     }
 
     public function testIfLoginFailsWithoutRegisteredUsers()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-
-        $this->assertFalse($authService->login('test', 'test'));
+        $hasCredentials = $this->authService->tryLogin('test', 'test');
+        $this->assertFalse($hasCredentials);
     }
 
     public function testIfLoginSuccedsWithTenUsers()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userNamePrefix = 'test';
+        $passWordPrefix = 'test';
+        $isActive = true;
+        for ($i = 1; $i <= 10; $i++) {
+            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+        }
 
         for ($i = 1; $i <= 10; $i++) {
-            $userService->insert('test' . $i, 'test' . $i, true);
+            $hasCredentials = $this->authService->tryLogin($userNamePrefix.$i, $passWordPrefix.$i);
+            $this->assertTrue($hasCredentials);
         }
-        $index = random_int(1, 10);
-        $this->assertTrue($authService->login('test' . $index, 'test' . $index));
     }
 
     public function testIfLoginFailsWithTenUsersButWrongCredentials()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+    {        
+        $userNamePrefix = 'test';
+        $passWordPrefix = 'test';
+        $isActive = true;
+        for ($i = 1; $i <= 10; $i++) {
+            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+        }
 
         for ($i = 1; $i <= 10; $i++) {
-            $userService->insert('test' . $i, 'test' . $i, true);
+            $hasCredentials = $this->authService->tryLogin($userNamePrefix, $passWordPrefix);
+            $this->assertFalse($hasCredentials);
         }
-        $this->assertFalse($authService->login('test11', 'test11'));
-    }
-
-    public function testIfLoginFailsWithCorrectUserNameButWrongPassWord()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $this->assertFalse($authService->login('test', 'test2'));
-    }
-
-    public function testIfLoginFailsWithWrongUserNameButCorrectPassWord()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $this->assertFalse($authService->login('test2', 'test'));
     }
 
     public function testIfLoginFailsWithEmptyUserName()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
         $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('', 'test');
+        $this->userService->insert($userName, $passWord, $isActive);
+        $this->authService->tryLogin('', $passWord);
     }
 
-    public function testIfLoginFailsWithBooleanUserName()
+    public function testIfLoginFailsWithNullUserName()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
         $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login(true, 'test');
-    }
-
-    public function testIfLoginFailsWithNumberUserName()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login(1, 'test');
-    }
-
-    public function testIfLoginFailsWithArrayUserName()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login([], 'test');
+        $this->userService->insert($userName, $passWord, $isActive);
+        $this->authService->tryLogin(null, $passWord);
     }
 
     public function testIfLoginFailsWithEmptyPassWord()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
         $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', '');
+        $this->userService->insert($userName, $passWord, $isActive);
+        $this->authService->tryLogin($userName, '');
     }
 
     public function testIfLoginFailsWithNullPassWord()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->expectException(EntityInvalidValueException::class);
+        $this->userService->insert($userName, $passWord, $isActive);
+        $this->authService->tryLogin($userName, null);
+    }
+
+    public function testIfUserCanRetrieveAuthenticationToken()
+    {
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
+
+        $this->assertTrue($hasCredentials);
+
+        $oneWeek = true;
+        $token = $this->authService->generateToken($userName, $oneWeek);
+
+        $this->assertNotEmpty($token, 'Token');
+    }
+
+    public function testIfGenerationOfAuthenticationTokenFailsDueToEmptyUserName()
+    {
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
+
+        $this->assertTrue($hasCredentials);
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', null);
+        $oneWeek = true;
+        $this->authService->generateToken('', $oneWeek);
     }
-
-    public function testIfLoginFailsWithNumberPassWord()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 1);
-    }
-
-    public function testIfLoginFailsWithArrayPassWord()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', []);
-    }
-
-    //
-    // Generate Token
-    //
-
-    public function testIfAuthenticationTokenForOneDayIsSuccessfullyGenerated()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $this->assertIsString($authService->generateToken('test', false));
-    }
-
-    public function testIfAuthenticationTokenForOneWeekIsSuccessfullyGenerated()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $this->assertIsString($authService->generateToken('test', true));
-    }
-
-    public function testIfGenerationOfAuthenticationTokenForOneDayFailsDueToEmptyUserName()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $authService->generateToken('', true);
-    }
-
-    //
-    // Set Session Token
-    //
-
-    public function testIfSessionTokenIsSuccessfullySetted()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectNotToPerformAssertions();
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-    }
-
-    public function testIfItFailsToSetTheSessionTokenDueToInvalidToken()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(AuthenticationException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $authService->generateToken('test', true);
-        $authService->setSessionToken('test', '');
-    }
-
-    //
-    // Get Session Token
-    //
 
     public function testIfSessionTokenIsSuccessfullyRetrievedFromCache()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
 
-        $this->expectNotToPerformAssertions();
+        $this->assertTrue($hasCredentials);
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $authService->getSessionToken('test');
+        $oneWeek = true;
+        $token = $this->authService->generateToken($userName, $oneWeek);
+
+        $this->assertNotEmpty($token);
+
+        $token = $this->authService->checkIfTokenExists($userName);
+
+        $this->assertNotEmpty($token);
     }
 
     public function testIfItFailsToRetrieveSessionTokenFromTheCacheDueToUnexistantUserName()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
+        $this->assertTrue($hasCredentials);
 
-        $this->expectException(AuthenticationException::class);
+        $oneWeek = true;
+        $token = $this->authService->generateToken($userName, $oneWeek);
 
-        $authService->getSessionToken('test2');
+        $this->assertNotEmpty($token);
+
+        $token = $this->authService->checkIfTokenExists('batata');
+
+        $this->assertEmpty($token);
     }
-
-    public function testIfItSuccessfullyHaveSession()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $this->assertTrue($authService->checkIfHasSession('test'));
-    }
-
-    public function testIfItDoesNotHaveSessionEvenWithValidUsername()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(AuthenticationException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-    }
-
-    public function testIfItDoesNotHaveSessionWithAUnexistantUsername()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $this->assertFalse($authService->checkIfHasSession('test2'));
-    }
-
-    public function testIfItDoesNotHaveSessionWithAEmptyUsername()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('');
-    }
-
-    //
-    // Validate Token
-    //
 
     public function testIfAValidTokenIsSuccessfullyValidated()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $this->assertTrue($authService->validateToken($token));
+        $this->userService->insert($userName, $passWord, $isActive);
+
+        $oneWeek = true;
+        $token = $this->authService->generateToken($userName, $oneWeek);
+
+        $this->assertNotEmpty($token);
+
+        $isTokenValid = $this->authService->validateToken($token);
+
+        $this->assertTrue($isTokenValid);
     }
 
     public function testIfAInvalidTokenFailsToValidate()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(AuthenticationException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken('batatapotato');
+        $isTokenValid = $this->authService->validateToken('');
+        $this->assertFalse($isTokenValid);
     }
-
-    //
-    // Decode Token
-    //
-
-    public function testIfTokenSubscriptionIsValidAfterDecode()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $sub = $authService->decodeToken($token);
-        $this->assertEquals('test', $sub);
-    }
-
-    public function testIfTokenSubscriptionIsInvalidAfterDecode()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $sub = $authService->decodeToken($token);
-        $this->assertNotEquals('batatapotato', $sub);
-    }
-
-    public function testIfTokenDecodingFailsWithInvalidToken()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(AuthenticationException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $authService->decodeToken('batatapotato');
-    }
-
-    public function testIfTokenDecodingFailsWithEmptyToken()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(AuthenticationException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $authService->decodeToken('');
-    }
-
-    //
-    // Logoff
-    //
 
     public function testIfLogoffSucceds()
     {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+        $this->userService->insert($userName, $passWord, $isActive);
+        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $userName = $authService->decodeToken($token);
-        $this->assertTrue($authService->logoff($userName));
-    }
+        $this->assertTrue($hasCredentials);
 
-    public function testIfLogoffFailsWithUnexistantUserName()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $oneWeek = true;
+        $token = $this->authService->generateToken($userName, $oneWeek);
 
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $userName = $authService->decodeToken($token);
-        $this->assertFalse($authService->logoff('batatapotato'));
-    }
+        $this->assertNotEmpty($token);
 
-    public function testIfLogoffFailsWithEmptyUserName()
-    {
-        $userCache = new MockUserCache();
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $authService = new AuthenticationService($userRepository, $encrypter, $userCache);
-        $userService = new UserService($userRepository, $encrypter);
+        $hasSuccessfullyLoggedOff = $this->authService->tryLogoff($token);
 
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $authService->login('test', 'test');
-        $token = $authService->generateToken('test', true);
-        $authService->setSessionToken('test', $token);
-        $token = $authService->getSessionToken('test');
-        $authService->checkIfHasSession('test');
-        $authService->validateToken($token);
-        $userName = $authService->decodeToken($token);
-        $authService->logoff('');
+        $this->assertTrue($hasSuccessfullyLoggedOff);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use DateInterval;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -21,6 +22,7 @@ use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use stdClass;
 use UnexpectedValueException;
 
 class AuthenticationService
@@ -39,7 +41,52 @@ class AuthenticationService
         $this->cache = $cache;
     }
 
-    public function login(mixed $userName, mixed $passWord): bool
+    private function encodeToken(string $userName, bool $oneWeek)
+    {
+        try {
+            $user = new User();
+            $user->validateUserName($userName);
+            $time = $oneWeek ? '+1 week' : '+1 day';
+            $secretKey = $_SERVER['JWT_SECRET'];
+            $issuedAt = new DateTimeImmutable();
+            $expireAt = $issuedAt->modify($time)->getTimestamp();
+
+            $payload = [
+                'iat' => $issuedAt->getTimestamp(),
+                'exp' => $expireAt,
+                'sub' => $userName
+            ];
+
+            $token = JWT::encode($payload, $secretKey, 'HS256');
+
+            return $token;
+        } catch (EntityInvalidValueException $e) {
+            throw $e;
+        }
+    }
+
+    private function decodeToken(string $token): stdClass
+    {
+        try {
+            $secretKey = $_SERVER['JWT_SECRET'];
+            $payload = JWT::decode($token, new Key($secretKey, 'HS256'));
+            return $payload;
+        } catch (InvalidArgumentException $e) {
+            throw new AuthenticationException('Objeto key inválido!', 0, $e);
+        } catch (DomainException $e) {
+            throw new AuthenticationException('JWT malformado!', 0, $e);
+        } catch (UnexpectedValueException $e) {
+            throw new AuthenticationException('JWT inválido!', 0, $e);
+        } catch (SignatureInvalidException $e) {
+            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
+        } catch (BeforeValidException  $e) {
+            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
+        } catch (ExpiredException $e) {
+            throw new AuthenticationException('JWT expirado!', 0, $e);
+        }
+    }
+
+    public function tryLogin(mixed $userName, mixed $passWord): bool
     {
         try {
             $requestUser = new User();
@@ -73,44 +120,32 @@ class AuthenticationService
         }
     }
 
-    public function checkIfHasSession(string $userName): bool
+    public function validateToken(string $token): bool
     {
         try {
-            $user = new User();
-            $user->validateUserName($userName);
-
-            $token = $this->cache->get($userName);
-            if ($token === null) {
-                return false;
-            }
-
-            if ($token === '') {
-                return false;
-            }
-
-            return true;
-        } catch (EntityInvalidValueException $e) {
-            throw $e;
+            $payload = $this->decodeToken($token);
+            $userName = $payload->sub;
+            return $this->cache->exists($userName);
+        } catch (AuthenticationException $e) {
+            return false;
         }
     }
 
     public function generateToken(string $userName, bool $oneWeek): string
     {
         try {
-            $user = new User();
-            $user->validateUserName($userName);
-            $time = $oneWeek ? '+1 week' : '+1 day';
-            $secretKey = $_SERVER['JWT_SECRET'];
-            $issuedAt = new DateTimeImmutable();
-            $expireAt = $issuedAt->modify($time)->getTimestamp();
+            $token = $this->encodeToken($userName, $oneWeek);
 
-            $payload = [
-                'iat' => $issuedAt->getTimestamp(),
-                'exp' => $expireAt,
-                'sub' => $userName
-            ];
+            $oneDayInSeconds = 60 * 60 * 24;
+            $oneWeekInSeconds = $oneDayInSeconds * 7;
 
-            $token = JWT::encode($payload, $secretKey, 'HS256');
+            $this->cache->set($userName, $token);
+
+            if ($oneWeek) {
+                $this->cache->expire($userName, $oneWeekInSeconds);
+            } else {
+                $this->cache->expire($userName, $oneDayInSeconds);
+            }
 
             return $token;
         } catch (EntityInvalidValueException $e) {
@@ -118,129 +153,18 @@ class AuthenticationService
         }
     }
 
-    public function decodeToken(string $token): string
+    public function checkIfTokenExists(string $userName): string|null
+    {
+        return $this->cache->get($userName);
+    }
+
+    public function tryLogoff(string $token): bool
     {
         try {
-            if ($token === '') {
-                throw new AuthenticationException('O token está vazio!');
-            }
-            $secretKey = $_SERVER['JWT_SECRET'];
-            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-
-            return $decoded->sub;
+            $payload = $this->decodeToken($token);
+            $userName = $payload->sub;
+            return $this->cache->delete($userName);
         } catch (AuthenticationException $e) {
-            throw $e;
-        } catch (InvalidArgumentException $e) {
-            throw new AuthenticationException('Objeto key inválido!', 0, $e);
-        } catch (DomainException $e) {
-            throw new AuthenticationException('JWT malformado!', 0, $e);
-        } catch (UnexpectedValueException $e) {
-            throw new AuthenticationException('JWT inválido!', 0, $e);
-        } catch (SignatureInvalidException $e) {
-            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
-        } catch (BeforeValidException  $e) {
-            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
-        } catch (ExpiredException $e) {
-            throw new AuthenticationException('JWT expirado!', 0, $e);
-        }
-    }
-
-    public function validateToken(string $token): bool
-    {
-        try {
-            $secretKey = $_SERVER['JWT_SECRET'];
-            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-
-            $userName = $decoded->sub;
-            $cached = $this->cache->get($userName);
-
-            if ($cached === null) {
-                throw new AuthenticationException('O token é nulo!');
-            }
-
-            if ($cached === '') {
-                throw new AuthenticationException('O token está vazio!');
-            }
-
-            return true;
-        } catch (AuthenticationException $e) {
-            throw $e;
-        } catch (InvalidArgumentException $e) {
-            throw new AuthenticationException('Objeto key inválido!', 0, $e);
-        } catch (DomainException $e) {
-            throw new AuthenticationException('JWT malformado!', 0, $e);
-        } catch (UnexpectedValueException $e) {
-            throw new AuthenticationException('JWT inválido!', 0, $e);
-        } catch (SignatureInvalidException $e) {
-            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
-        } catch (BeforeValidException  $e) {
-            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
-        } catch (ExpiredException $e) {
-            throw new AuthenticationException('JWT expirado!', 0, $e);
-        }
-    }
-
-    public function setSessionToken(string $userName, string $token): void
-    {
-        try {
-            $user = new User();
-            $user->validateUserName($userName);
-
-            if ($token === '') {
-                throw new AuthenticationException('O token está vazio!');
-            }
-            $this->cache->set($userName, $token);
-        } catch (
-            AuthenticationException |
-            EntityInvalidValueException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function getSessionToken(string $userName): string
-    {
-        try {
-            $user = new User();
-            $user->validateUserName($userName);
-
-            $cached = $this->cache->get($userName);
-            if ($cached === null) {
-                throw new AuthenticationException('O token é nulo!');
-            }
-
-            if ($cached === '') {
-                throw new AuthenticationException('O token é vazio!');
-            }
-
-            return $cached;
-        } catch (
-            AuthenticationException |
-            EntityInvalidValueException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function logoff(string $userName): bool
-    {
-        try {
-            $user = new User();
-            $user->validateUserName($userName);
-
-            $value = $this->cache->get($userName);
-            if ($value === null) {
-                return false;
-            }
-
-            if ($value === '') {
-                return false;
-            }
-
-            $this->cache->set($userName, null);
-
-            return true;
-        } catch (EntityInvalidValueException $e) {
             throw $e;
         }
     }

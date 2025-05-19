@@ -36,7 +36,10 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $body = $request->parseBodyFromJSONString();
 
@@ -114,7 +117,10 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -199,7 +205,10 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -275,7 +284,10 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $params = $request->getParams();
 
@@ -353,7 +365,10 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $games = $this->service->findAll();
 

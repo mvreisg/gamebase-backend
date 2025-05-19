@@ -23,4 +23,23 @@ class RedisUserCache implements UserCacheInterface
     {
         return $this->redis->get($userName);
     }
+
+    public function expire(string $key, int $seconds): void
+    {
+        $this->redis->expire($key, $seconds);
+    }
+
+    public function exists(string $key): bool
+    {
+        return $this->redis->exists($key);
+    }
+
+    public function delete(string $key): bool
+    {
+        if ($this->exists($key)) {
+            $this->redis->del($key);
+            return true;
+        }
+        return false;
+    }
 }

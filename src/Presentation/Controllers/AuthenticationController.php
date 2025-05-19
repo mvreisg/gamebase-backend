@@ -52,10 +52,9 @@ class AuthenticationController
             $passWord = $body['password'];
             $oneWeek = $body['oneWeek'];
 
-            $hasSession = $this->service->checkIfHasSession($userName);
-            if ($hasSession) {
-                $token = $this->service->getSessionToken($userName);
-                $isTokenValid = $this->service->validateToken($token);
+            $token = $this->service->checkIfTokenExists($userName);
+            if ($token !== null && $token !== "") {
+                $isTokenValid = $this->service->validateToken($userName, $token);
                 if ($isTokenValid) {
                     $response
                         ->appendArray([
@@ -68,8 +67,32 @@ class AuthenticationController
                 }
             }
 
-            $hasCredentials = $this->service->login($userName, $passWord);
-            if ($hasCredentials === false) {
+            $hasCredentials = $this->service->tryLogin($userName, $passWord);
+            if ($hasCredentials) {
+                $token = $this->service->checkIfTokenExists($userName);
+                if ($token === null || $token === "") {
+                    $token = $this->service->generateToken($userName, $oneWeek);
+                    $response
+                        ->appendArray([
+                            'message' =>
+                                'Login realizado com sucesso! Durará ' .
+                                ($oneWeek ? '1 semana' : '1 dia') . '.',
+                            'token' => $token
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[200])
+                        ->send();
+                    return;
+                } else {
+                    $response
+                        ->appendArray([
+                            'message' => 'Já existe uma sessão!',
+                            'token' => $token
+                        ])
+                        ->status(HttpRouter::STATUS_CODES[200])
+                        ->send();
+                    return;
+                }
+            } else {
                 $response
                     ->appendArray([
                         'message' => 'Verifique seu nome de usuário ou senha!'
@@ -78,17 +101,6 @@ class AuthenticationController
                     ->send();
                 return;
             }
-
-            $token = $this->service->generateToken($userName, $oneWeek);
-            $this->service->setSessionToken($userName, $token);
-            $response
-                ->appendArray([
-                    'message' => 'Login realizado com sucesso! Durará ' . ($oneWeek ? '1 semana' : '1 dia') . '.',
-                    'token' => $token
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
-            return;
         } catch (
             HttpJsonParseException |
             AuthenticationException |
@@ -133,18 +145,24 @@ class AuthenticationController
 
             $token = $body['token'];
 
-            $isValid = $this->service->validateToken($token);
-            if ($isValid === false) {
-                throw new HttpUnauthorizedException('Usuário não possui sessão!');
+            $isTokenValid = $this->service->validateToken($token);
+            if ($isTokenValid) {
+                $response
+                    ->appendArray([
+                        'message' => 'Usuário possui sessão ativa'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
+            } else {
+                $response
+                    ->appendArray([
+                        'message' => 'Token inválido'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[401])
+                    ->send();
+                return;
             }
-
-            $response
-                ->appendArray([
-                    'message' => 'Usuário possui sessão ativa'
-                ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
-            return;
         } catch (
             AuthenticationException |
             HttpUnauthorizedException $e
@@ -197,10 +215,9 @@ class AuthenticationController
 
             $token = $body['token'];
 
-            $userName = $this->service->decodeToken($token);
-            $wasTheLogoffMade = $this->service->logoff($userName);
+            $hasSuccess = $this->service->tryLogoff($token);
 
-            if ($wasTheLogoffMade) {
+            if ($hasSuccess) {
                 $response
                     ->appendArray([
                         'message' => 'Logoff realizado com sucesso!'
@@ -209,7 +226,13 @@ class AuthenticationController
                     ->send();
                 return;
             } else {
-                throw new HttpUnauthorizedException('Usuário não possui sessão para realizar o logoff!');
+                $response
+                    ->appendArray([
+                        'message' => 'Erro ao realizar o logoff!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[401])
+                    ->send();
+                return;
             }
         } catch (
             AuthenticationException |
