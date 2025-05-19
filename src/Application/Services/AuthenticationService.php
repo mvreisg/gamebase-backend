@@ -2,6 +2,7 @@
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use DateInterval;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -68,9 +69,8 @@ class AuthenticationService
     {
         try {
             $secretKey = $_SERVER['JWT_SECRET'];
-            $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-
-            return $decoded;
+            $payload = JWT::decode($token, new Key($secretKey, 'HS256'));
+            return $payload;
         } catch (InvalidArgumentException $e) {
             throw new AuthenticationException('Objeto key inválido!', 0, $e);
         } catch (DomainException $e) {
@@ -86,7 +86,7 @@ class AuthenticationService
         }
     }
 
-    public function login(mixed $userName, mixed $passWord): bool
+    public function tryLogin(mixed $userName, mixed $passWord): bool
     {
         try {
             $requestUser = new User();
@@ -120,100 +120,51 @@ class AuthenticationService
         }
     }
 
+    public function validateToken(string $token): bool
+    {
+        try {
+            $payload = $this->decodeToken($token);
+            $userName = $payload->sub;
+            return $this->cache->exists($userName);
+        } catch (AuthenticationException $e) {
+            return false;
+        }
+    }
+
     public function generateToken(string $userName, bool $oneWeek): string
     {
-        return $this->encodeToken($userName, $oneWeek);
-    }
-
-    public function validateToken(string $userName, string $token): void
-    {
         try {
-            $decoded = $this->decodeToken($token);
-            $decodedUserName = $decoded->sub;
-            $hasDecodedFailed = false;
-            $hasParameterFailed = false;
+            $token = $this->encodeToken($userName, $oneWeek);
 
-            $decodedFetchUser = $this->repository->findByUserName($decodedUserName);
-            if ($decodedFetchUser === null) {
-                $hasDecodedFailed = true;
-            }
-
-            $parameterFetchUser = $this->repository->findByUserName($userName);
-            if ($parameterFetchUser === null) {
-                $hasParameterFailed = true;
-            }
-
-            if ($hasDecodedFailed || $hasParameterFailed) {
-                throw new AuthenticationException('Usuário não encontrado!');
-            }
-
-            $decodedFetchedUserName = $decodedFetchUser->getUserName();
-            $parameterFetchUserName = $parameterFetchUser->getUserName();
-
-            $doTheTwoUserNamesMatchesEqually = strcmp(
-                $decodedFetchedUserName,
-                $parameterFetchUserName
-            ) === 0;
-
-            if ($doTheTwoUserNamesMatchesEqually === false) {
-                throw new AuthenticationException('Token inválido!');
-            }
-
-            $decodedToken = $this->getSessionToken($decodedFetchedUserName);
-            $parameterToken = $this->getSessionToken($parameterFetchUserName);
-
-            $invalidToken = false;
-            if ($decodedToken === null || $decodedToken === "") {
-                $invalidToken = true;
-            }
-
-            if ($parameterToken === null || $parameterToken === "") {
-                $invalidToken = true;
-            }
-
-            if ($invalidToken) {
-                throw new AuthenticationException('Token inválido!');
-            }
-        } catch (
-            EntityInvalidValueException |
-            AuthenticationException $e
-        ) {
-            $this->logoff($userName, null);
-            throw $e;
-        }
-    }
-
-    public function setSessionToken(string $userName, string|null $token): void
-    {
-        try {
-            $user = new User();
-            $user->validateUserName($userName);
+            $oneDayInSeconds = 60 * 60 * 24;
+            $oneWeekInSeconds = $oneDayInSeconds * 7;
 
             $this->cache->set($userName, $token);
+
+            if ($oneWeek) {
+                $this->cache->expire($userName, $oneWeekInSeconds);
+            } else {
+                $this->cache->expire($userName, $oneDayInSeconds);
+            }
+
+            return $token;
         } catch (EntityInvalidValueException $e) {
             throw $e;
         }
     }
 
-    public function getSessionToken(string $userName): string|null
+    public function checkIfTokenExists(string $userName): string|null
     {
-        try {
-            $user = new User();
-            $user->validateUserName($userName);
-
-            $cached = $this->cache->get($userName);
-
-            return $cached;
-        } catch (EntityInvalidValueException $e) {
-            throw $e;
-        }
+        return $this->cache->get($userName);
     }
 
-    public function logoff(string $userName): void
+    public function tryLogoff(string $token): bool
     {
         try {
-            $this->setSessionToken($userName, null);
-        } catch (EntityInvalidValueException $e) {
+            $payload = $this->decodeToken($token);
+            $userName = $payload->sub;
+            return $this->cache->delete($userName);
+        } catch (AuthenticationException $e) {
             throw $e;
         }
     }
