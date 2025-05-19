@@ -2,40 +2,41 @@
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock;
 
-use DateTimeImmutable;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 
 class MockUserCache implements UserCacheInterface
 {
+    private array $keyValues;
     private array $data;
 
     public function __construct()
     {
+        $this->keyValues = [];
         $this->data = [];
     }
 
     public function set(string $key, mixed $token): void
     {
-        $this->data[$key]['token'] = $token;
+        $this->keyValues[$key] = $token;
     }
 
     public function get(string $key): string|null
     {
         if ($this->exists($key)) {
-            return $this->data[$key];
+            return $this->keyValues[$key];
         }
         return null;
     }
 
     public function exists(string $key): bool
     {
-        return isset($this->data[$key]);
+        return isset($this->keyValues[$key]);
     }
 
     public function delete(string $key): bool
     {
         if ($this->exists($key)){
-            unset($this->data[$key]);
+            unset($this->keyValues[$key]);
             return true;
         }
         return false;
