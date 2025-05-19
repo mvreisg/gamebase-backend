@@ -17,7 +17,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreatio
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\UserNameRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
@@ -38,8 +37,10 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $userName = UserNameRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($userName, $token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $body = $request->parseBodyFromJSONString();
 
@@ -117,8 +118,10 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $userName = UserNameRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($userName, $token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -210,8 +213,10 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $userName = UserNameRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($userName, $token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -287,8 +292,10 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $userName = UserNameRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($userName, $token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $params = $request->getParams();
 
@@ -364,8 +371,10 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $userName = UserNameRetriever::getFromHeaders($headers);
-            $this->authService->validateToken($userName, $token);
+            $isAuthenticated = $this->authService->validateToken($token);
+            if ($isAuthenticated === false){
+                throw new AuthenticationException('Usuário não autenticado!');
+            }
 
             $platforms = $this->service->findAll();
 
