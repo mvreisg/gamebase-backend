@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use PDOException;
@@ -20,23 +22,27 @@ class GameService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $name, mixed $isActive): Game
+    public function insert(string $name, bool $isActive): Game
     {
         $game = new Game();
 
         try {
-            $game->validateName($name);
-            $game->validateIsActive($isActive);
             $game->setName($name);
             $game->setIsActive($isActive);
+
+            $game->validateName();                        
+
             $validatedName = $game->getName();
+
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome do jogo a ser inserido já existe no repositório!'
                 );
             }
+
             $game = $this->repository->insert($game);
+
             return $game;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -50,17 +56,18 @@ class GameService
         }
     }
 
-    public function update(mixed $id, mixed $name, mixed $isActive): bool
+    public function update(int $id, string $name, bool $isActive): bool
     {
         $game = new Game();
 
         try {
-            $game->validateId($id);
-            $game->validateName($name);
-            $game->validateIsActive($isActive);
             $game->setId($id);
             $game->setName($name);
             $game->setIsActive($isActive);
+
+            $game->validateId();
+            $game->validateName();
+            
             /*
             $validatedName = $game->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -69,6 +76,7 @@ class GameService
             }
             */
             $wasSomeUpdateHappened = $this->repository->update($game);
+
             return $wasSomeUpdateHappened;
         } catch (
             EntityInvalidValueException |
@@ -81,16 +89,18 @@ class GameService
         }
     }
 
-    public function setIsActive(mixed $id, mixed $isActive): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         $game = new Game();
 
         try {
-            $game->validateId($id);
-            $game->validateIsActive($isActive);
             $game->setId($id);
             $game->setIsActive($isActive);
+
+            $game->validateId($id);
+            
             $wasTheUpdateSuccessful = $this->repository->setIsActive($id, $isActive);
+
             return $wasTheUpdateSuccessful;
         } catch (
             EntityInvalidValueException |
@@ -102,14 +112,17 @@ class GameService
         }
     }
 
-    public function findById(mixed $id): Game|null
+    public function findById(int $id): Game|null
     {
         $game = new Game();
 
-        try {
-            $game->validateId($id);
+        try {            
             $game->setId($id);
+            
+            $game->validateId();
+
             $game = $this->repository->findById($id);
+
             return $game;
         } catch (
             EntityInvalidValueException |
@@ -126,6 +139,7 @@ class GameService
     {
         try {
             $games = $this->repository->findAll();
+
             return $games;
         } catch (
             DatabaseStatementCreationFailureException |
