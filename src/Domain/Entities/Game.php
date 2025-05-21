@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -49,62 +51,19 @@ class Game
         $this->isActive = $isActive;
     }
 
-    public function validateId(mixed $id): void
+    public function validateId(): void
     {
-        if ($id === null) {
-            throw new EntityInvalidValueException('O id é null!');
-        }
-
-        if (is_numeric($id) === false) {
-            throw new EntityInvalidValueException('O id não é um número!');
-        }
-
-        if (is_string($id)) {
-            throw new EntityInvalidValueException('O id é uma string!');
-        }
-
-        if (is_bool($id)) {
-            throw new EntityInvalidValueException('O id é um valor booleano!');
-        }
-
-        if ($id < 1) {
-            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
+        if ($this->id <= 0) {
+            throw new EntityInvalidValueException('O id deve ser maior que zero!');
         }
     }
 
-    public function validateName(mixed $name): void
+    public function validateName(): void
     {
-        if ($name === null) {
-            throw new EntityInvalidValueException('O nome é null.');
-        }
+        $this->name = trim($this->name);
 
-        if (is_string($name) === false) {
-            throw new EntityInvalidValueException('O nome não é uma string.');
-        }
-
-        $name = trim($name);
-
-        if ($name === '') {
+        if ($this->name === '') {
             throw new EntityInvalidValueException('O nome está vazio.');
-        }
-    }
-
-    public function validateIsActive(mixed $isActive): void
-    {
-        if ($isActive === null) {
-            throw new EntityInvalidValueException('isActive é null!');
-        }
-
-        if (is_iterable($isActive)) {
-            throw new EntityInvalidValueException('isActive é array');
-        }
-
-        if (is_string($isActive)) {
-            throw new EntityInvalidValueException('isActive é uma string!');
-        }
-
-        if (is_numeric($isActive)) {
-            throw new EntityInvalidValueException('isActive é numérico!');
         }
     }
 }

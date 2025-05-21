@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -71,22 +72,22 @@ class AuthenticationServiceTest extends TestCase
         $passWordPrefix = 'test';
         $isActive = true;
         for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+            $this->userService->insert($userNamePrefix . $i, $passWordPrefix . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $hasCredentials = $this->authService->tryLogin($userNamePrefix.$i, $passWordPrefix.$i);
+            $hasCredentials = $this->authService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
             $this->assertTrue($hasCredentials);
         }
     }
 
     public function testIfLoginFailsWithTenUsersButWrongCredentials()
-    {        
+    {
         $userNamePrefix = 'test';
         $passWordPrefix = 'test';
         $isActive = true;
         for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+            $this->userService->insert($userNamePrefix . $i, $passWordPrefix . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {

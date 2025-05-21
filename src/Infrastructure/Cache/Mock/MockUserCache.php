@@ -35,7 +35,7 @@ class MockUserCache implements UserCacheInterface
 
     public function delete(string $key): bool
     {
-        if ($this->exists($key)){
+        if ($this->exists($key)) {
             unset($this->keyValues[$key]);
             return true;
         }
@@ -44,8 +44,8 @@ class MockUserCache implements UserCacheInterface
 
     public function expire(string $key, int $seconds): void
     {
-        if ($this->exists($key)){            
-            $this->data[$key]['expiresOn'] = time() + $seconds;         
+        if ($this->exists($key)) {
+            $this->data[$key]['expiresOn'] = time() + $seconds;
             $this->data[$key]['expirationCallback'] = fn () => time() >= $this->data[$key]['expiresOn'];
         }
     }
