@@ -30,7 +30,7 @@ class GameService
             $game->setName($name);
             $game->setIsActive($isActive);
 
-            $game->validateName();                        
+            $game->validateName();
 
             $validatedName = $game->getName();
 
@@ -67,7 +67,7 @@ class GameService
 
             $game->validateId();
             $game->validateName();
-            
+
             /*
             $validatedName = $game->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -98,7 +98,7 @@ class GameService
             $game->setIsActive($isActive);
 
             $game->validateId($id);
-            
+
             $wasTheUpdateSuccessful = $this->repository->setIsActive($id, $isActive);
 
             return $wasTheUpdateSuccessful;
@@ -116,9 +116,9 @@ class GameService
     {
         $game = new Game();
 
-        try {            
+        try {
             $game->setId($id);
-            
+
             $game->validateId();
 
             $game = $this->repository->findById($id);

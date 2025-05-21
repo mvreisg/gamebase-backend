@@ -37,7 +37,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -127,7 +127,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -221,7 +221,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -300,7 +300,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -382,7 +382,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -464,7 +464,7 @@ class UserController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 

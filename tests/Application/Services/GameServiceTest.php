@@ -37,14 +37,14 @@ class GameServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $game = $this->gameService->insert($name . $i, $isActive);
             $this->assertInstanceOf(Game::class, $game);
-        }        
+        }
     }
 
     public function testIfInsertionOfTwoGamesWithTheSameNameFails()
-    {        
+    {
         $name = 'test';
         $isActive = true;
 
@@ -64,11 +64,11 @@ class GameServiceTest extends TestCase
     }
 
     public function testIfUpdateSucceds()
-    {        
+    {
         $name = 'test1';
         $isActive = true;
         $game = $this->gameService->insert($name, $isActive);
-             
+
         $id = $game->getId();
         $name = 'test2';
         $hasUpdated = $this->gameService->update($id, $name, $isActive);
@@ -82,7 +82,7 @@ class GameServiceTest extends TestCase
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
-             
+
         $id = $game->getId();
 
         $hasUpdated = $this->gameService->update($id, $name, $isActive);
@@ -104,11 +104,11 @@ class GameServiceTest extends TestCase
             $id = $games[$i]->getId();
             $hasUpdated = $this->gameService->update($id, $name . $i, $isActive);
             $this->assertTrue($hasUpdated);
-        }        
+        }
     }
 
     public function testIfUpdatingAGameWithAInvalidIdFails()
-    {        
+    {
         $name = 'test';
         $isActive = true;
 
@@ -122,13 +122,13 @@ class GameServiceTest extends TestCase
     }
 
     public function testIfUpdatingAGameWithAEmptyNameFails()
-    {        
+    {
         $name = 'test';
         $emptyName = '';
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
-             
+
         $id = $game->getId();
 
         $this->expectException(EntityInvalidValueException::class);
@@ -137,12 +137,12 @@ class GameServiceTest extends TestCase
     }
 
     public function testIfSettingAsActiveSucceds()
-    {        
+    {
         $name = 'test';
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
-             
+
         $id = $game->getId();
         $isActive = false;
 
@@ -168,7 +168,7 @@ class GameServiceTest extends TestCase
     public function testIfSettingIsActiveWithInvalidIdFails()
     {
         $name = 'test';
-        $isActive = true;        
+        $isActive = true;
 
         $this->gameService->insert($name, $isActive);
 
@@ -208,7 +208,7 @@ class GameServiceTest extends TestCase
             $game = $this->gameService->findById($i);
             $this->assertNotEmpty($game);
             $this->assertInstanceOf(Game::class, $game);
-        }        
+        }
     }
 
     public function testIfFindAllSuccedsEvenWithNoGamesInTheRepository()

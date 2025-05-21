@@ -37,7 +37,7 @@ class GenreController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -113,7 +113,7 @@ class GenreController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -210,7 +210,7 @@ class GenreController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -289,7 +289,7 @@ class GenreController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
@@ -367,7 +367,7 @@ class GenreController
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
             $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false){
+            if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 

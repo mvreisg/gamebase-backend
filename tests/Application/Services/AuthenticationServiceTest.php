@@ -72,22 +72,22 @@ class AuthenticationServiceTest extends TestCase
         $passWordPrefix = 'test';
         $isActive = true;
         for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+            $this->userService->insert($userNamePrefix . $i, $passWordPrefix . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $hasCredentials = $this->authService->tryLogin($userNamePrefix.$i, $passWordPrefix.$i);
+            $hasCredentials = $this->authService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
             $this->assertTrue($hasCredentials);
         }
     }
 
     public function testIfLoginFailsWithTenUsersButWrongCredentials()
-    {        
+    {
         $userNamePrefix = 'test';
         $passWordPrefix = 'test';
         $isActive = true;
         for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($userNamePrefix.$i, $passWordPrefix.$i, $isActive);
+            $this->userService->insert($userNamePrefix . $i, $passWordPrefix . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {
