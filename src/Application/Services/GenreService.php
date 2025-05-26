@@ -25,10 +25,11 @@ class GenreService
         $genre = new Genre();
 
         try {
-            $genre->validateName($name);
-            $genre->validateIsActive($isActive);
             $genre->setName($name);
             $genre->setIsActive($isActive);
+
+            $genre->validateName();
+            
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -52,13 +53,13 @@ class GenreService
     {
         $genre = new Genre();
 
-        try {
-            $genre->validateId($id);
-            $genre->validateName($name);
-            $genre->validateIsActive($isActive);
+        try {            
             $genre->setId($id);
             $genre->setName($name);
             $genre->setIsActive($isActive);
+
+            $genre->validateId();
+            $genre->validateName();
             /*
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -85,10 +86,11 @@ class GenreService
     {
         $genre = new Genre();
         try {
-            $genre->validateId($id);
-            $genre->validateIsActive($isActive);
             $genre->setId($id);
             $genre->setIsActive($isActive);
+
+            $genre->validateId();
+            
             $wasSuccessful = $this->repository->setIsActive($id, $isActive);
             return $wasSuccessful;
         } catch (
@@ -105,9 +107,11 @@ class GenreService
     {
         $genre = new Genre();
 
-        try {
-            $genre->validateId($id);
+        try {            
             $genre->setId($id);
+
+            $genre->validateId();
+
             $genre = $this->repository->findById($id);
             return $genre;
         } catch (
@@ -123,8 +127,8 @@ class GenreService
     public function findAll(): array
     {
         try {
-            $genres = $this->repository->findAll();
-            return $genres;
+            $allGenres = $this->repository->findAll();
+            return $allGenres;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
