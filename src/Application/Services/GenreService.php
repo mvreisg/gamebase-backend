@@ -22,7 +22,7 @@ class GenreService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $name, mixed $isActive): Genre
+    public function insert(string $name, bool $isActive): Genre
     {
         $genre = new Genre();
 
@@ -51,7 +51,7 @@ class GenreService
         }
     }
 
-    public function update(mixed $id, mixed $name, mixed $isActive): bool
+    public function update(int $id, string $name, bool $isActive): bool
     {
         $genre = new Genre();
 
@@ -84,7 +84,7 @@ class GenreService
         }
     }
 
-    public function setIsActive(mixed $id, mixed $isActive): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         $genre = new Genre();
         try {
@@ -105,7 +105,7 @@ class GenreService
         }
     }
 
-    public function findById(mixed $id): Genre|null
+    public function findById(int $id): Genre|null
     {
         $genre = new Genre();
 
