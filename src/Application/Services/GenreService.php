@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
@@ -20,15 +22,16 @@ class GenreService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $name, mixed $isActive): Genre
+    public function insert(string $name, bool $isActive): Genre
     {
         $genre = new Genre();
 
         try {
-            $genre->validateName($name);
-            $genre->validateIsActive($isActive);
             $genre->setName($name);
             $genre->setIsActive($isActive);
+
+            $genre->validateName();
+            
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -48,17 +51,17 @@ class GenreService
         }
     }
 
-    public function update(mixed $id, mixed $name, mixed $isActive): bool
+    public function update(int $id, string $name, bool $isActive): bool
     {
         $genre = new Genre();
 
-        try {
-            $genre->validateId($id);
-            $genre->validateName($name);
-            $genre->validateIsActive($isActive);
+        try {            
             $genre->setId($id);
             $genre->setName($name);
             $genre->setIsActive($isActive);
+
+            $genre->validateId();
+            $genre->validateName();
             /*
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -81,14 +84,15 @@ class GenreService
         }
     }
 
-    public function setIsActive(mixed $id, mixed $isActive): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         $genre = new Genre();
         try {
-            $genre->validateId($id);
-            $genre->validateIsActive($isActive);
             $genre->setId($id);
             $genre->setIsActive($isActive);
+
+            $genre->validateId();
+            
             $wasSuccessful = $this->repository->setIsActive($id, $isActive);
             return $wasSuccessful;
         } catch (
@@ -101,13 +105,15 @@ class GenreService
         }
     }
 
-    public function findById(mixed $id): Genre|null
+    public function findById(int $id): Genre|null
     {
         $genre = new Genre();
 
-        try {
-            $genre->validateId($id);
+        try {            
             $genre->setId($id);
+
+            $genre->validateId();
+
             $genre = $this->repository->findById($id);
             return $genre;
         } catch (
@@ -123,8 +129,8 @@ class GenreService
     public function findAll(): array
     {
         try {
-            $genres = $this->repository->findAll();
-            return $genres;
+            $allGenres = $this->repository->findAll();
+            return $allGenres;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
