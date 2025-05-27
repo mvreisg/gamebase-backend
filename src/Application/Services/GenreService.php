@@ -31,7 +31,7 @@ class GenreService
             $genre->setIsActive($isActive);
 
             $genre->validateName();
-            
+
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
@@ -55,7 +55,7 @@ class GenreService
     {
         $genre = new Genre();
 
-        try {            
+        try {
             $genre->setId($id);
             $genre->setName($name);
             $genre->setIsActive($isActive);
@@ -92,7 +92,7 @@ class GenreService
             $genre->setIsActive($isActive);
 
             $genre->validateId();
-            
+
             $wasSuccessful = $this->repository->setIsActive($id, $isActive);
             return $wasSuccessful;
         } catch (
@@ -109,7 +109,7 @@ class GenreService
     {
         $genre = new Genre();
 
-        try {            
+        try {
             $genre->setId($id);
 
             $genre->validateId();

@@ -39,7 +39,7 @@ class GenreServiceTest extends TestCase
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
-            $genre = $this->genreService->insert($name.$i, $isActive);
+            $genre = $this->genreService->insert($name . $i, $isActive);
             $this->assertNotEmpty($genre);
             $this->assertInstanceOf(Genre::class, $genre);
         }
@@ -88,13 +88,13 @@ class GenreServiceTest extends TestCase
         $isActive = true;
 
         $genres = [];
-        for ($i = 1; $i <= 10; $i++){
-            $genres[$i] = $this->genreService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $genres[$i] = $this->genreService->insert($name . $i, $isActive);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $id = $genres[$i]->getId();
-            $hasUpdated = $this->genreService->update($id, $name.$i*10, $isActive);
+            $hasUpdated = $this->genreService->update($id, $name . $i * 10, $isActive);
 
             $this->assertTrue($hasUpdated);
         }
@@ -207,11 +207,11 @@ class GenreServiceTest extends TestCase
         $isActive = true;
 
         $genres = [];
-        for ($i = 1; $i <= 10; $i++){
-            $genres[$i] = $this->genreService->insert($name.$i, $isActive);
-        }        
+        for ($i = 1; $i <= 10; $i++) {
+            $genres[$i] = $this->genreService->insert($name . $i, $isActive);
+        }
 
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $id = $genres[$i]->getId();
 
             $genre = $this->genreService->findById($id);
@@ -245,9 +245,9 @@ class GenreServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++){
-            $this->genreService->insert($name.$i, $isActive);
-        }        
+        for ($i = 1; $i <= 10; $i++) {
+            $this->genreService->insert($name . $i, $isActive);
+        }
 
         $genresArray = $this->genreService->findAll();
 
