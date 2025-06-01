@@ -27,7 +27,7 @@ class PlatformService
     {
         $platform = new Platform();
 
-        try {            
+        try {
             $platform->setName($name);
             $platform->setIsActive($isActive);
 
@@ -62,7 +62,7 @@ class PlatformService
     {
         $platform = new Platform();
 
-        try {            
+        try {
             $platform->setId($id);
             $platform->setName($name);
             $platform->setIsActive($isActive);
@@ -97,7 +97,7 @@ class PlatformService
     {
         $platform = new Platform();
 
-        try {            
+        try {
             $platform->setId($id);
             $platform->setIsActive($isActive);
 
@@ -120,7 +120,7 @@ class PlatformService
     {
         $platform = new Platform();
 
-        try {            
+        try {
             $platform->setId($id);
 
             $platform->validateId();
@@ -142,7 +142,7 @@ class PlatformService
     {
         try {
             $platforms = $this->repository->findAll();
-            
+
             return $platforms;
         } catch (
             DatabaseStatementCreationFailureException |

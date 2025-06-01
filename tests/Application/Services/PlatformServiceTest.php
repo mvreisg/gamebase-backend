@@ -38,12 +38,12 @@ class PlatformServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++){
-            $platform = $this->platformService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $platform = $this->platformService->insert($name . $i, $isActive);
 
             $this->assertNotEmpty($platform);
             $this->assertInstanceOf(Platform::class, $platform);
-        }        
+        }
     }
 
     public function testIfInsertionOfTwoPlatformsWithTheSameNameFails()
@@ -87,13 +87,13 @@ class PlatformServiceTest extends TestCase
         $isActive = true;
 
         $platforms = [];
-        for ($i = 1; $i <= 10; $i++){
-            $platforms[$i] = $this->platformService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $platforms[$i] = $this->platformService->insert($name . $i, $isActive);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $id = $platforms[$i]->getId();
-            $hasChanged = $this->platformService->update($id, $name.$i, $isActive);
+            $hasChanged = $this->platformService->update($id, $name . $i, $isActive);
             $this->assertTrue($hasChanged);
         }
     }
@@ -205,18 +205,18 @@ class PlatformServiceTest extends TestCase
         $isActive = true;
 
         $platforms = [];
-        for ($i = 1; $i <= 10; $i++){
-            $platforms[$i] = $this->platformService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $platforms[$i] = $this->platformService->insert($name . $i, $isActive);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $id = $platforms[$i]->getId();
 
             $platform = $this->platformRepository->findById($id);
 
             $this->assertNotEmpty($platform);
             $this->assertInstanceOf(Platform::class, $platform);
-        }        
+        }
     }
 
     public function testIfFindAllSuccedsEvenWithNoPlatformsInTheRepository()
@@ -243,8 +243,8 @@ class PlatformServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++){
-            $this->platformService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $this->platformService->insert($name . $i, $isActive);
         }
 
         $platformsArray = $this->platformService->findAll();
