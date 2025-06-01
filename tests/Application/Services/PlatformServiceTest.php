@@ -1,624 +1,254 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformRepository;
 use PHPUnit\Framework\TestCase;
 
 class PlatformServiceTest extends TestCase
 {
-    //
-    // Insert
-    //
+    private PlatformRepositoryInterface $platformRepository;
+    private PlatformService $platformService;
 
-    public function testIfPlatformInsertionSuccedsWithTrueIsActive()
+    protected function setUp(): void
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $this->platformRepository = new MockPlatformRepository();
+        $this->platformService = new PlatformService($this->platformRepository);
+    }
 
-        $platform = $platformService->insert('test', true);
+    public function testIfPlatformInsertionSucceds()
+    {
+        $name = 'test';
+        $isActive = true;
 
+        $platform = $this->platformService->insert($name, $isActive);
+
+        $this->assertNotEmpty($platform);
         $this->assertInstanceOf(Platform::class, $platform);
     }
 
-    public function testIfTenPlatformInsertionSuccedsWithTrueIsActive()
+    public function testIfTenPlatformsInsertionSucceds()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $this->expectNotToPerformAssertions();
+        for ($i = 1; $i <= 10; $i++){
+            $platform = $this->platformService->insert($name.$i, $isActive);
 
-        for ($i = 1; $i <= 10; $i++) {
-            $platformService->insert('test' . $i, true);
-        }
+            $this->assertNotEmpty($platform);
+            $this->assertInstanceOf(Platform::class, $platform);
+        }        
     }
 
-    public function testIfPlatformInsertionSuccedsWithFalseIsActive()
+    public function testIfInsertionOfTwoPlatformsWithTheSameNameFails()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $platform = $platformService->insert('test', false);
-
-        $this->assertInstanceOf(Platform::class, $platform);
-    }
-
-    public function testIfTenPlatformInsertionSuccedsWithFalseIsActive()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectNotToPerformAssertions();
-
-        for ($i = 1; $i <= 10; $i++) {
-            $platformService->insert('test' . $i, false);
-        }
-    }
-
-    public function testIfInsertionOfTwoPlatformWithTheSameNameFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
         $this->expectException(DatabaseDuplicatedEntryException::class);
 
-        $platformService->insert('test', true);
-        $platformService->insert('test', true);
+        $this->platformService->insert($name, $isActive);
+        $this->platformService->insert($name, $isActive);
     }
-
-    //
-    // Insert
-    // - Name
-    //
 
     public function testIfPlatformInsertionFailsWithEmptyName()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = '';
+        $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $platformService->insert('', true);
+        $this->platformService->insert($name, $isActive);
     }
 
-    public function testIfPlatformInsertionFailsWithNullName()
+    public function testIfUpdateSucceds()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $this->expectException(EntityInvalidValueException::class);
+        $platform = $this->platformService->insert($name, $isActive);
 
-        $platformService->insert(null, true);
-    }
+        $id = $platform->getId();
 
-    public function testIfPlatformInsertionFailsWithArrayName()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $hasChanged = $this->platformService->update($id, $name, $isActive);
 
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert([], true);
-    }
-
-    public function testIfPlatformInsertionFailsWithNumberName()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert(1, true);
-    }
-
-    public function testIfPlatformInsertionFailsWithBooleanName()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert(true, true);
-    }
-
-    //
-    // Insert
-    // - Is Active
-    //
-
-    public function testIfPlatformInsertionFailsWithNullIsActive()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', null);
-    }
-
-    public function testIfPlatformInsertionFailsWithArrayIsActive()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', []);
-    }
-
-    public function testIfPlatformInsertionFailsWithStringIsActive()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', 'test');
-    }
-
-    public function testIfPlatformInsertionFailsWithNumberIsActive()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', 1);
-    }
-
-    //
-    // Update
-    //
-
-    public function testIfUpdateSuccedsWithOnePlatformInTheRepository()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $platformService->insert('test', true);
-
-        $this->assertTrue($platformService->update(1, 'test2', true));
+        $this->assertTrue($hasChanged);
     }
 
     public function testIfUpdateSuccedsWithTenPlatformsInTheRepository()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++) {
-            $platformService->insert('test' . $i, true);
+        $platforms = [];
+        for ($i = 1; $i <= 10; $i++){
+            $platforms[$i] = $this->platformService->insert($name.$i, $isActive);
         }
-
-        $this->assertTrue($platformService->update(1, 'test22', true));
+        
+        for ($i = 1; $i <= 10; $i++){
+            $id = $platforms[$i]->getId();
+            $hasChanged = $this->platformService->update($id, $name.$i, $isActive);
+            $this->assertTrue($hasChanged);
+        }
     }
 
     public function testIfUpdatingAPlatformWithAExistantNameSucceds()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $this->expectNotToPerformAssertions();
+        $platform = $this->platformService->insert($name, $isActive);
 
-        $platformService->insert('test', true);
-        $platformService->update(1, 'test', true);
+        $id = $platform->getId();
+
+        $hasChanged = $this->platformService->update($id, $name, $isActive);
+
+        $this->assertTrue($hasChanged);
     }
-
-    //
-    // Update
-    // - Id
-    //
 
     public function testIfUpdatingAPlatformWithAUnexistantIdFails()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
+
+        $this->platformService->insert($name, $isActive);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $platformService->insert('test', true);
-        $platformService->update(-1, 'test', true);
+        $this->platformService->update($id, $name, $isActive);
     }
-
-    public function testIfUpdatingAPlatformWithANullIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(null, 'test', true);
-    }
-
-    public function testIfUpdatingAPlatformWithAArrayIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update([], 'test', true);
-    }
-
-    public function testIfUpdatingAPlatformWithAStringIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update('test', 'test', true);
-    }
-
-    public function testIfUpdatingAPlatformWithABooleanIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(true, 'test', true);
-    }
-
-    //
-    // Update
-    // - Name
-    //
 
     public function testIfUpdatingAPlatformWithAEmptyNameFails()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
+
+        $platform = $this->platformService->insert($name, $isActive);
+
+        $name = '';
+        $id = $platform->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $platformService->insert('test', true);
-        $platformService->update(1, '', true);
+        $this->platformService->update($id, $name, $isActive);
     }
-
-    public function testIfUpdatingAPlatformWithANullNameFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, null, true);
-    }
-
-    public function testIfUpdatingAPlatformWithAArrayNameFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, [], true);
-    }
-
-    public function testIfUpdatingAPlatformWithANumberNameFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, 1, true);
-    }
-
-    public function testIfUpdatingAPlatformWithABooleanNameFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, true, true);
-    }
-
-    //
-    // Update
-    // - Is Active
-    //
-
-    public function testIfUpdatingAPlatformWithANullIsActiveFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, 'test', null);
-    }
-
-    public function testIfUpdatingAPlatformWithAArrayIsActiveFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, 'test', []);
-    }
-
-    public function testIfUpdatingAPlatformWithAStringIsActiveFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, 'test', 'test');
-    }
-
-    public function testIfUpdatingAPlatformWithANumberIsActiveFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->update(1, 'test', 1);
-    }
-
-    //
-    // Set Is Active
-    //
 
     public function testIfSettingAsActiveSucceds()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = false;
 
-        $platformService->insert('test', true);
-        $this->assertTrue($platformService->setIsActive(1, false));
+        $platform = $this->platformService->insert($name, $isActive);
+
+        $isActive = true;
+        $id = $platform->getId();
+
+        $hasChanged = $this->platformService->setIsActive($id, $isActive);
+
+        $this->assertTrue($hasChanged);
     }
 
     public function testIfSettingIsActiveWithSameValueFails()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $platformService->insert('test', true);
-        $this->assertFalse($platformService->setIsActive(1, true));
+        $platform = $this->platformService->insert($name, $isActive);
+
+        $id = $platform->getId();
+
+        $hasChanged = $this->platformService->setIsActive($id, $isActive);
+
+        $this->assertFalse($hasChanged);
     }
 
-    //
-    // Set Is Active
-    // - Id
-    //
-
-    public function testIfSettingIsActiveWithUnexistantIdFails()
+    public function testIfSettingIsActiveWithInvalidIdFails()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
+
+        $this->platformService->insert($name, $isActive);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $platformService->insert('test', true);
-        $platformService->setIsActive(-1, true);
+        $this->platformService->setIsActive($id, $isActive);
     }
-
-    public function testIfSettingIsActiveWithNullIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(null, true);
-    }
-
-    public function testIfSettingIsActiveWithArrayIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive([], true);
-    }
-
-    public function testIfSettingIsActiveWithStringIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive('test', true);
-    }
-
-    public function testIfSettingIsActiveWithBooleanIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(true, true);
-    }
-
-    //
-    // Set Is Active
-    // - Is Active
-    //
-
-    public function testIfSettingIsActiveWithNullValueFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(1, null);
-    }
-
-    public function testIfSettingIsActiveWithArrayValueFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(1, []);
-    }
-
-    public function testIfSettingIsActiveWithNumberValueFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(1, 1);
-    }
-
-    public function testIfSettingIsActiveWithStringValueFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->setIsActive(1, 'test');
-    }
-
-    //
-    // Find By Id
-    //
 
     public function testIfFindByIdSucceds()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $platformService->insert('test', true);
-        $platform = $platformService->findById(1);
+        $platform = $this->platformService->insert($name, $isActive);
 
+        $id = $platform->getId();
+
+        $platform = $this->platformRepository->findById($id);
+
+        $this->assertNotEmpty($platform);
         $this->assertInstanceOf(Platform::class, $platform);
     }
 
     public function testIfFindByIdSuccedsWithTenPlatforms()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++) {
-            $platformService->insert('test' . $i, true);
+        $platforms = [];
+        for ($i = 1; $i <= 10; $i++){
+            $platforms[$i] = $this->platformService->insert($name.$i, $isActive);
         }
+        
+        for ($i = 1; $i <= 10; $i++){
+            $id = $platforms[$i]->getId();
 
-        $platform = $platformService->findById(random_int(1, 10));
+            $platform = $this->platformRepository->findById($id);
 
-        $this->assertInstanceOf(Platform::class, $platform);
+            $this->assertNotEmpty($platform);
+            $this->assertInstanceOf(Platform::class, $platform);
+        }        
     }
-
-    //
-    // Find By Id
-    // - Id
-    //
-
-    public function testIfFindByIdWithNullIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->findById(null);
-    }
-
-    public function testIfFindByIdWithArrayIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->findById([]);
-    }
-
-    public function testIfFindByIdWithStringIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->findById('test');
-    }
-
-    public function testIfFindByIdWithBooleanIdFails()
-    {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $platformService->insert('test', true);
-        $platformService->findById('test');
-    }
-
-    //
-    // Find All
-    //
 
     public function testIfFindAllSuccedsEvenWithNoPlatformsInTheRepository()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $emptyArray = $this->platformService->findAll();
 
-        $result = $platformService->findAll();
-
-        $this->assertEmpty($result);
+        $this->assertEmpty($emptyArray);
     }
 
     public function testIfFindAllSuccedsWithOnePlatformInTheRepository()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        $platformService->insert('test', true);
-        $result = $platformService->findAll();
+        $this->platformService->insert($name, $isActive);
 
-        $this->assertNotEmpty($result);
+        $platformsArray = $this->platformService->findAll();
+
+        $this->assertNotEmpty($platformsArray);
     }
 
     public function testIfFindAllSuccedsWithTenPlatformsInTheRepository()
     {
-        $platformRepository = new MockPlatformRepository();
-        $platformService = new PlatformService($platformRepository);
+        $name = 'test';
+        $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++) {
-            $platformService->insert('test' . $i, true);
+        for ($i = 1; $i <= 10; $i++){
+            $this->platformService->insert($name.$i, $isActive);
         }
-        $result = $platformService->findAll();
 
-        $this->assertNotEmpty($result);
+        $platformsArray = $this->platformService->findAll();
+
+        $this->assertNotEmpty($platformsArray);
     }
 }
