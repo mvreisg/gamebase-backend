@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
@@ -21,23 +23,27 @@ class PlatformService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $name, mixed $isActive): Platform
+    public function insert(string $name, bool $isActive): Platform
     {
         $platform = new Platform();
 
         try {
-            $platform->validateName($name);
-            $platform->validateIsActive($isActive);
             $platform->setName($name);
             $platform->setIsActive($isActive);
+
+            $platform->validateName();
+
             $validatedName = $platform->getName();
+
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome da plataforma a ser inserida já existe no repositório!'
                 );
             }
+
             $platform = $this->repository->insert($platform);
+
             return $platform;
         } catch (
             DatabaseDuplicatedEntryException |
@@ -52,17 +58,18 @@ class PlatformService
         }
     }
 
-    public function update(mixed $id, mixed $name, mixed $isActive): bool
+    public function update(int $id, string $name, bool $isActive): bool
     {
         $platform = new Platform();
 
         try {
-            $platform->validateId($id);
-            $platform->validateName($name);
-            $platform->validateIsActive($isActive);
             $platform->setId($id);
             $platform->setName($name);
             $platform->setIsActive($isActive);
+
+            $platform->validateId();
+            $platform->validateName();
+
             /*
             $validatedName = $platform->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -72,7 +79,9 @@ class PlatformService
                 );
             }
             */
+
             $wasTheUpdateSuccessful = $this->repository->update($platform);
+
             return $wasTheUpdateSuccessful;
         } catch (
             DatabaseDuplicatedEntryException |
@@ -84,15 +93,18 @@ class PlatformService
         }
     }
 
-    public function setIsActive(mixed $id, mixed $isActive): bool
+    public function setIsActive(int $id, bool $isActive): bool
     {
         $platform = new Platform();
+
         try {
-            $platform->validateId($id);
-            $platform->validateIsActive($isActive);
             $platform->setId($id);
             $platform->setIsActive($isActive);
+
+            $platform->validateId();
+
             $wasSuccessful = $this->repository->setIsActive($id, $isActive);
+
             return $wasSuccessful;
         } catch (
             EntityInvalidValueException |
@@ -104,14 +116,17 @@ class PlatformService
         }
     }
 
-    public function findById(mixed $id): Platform|null
+    public function findById(int $id): Platform|null
     {
         $platform = new Platform();
 
         try {
-            $platform->validateId($id);
             $platform->setId($id);
+
+            $platform->validateId();
+
             $platform = $this->repository->findById($id);
+
             return $platform;
         } catch (
             EntityInvalidValueException |
@@ -127,6 +142,7 @@ class PlatformService
     {
         try {
             $platforms = $this->repository->findAll();
+
             return $platforms;
         } catch (
             DatabaseStatementCreationFailureException |
