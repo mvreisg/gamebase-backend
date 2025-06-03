@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -59,79 +61,28 @@ class User
         $this->isActive = $isActive;
     }
 
-    public function validateId(mixed $id)
+    public function validateId(): void
     {
-        if ($id === null) {
-            throw new EntityInvalidValueException('id é null!');
-        }
-
-        if (is_iterable($id)) {
-            throw new EntityInvalidValueException('id é array!');
-        }
-
-        if (is_string($id)) {
-            throw new EntityInvalidValueException('id é string!');
-        }
-
-        if (is_bool($id)) {
-            throw new EntityInvalidValueException('id é bool!');
-        }
-
-        if ($id <= 0) {
-            throw new EntityInvalidValueException('id deve ser maior que 0!');
+        if ($this->id <= 0) {
+            throw new EntityInvalidValueException('O id deve ser maior que zero!');
         }
     }
 
-    public function validateUserName(mixed $userName)
+    public function validateUserName()
     {
-        if ($userName === null) {
-            throw new EntityInvalidValueException('username é null!');
-        }
+        $this->userName = trim($this->userName);
 
-        if (is_string($userName) === false) {
-            throw new EntityInvalidValueException('username não é string!');
-        }
-
-        $userName = trim($userName);
-
-        if ($userName === '') {
+        if ($this->userName === '') {
             throw new EntityInvalidValueException('username está vazio!');
         }
     }
 
-    public function validatePassWord(mixed $passWord)
+    public function validatePassWord()
     {
-        if ($passWord === null) {
-            throw new EntityInvalidValueException('password é null!');
-        }
+        $this->passWord = trim($this->passWord);
 
-        if (is_string($passWord) === false) {
-            throw new EntityInvalidValueException('password não é string!');
-        }
-
-        $passWord = trim($passWord);
-
-        if ($passWord === '') {
-            throw new EntityInvalidValueException('password está vazio!');
-        }
-    }
-
-    public function validateIsActive(mixed $isActive): void
-    {
-        if ($isActive === null) {
-            throw new EntityInvalidValueException('isActive é null!');
-        }
-
-        if (is_iterable($isActive)) {
-            throw new EntityInvalidValueException('isActive é array!');
-        }
-
-        if (is_string($isActive)) {
-            throw new EntityInvalidValueException('isActive é uma string!');
-        }
-
-        if (is_numeric($isActive)) {
-            throw new EntityInvalidValueException('isActive é numérico!');
+        if ($this->passWord === '') {
+            throw new EntityInvalidValueException('username está vazio!');
         }
     }
 }
