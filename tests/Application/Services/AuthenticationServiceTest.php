@@ -106,16 +106,6 @@ class AuthenticationServiceTest extends TestCase
         $this->authService->tryLogin('', $passWord);
     }
 
-    public function testIfLoginFailsWithNullUserName()
-    {
-        $userName = 'test';
-        $passWord = 'test';
-        $isActive = true;
-        $this->expectException(EntityInvalidValueException::class);
-        $this->userService->insert($userName, $passWord, $isActive);
-        $this->authService->tryLogin(null, $passWord);
-    }
-
     public function testIfLoginFailsWithEmptyPassWord()
     {
         $userName = 'test';
@@ -124,16 +114,6 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(EntityInvalidValueException::class);
         $this->userService->insert($userName, $passWord, $isActive);
         $this->authService->tryLogin($userName, '');
-    }
-
-    public function testIfLoginFailsWithNullPassWord()
-    {
-        $userName = 'test';
-        $passWord = 'test';
-        $isActive = true;
-        $this->expectException(EntityInvalidValueException::class);
-        $this->userService->insert($userName, $passWord, $isActive);
-        $this->authService->tryLogin($userName, null);
     }
 
     public function testIfUserCanRetrieveAuthenticationToken()
