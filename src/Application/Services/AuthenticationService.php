@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use DateInterval;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -45,7 +46,10 @@ class AuthenticationService
     {
         try {
             $user = new User();
-            $user->validateUserName($userName);
+
+            $user->setUserName($userName);
+            $user->validateUserName();
+
             $time = $oneWeek ? '+1 week' : '+1 day';
             $secretKey = $_SERVER['JWT_SECRET'];
             $issuedAt = new DateTimeImmutable();
@@ -86,14 +90,17 @@ class AuthenticationService
         }
     }
 
-    public function tryLogin(mixed $userName, mixed $passWord): bool
+    public function tryLogin(string $userName, string $passWord): bool
     {
         try {
             $requestUser = new User();
-            $requestUser->validateUserName($userName);
-            $requestUser->validatePassWord($passWord);
+            
             $requestUser->setUserName($userName);
             $requestUser->setPassword($passWord);
+
+            $requestUser->validateUserName();
+            $requestUser->validatePassWord();
+            
             $requestUserName = $requestUser->getUserName();
             $requestPassWord = $requestUser->getPassWord();
 

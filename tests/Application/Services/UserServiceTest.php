@@ -1,876 +1,336 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
 use PHPUnit\Framework\TestCase;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
 class UserServiceTest extends TestCase
 {
-    //
-    // Insert
-    //
+    private UserRepositoryInterface $userRepository;
+    private EncryptionInterface $encrypter;
+    private UserService $userService;
 
-    public function testIfInsertSuccessfullyReturnsAUserObject()
+    protected function setUp(): void
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $this->userRepository = new MockUserRepository();
+        $this->encrypter = new DefuseEncryption();
+        $this->userService = new UserService($this->userRepository, $this->encrypter);
+    }
 
-        $user = $userService->insert('test', 'test', true);
+    public function testIfInsertSucceds()
+    {
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $this->assertNotEmpty($user);
         $this->assertInstanceOf(User::class, $user);
     }
 
-    public function testIfInsertWithDuplicatedNamesFails()
+    public function testIfInsertingUserNameThatAlreadyExistsFails()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
         $this->expectException(DatabaseDuplicatedEntryException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->insert('test', 'test', true);
+        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($userName, $passWord, $isActive);
     }
 
-    //
-    // Insert
-    // - Name
-    //
-
-    public function testIfInsertFailsWithNullName()
+    public function testIfInsertFailsWithEmptyUserName()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = '';
+        $passWord = 'test';
+        $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert(null, 'test', true);
+        $this->userService->insert($userName, $passWord, $isActive);
     }
 
-    public function testIfInsertFailsWithArrayName()
+    public function testIfInsertFailsWithEmptyPassword()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = '';
+        $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert([], 'test', true);
+        $this->userService->insert($userName, $passWord, $isActive);
     }
-
-    public function testIfInsertFailsWithEmptyNameString()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('', 'test', true);
-    }
-
-    public function testIfInsertFailsWithANumberOnNameParameter()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert(1, 'test', true);
-    }
-
-    public function testIfInsertFailsWithABooleanOnNameParameter()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert(true, 'test', true);
-    }
-
-    //
-    // Insert
-    // - Password
-    //
-
-    public function testIfInsertFailsWithNullPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', null, true);
-    }
-
-    public function testIfInsertFailsWithArrayPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', [], true);
-    }
-
-    public function testIfInsertFailsWithEmptyStringPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', '', true);
-    }
-
-    public function testIfInsertFailsWithANumberOnPasswordParameter()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 1, true);
-    }
-
-    public function testIfInsertFailsWithABooleanOnPasswordParameter()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', true, true);
-    }
-
-    //
-    // Insert
-    // - Is Active
-    //
-
-    public function testIfInsertFailsWithNullIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', null);
-    }
-
-    public function testIfInsertFailsWithArrayIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', null);
-    }
-
-    public function testIfInsertFailsWithNumberIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', 1);
-    }
-
-    public function testIfInsertFailsWithStringIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', 'test');
-    }
-
-    //
-    // Update
-    //
 
     public function testIfUpdateSuccessfullyHappensWithOneUser()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertTrue($userService->update(1, 'test2', 'test2', true));
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = $user->getId();
+
+        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
+
+        $this->assertTrue($hasChanged);
     }
 
     public function testIfUpdateWithDuplicatedNamesSucceds()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $this->expectNotToPerformAssertions();
+        $user = $this->userService->insert($userName, $passWord, $isActive);
 
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test', 'test', true);
-    }
+        $id = $user->getId();
 
-    public function testIfUpdateSuccessfullyHappensWithTwoUsers()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
 
-        $userService->insert('test', 'test', true);
-        $userService->insert('test2', 'test2', true);
-        $this->assertTrue($userService->update(2, 'test3', 'test3', true));
+        $this->assertTrue($hasChanged);
+
+        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
+
+        $this->assertTrue($hasChanged);
     }
 
     public function testIfUpdateSuccessfullyHappensWithTenUsers()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        for ($i = 0; $i < 10; $i++) {
-            $userService->insert('test' . $i, 'test' . $i, true);
+        $users = [];
+        for ($i = 1; $i <= 10; $i++){
+            $users[$i] = $this->userService->insert($userName.$i, $passWord.$i, $isActive);
         }
-        $this->assertTrue($userService->update(2, 'test22', 'test22', true));
-    }
-
-    //
-    // Update
-    // - Id
-    //
-
-    public function testIfUpdateFailsWithUnexistantId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $result = $userService->update(2, 'test2', 'test2', true);
-
-        $this->assertFalse($result);
+        
+        for ($i = 1; $i <= 10; $i++){
+            $id = $users[$i]->getId();
+            $hasChanged = $this->userService->update($id, $userName.$i, $passWord.$i, $isActive);
+            $this->assertTrue($hasChanged);
+        }        
     }
 
     public function testIfUpdateFailsWithInvalidId()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->update(0, 'test2', 'test2', true);
+        $this->userService->update($id, $userName, $passWord, $isActive);
     }
 
-    public function testIfUpdateFailsWithNullId()
+    public function testIfUpdateFailsWithEmptyUserName()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $userName = '';
+        $id = $user->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->update(null, 'test2', 'test2', true);
+        $this->userService->update($id, $userName, $passWord, $isActive);
     }
 
-    public function testIfUpdateFailsWithArrayId()
+    public function testIfUpdateFailsWithEmptyPassWord()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $passWord = '';
+        $id = $user->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->update([], 'test2', 'test2', true);
+        $this->userService->update($id, $userName, $passWord, $isActive);
     }
-
-    public function testIfUpdateFailsWithStringId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update('test', 'test2', 'test2', true);
-    }
-
-    public function testIfUpdateFailsWithBooleanId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(true, 'test2', 'test2', true);
-    }
-
-    //
-    // Update
-    // - Name
-    //
-
-    public function testIfUpdateFailsWithNullName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, null, 'test2', true);
-    }
-
-    public function testIfUpdateFailsWithNumberName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 1, 'test2', true);
-    }
-
-    public function testIfUpdateFailsWithArrayName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, [], 'test2', true);
-    }
-
-    public function testIfUpdateFailsWithEmptyName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, '', 'test2', true);
-    }
-
-    public function testIfUpdateFailsWithBooleanName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, true, 'test2', true);
-    }
-
-    //
-    // Update
-    // - Password
-    //
-
-    public function testIfUpdateFailsWithNullPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', null, true);
-    }
-
-    public function testIfUpdateFailsWithNumberPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', 1, true);
-    }
-
-    public function testIfUpdateFailsWithArrayPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', [], true);
-    }
-
-    public function testIfUpdateFailsWithEmptyPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', '', true);
-    }
-
-    public function testIfUpdateFailsWithBooleanPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', true, true);
-    }
-
-    //
-    // Update
-    // - Is Active
-    //
-
-    public function testIfUpdateFailsWithNullIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', 'test2', null);
-    }
-
-    public function testIfUpdateFailsWithNumberIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', 'test2', 1);
-    }
-
-    public function testIfUpdateFailsWithArrayIsActive()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', 'test2', []);
-    }
-
-    public function testIfUpdateFailsWithStringPassword()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->update(1, 'test2', 'test2', 'test2');
-    }
-
-    //
-    // Set Is Active
-    //
 
     public function testIfSettingIsActiveWithSameValueFails()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertFalse($userService->setIsActive(1, true));
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = $user->getId();
+
+        $hasChanged = $this->userService->setIsActive($id, $isActive);
+
+        $this->assertFalse($hasChanged);
     }
 
     public function testIfSettingIsActiveWithDifferentValueSucceds()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertTrue($userService->setIsActive(1, false));
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = $user->getId();
+        $isActive = false;
+
+        $hasChanged = $this->userService->setIsActive($id, $isActive);
+
+        $this->assertTrue($hasChanged);
     }
-
-    //
-    // Set Is Active
-    // - Id
-    //
 
     public function testIfSettingIsActiveWithInvalidIdFails()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(0, false);
+        $this->userService->setIsActive($id, $isActive);
     }
-
-    public function testIfSettingIsActiveWithNonExistantIdFails()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $result = $userService->setIsActive(2, false);
-
-        $this->assertFalse($result);
-    }
-
-    public function testIfSettingIsActiveWithNullIdFails()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(null, false);
-    }
-
-    public function testIfSettingIsActiveWithStringIdFails()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive('test', false);
-    }
-
-    public function testIfSettingIsActiveWithBooleanIdFails()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(true, false);
-    }
-
-    public function testIfSettingIsActiveWithArrayIdFails()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive([], false);
-    }
-
-    //
-    // Set Is Active
-    // - Is Active
-    //
-
-    public function testIfSettingIsActiveWithNullValue()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(1, null);
-    }
-
-    public function testIfSettingIsActiveWithNumberValue()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(1, 1);
-    }
-
-    public function testIfSettingIsActiveWithArrayValue()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(1, []);
-    }
-
-    public function testIfSettingIsActiveWithStringValue()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->setIsActive(1, 'test');
-    }
-
-    //
-    // Find By Id
-    //
 
     public function testIfItFindsByIdWithSuccess()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertInstanceOf(User::class, $userService->findById(1));
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = $user->getId();
+
+        $fetchedUser = $this->userService->findById($id);
+
+        $this->assertEquals($user, $fetchedUser);
     }
 
     public function testIfItFindsByIdWithSuccessWithTenUsers()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        for ($i = 0; $i < 10; $i++) {
-            $userService->insert('test' . $i, 'test' . $i, true);
+        $users = [];
+        for ($i = 1; $i <= 10; $i++){
+            $users[$i] = $this->userService->insert($userName.$i, $passWord.$i, $isActive);
+        }        
+
+        for ($i = 1; $i <= 10; $i++){
+            $id = $users[$i]->getId();
+
+            $fetchedUser = $this->userService->findById($id);
+
+            $this->assertEquals($users[$i], $fetchedUser);
         }
-        $this->assertInstanceOf(User::class, $userService->findById(random_int(1, 10)));
-    }
-
-    public function testIfItCannotFindWithUnexistantId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $userService->insert('test', 'test', true);
-        $this->assertNull($userService->findById(2));
     }
 
     public function testIfItCannotFindWithInvalidId()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $this->userService->insert($userName, $passWord, $isActive);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->findById(0);
+        $this->userService->findById($id);
     }
-
-    public function testIfItCannotFindWithNullId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findById(null);
-    }
-
-    public function testIfItCannotFindWithStringId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findById('test');
-    }
-
-    public function testIfItCannotFindWithBooleanId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findById(true);
-    }
-
-    public function testIfItCannotFindWithArrayId()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findById([]);
-    }
-
-    //
-    // Find By UserName
-    //
 
     public function testIfItFindsByUserNameWithSuccess()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertInstanceOf(User::class, $userService->findByUserName('test'));
+        $user = $this->userService->insert($userName, $passWord, $isActive);
+        
+        $fetchedUserName = $user->getUserName();
+
+        $fetchedUser = $this->userService->findByUserName($fetchedUserName);
+
+        $this->assertEquals($user, $fetchedUser);
     }
 
     public function testIfItCannotFindByUserName()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        $userService->insert('test', 'test', true);
-        $this->assertNull($userService->findByUserName('test2'));
+        $this->userService->insert($userName, $passWord, $isActive);
+        
+        $fetchedUserName = 'batata';
+
+        $fetchedUser = $this->userService->findByUserName($fetchedUserName);
+
+        $this->assertEmpty($fetchedUser);
     }
 
     public function testIfItCannotFindWithEmptyUserName()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
+
+        $this->userService->insert($userName, $passWord, $isActive);
+        
+        $userName = '';
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $userService->insert('test', 'test', true);
-        $userService->findByUserName('');
+        $this->userService->findByUserName($userName);
     }
-
-    public function testIfItCannotFindWithNullUserName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findByUserName(null);
-    }
-
-    public function testIfItCannotFindWithArrayUserName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findByUserName([]);
-    }
-
-    public function testIfItCannotFindWithNumberUserName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findByUserName(1);
-    }
-
-    public function testIfItCannotFindWithBooleanUserName()
-    {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $userService->insert('test', 'test', true);
-        $userService->findByUserName(true);
-    }
-
-    //
-    // Find All
-    //
 
     public function testIfFindAllSuccedsWithZeroUsers()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $emptyArray = $this->userService->findAll();
 
-        $this->assertEmpty($userService->findAll());
+        $this->assertEmpty($emptyArray);
     }
 
     public function testIfFindAllSuccedsWithTenUsers()
     {
-        $userRepository = new MockUserRepository();
-        $encrypter = new DefuseEncryption();
-        $userService = new UserService($userRepository, $encrypter);
+        $userName = 'test';
+        $passWord = 'test';
+        $isActive = true;
 
-        for ($i = 0; $i < 10; $i++) {
-            $userService->insert('test' . $i, 'test' . $i, true);
+        for ($i = 1; $i <= 10; $i++){
+            $this->userService->insert($userName.$i, $passWord.$i, $isActive);
         }
-        $this->assertNotEmpty($userService->findAll());
+
+        $allUsers = $this->userService->findAll();
+
+        $this->assertNotEmpty($allUsers);
     }
 }
