@@ -17,7 +17,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -177,14 +176,6 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
         } catch (
             ControllerOperationErrorException |
             ControllerUndefinedValueException |
@@ -312,9 +303,13 @@ class PlatformController
 
             $platform = $this->service->findById($platformId);
             if ($platform === null) {
-                throw new HttpResourceNotFoundException(
-                    'A plataforma procurada não foi encontrada!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'A plataforma procurada não foi encontrada!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -337,15 +332,10 @@ class PlatformController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -382,9 +372,13 @@ class PlatformController
 
             $numberOfPlatforms = count($platforms);
             if ($numberOfPlatforms === 0) {
-                throw new HttpResourceNotFoundException(
-                    'A busca foi concluída e nenhuma plataforma foi encontrada.'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'A busca foi concluída e nenhuma plataforma foi encontrada.',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($platforms as $platform) {
@@ -409,14 +403,6 @@ class PlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

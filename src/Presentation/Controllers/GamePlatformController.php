@@ -16,7 +16,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
@@ -51,33 +50,21 @@ class GamePlatformController
                 throw new ControllerUndefinedValueException('A chave gameId não existe ou seu valor é null!');
             }
 
-            $isPlatformIdSetted = isset($body['platformsIds']);
+            $isPlatformIdSetted = isset($body['platformId']);
             if ($isPlatformIdSetted === false) {
-                throw new ControllerUndefinedValueException('A chave platformsIds não existe ou seu valor é null!');
+                throw new ControllerUndefinedValueException('A chave platformId não existe ou seu valor é null!');
             }
 
             $gameId = $body['gameId'];
-            $platformsIds = $body['platformsIds'];
+            $platformId = $body['platformId'];
 
-            $isPlatformsIdsArrayIterable = is_iterable($platformsIds);
-            if ($isPlatformsIdsArrayIterable === false) {
-                throw new ControllerInvalidValueException('O valor de platformsIds não é um array!');
-            }
+            $gamePlatform = $this->service->insert($platformId, $gameId);
 
-            $numberOfPlatformsIds = count($platformsIds);
-            if ($numberOfPlatformsIds === 0) {
-                throw new ControllerInvalidValueException('O array platformsIds está vazio!');
-            }
-
-            foreach ($platformsIds as $platformId) {
-                $gamePlatform = $this->service->insert($platformId, $gameId);
-
-                $data[] = [
-                    'id' => $gamePlatform->getId(),
-                    'platformId' => $gamePlatform->getPlatformId(),
-                    'gameId' => $gamePlatform->getGameId()
-                ];
-            }
+            $data = [
+                'id' => $gamePlatform->getId(),
+                'platformId' => $gamePlatform->getPlatformId(),
+                'gameId' => $gamePlatform->getGameId()
+            ];
 
             $response
                 ->appendArray([
@@ -148,30 +135,24 @@ class GamePlatformController
                 throw new ControllerUndefinedValueException('A chave gameId não existe ou seu valor é null!');
             }
 
-            $isPlatformsIdsSetted = isset($body['platformsIds']);
-            if ($isPlatformsIdsSetted === false) {
-                throw new ControllerUndefinedValueException('A chave platformsIds não existe ou seu valor é null!');
+            $isPlatformIdSetted = isset($body['platformId']);
+            if ($isPlatformIdSetted === false) {
+                throw new ControllerUndefinedValueException('A chave platformId não existe ou seu valor é null!');
             }
 
             $id = $params['id'];
             $gameId = $body['gameId'];
-            $platformsIds = $body['platformsIds'];
+            $platformId = $body['platformId'];
 
-            $isPlaformsArrayIterable = is_iterable($platformsIds);
-            if ($isPlaformsArrayIterable === false) {
-                throw new ControllerInvalidValueException('O valor de platformsIds não é um array!');
-            }
-
-            $numberOfPlatformsIds = count($platformsIds);
-            if ($numberOfPlatformsIds === 0) {
-                throw new ControllerInvalidValueException('O valor de platformsIds é um array vazio!');
-            }
-
-            foreach ($platformsIds as $platformId) {
-                $wasTheUpdateSuccessful = $this->service->update($id, $platformId, $gameId);
-                if ($wasTheUpdateSuccessful === false) {
-                    throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
-                }
+            $wasTheUpdateSuccessful = $this->service->update($id, $platformId, $gameId);
+            if ($wasTheUpdateSuccessful === false) {
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhuma atualização!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -187,14 +168,6 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (
@@ -247,7 +220,13 @@ class GamePlatformController
 
             $wasDeletionSuccessful = $this->service->delete($id);
             if ($wasDeletionSuccessful === false) {
-                throw new HttpResourceNotFoundException('O registro com o id ' . $id . ' não foi encontrado!');
+                $response
+                    ->appendArray([
+                        'message' => 'O registro com o id ' . $id . ' não foi encontrado!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -265,15 +244,11 @@ class GamePlatformController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -313,9 +288,13 @@ class GamePlatformController
 
             $gamePlatform = $this->service->findById($id);
             if ($gamePlatform === null) {
-                throw new HttpResourceNotFoundException(
-                    'A busca foi concluída e nenhum valor com o id ' . $id . ' foi encontrado!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'A busca foi concluída e nenhum valor com o id ' . $id . ' foi encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -336,14 +315,6 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
@@ -383,9 +354,13 @@ class GamePlatformController
 
             $numberOfGamePlatforms = count($gamePlatforms);
             if ($numberOfGamePlatforms === 0) {
-                throw new HttpResourceNotFoundException(
-                    'A busca foi realizada com sucesso mas nenhum valor foi encontrado!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'A busca foi realizada com sucesso mas nenhum valor foi encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($gamePlatforms as $gamePlatform) {
@@ -410,14 +385,6 @@ class GamePlatformController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

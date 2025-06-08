@@ -17,7 +17,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -173,7 +172,6 @@ class GameController
                 ->send();
             return;
         } catch (
-            HttpResourceNotFoundException |
             ControllerUndefinedValueException |
             HttpJsonParseException |
             DatabaseDuplicatedEntryException |
@@ -305,9 +303,13 @@ class GameController
             $game = $this->service->findById($gameId);
 
             if ($game === null) {
-                throw new HttpResourceNotFoundException(
-                    'O registro de jogo com o id ' . $gameId . ' não pôde ser encontrado!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'O registro com o id ' . $gameId . ' não pôde ser encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[404])
+                    ->send();
+                return;
             }
 
             $response
@@ -330,15 +332,10 @@ class GameController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -376,7 +373,13 @@ class GameController
 
             $numberOfGamesFound = count($games);
             if ($numberOfGamesFound === 0) {
-                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum jogo foi encontrado.');
+                $response
+                    ->appendArray([
+                        'message' => 'A busca foi concluída e nenhum jogo foi encontrado.',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($games as $game) {
@@ -405,14 +408,6 @@ class GameController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

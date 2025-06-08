@@ -16,7 +16,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
@@ -49,38 +48,28 @@ class GameGenreController
 
             $isGameIdSetted = isset($body['gameId']);
             if ($isGameIdSetted === false) {
-                throw new ControllerUndefinedValueException('A chave gameId não existe no JSON ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'A chave gameId não existe no JSON ou seu valor é null!'
+                );
             }
 
-            $isGenresIdsSetted = isset($body['genresIds']);
-            if ($isGenresIdsSetted === false) {
+            $isGenreIdSetted = isset($body['genreId']);
+            if ($isGenreIdSetted === false) {
                 throw new ControllerUndefinedValueException(
-                    'A chave genresIds não existe no JSON ou seu valor é null!'
+                    'A chave genreId não existe no JSON ou seu valor é null!'
                 );
             }
 
             $gameId = $body['gameId'];
-            $genresIds = $body['genresIds'];
+            $genreId = $body['genreId'];
 
-            $isGenresIdsIterable = is_iterable($genresIds);
-            if ($isGenresIdsIterable === false) {
-                throw new ControllerInvalidValueException('genresIds não é um array!');
-            }
+            $gameGenre = $this->service->insert($genreId, $gameId);
 
-            $numberOfGenresIds = count($genresIds);
-            if ($numberOfGenresIds === 0) {
-                throw new ControllerInvalidValueException('O array genresIds está vazio!');
-            }
-
-            foreach ($genresIds as $genreId) {
-                $gameGenre = $this->service->insert($genreId, $gameId);
-
-                $data[] = [
-                    'id' => $gameGenre->getId(),
-                    'gameId' => $gameGenre->getGameId(),
-                    'genreId' => $gameGenre->getGenreId()
-                ];
-            }
+            $data = [
+                'id' => $gameGenre->getId(),
+                'gameId' => $gameGenre->getGameId(),
+                'genreId' => $gameGenre->getGenreId()
+            ];
 
             $response
                 ->appendArray([
@@ -156,32 +145,26 @@ class GameGenreController
                 );
             }
 
-            $isGenresIdsSetted = isset($body['genresIds']);
-            if ($isGenresIdsSetted === false) {
+            $isGenreIdSetted = isset($body['genreId']);
+            if ($isGenreIdSetted === false) {
                 throw new ControllerUndefinedValueException(
-                    'A chave genresIds não foi informada no JSON ou seu valor é null!'
+                    'A chave genreId não foi informada no JSON ou seu valor é null!'
                 );
             }
 
             $id = $params['id'];
             $gameId = $body['gameId'];
-            $genresIds = $body['genresIds'];
+            $genreId = $body['genreId'];
 
-            $isGenresIdsIterable = is_iterable($genresIds);
-            if ($isGenresIdsIterable === false) {
-                throw new ControllerInvalidValueException('O valor de genresIds não é um array!');
-            }
-
-            $numberOfGenresIds = count($genresIds);
-            if ($numberOfGenresIds === 0) {
-                throw new ControllerInvalidValueException('O array genresIds está vazio!');
-            }
-
-            foreach ($genresIds as $genreId) {
-                $wasTheUpdateSuccessful = $this->service->update($id, $genreId, $gameId);
-                if ($wasTheUpdateSuccessful === false) {
-                    throw new HttpResourceNotFoundException('A atualização não aconteceu. Verifique se o id é válido.');
-                }
+            $wasTheUpdateSuccessful = $this->service->update($id, $genreId, $gameId);
+            if ($wasTheUpdateSuccessful === false) {
+                $response
+                    ->appendArray([
+                        'message' => 'Não houve nenhuma atualização!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -197,14 +180,6 @@ class GameGenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (
@@ -259,7 +234,13 @@ class GameGenreController
 
             $wasTheDeleteSuccessful = $this->service->delete($id);
             if ($wasTheDeleteSuccessful === false) {
-                throw new HttpResourceNotFoundException('Vínculo com o id ' . $id . ' não encontrado!');
+                $response
+                    ->appendArray([
+                        'message' => 'Vínculo com o id ' . $id . ' não encontrado!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -277,15 +258,11 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (HttpJsonParseException | ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            HttpJsonParseException |
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -332,7 +309,13 @@ class GameGenreController
             $gameGenre = $this->service->findById($id);
 
             if ($gameGenre === null) {
-                throw new HttpResourceNotFoundException('O vínculo entre gênero e jogo procurado não existe!');
+                $response
+                    ->appendArray([
+                        'message' => 'O vínculo entre gênero e jogo procurado não existe!'
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -355,15 +338,11 @@ class GameGenreController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -400,7 +379,13 @@ class GameGenreController
 
             $numberOfGameGenres = count($gameGenres);
             if ($numberOfGameGenres === 0) {
-                throw new HttpResourceNotFoundException('Os vínculos entre gêneros e jogos procurados não existem!');
+                $response
+                    ->appendArray([
+                        'message' => 'Os vínculos entre gêneros e jogos procurados não existem!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($gameGenres as $gameGenre) {
@@ -425,14 +410,6 @@ class GameGenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

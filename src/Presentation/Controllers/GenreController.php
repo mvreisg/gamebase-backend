@@ -16,7 +16,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -169,14 +168,6 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
         } catch (
             ControllerUndefinedValueException |
             HttpJsonParseException |
@@ -309,7 +300,13 @@ class GenreController
             $genre = $this->service->findById($genreId);
 
             if ($genre === null) {
-                throw new HttpResourceNotFoundException('O gênero com o id ' . $genreId . ' não existe!');
+                $response
+                    ->appendArray([
+                        'message' => 'O gênero com o id ' . $genreId . ' não existe!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -332,15 +329,10 @@ class GenreController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -377,7 +369,13 @@ class GenreController
 
             $numberOfGenresFound = count($genres);
             if ($numberOfGenresFound === 0) {
-                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum gênero foi encontrado.');
+                $response
+                    ->appendArray([
+                        'message' => 'Nenhum registro encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($genres as $genre) {
@@ -402,14 +400,6 @@ class GenreController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

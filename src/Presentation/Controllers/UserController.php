@@ -17,7 +17,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
@@ -188,7 +187,6 @@ class UserController
                 ->send();
             return;
         } catch (
-            HttpResourceNotFoundException |
             ControllerUndefinedValueException |
             HttpJsonParseException |
             DatabaseDuplicatedEntryException |
@@ -320,9 +318,13 @@ class UserController
             $user = $this->service->findById($userId);
 
             if ($user === null) {
-                throw new HttpResourceNotFoundException(
-                    'O registro de usuário com o id ' . $userId . ' não pôde ser encontrado!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'O registro de usuário com o id ' . $userId . ' não pôde ser encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -346,15 +348,10 @@ class UserController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -402,9 +399,14 @@ class UserController
             $user = $this->service->findByUserName($userName);
 
             if ($user === null) {
-                throw new HttpResourceNotFoundException(
-                    'O registro de usuário com o nome de usuário ' . $userName . ' não pôde ser encontrado!'
-                );
+                $response
+                    ->appendArray([
+                        'message' => 'O registro de usuário com o nome de usuário ' .
+                            $userName . ' não pôde ser encontrado!',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             $response
@@ -428,15 +430,10 @@ class UserController
                 ->status(HttpRouter::STATUS_CODES[401])
                 ->send();
             return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -474,7 +471,13 @@ class UserController
 
             $numberOfUsersFound = count($users);
             if ($numberOfUsersFound === 0) {
-                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum usuário foi encontrado.');
+                $response
+                    ->appendArray([
+                        'message' => 'A busca foi concluída e nenhum usuário foi encontrado.',
+                    ])
+                    ->status(HttpRouter::STATUS_CODES[200])
+                    ->send();
+                return;
             }
 
             foreach ($users as $user) {
@@ -500,14 +503,6 @@ class UserController
                     'message' => $e->getMessage()
                 ])
                 ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
                 ->send();
             return;
         } catch (

@@ -12,7 +12,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
@@ -165,10 +164,7 @@ class AuthenticationController
                     ->send();
                 return;
             }
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
+        } catch (AuthenticationException $e) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
@@ -236,10 +232,7 @@ class AuthenticationController
                     ->send();
                 return;
             }
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
+        } catch (AuthenticationException $e) {
             $response
                 ->appendArray([
                     'message' => $e->getMessage()
