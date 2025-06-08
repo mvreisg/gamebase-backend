@@ -34,7 +34,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfItSuccessfullyInsertsTenRegisters()
     {
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
             $gameId = $i;
             $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
@@ -84,13 +84,13 @@ class GameGenreServiceTest extends TestCase
         $gameId = 1;
 
         $gameGenres = [];
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
             $gameId = $i;
             $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
             $gameId = $i;
             $id = $gameGenres[$i]->getId();
@@ -165,13 +165,13 @@ class GameGenreServiceTest extends TestCase
         $gameId = 1;
 
         $gameGenres = [];
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
             $gameId = $i;
             $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $id = $gameGenres[$i]->getId();
 
             $hasDeleted = $this->gameGenreService->delete($id);
@@ -216,13 +216,13 @@ class GameGenreServiceTest extends TestCase
         $gameId = 1;
 
         $gameGenres = [];
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
             $gameId = $i;
             $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $insertedGameGenre = $gameGenres[$i];
             $id = $insertedGameGenre->getId();
 

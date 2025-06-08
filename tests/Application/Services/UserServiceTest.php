@@ -113,15 +113,15 @@ class UserServiceTest extends TestCase
         $isActive = true;
 
         $users = [];
-        for ($i = 1; $i <= 10; $i++){
-            $users[$i] = $this->userService->insert($userName.$i, $passWord.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $users[$i] = $this->userService->insert($userName . $i, $passWord . $i, $isActive);
         }
-        
-        for ($i = 1; $i <= 10; $i++){
+
+        for ($i = 1; $i <= 10; $i++) {
             $id = $users[$i]->getId();
-            $hasChanged = $this->userService->update($id, $userName.$i, $passWord.$i, $isActive);
+            $hasChanged = $this->userService->update($id, $userName . $i, $passWord . $i, $isActive);
             $this->assertTrue($hasChanged);
-        }        
+        }
     }
 
     public function testIfUpdateFailsWithInvalidId()
@@ -239,11 +239,11 @@ class UserServiceTest extends TestCase
         $isActive = true;
 
         $users = [];
-        for ($i = 1; $i <= 10; $i++){
-            $users[$i] = $this->userService->insert($userName.$i, $passWord.$i, $isActive);
-        }        
+        for ($i = 1; $i <= 10; $i++) {
+            $users[$i] = $this->userService->insert($userName . $i, $passWord . $i, $isActive);
+        }
 
-        for ($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $id = $users[$i]->getId();
 
             $fetchedUser = $this->userService->findById($id);
@@ -274,7 +274,7 @@ class UserServiceTest extends TestCase
         $isActive = true;
 
         $user = $this->userService->insert($userName, $passWord, $isActive);
-        
+
         $fetchedUserName = $user->getUserName();
 
         $fetchedUser = $this->userService->findByUserName($fetchedUserName);
@@ -289,7 +289,7 @@ class UserServiceTest extends TestCase
         $isActive = true;
 
         $this->userService->insert($userName, $passWord, $isActive);
-        
+
         $fetchedUserName = 'batata';
 
         $fetchedUser = $this->userService->findByUserName($fetchedUserName);
@@ -304,7 +304,7 @@ class UserServiceTest extends TestCase
         $isActive = true;
 
         $this->userService->insert($userName, $passWord, $isActive);
-        
+
         $userName = '';
 
         $this->expectException(EntityInvalidValueException::class);
@@ -325,8 +325,8 @@ class UserServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++){
-            $this->userService->insert($userName.$i, $passWord.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $this->userService->insert($userName . $i, $passWord . $i, $isActive);
         }
 
         $allUsers = $this->userService->findAll();

@@ -33,7 +33,7 @@ class GameGenreService
 
             $gameGenre->validateGenreId();
             $gameGenre->validateGameId();
-            
+
             $gameGenre = $this->repository->insert($gameGenre);
 
             return $gameGenre;
@@ -62,7 +62,7 @@ class GameGenreService
             $gameGenre->validateId();
             $gameGenre->validateGenreId();
             $gameGenre->validateGameId();
-            
+
             $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
 
             return $wasTheUpdateSuccessful;
@@ -84,7 +84,7 @@ class GameGenreService
             $gameGenre->setId($id);
 
             $gameGenre->validateId();
-            
+
             $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
 
             return $wasTheDeleteSuccessful;
@@ -106,7 +106,7 @@ class GameGenreService
             $gameGenre->setId($id);
 
             $gameGenre->validateId();
-            
+
             $gameGenre = $this->repository->findById($id);
 
             return $gameGenre;
@@ -124,7 +124,7 @@ class GameGenreService
     {
         try {
             $gameGenres = $this->repository->findAll();
-            
+
             return $gameGenres;
         } catch (
             DatabaseStatementCreationFailureException |
