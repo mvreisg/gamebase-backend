@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
@@ -21,16 +23,19 @@ class GameGenreService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $genreId, mixed $gameId): GameGenre
+    public function insert(int $genreId, int $gameId): GameGenre
     {
         $gameGenre = new GameGenre();
 
         try {
-            $gameGenre->validateGenreId($genreId);
-            $gameGenre->validateGameId($gameId);
             $gameGenre->setGenreId($genreId);
             $gameGenre->setGameId($gameId);
+
+            $gameGenre->validateGenreId();
+            $gameGenre->validateGameId();
+            
             $gameGenre = $this->repository->insert($gameGenre);
+
             return $gameGenre;
         } catch (
             EntityInvalidValueException |
@@ -45,18 +50,21 @@ class GameGenreService
         }
     }
 
-    public function update(mixed $id, mixed $genreId, mixed $gameId): bool
+    public function update(int $id, int $genreId, int $gameId): bool
     {
         $gameGenre = new GameGenre();
 
         try {
-            $gameGenre->validateId($id);
-            $gameGenre->validateGenreId($genreId);
-            $gameGenre->validateGameId($gameId);
             $gameGenre->setId($id);
             $gameGenre->setGenreId($genreId);
             $gameGenre->setGameId($gameId);
+
+            $gameGenre->validateId();
+            $gameGenre->validateGenreId();
+            $gameGenre->validateGameId();
+            
             $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
+
             return $wasTheUpdateSuccessful;
         } catch (
             EntityInvalidValueException |
@@ -68,14 +76,17 @@ class GameGenreService
         }
     }
 
-    public function delete(mixed $id): bool
+    public function delete(int $id): bool
     {
         $gameGenre = new GameGenre();
 
         try {
-            $gameGenre->validateId($id);
             $gameGenre->setId($id);
+
+            $gameGenre->validateId();
+            
             $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
+
             return $wasTheDeleteSuccessful;
         } catch (
             EntityInvalidValueException |
@@ -87,14 +98,17 @@ class GameGenreService
         }
     }
 
-    public function findById(mixed $id): GameGenre|null
+    public function findById(int $id): GameGenre|null
     {
         $gameGenre = new GameGenre();
 
         try {
-            $gameGenre->validateId($id);
             $gameGenre->setId($id);
+
+            $gameGenre->validateId();
+            
             $gameGenre = $this->repository->findById($id);
+
             return $gameGenre;
         } catch (
             EntityInvalidValueException |
@@ -110,6 +124,7 @@ class GameGenreService
     {
         try {
             $gameGenres = $this->repository->findAll();
+            
             return $gameGenres;
         } catch (
             DatabaseStatementCreationFailureException |
