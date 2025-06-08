@@ -16,7 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
+use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationTokenRetriever;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;

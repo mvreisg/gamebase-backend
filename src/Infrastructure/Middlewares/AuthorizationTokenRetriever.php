@@ -1,6 +1,6 @@
 <?php
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Middlewares;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 
