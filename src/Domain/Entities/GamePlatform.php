@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
@@ -49,72 +51,24 @@ class GamePlatform
         $this->gameId = $gameId;
     }
 
-    public function validateId(mixed $id)
+    public function validateId(): void
     {
-        if ($id === null) {
-            throw new EntityInvalidValueException('O id é null!');
-        }
-
-        if (is_numeric($id) === false) {
-            throw new EntityInvalidValueException('O id não é um número!');
-        }
-
-        if (is_string($id)) {
-            throw new EntityInvalidValueException('O id é uma string!');
-        }
-
-        if (is_bool($id)) {
-            throw new EntityInvalidValueException('O id é um valor booleano!');
-        }
-
-        if ($id < 1) {
-            throw new EntityInvalidValueException('O id ' . $id . ' deve ser maior que 0.');
+        if ($this->id <= 0) {
+            throw new EntityInvalidValueException('O id deve ser maior que zero!');
         }
     }
 
-    public function validatePlatformId(mixed $platformId)
+    public function validatePlatformId()
     {
-        if ($platformId === null) {
-            throw new EntityInvalidValueException('O platformId é null!');
-        }
-
-        if (is_numeric($platformId) === false) {
-            throw new EntityInvalidValueException('O platformId não é um número!');
-        }
-
-        if (is_string($platformId)) {
-            throw new EntityInvalidValueException('O platformId é uma string!');
-        }
-
-        if (is_bool($platformId)) {
-            throw new EntityInvalidValueException('O platformId é um valor booleano!');
-        }
-
-        if ($platformId < 1) {
-            throw new EntityInvalidValueException('O platformId ' . $platformId . ' deve ser maior que 0.');
+        if ($this->platformId <= 0) {
+            throw new EntityInvalidValueException('O platformId deve ser maior que zero!');
         }
     }
 
-    public function validateGameId(mixed $gameId)
+    public function validateGameId()
     {
-        if ($gameId === null) {
-            throw new EntityInvalidValueException('O gameId é null!');
-        }
-
-        if (is_numeric($gameId) === false) {
-            throw new EntityInvalidValueException('O gameId não é um número!');
-        }
-
-        if (is_string($gameId)) {
-            throw new EntityInvalidValueException('O gameId é uma string!');
-        }
-
-        if (is_bool($gameId)) {
-            throw new EntityInvalidValueException('O gameId é um valor booleano!');
-        }
-
-        if ($gameId < 1) {
-            throw new EntityInvalidValueException('O gameId ' . $gameId . ' deve ser maior que 0.');
+        if ($this->gameId <= 0) {
+            throw new EntityInvalidValueException('O gameId deve ser maior que zero!');
         }
     }
 }
