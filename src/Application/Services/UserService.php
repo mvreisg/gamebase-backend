@@ -29,7 +29,7 @@ class UserService
     {
         $user = new User();
 
-        try {            
+        try {
             $user->setUserName($userName);
             $user->setPassword($passWord);
             $user->setIsActive($isActive);
@@ -108,7 +108,7 @@ class UserService
     {
         $user = new User();
 
-        try {            
+        try {
             $user->setId($id);
             $user->setIsActive($isActive);
 
@@ -131,7 +131,7 @@ class UserService
     {
         $user = new User();
 
-        try {            
+        try {
             $user->setId($id);
 
             $user->validateId();
@@ -154,7 +154,7 @@ class UserService
     {
         $user = new User();
 
-        try {            
+        try {
             $user->setUserName($userName);
 
             $user->validateUserName();
@@ -177,7 +177,7 @@ class UserService
     {
         try {
             $users = $this->repository->findAll();
-            
+
             return $users;
         } catch (
             DatabaseStatementCreationFailureException |

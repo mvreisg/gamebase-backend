@@ -94,13 +94,13 @@ class AuthenticationService
     {
         try {
             $requestUser = new User();
-            
+
             $requestUser->setUserName($userName);
             $requestUser->setPassword($passWord);
 
             $requestUser->validateUserName();
             $requestUser->validatePassWord();
-            
+
             $requestUserName = $requestUser->getUserName();
             $requestPassWord = $requestUser->getPassWord();
 

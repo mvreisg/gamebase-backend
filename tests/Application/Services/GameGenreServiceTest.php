@@ -1,610 +1,269 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreRepository;
 use PHPUnit\Framework\TestCase;
 
 class GameGenreServiceTest extends TestCase
 {
-    //
-    // Insert
-    //
+    private GameGenreRepositoryInterface $gameGenreRepository;
+    private GameGenreService $gameGenreService;
+
+    protected function setUp(): void
+    {
+        $this->gameGenreRepository = new MockGameGenreRepository();
+        $this->gameGenreService = new GameGenreService($this->gameGenreRepository);
+    }
 
     public function testIfItSuccessfullyInserts()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
-        $result = $service->insert(1, 1);
-        $this->assertInstanceOf(GameGenre::class, $result);
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
+
+        $this->assertNotEmpty($gameGenre);
+        $this->assertInstanceOf(GameGenre::class, $gameGenre);
     }
 
     public function testIfItSuccessfullyInsertsTenRegisters()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectNotToPerformAssertions();
-
         for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
+            $genreId = $i;
+            $gameId = $i;
+            $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
+
+            $this->assertNotEmpty($gameGenre);
+            $this->assertInstanceOf(GameGenre::class, $gameGenre);
         }
     }
 
-    //
-    // Insert
-    // - Genre Id
-    //
-
     public function testIfItFailsToInsertWithInvalidGenreId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = -1;
+        $gameId = 1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(-1, 1);
+        $this->gameGenreService->insert($genreId, $gameId);
     }
-
-    public function testIfItFailsToInsertWithNullGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(null, 1);
-    }
-
-    public function testIfItFailsToInsertWithArrayGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert([], 1);
-    }
-
-    public function testIfItFailsToInsertWithStringGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert('test', 1);
-    }
-
-    public function testIfItFailsToInsertWithBooleanGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(true, 1);
-    }
-
-    //
-    // Insert
-    // - Game Id
-    //
 
     public function testIfItFailsToInsertWithInvalidGameId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, -1);
+        $this->gameGenreService->insert($genreId, $gameId);
     }
-
-    public function testIfItFailsToInsertWithNullGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, null);
-    }
-
-    public function testIfItFailsToInsertWithArrayGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, []);
-    }
-
-    public function testIfItFailsToInsertWithStringGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 'test');
-    }
-
-    public function testIfItFailsToInsertWithBooleanGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, true);
-    }
-
-    //
-    // Update
-    //
 
     public function testIfItSuccessfullyUpdates()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
-        $service->insert(1, 1);
-        $result = $service->update(1, 1, 1);
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
-        $this->assertTrue($result);
+        $id = $gameGenre->getId();
+
+        $hasChanged = $this->gameGenreService->update($id, $genreId, $gameId);
+
+        $this->assertTrue($hasChanged);
     }
 
     public function testIfItSuccessfullyUpdatesWithTenRegisters()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
+        $gameGenres = [];
         for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
-        }
-        $random = random_int(1, 10);
-        $result = $service->update($random, $random, $random);
-
-        $this->assertTrue($result);
-    }
-
-    public function testIfItFailsToUpdateWithTenRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
+            $genreId = $i;
+            $gameId = $i;
+            $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
         }
 
-        $result = $service->update(11, 1, 1);
+        for ($i = 1; $i <= 10; $i++) {
+            $genreId = $i;
+            $gameId = $i;
+            $id = $gameGenres[$i]->getId();
 
-        $this->assertFalse($result);
+            $hasChanged = $this->gameGenreService->update($id, $genreId, $gameId);
+
+            $this->assertTrue($hasChanged);
+        }
     }
-
-    //
-    // Update
-    // - Id
-    //
 
     public function testIfItFailsToUpdateWithInvalidId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $this->gameGenreService->insert($genreId, $gameId);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, 1);
-        $service->update(-1, 1, 1);
+        $this->gameGenreService->update($id, $genreId, $gameId);
     }
-
-    public function testIfItFailsToUpdateWithNullId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(null, 1, 1);
-    }
-
-    public function testIfItFailsToUpdateWithArrayId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update([], 1, 1);
-    }
-
-    public function testIfItFailsToUpdateWithStringId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update('test', 1, 1);
-    }
-
-    public function testIfItFailsToUpdateWithBooleanId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(true, 1, 1);
-    }
-
-    //
-    // Update
-    // - Genre Id
-    //
 
     public function testIfItFailsToUpdateWithInvalidGenreId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
+
+        $genreId = -1;
+        $id = $gameGenre->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, 1);
-        $service->update(1, -1, 1);
+        $this->gameGenreService->update($id, $genreId, $gameId);
     }
-
-    public function testIfItFailsToUpdateWithNullGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, null, 1);
-    }
-
-    public function testIfItFailsToUpdateWithArrayGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, [], 1);
-    }
-
-    public function testIfItFailsToUpdateWithStringGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, 'test', 1);
-    }
-
-    public function testIfItFailsToUpdateWithBooleanGenreId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, true, 1);
-    }
-
-    //
-    // Update
-    // - Game Id
-    //
 
     public function testIfItFailsToUpdateWithInvalidGameId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
+
+        $gameId = -1;
+        $id = $gameGenre->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, 1);
-        $service->update(1, 1, -1);
+        $this->gameGenreService->update($id, $genreId, $gameId);
     }
-
-    public function testIfItFailsToUpdateWithNullGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, 1, null);
-    }
-
-    public function testIfItFailsToUpdateWithArrayGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, 1, []);
-    }
-
-    public function testIfItFailsToUpdateWithStringGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, 1, 'test');
-    }
-
-    public function testIfItFailsToUpdateWithBooleanGameId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->update(1, 1, true);
-    }
-
-    //
-    // Delete
-    //
 
     public function testIfItSuccessfullyDeletes()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
-        $service->insert(1, 1);
-        $result = $service->delete(1);
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
-        $this->assertTrue($result);
+        $id = $gameGenre->getId();
+
+        $hasDeleted = $this->gameGenreService->delete($id);
+
+        $this->assertTrue($hasDeleted);
     }
 
     public function testIfItSuccessfullyDeletesWithTenRegisters()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $gameGenres = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $genreId = $i;
+            $gameId = $i;
+            $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
+        }
 
         for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
+            $id = $gameGenres[$i]->getId();
+
+            $hasDeleted = $this->gameGenreService->delete($id);
+
+            $this->assertTrue($hasDeleted);
         }
-        $result = $service->delete(random_int(1, 10));
-
-        $this->assertTrue($result);
-    }
-
-    public function testIfIFailsToDeleteWithTenRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
-        }
-        $result = $service->delete(11);
-
-        $this->assertFalse($result);
     }
 
     public function testIfItFailsToDeleteWithInvalidId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $this->gameGenreService->insert($genreId, $gameId);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, 1);
-        $service->delete(-1);
+        $this->gameGenreService->delete($id);
     }
-
-    public function testIfItFailsToDeleteWithNullId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->delete(null);
-    }
-
-    public function testIfItFailsToDeleteWithArrayId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->delete([]);
-    }
-
-    public function testIfItFailsToDeleteWithStringId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->delete('test');
-    }
-
-    public function testIfItFailsToDeleteWithBooleanId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->delete(true);
-    }
-
-    //
-    // Find By Id
-    //
 
     public function testIfItSucessfullyFindsById()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
-        $service->insert(1, 1);
-        $result = $service->findById(1);
+        $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
-        $this->assertInstanceOf(GameGenre::class, $result);
+        $id = $gameGenre->getId();
+
+        $fetchedGameGenre = $this->gameGenreService->findById($id);
+
+        $this->assertNotEmpty($fetchedGameGenre);
+        $this->assertInstanceOf(GameGenre::class, $fetchedGameGenre);
+        $this->assertEquals($gameGenre, $fetchedGameGenre);
     }
 
     public function testIfItSucessfullyFindsByIdWithTenRegisters()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $gameGenres = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $genreId = $i;
+            $gameId = $i;
+            $gameGenres[$i] = $this->gameGenreService->insert($genreId, $gameId);
+        }
 
         for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
+            $insertedGameGenre = $gameGenres[$i];
+            $id = $insertedGameGenre->getId();
+
+            $fetchedGameGenre = $this->gameGenreService->findById($id);
+
+            $this->assertNotEmpty($fetchedGameGenre);
+            $this->assertInstanceOf(GameGenre::class, $fetchedGameGenre);
+            $this->assertEquals($insertedGameGenre, $fetchedGameGenre);
         }
-        $result = $service->findById(random_int(1, 10));
-
-        $this->assertInstanceOf(GameGenre::class, $result);
-    }
-
-    public function testIfItFailsToFindByIdWithUnexistantId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $service->insert(1, 1);
-        $result = $service->findById(2);
-
-        $this->assertEmpty($result);
-    }
-
-    public function testIfItFailsToFindByIdWithUnexistantIdWithTenRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
-        }
-        $result = $service->findById(11);
-
-        $this->assertEmpty($result);
     }
 
     public function testIfItFailsToFindByIdWithInvalidId()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
+
+        $this->gameGenreService->insert($genreId, $gameId);
+
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $service->insert(1, 1);
-        $service->findById(-1);
+        $this->gameGenreService->findById($id);
     }
 
-    public function testIfItFailsToFindByIdWithNullId()
+    public function testIfItSuccessfullyFindsAllWithNoRegisters()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $emptyArray = $this->gameGenreService->findAll();
 
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->findById(null);
+        $this->assertEmpty($emptyArray);
     }
 
-    public function testIfItFailsToFindByIdWithArrayId()
+    public function testIfItSuccessfullyFindsAll()
     {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
+        $genreId = 1;
+        $gameId = 1;
 
-        $this->expectException(EntityInvalidValueException::class);
+        $this->gameGenreService->insert($genreId, $gameId);
 
-        $service->insert(1, 1);
-        $service->findById([]);
-    }
+        $gameGenres = $this->gameGenreService->findAll();
 
-    public function testIfItFailsToFindByIdWithStringId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->findById('test');
-    }
-
-    public function testIfItFailsToFindByIdWithBooleanId()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $service->insert(1, 1);
-        $service->findById(true);
-    }
-
-    //
-    // Find All
-    //
-
-    public function testIfItSuccessfullyRetrievesAEmptyArrayFromFindAllEvenWithUnexistantRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $result = $service->findAll();
-
-        $this->assertEmpty($result);
-    }
-
-    public function testIfItSuccessfullyRetrievesARegisterFromFindAllEvenWithUnexistantRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        $service->insert(1, 1);
-        $result = $service->findAll();
-
-        $this->assertNotEmpty($result);
-    }
-
-    public function testIfItSuccessfullyRetrievesAllTenRegistersFromFindAllEvenWithUnexistantRegisters()
-    {
-        $repository = new MockGameGenreRepository();
-        $service = new GameGenreService($repository);
-
-        for ($i = 1; $i <= 10; $i++) {
-            $service->insert($i, $i);
-        }
-        $result = $service->findAll();
-
-        $this->assertNotEmpty($result);
+        $this->assertNotEmpty($gameGenres);
     }
 }
