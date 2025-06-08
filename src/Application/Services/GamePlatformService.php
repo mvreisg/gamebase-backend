@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
@@ -20,15 +22,17 @@ class GamePlatformService
         $this->repository = $repository;
     }
 
-    public function insert(mixed $platformId, mixed $gameId): GamePlatform
+    public function insert(int $platformId, int $gameId): GamePlatform
     {
         $gamePlatform = new GamePlatform();
 
         try {
-            $gamePlatform->validatePlatformId($platformId);
-            $gamePlatform->validateGameId($gameId);
             $gamePlatform->setPlatformId($platformId);
             $gamePlatform->setGameId($gameId);
+
+            $gamePlatform->validatePlatformId();
+            $gamePlatform->validateGameId();
+
             $gamePlatform = $this->repository->insert($gamePlatform);
 
             return $gamePlatform;
@@ -43,18 +47,21 @@ class GamePlatformService
         }
     }
 
-    public function update(mixed $id, mixed $platformId, mixed $gameId): bool
+    public function update(int $id, int $platformId, int $gameId): bool
     {
         $gamePlatform = new GamePlatform();
 
         try {
-            $gamePlatform->validateId($id);
-            $gamePlatform->validatePlatformId($platformId);
-            $gamePlatform->validateGameId($gameId);
             $gamePlatform->setId($id);
             $gamePlatform->setPlatformId($platformId);
             $gamePlatform->setGameId($gameId);
+
+            $gamePlatform->validateId();
+            $gamePlatform->validatePlatformId();
+            $gamePlatform->validateGameId();
+
             $wasTheUpdateSuccessful = $this->repository->update($gamePlatform);
+
             return $wasTheUpdateSuccessful;
         } catch (
             EntityInvalidValueException |
@@ -66,27 +73,33 @@ class GamePlatformService
         }
     }
 
-    public function delete(mixed $id): bool
+    public function delete(int $id): bool
     {
         $gamePlatform = new GamePlatform();
 
         try {
-            $gamePlatform->validateId($id);
             $gamePlatform->setId($id);
+
+            $gamePlatform->validateId();
+
             $wasTheDeletionSuccessful = $this->repository->delete($gamePlatform);
+
             return $wasTheDeletionSuccessful;
         } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
             throw $e;
         }
     }
 
-    public function findById(mixed $id): GamePlatform|null
+    public function findById(int $id): GamePlatform|null
     {
         $gamePlatform = new GamePlatform();
         try {
-            $gamePlatform->validateId($id);
             $gamePlatform->setId($id);
+
+            $gamePlatform->validateId();
+
             $gamePlatform = $this->repository->findById($id);
+
             return $gamePlatform;
         } catch (
             EntityInvalidValueException |
@@ -102,6 +115,7 @@ class GamePlatformService
     {
         try {
             $gamePlatforms = $this->repository->findAll();
+
             return $gamePlatforms;
         } catch (
             DatabaseStatementCreationFailureException |
