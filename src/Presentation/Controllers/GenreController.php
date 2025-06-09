@@ -60,7 +60,7 @@ class GenreController
             $genre = $this->service->insert($name, $isActive);
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Gênero inserido com sucesso!',
                     'data' => [
                         'id' => $genre->getId(),
@@ -68,16 +68,16 @@ class GenreController
                         'isActive' => $genre->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[201])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[201])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -86,11 +86,11 @@ class GenreController
             DatabaseDuplicatedEntryException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -99,11 +99,11 @@ class GenreController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -121,8 +121,8 @@ class GenreController
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
-            $isGenreIdSetted = isset($params['genreId']);
-            if ($isGenreIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O parâmetro genreId não foi informado na URL ou seu valor é null!'
                 );
@@ -138,35 +138,35 @@ class GenreController
                 throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
             }
 
-            $genreId = $params['genreId'];
+            $id = $params['id'];
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasAUpdateOcurred = $this->service->update($genreId, $name, $isActive);
+            $wasAUpdateOcurred = $this->service->update($id, $name, $isActive);
             if ($wasAUpdateOcurred === false) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Nenhuma linha afetada.'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Gênero atualizado com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -175,11 +175,11 @@ class GenreController
             DatabaseDuplicatedEntryException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerOperationErrorException |
@@ -188,11 +188,11 @@ class GenreController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -210,8 +210,8 @@ class GenreController
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
-            $isGenreIdSetted = isset($params['genreId']);
-            if ($isGenreIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro genreId não foi informado na URL!');
             }
 
@@ -220,33 +220,30 @@ class GenreController
                 throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
             }
 
-            $genreId = $params['genreId'];
+            $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($genreId, $isActive);
+            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
                 throw new ControllerOperationErrorException(
-                    'Ocorreu um erro! Verifique se o id ' .
-                    $genreId .
-                    ' existe ' .
-                    'ou se o valor de atividade foi modificado!'
+                    'Nada foi modificado!'
                 );
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Estado atualizado com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -254,11 +251,11 @@ class GenreController
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerOperationErrorException |
@@ -267,11 +264,11 @@ class GenreController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -288,29 +285,29 @@ class GenreController
 
             $params = $request->getParams();
 
-            $isGenreIdSetted = isset($params['genreId']);
-            if ($isGenreIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O parâmetro genreId não foi informado ou seu valor é null!'
                 );
             }
 
-            $genreId = $params['genreId'];
+            $id = $params['id'];
 
-            $genre = $this->service->findById($genreId);
+            $genre = $this->service->findById($id);
 
             if ($genre === null) {
                 $response
-                    ->appendArray([
-                        'message' => 'O gênero com o id ' . $genreId . ' não existe!',
+                    ->setBody([
+                        'message' => 'O gênero com o id ' . $id . ' não existe!',
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Gênero encontrado com sucesso!',
                     'data' => [
                         'id' => $genre->getId(),
@@ -318,27 +315,27 @@ class GenreController
                         'isActive' => $genre->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -346,11 +343,11 @@ class GenreController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -370,11 +367,11 @@ class GenreController
             $numberOfGenresFound = count($genres);
             if ($numberOfGenresFound === 0) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Nenhum registro encontrado!',
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
@@ -387,20 +384,20 @@ class GenreController
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Gêneros buscados com sucesso!',
                     'data' => $data
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -408,11 +405,11 @@ class GenreController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }

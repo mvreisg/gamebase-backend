@@ -21,18 +21,18 @@ class GenreRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('PATCH', '/genre/:genreId', function (
+        $app->add('PATCH', '/genre/:id', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->setIsActive($request, $response);
         });
 
-        $app->add('GET', '/genre/:genreId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/genre/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('PUT', '/genre/:genreId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PUT', '/genre/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->update($request, $response);
         });
     }

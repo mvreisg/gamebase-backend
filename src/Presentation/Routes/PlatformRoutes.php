@@ -21,21 +21,21 @@ class PlatformRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('GET', '/platform/:platformId', function (
+        $app->add('GET', '/platform/:id', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('PATCH', '/platform/:platformId', function (
+        $app->add('PATCH', '/platform/:id', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->setIsActive($request, $response);
         });
 
-        $app->add('PUT', '/platform/:platformId', function (
+        $app->add('PUT', '/platform/:id', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {

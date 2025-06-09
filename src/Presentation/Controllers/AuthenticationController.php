@@ -58,12 +58,12 @@ class AuthenticationController
                 $isTokenValid = $this->service->validateToken($userName, $token);
                 if ($isTokenValid) {
                     $response
-                        ->appendArray([
+                        ->setBody([
                             'message' => 'Já existe uma sessão!',
                             'token' => $token
                         ])
-                        ->status(HttpRouter::STATUS_CODES[200])
-                        ->send();
+                        ->setStatus(HttpRouter::$STATUS_CODES[200])
+                        ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                     return;
                 }
             }
@@ -74,32 +74,32 @@ class AuthenticationController
                 if ($token === null || $token === "") {
                     $token = $this->service->generateToken($userName, $oneWeek);
                     $response
-                        ->appendArray([
+                        ->setBody([
                             'message' =>
                                 'Login realizado com sucesso! Durará ' .
                                 ($oneWeek ? '1 semana' : '1 dia') . '.',
                             'token' => $token
                         ])
-                        ->status(HttpRouter::STATUS_CODES[200])
-                        ->send();
+                        ->setStatus(HttpRouter::$STATUS_CODES[200])
+                        ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                     return;
                 } else {
                     $response
-                        ->appendArray([
+                        ->setBody([
                             'message' => 'Já existe uma sessão!',
                             'token' => $token
                         ])
-                        ->status(HttpRouter::STATUS_CODES[200])
-                        ->send();
+                        ->setStatus(HttpRouter::$STATUS_CODES[200])
+                        ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                     return;
                 }
             } else {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Verifique seu nome de usuário ou senha!'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[401])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[401])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
         } catch (
@@ -110,11 +110,11 @@ class AuthenticationController
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             EncryptionException |
@@ -124,11 +124,11 @@ class AuthenticationController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -149,28 +149,28 @@ class AuthenticationController
             $isTokenValid = $this->service->validateToken($token);
             if ($isTokenValid) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Usuário possui sessão ativa'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             } else {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Token inválido'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[401])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[401])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             HttpJsonParseException |
@@ -178,11 +178,11 @@ class AuthenticationController
             ControllerUndefinedValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -191,11 +191,11 @@ class AuthenticationController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -217,28 +217,28 @@ class AuthenticationController
 
             if ($hasSuccess) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Logoff realizado com sucesso!'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             } else {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Erro ao realizar o logoff!'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[401])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[401])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             HttpJsonParseException |
@@ -246,11 +246,11 @@ class AuthenticationController
             ControllerUndefinedValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -259,11 +259,11 @@ class AuthenticationController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }

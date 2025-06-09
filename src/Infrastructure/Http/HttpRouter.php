@@ -4,7 +4,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
 class HttpRouter
 {
-    public const STATUS_CODES = [
+    public static array $STATUS_CODES = [
         200 => 'HTTP/1.1 200 OK',
         201 => 'HTTP/1.1 201 Created',
         204 => 'HTTP/1.1 204 No Content',
@@ -15,18 +15,25 @@ class HttpRouter
         500 => 'HTTP/1.1 500 Internal Server Error'
     ];
 
-    public const HEADERS = [
-        'CONTENT_TYPE_APPLICATION_JSON' => 'Content-Type: application/json; charset=utf-8',
-        'ACCESS_CONTROL_ALLOW_METHODS' => 'Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT',
-        'ACCESS_CONTROL_ALLOW_HEADERS' => 'Access-Control-Allow-Headers: Content-Type, Authorization',
-        'ACCESS_CONTROL_ALLOW_CREDENTIALS' => 'Access-Control-Allow-Credentials: true',
+    public static array $CONTENT_TYPES = [
+        'JSON' => 'Content-Type: application/json; charset=utf-8',
     ];
 
-    public const NON_EXISTANT_ROUTE = '';
+    public static string $NON_EXISTANT_ROUTE = '';
+    public static string $WILDCARD_METHOD = '*';
 
-    public const WILDCARD_METHOD = '*';
-
+    private array $headers;
     private array $routes = [];
+
+    public function __construct()
+    {
+        $this->headers = [
+            'ACCESS_CONTROL_ALLOW_ORIGIN' => 'Access-Control-Allow-Origin: ' . $_SERVER['FRONTEND_ADDRESS'],
+            'ACCESS_CONTROL_ALLOW_METHODS' => 'Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT',
+            'ACCESS_CONTROL_ALLOW_HEADERS' => 'Access-Control-Allow-Headers: Content-Type, Authorization',
+            'ACCESS_CONTROL_ALLOW_CREDENTIALS' => 'Access-Control-Allow-Credentials: true',
+        ];
+    }
 
     public function add(string $method, string $route, callable $callback)
     {
@@ -39,174 +46,101 @@ class HttpRouter
 
     public function run()
     {
-        header('Access-Control-Allow-Origin: ' . $_SERVER['FRONTEND_ADDRESS']);
-        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_METHODS']);
-        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_HEADERS']);
-        header(HttpRouter::HEADERS['ACCESS_CONTROL_ALLOW_CREDENTIALS']);
-        header(HttpRouter::HEADERS['CONTENT_TYPE_APPLICATION_JSON']);
-
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            http_response_code(204);
-            exit();
+        foreach ($this->headers as $header) {
+            header($header);
         }
 
         $path = $_SERVER['REQUEST_URI'];
 
         $method = $_SERVER['REQUEST_METHOD'];
 
-        // /game/1 ? a=1&b=2
         $explodedPath = explode('?', $path);
-        // -> [/game/1] ? a=1&b=2
+
         $routePart = $explodedPath[0];
+
         $containsQueryParameters = count($explodedPath) > 1;
         $queryPart = null;
         if ($containsQueryParameters) {
-            // /game/1 ? -> [a=1&b=2]
             $queryPart = $explodedPath[1];
         }
+
         $body = file_get_contents('php://input');
         $headers = getallheaders();
 
-        $matchingMethods = array_filter(
-            $this->routes,
-            fn ($item) => $item['method'] === $method || $item['method'] === self::WILDCARD_METHOD
-        );
-
-        $exactlyMatchedRoutes = array_filter($matchingMethods, fn ($item) => $item['route'] === $routePart);
-        $looselyMatchedRoutes = array_filter(
-            $matchingMethods,
-            fn ($item) => $this->matchRoute($item['route'], $routePart)
-        );
-
-        $numberOfExactlyMatchedRoutes = count($exactlyMatchedRoutes);
-        $numberOfLooselyMatchedRoutes = count($looselyMatchedRoutes);
-
-        if ($numberOfExactlyMatchedRoutes === 1) {
-            $item = array_pop($exactlyMatchedRoutes);
-            $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, [], $body, $headers);
-            $response = new HttpResponse();
-            call_user_func_array($item['callback'], [$request, $response]);
+        if ($method === 'OPTIONS') {
+            header(self::$STATUS_CODES[204]);
             return;
-        } elseif ($numberOfLooselyMatchedRoutes === 1) {
-            $item = array_pop($looselyMatchedRoutes);
-            $params = $this->findRouteParameters($item['route'], $routePart);
-            $queries = $containsQueryParameters ? $this->findQueryParameters($queryPart) : [];
-            $request = new HttpRequest($method, $routePart, $queries, $params, $body, $headers);
-            $response = new HttpResponse();
-            call_user_func_array($item['callback'], [$request, $response]);
-            return;
-        } else {
-            header(self::STATUS_CODES[404]);
-            print('Rota não encontrada!');
-        }
-    }
-
-    private function matchRoute(string $requestRoute, string $informedRoute)
-    {
-        if ($requestRoute === $informedRoute) {
-            return true;
         }
 
-        $explodedRequestRoute = explode('/', $requestRoute);
-        $explodedInformedRequestRoute = explode('/', $informedRoute);
-        array_shift($explodedRequestRoute);
-        array_shift($explodedInformedRequestRoute);
+        $filteredRoutes = array_filter($this->routes, fn ($item) => $item['method'] === $method);
 
-        $doTheyHaveTheSameSize = count($explodedRequestRoute) === count($explodedInformedRequestRoute);
-        if ($doTheyHaveTheSameSize === false) {
-            return false;
-        }
+        foreach ($filteredRoutes as $route) {
+            $routeTokens = explode('/', $route['route']);
+            array_shift($routeTokens);
 
-        for ($i = 0; $i < count($explodedRequestRoute); $i++) {
-            $requestWord = $explodedRequestRoute[$i];
-            if ($requestWord === '') {
-                return false;
-            }
+            $tokenizedRoute = explode('/', $routePart);
+            array_shift($tokenizedRoute);
 
-            $informedWord = $explodedInformedRequestRoute[$i];
-
-            $maybeItIsRouteParameter = false;
-            if ($requestWord !== $informedWord) {
-                $maybeItIsRouteParameter = true;
-            } else {
+            if (count($routeTokens) !== count($tokenizedRoute)) {
                 continue;
             }
 
-            $matches = false;
-            if ($maybeItIsRouteParameter) {
-                $matches = preg_match('/:([A-Za-z0-9-_]+)/', $requestWord);
-            }
+            $looselyTheSameRoute = true;
 
-            if ($matches == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function findQueryParameters(string $path)
-    {
-        $queries = [];
-
-        $explodedTuples = explode('&', $path);
-
-        foreach ($explodedTuples as $tuple) {
-            $list = explode('=', $tuple);
-            $key = $list[0];
-            $value = $list[1];
-            if (ctype_digit($value) && is_numeric($value)) {
-                $value = intval($value);
-            } elseif (is_numeric($value)) {
-                $value = floatval($value);
-            }
-            $queries[$key] = $value;
-        }
-
-        return $queries;
-    }
-
-    private function findRouteParameters(string $requestRoute, string $informedRoute)
-    {
-        $params = [];
-
-        $explodedRequestRoute = explode('/', $requestRoute);
-        $explodedInformedRequestRoute = explode('/', $informedRoute);
-
-        for ($i = 0; $i < count($explodedRequestRoute); $i++) {
-            $requestWord = $explodedRequestRoute[$i];
-            $informedWord = $explodedInformedRequestRoute[$i];
-
-            $maybeItIsRouteParameter = false;
-            if ($requestWord !== $informedWord) {
-                $maybeItIsRouteParameter = true;
-            } else {
-                continue;
-            }
-
-            $matches = false;
-            if ($maybeItIsRouteParameter) {
-                $matches = preg_match('/:([A-Za-z0-9-_]+)/', $requestWord);
-            }
-
-            $isValueEmpty = false;
-            if ($matches) {
-                $key = str_replace(':', '', $requestWord);
-                $isValueEmpty = $informedWord === '';
-            }
-
-            if ($isValueEmpty === false) {
-                $value = $informedWord;
-                if (ctype_digit($value) && is_numeric($value)) {
-                    $value = intval($value);
-                } elseif (is_numeric($value)) {
-                    $value = floatval($value);
+            for ($i = 0; $i < count($routeTokens); $i++) {
+                if (preg_match('/:[a-z0-9]+/i', $routeTokens[$i])) {
+                    continue;
                 }
+
+                if ($routeTokens[$i] !== $tokenizedRoute[$i]) {
+                    $looselyTheSameRoute = false;
+                    break;
+                }
+            }
+
+            if ($looselyTheSameRoute === false) {
+                continue;
+            }
+
+            $paramParamMatchesArray = preg_grep('/:[a-z0-9]+/i', $routeTokens);
+            $paramParamMatchesIndexesArray = array_keys(array_filter($paramParamMatchesArray));
+
+            $paramValueMatchesArray = [];
+            if (preg_match_all('/[a-zA-Z0-9]+/i', $routePart, $matches)) {
+                $paramValueMatchesArray = $matches[0];
+            }
+
+            $params = [];
+            for ($i = 0; $i < count($paramParamMatchesIndexesArray); $i++) {
+                $index = $paramParamMatchesIndexesArray[$i];
+                $key = $routeTokens[$index];
+                $value = $paramValueMatchesArray[$index];
                 $params[$key] = $value;
             }
+
+            $queries = [];
+            if ($containsQueryParameters) {
+                //'a=1&b=2'
+                $queriesDividedIntoKeyValues = explode('&', $queryPart);
+                //'a=1', 'b=2'
+                $queriesDividedIntoKeyValues = array_map(
+                    fn ($item) => explode('=', $item),
+                    $queriesDividedIntoKeyValues
+                );
+                // [[a, 1], [b, 2]]
+                foreach ($queriesDividedIntoKeyValues as $key => $value) {
+                    $queries[$value[0]] = $value[1];
+                }
+                // [[a] => [1], [b] => [2]]
+            }
+
+            $request = new HttpRequest($method, $routePart, $queries, $params, $body, $headers);
+            $response = new HttpResponse();
+            call_user_func_array($route['callback'], [$request, $response]);
+            return;
         }
 
-        return $params;
+        header(self::$STATUS_CODES[404]);
+        print('Rota não encontrada!');
     }
 }

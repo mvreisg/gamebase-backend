@@ -17,11 +17,11 @@ class GameRoutes
             $controller->insert($request, $response);
         });
 
-        $app->add('PUT', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PUT', '/game/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->update($request, $response);
         });
 
-        $app->add('PATCH', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PATCH', '/game/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->setIsActive($request, $response);
         });
 
@@ -29,7 +29,7 @@ class GameRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('GET', '/game/:gameId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/game/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->findById($request, $response);
         });
     }
