@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
+use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
@@ -136,28 +137,18 @@ class AuthenticationController
     public function handleValidation(HttpRequest $request, HttpResponse $response)
     {
         try {
-            $body = $request->parseBodyFromJSONString();
-            $isTokenSetted = isset($body['token']);
-            if ($isTokenSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave token não foi definida no JSON ou seu valor é null!'
-                );
-            }
+            $headers = $request->getHeaders();
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
-            $token = $body['token'];
-
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid) {
-                $response
-                    ->setBody([
-                        'message' => 'Usuário possui sessão ativa'
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[200])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
-            } else {
-                throw new AuthenticationException('Token inválido');
-            }
+            $response
+                ->setBody([
+                    'message' => 'Usuário autenticado!'
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;
         } catch (AuthenticationException $e) {
             $response
                 ->setBody([
@@ -197,15 +188,11 @@ class AuthenticationController
     public function handleLogoff(HttpRequest $request, HttpResponse $response)
     {
         try {
-            $body = $request->parseBodyFromJSONString();
-            $isTokenSetted = isset($body['token']);
-            if ($isTokenSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave token não foi definida no JSON ou seu valor é null!'
-                );
-            }
-
-            $token = $body['token'];
+            $headers = $request->getHeaders();
+            $token = AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService)
+                ->getToken();
 
             $hasSuccess = $this->authenticationService->tryLogoff($token);
 
