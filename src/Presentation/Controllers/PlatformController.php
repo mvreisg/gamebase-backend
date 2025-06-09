@@ -17,32 +17,30 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 class PlatformController
 {
-    private PlatformService $service;
-    private AuthenticationService $authService;
+    private PlatformService $platformService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(PlatformService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        PlatformService $platformService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->platformService = $platformService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -61,10 +59,10 @@ class PlatformController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $platform = $this->service->insert($name, $isActive);
+            $platform = $this->platformService->insert($name, $isActive);
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Plataforma incluída com sucesso!',
                     'data' => [
                         'id' => $platform->getId(),
@@ -72,16 +70,16 @@ class PlatformController
                         'isActive' => $platform->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[201])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[201])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -91,11 +89,11 @@ class PlatformController
         ) {
             $messages[] = $e->getMessage();
             $response
-                ->appendArray([
+                ->setBody([
                     'messages' => $messages
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseTransactionCreationFailureException |
@@ -106,11 +104,11 @@ class PlatformController
         ) {
             $messages[] = $e->getMessage();
             $response
-                ->appendArray([
+                ->setBody([
                     'messages' => $messages
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -119,17 +117,15 @@ class PlatformController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
-            $isPlatformIdSetted = isset($params['platformId']);
-            if ($isPlatformIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O parâmetro platformId não foi informado na URL ou seu valor é null!'
                 );
@@ -147,65 +143,56 @@ class PlatformController
                 throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
             }
 
-            $platformId = $params['platformId'];
+            $id = $params['id'];
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->update($platformId, $name, $isActive);
+            $wasTheUpdateSuccessful = $this->platformService->update($id, $name, $isActive);
             if ($wasTheUpdateSuccessful === false) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Nenhuma linha afetada.'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Plataforma atualizada com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             ControllerUndefinedValueException |
             HttpJsonParseException |
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (DatabaseStatementCreationFailureException | PDOException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -214,17 +201,15 @@ class PlatformController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
-            $isPlatformIdSetted = isset($params['platformId']);
-            if ($isPlatformIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException('O parâmetro platformId não foi informado na URL!');
             }
 
@@ -233,33 +218,34 @@ class PlatformController
                 throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
             }
 
-            $platformId = $params['platformId'];
+            $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($platformId, $isActive);
+            $wasTheUpdateOcurred = $this->platformService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Ocorreu um erro! Verifique se o id ' .
-                    $platformId .
-                    ' existe ' .
-                    'ou se o valor de atividade foi modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum registro modificado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Estado atualizado com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -267,24 +253,23 @@ class PlatformController
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -293,32 +278,34 @@ class PlatformController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
 
-            $isPlatformIdSetted = isset($params['platformId']);
-            if ($isPlatformIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O parâmetro platformId não está definido no JSON ou seu valor é null!'
                 );
             }
 
-            $platformId = $params['platformId'];
+            $id = $params['id'];
 
-            $platform = $this->service->findById($platformId);
+            $platform = $this->platformService->findById($id);
             if ($platform === null) {
-                throw new HttpResourceNotFoundException(
-                    'A plataforma procurada não foi encontrada!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'A plataforma procurada não foi encontrada!',
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Plataforma encontrada com sucesso!',
                     'data' => [
                         'id' => $platform->getId(),
@@ -326,32 +313,27 @@ class PlatformController
                         'isActive' => $platform->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
-        } catch (HttpResourceNotFoundException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -359,11 +341,11 @@ class PlatformController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -372,19 +354,21 @@ class PlatformController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
-            $platforms = $this->service->findAll();
+            $platforms = $this->platformService->findAll();
 
             $numberOfPlatforms = count($platforms);
             if ($numberOfPlatforms === 0) {
-                throw new HttpResourceNotFoundException(
-                    'A busca foi concluída e nenhuma plataforma foi encontrada.'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'A busca foi concluída e nenhuma plataforma foi encontrada.',
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             foreach ($platforms as $platform) {
@@ -396,28 +380,20 @@ class PlatformController
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Plataformas buscadas com sucesso!',
                     'data' => $data
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -425,11 +401,11 @@ class PlatformController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }

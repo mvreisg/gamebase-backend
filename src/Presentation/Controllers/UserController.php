@@ -17,31 +17,29 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpResourceNotFoundException;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
+use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 class UserController
 {
-    private UserService $service;
-    private AuthenticationService $authService;
+    private UserService $userService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(UserService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        UserService $userService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->userService = $userService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -70,10 +68,10 @@ class UserController
             $passWord = $body['password'];
             $isActive = $body['isActive'];
 
-            $user = $this->service->insert($userName, $passWord, $isActive);
+            $user = $this->userService->insert($userName, $passWord, $isActive);
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Registro de usuário inserido com sucesso!',
                     'data' => [
                         'id' => $user->getId(),
@@ -82,17 +80,17 @@ class UserController
                         'isActive' => $user->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[201])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[201])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
 
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             ControllerUndefinedValueException |
@@ -101,11 +99,11 @@ class UserController
             DatabaseDuplicatedEntryException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -114,11 +112,11 @@ class UserController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -127,17 +125,15 @@ class UserController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
 
-            $isUserIdSetted = isset($params['userId']);
-            if ($isUserIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException('A chave userId não existe ou seu valor é null!');
             }
 
@@ -156,63 +152,61 @@ class UserController
                 throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
             }
 
-            $userId = $params['userId'];
+            $id = $params['id'];
             $userName = $body['username'];
             $passWord = $body['password'];
             $isActive = $body['isActive'];
 
-            $wasSomeUpdateHappened = $this->service->update($userId, $userName, $passWord, $isActive);
+            $wasSomeUpdateHappened = $this->userService->update($id, $userName, $passWord, $isActive);
             if ($wasSomeUpdateHappened === false) {
                 $response
-                    ->appendArray([
+                    ->setBody([
                         'message' => 'Nenhuma linha afetada.'
                     ])
-                    ->status(HttpRouter::STATUS_CODES[200])
-                    ->send();
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Dados do usuário atualizados com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            HttpResourceNotFoundException |
             ControllerUndefinedValueException |
             HttpJsonParseException |
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -221,17 +215,15 @@ class UserController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
 
-            $isUserIdSetted = isset($params['userId']);
-            if ($isUserIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O parâmetro userId não foi informado ou seu valor é null!'
                 );
@@ -244,54 +236,54 @@ class UserController
                 );
             }
 
-            $userId = $params['userId'];
+            $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($userId, $isActive);
+            $wasTheUpdateOcurred = $this->userService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Ocorreu um erro! Verifique se o id ' .
-                    $userId .
-                    ' existe ' .
-                    'ou se o valor de atividade foi modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum valor foi modificado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Estado atualizado com sucesso!'
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -300,33 +292,35 @@ class UserController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
 
-            $isUserIdSetted = isset($params['userId']);
-            if ($isUserIdSetted === false) {
+            $isIdSetted = isset($params['id']);
+            if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O id do usuário não foi informado na URL ou seu valor é null!'
                 );
             }
 
-            $userId = $params['userId'];
+            $id = $params['id'];
 
-            $user = $this->service->findById($userId);
+            $user = $this->userService->findById($id);
 
             if ($user === null) {
-                throw new HttpResourceNotFoundException(
-                    'O registro de usuário com o id ' . $userId . ' não pôde ser encontrado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'O registro de usuário com o id ' . $id . ' não pôde ser encontrado!',
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Usuário buscado com sucesso!',
                     'data' => [
                         'id' => $user->getId(),
@@ -335,32 +329,27 @@ class UserController
                         'isActive' => $user->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
-        } catch (HttpResourceNotFoundException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -369,11 +358,11 @@ class UserController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -382,33 +371,36 @@ class UserController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
             $params = $request->getParams();
 
-            $isUserNameSetted = isset($params['userName']);
+            $isUserNameSetted = isset($params['username']);
             if ($isUserNameSetted === false) {
                 throw new ControllerUndefinedValueException(
                     'O nome de usuário não foi informado na URL ou seu valor é null!'
                 );
             }
 
-            $userName = $params['userName'];
+            $userName = $params['username'];
 
-            $user = $this->service->findByUserName($userName);
+            $user = $this->userService->findByUserName($userName);
 
             if ($user === null) {
-                throw new HttpResourceNotFoundException(
-                    'O registro de usuário com o nome de usuário ' . $userName . ' não pôde ser encontrado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'O registro de usuário com o nome de usuário ' .
+                            $userName . ' não pôde ser encontrado!',
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Usuário buscado com sucesso!',
                     'data' => [
                         'id' => $user->getId(),
@@ -417,32 +409,27 @@ class UserController
                         'isActive' => $user->getIsActive()
                     ]
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
-        } catch (HttpResourceNotFoundException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            EntityInvalidValueException $e
+        ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
-            return;
-        } catch (ControllerUndefinedValueException | EntityInvalidValueException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[400])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[400])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseFetchFailureException |
@@ -451,11 +438,11 @@ class UserController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }
@@ -464,17 +451,21 @@ class UserController
     {
         try {
             $headers = $request->getHeaders();
-            $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
-            if ($isAuthenticated === false) {
-                throw new AuthenticationException('Usuário não autenticado!');
-            }
+            AuthorizationValidator::make()
+                ->setToken($headers)
+                ->validate($this->authenticationService);
 
-            $users = $this->service->findAll();
+            $users = $this->userService->findAll();
 
             $numberOfUsersFound = count($users);
             if ($numberOfUsersFound === 0) {
-                throw new HttpResourceNotFoundException('A busca foi concluída e nenhum usuário foi encontrado.');
+                $response
+                    ->setBody([
+                        'message' => 'A busca foi concluída e nenhum usuário foi encontrado.',
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             foreach ($users as $user) {
@@ -487,28 +478,20 @@ class UserController
             }
 
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => 'Usuários buscados com sucesso!',
                     'data' => $data
                 ])
-                ->status(HttpRouter::STATUS_CODES[200])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (AuthenticationException $e) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[401])
-                ->send();
-            return;
-        } catch (HttpResourceNotFoundException $e) {
-            $response
-                ->appendArray([
-                    'message' => $e->getMessage()
-                ])
-                ->status(HttpRouter::STATUS_CODES[404])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
             DatabaseStatementCreationFailureException |
@@ -516,11 +499,11 @@ class UserController
             PDOException $e
         ) {
             $response
-                ->appendArray([
+                ->setBody([
                     'message' => $e->getMessage()
                 ])
-                ->status(HttpRouter::STATUS_CODES[500])
-                ->send();
+                ->setStatus(HttpRouter::$STATUS_CODES[500])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         }
     }

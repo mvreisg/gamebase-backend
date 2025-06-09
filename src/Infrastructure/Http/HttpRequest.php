@@ -10,9 +10,9 @@ class HttpRequest
 
     private string $route;
 
-    private $queries;
+    private array $queries;
 
-    private $params;
+    private array $params;
 
     private string $body;
 
@@ -21,8 +21,8 @@ class HttpRequest
     public function __construct(
         string $method,
         string $route,
-        $queries = [],
-        $params = [],
+        array $queries = [],
+        array $params = [],
         string $body = '',
         array $headers = []
     ) {

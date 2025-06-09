@@ -17,11 +17,11 @@ class UserRoutes
             $controller->insert($request, $response);
         });
 
-        $app->add('PUT', '/user/:userId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PUT', '/user/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->update($request, $response);
         });
 
-        $app->add('PATCH', '/user/:userId', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('PATCH', '/user/:id', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->setIsActive($request, $response);
         });
 
@@ -29,14 +29,14 @@ class UserRoutes
             $controller->findAll($request, $response);
         });
 
-        $app->add('GET', '/user/find/id/:userId', function (
+        $app->add('GET', '/user/find/id/:id', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->findById($request, $response);
         });
 
-        $app->add('GET', '/user/find/userName/:userName', function (
+        $app->add('GET', '/user/find/username/:username', function (
             HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {

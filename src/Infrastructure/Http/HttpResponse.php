@@ -6,29 +6,19 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 
 class HttpResponse
 {
-    private $headers;
+    private array $headers;
 
-    private string $body;
+    private array $body;
 
-    public function __construct($headers = [], string $body = '')
+    public function __construct(array $headers = [], array $body = [])
     {
         $this->headers = $headers;
         $this->body = $body;
     }
 
-    public function appendString(string $data)
+    public function setBody(array $data)
     {
-        $this->body .= $data;
-        return $this;
-    }
-
-    public function appendArray(array $data)
-    {
-        $result = json_encode($data);
-        if ($result === false) {
-            throw new HttpJsonParseException('Erro ao codificar uma estrutura de dados PHP para uma string JSON.');
-        }
-        $this->body .= $result;
+        $this->body = $data;
         return $this;
     }
 
@@ -38,17 +28,33 @@ class HttpResponse
         return $this;
     }
 
-    public function status(string $status)
+    public function setStatus(string $setStatus)
     {
-        header($status);
+        header($setStatus);
         return $this;
     }
 
-    public function send()
+    public function send(string $contentType = 'default')
     {
         foreach ($this->headers as $header) {
             header($header);
         }
-        print($this->body);
+
+        switch ($contentType) {
+            case 'default':
+            default:
+                print_r($this->body);
+                break;
+            case HttpRouter::$CONTENT_TYPES['JSON']:
+                header(HttpRouter::$CONTENT_TYPES['JSON']);
+                try {
+                    print(
+                        json_encode($this->body)
+                    );
+                } catch (HttpJsonParseException $e) {
+                    throw $e;
+                }
+                break;
+        }
     }
 }

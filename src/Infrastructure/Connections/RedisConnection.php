@@ -9,9 +9,9 @@ class RedisConnection
     public static function get(): Client
     {
         return new Client([
-            'scheme' => 'tcp',
+            'scheme' => $_SERVER['REDIS_SCHEME'],
             'host' => $_SERVER['REDIS_HOST'],
-            'port' => 6379,
+            'port' => $_SERVER['REDIS_PORT'],
         ]);
     }
 }
