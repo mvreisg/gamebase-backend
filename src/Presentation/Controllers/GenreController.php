@@ -17,19 +17,20 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 class GenreController
 {
-    private GenreService $service;
-    private AuthenticationService $authService;
+    private GenreService $genreService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(GenreService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        GenreService $genreService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->genreService = $genreService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
@@ -37,7 +38,7 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -57,7 +58,7 @@ class GenreController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $genre = $this->service->insert($name, $isActive);
+            $genre = $this->genreService->insert($name, $isActive);
 
             $response
                 ->setBody([
@@ -113,7 +114,7 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -142,7 +143,7 @@ class GenreController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasAUpdateOcurred = $this->service->update($id, $name, $isActive);
+            $wasAUpdateOcurred = $this->genreService->update($id, $name, $isActive);
             if ($wasAUpdateOcurred === false) {
                 $response
                     ->setBody([
@@ -182,7 +183,6 @@ class GenreController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -202,7 +202,7 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -223,11 +223,15 @@ class GenreController
             $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            $wasTheUpdateOcurred = $this->genreService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Nada foi modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum registro foi modificado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
@@ -258,7 +262,6 @@ class GenreController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -278,7 +281,7 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -294,7 +297,7 @@ class GenreController
 
             $id = $params['id'];
 
-            $genre = $this->service->findById($id);
+            $genre = $this->genreService->findById($id);
 
             if ($genre === null) {
                 $response
@@ -357,12 +360,12 @@ class GenreController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
-            $genres = $this->service->findAll();
+            $genres = $this->genreService->findAll();
 
             $numberOfGenresFound = count($genres);
             if ($numberOfGenresFound === 0) {

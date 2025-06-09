@@ -18,19 +18,20 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 class PlatformController
 {
-    private PlatformService $service;
-    private AuthenticationService $authService;
+    private PlatformService $platformService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(PlatformService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        PlatformService $platformService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->platformService = $platformService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
@@ -38,7 +39,7 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -60,7 +61,7 @@ class PlatformController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $platform = $this->service->insert($name, $isActive);
+            $platform = $this->platformService->insert($name, $isActive);
 
             $response
                 ->setBody([
@@ -119,7 +120,7 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -150,7 +151,7 @@ class PlatformController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateSuccessful = $this->service->update($id, $name, $isActive);
+            $wasTheUpdateSuccessful = $this->platformService->update($id, $name, $isActive);
             if ($wasTheUpdateSuccessful === false) {
                 $response
                     ->setBody([
@@ -177,7 +178,6 @@ class PlatformController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             ControllerUndefinedValueException |
             HttpJsonParseException |
             DatabaseDuplicatedEntryException |
@@ -206,7 +206,7 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -227,11 +227,15 @@ class PlatformController
             $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            $wasTheUpdateOcurred = $this->platformService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Nenhum registro modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum registro modificado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
@@ -262,7 +266,6 @@ class PlatformController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -282,7 +285,7 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -298,7 +301,7 @@ class PlatformController
 
             $id = $params['id'];
 
-            $platform = $this->service->findById($id);
+            $platform = $this->platformService->findById($id);
             if ($platform === null) {
                 $response
                     ->setBody([
@@ -360,12 +363,12 @@ class PlatformController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
-            $platforms = $this->service->findAll();
+            $platforms = $this->platformService->findAll();
 
             $numberOfPlatforms = count($platforms);
             if ($numberOfPlatforms === 0) {

@@ -18,18 +18,19 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 class GameController
 {
-    private GameService $service;
-    private AuthenticationService $authService;
+    private GameService $gameService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(GameService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        GameService $gameService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->gameService = $gameService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
@@ -37,7 +38,7 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -61,7 +62,7 @@ class GameController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $game = $this->service->insert($name, $isActive);
+            $game = $this->gameService->insert($name, $isActive);
 
             $response
                 ->setBody([
@@ -118,7 +119,7 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -145,7 +146,7 @@ class GameController
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasSomeUpdateHappened = $this->service->update($id, $name, $isActive);
+            $wasSomeUpdateHappened = $this->gameService->update($id, $name, $isActive);
             if ($wasSomeUpdateHappened === false) {
                 $response
                     ->setBody([
@@ -185,7 +186,6 @@ class GameController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -205,7 +205,7 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -230,11 +230,15 @@ class GameController
             $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            $wasTheUpdateOcurred = $this->gameService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Nenhum registro modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum registro foi alterado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
@@ -252,7 +256,11 @@ class GameController
                 ->setStatus(HttpRouter::$STATUS_CODES[401])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
-        } catch (ControllerUndefinedValueException | HttpJsonParseException | EntityInvalidValueException $e) {
+        } catch (
+            ControllerUndefinedValueException |
+            HttpJsonParseException |
+            EntityInvalidValueException $e
+        ) {
             $response
                 ->setBody([
                     'message' => $e->getMessage()
@@ -261,7 +269,6 @@ class GameController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -281,7 +288,7 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -297,7 +304,7 @@ class GameController
 
             $id = $params['id'];
 
-            $game = $this->service->findById($id);
+            $game = $this->gameService->findById($id);
 
             if ($game === null) {
                 $response
@@ -361,12 +368,12 @@ class GameController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
-            $games = $this->service->findAll();
+            $games = $this->gameService->findAll();
 
             $numberOfGamesFound = count($games);
             if ($numberOfGamesFound === 0) {

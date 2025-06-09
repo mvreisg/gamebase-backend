@@ -15,17 +15,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerInvalidValueException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
 class AuthenticationController
 {
-    private AuthenticationService $service;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(AuthenticationService $service)
-    {
-        $this->service = $service;
+    public function __construct(
+        AuthenticationService $authenticationService
+    ) {
+        $this->authenticationService = $authenticationService;
     }
 
     public function handleLogin(HttpRequest $request, HttpResponse $response): void
@@ -53,9 +53,9 @@ class AuthenticationController
             $passWord = $body['password'];
             $oneWeek = $body['oneWeek'];
 
-            $token = $this->service->checkIfTokenExists($userName);
+            $token = $this->authenticationService->checkIfTokenExists($userName);
             if ($token !== null && $token !== "") {
-                $isTokenValid = $this->service->validateToken($userName, $token);
+                $isTokenValid = $this->authenticationService->validateToken($userName, $token);
                 if ($isTokenValid) {
                     $response
                         ->setBody([
@@ -68,11 +68,11 @@ class AuthenticationController
                 }
             }
 
-            $hasCredentials = $this->service->tryLogin($userName, $passWord);
+            $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
             if ($hasCredentials) {
-                $token = $this->service->checkIfTokenExists($userName);
+                $token = $this->authenticationService->checkIfTokenExists($userName);
                 if ($token === null || $token === "") {
-                    $token = $this->service->generateToken($userName, $oneWeek);
+                    $token = $this->authenticationService->generateToken($userName, $oneWeek);
                     $response
                         ->setBody([
                             'message' =>
@@ -94,18 +94,18 @@ class AuthenticationController
                     return;
                 }
             } else {
-                $response
-                    ->setBody([
-                        'message' => 'Verifique seu nome de usuário ou senha!'
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[401])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
+                throw new AuthenticationException('Verifique seu nome de usuário e senha.');
             }
+        } catch (AuthenticationException $e) {
+            $response
+                ->setBody([
+                    'message' => $e->getMessage()
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[401])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;
         } catch (
             HttpJsonParseException |
-            AuthenticationException |
-            ControllerInvalidValueException |
             ControllerUndefinedValueException |
             EntityInvalidValueException $e
         ) {
@@ -146,7 +146,7 @@ class AuthenticationController
 
             $token = $body['token'];
 
-            $isTokenValid = $this->service->validateToken($token);
+            $isTokenValid = $this->authenticationService->validateToken($token);
             if ($isTokenValid) {
                 $response
                     ->setBody([
@@ -156,13 +156,7 @@ class AuthenticationController
                     ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             } else {
-                $response
-                    ->setBody([
-                        'message' => 'Token inválido'
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[401])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
+                throw new AuthenticationException('Token inválido');
             }
         } catch (AuthenticationException $e) {
             $response
@@ -213,7 +207,7 @@ class AuthenticationController
 
             $token = $body['token'];
 
-            $hasSuccess = $this->service->tryLogoff($token);
+            $hasSuccess = $this->authenticationService->tryLogoff($token);
 
             if ($hasSuccess) {
                 $response
@@ -224,13 +218,7 @@ class AuthenticationController
                     ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             } else {
-                $response
-                    ->setBody([
-                        'message' => 'Erro ao realizar o logoff!'
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[401])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
+                throw new AuthenticationException('Erro ao realizar o logoff!');
             }
         } catch (AuthenticationException $e) {
             $response

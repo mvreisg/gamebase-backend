@@ -18,18 +18,19 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationTokenRetriever;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerOperationErrorException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 
 class UserController
 {
-    private UserService $service;
-    private AuthenticationService $authService;
+    private UserService $userService;
+    private AuthenticationService $authenticationService;
 
-    public function __construct(UserService $service, AuthenticationService $authService)
-    {
-        $this->service = $service;
-        $this->authService = $authService;
+    public function __construct(
+        UserService $userService,
+        AuthenticationService $authenticationService
+    ) {
+        $this->userService = $userService;
+        $this->authenticationService = $authenticationService;
     }
 
     public function insert(HttpRequest $request, HttpResponse $response)
@@ -37,7 +38,7 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -69,7 +70,7 @@ class UserController
             $passWord = $body['password'];
             $isActive = $body['isActive'];
 
-            $user = $this->service->insert($userName, $passWord, $isActive);
+            $user = $this->userService->insert($userName, $passWord, $isActive);
 
             $response
                 ->setBody([
@@ -127,7 +128,7 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -160,7 +161,7 @@ class UserController
             $passWord = $body['password'];
             $isActive = $body['isActive'];
 
-            $wasSomeUpdateHappened = $this->service->update($id, $userName, $passWord, $isActive);
+            $wasSomeUpdateHappened = $this->userService->update($id, $userName, $passWord, $isActive);
             if ($wasSomeUpdateHappened === false) {
                 $response
                     ->setBody([
@@ -200,7 +201,6 @@ class UserController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -220,7 +220,7 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -245,11 +245,15 @@ class UserController
             $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
+            $wasTheUpdateOcurred = $this->userService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
-                throw new ControllerOperationErrorException(
-                    'Nenhum valor foi modificado!'
-                );
+                $response
+                    ->setBody([
+                        'message' => 'Nenhum valor foi modificado!'
+                    ])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
+                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+                return;
             }
 
             $response
@@ -276,7 +280,6 @@ class UserController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            ControllerOperationErrorException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -296,7 +299,7 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -312,7 +315,7 @@ class UserController
 
             $id = $params['id'];
 
-            $user = $this->service->findById($id);
+            $user = $this->userService->findById($id);
 
             if ($user === null) {
                 $response
@@ -377,7 +380,7 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
@@ -393,7 +396,7 @@ class UserController
 
             $userName = $params['username'];
 
-            $user = $this->service->findByUserName($userName);
+            $user = $this->userService->findByUserName($userName);
 
             if ($user === null) {
                 $response
@@ -459,12 +462,12 @@ class UserController
         try {
             $headers = $request->getHeaders();
             $token = AuthorizationTokenRetriever::getFromHeaders($headers);
-            $isAuthenticated = $this->authService->validateToken($token);
+            $isAuthenticated = $this->authenticationService->validateToken($token);
             if ($isAuthenticated === false) {
                 throw new AuthenticationException('Usuário não autenticado!');
             }
 
-            $users = $this->service->findAll();
+            $users = $this->userService->findAll();
 
             $numberOfUsersFound = count($users);
             if ($numberOfUsersFound === 0) {
