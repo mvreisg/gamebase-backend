@@ -3,6 +3,7 @@
 namespace Mvreisg\GamebaseBackend\Infrastructure\Middlewares;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
+use Throwable;
 
 class AuthorizationTokenRetriever
 {
@@ -13,9 +14,14 @@ class AuthorizationTokenRetriever
                 throw new AuthenticationException('É necessário informar o token de autenticação!');
             }
             $bearer = $headers['Authorization'];
-            $token = substr($bearer, 7);
+            $bearer = trim($bearer);
+            $exploded = explode(' ', $bearer);
+            $token = $exploded[1];
             return $token;
-        } catch (AuthenticationException $e) {
+        } catch (
+            Throwable | 
+            AuthenticationException $e
+        ) {
             throw $e;
         }
     }
