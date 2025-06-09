@@ -103,18 +103,34 @@ class HttpRouter
             }
 
             $paramParamMatchesArray = preg_grep('/:[a-z0-9]+/i', $routeTokens);
-            $paramParamMatchesIndexesArray = array_keys(array_filter($paramParamMatchesArray));
-
-            $paramValueMatchesArray = [];
-            if (preg_match_all('/[a-zA-Z0-9]+/i', $routePart, $matches)) {
-                $paramValueMatchesArray = $matches[0];
-            }
+            $paramParamMatchesIndexesArray = array_keys(
+                array_filter($paramParamMatchesArray)
+            );
 
             $params = [];
             for ($i = 0; $i < count($paramParamMatchesIndexesArray); $i++) {
                 $index = $paramParamMatchesIndexesArray[$i];
                 $key = $routeTokens[$index];
-                $value = $paramValueMatchesArray[$index];
+                $key = str_replace(':', '', $key);
+                $value = $tokenizedRoute[$index];
+                if (is_numeric($value)) {
+                    $isFloat = str_contains($value, '.') || str_contains(strtolower($value), 'e');
+                    if ($isFloat) {
+                        $value = floatval($value);
+                    } else {
+                        $value = intval($value);
+                    }
+                } elseif (is_string($value)) {
+                    $temp = strtolower($value);
+                    switch ($temp) {
+                        case 'true':
+                        case 'false':
+                            $value = boolval($temp);
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 $params[$key] = $value;
             }
 

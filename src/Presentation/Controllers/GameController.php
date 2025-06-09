@@ -128,7 +128,7 @@ class GameController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('A chave gameId não existe ou seu valor é null!');
+                throw new ControllerUndefinedValueException('A chave id não existe ou seu valor é null!');
             }
 
             $isNameSetted = isset($body['name']);
@@ -216,7 +216,7 @@ class GameController
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
-                    'O parâmetro gameId não foi informado ou seu valor é null!'
+                    'A chave id não foi informada ou seu valor é null!'
                 );
             }
 
@@ -233,10 +233,7 @@ class GameController
             $wasTheUpdateOcurred = $this->service->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
                 throw new ControllerOperationErrorException(
-                    'Ocorreu um erro! Verifique se o id ' .
-                    $id .
-                    ' existe ' .
-                    'ou se o valor de atividade foi modificado!'
+                    'Nenhum registro modificado!'
                 );
             }
 
@@ -294,7 +291,7 @@ class GameController
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
-                    'O id do jogo não foi informado na URL ou seu valor é null!'
+                    'O parâmetro id não foi informado na URL ou seu valor é null!'
                 );
             }
 
