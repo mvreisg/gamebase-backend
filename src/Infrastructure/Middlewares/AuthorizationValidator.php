@@ -8,7 +8,7 @@ use Throwable;
 
 class AuthorizationValidator
 {
-    private string $token;
+    private string $token = '';
 
     public static function make()
     {
@@ -44,7 +44,7 @@ class AuthorizationValidator
     public function validate(AuthenticationService $authenticationService)
     {
         if ($this->token === '') {
-            return $this;
+            throw new AuthenticationException('Token não informado!');
         }
         $isAuthenticated = $authenticationService->validateToken($this->token);
         if ($isAuthenticated === false) {
