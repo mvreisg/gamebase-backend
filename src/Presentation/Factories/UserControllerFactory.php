@@ -15,7 +15,7 @@ use Mvreisg\GamebaseBackend\Presentation\Controllers\UserController;
 
 class UserControllerFactory
 {
-    public static function get(): UserController
+    public static function make(): UserController
     {
         $repository = new MariaDBUserRepository(MariaDBConnection::get());
         $encrypter = new DefuseEncryption();

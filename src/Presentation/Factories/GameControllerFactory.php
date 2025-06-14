@@ -16,7 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepos
 
 class GameControllerFactory
 {
-    public static function get(): GameController
+    public static function make(): GameController
     {
         $gameRepository = new MariaDBGameRepository(MariaDBConnection::get());
         $gameService = new GameService($gameRepository);

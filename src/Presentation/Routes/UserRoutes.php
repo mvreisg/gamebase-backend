@@ -13,7 +13,7 @@ class UserRoutes
 {
     public function register(HttpRouter $app): void
     {
-        $controller = UserControllerFactory::get();
+        $controller = UserControllerFactory::make();
 
         $app->add('POST', '/user', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);

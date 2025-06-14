@@ -13,7 +13,7 @@ class AuthenticationRoutes
 {
     public function register(HttpRouter $app): void
     {
-        $controller = AuthenticationControllerFactory::get();
+        $controller = AuthenticationControllerFactory::make();
 
         $app->add('POST', '/auth/login', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->handleLogin($request, $response);

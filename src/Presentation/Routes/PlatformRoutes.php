@@ -13,7 +13,7 @@ class PlatformRoutes
 {
     public function register(HttpRouter $app): void
     {
-        $controller = PlatformControllerFactory::get();
+        $controller = PlatformControllerFactory::make();
 
         $app->add('POST', '/platform', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);

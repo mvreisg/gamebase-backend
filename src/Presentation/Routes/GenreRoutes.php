@@ -13,7 +13,7 @@ class GenreRoutes
 {
     public function register(HttpRouter $app): void
     {
-        $controller = GenreControllerFactory::get();
+        $controller = GenreControllerFactory::make();
 
         $app->add('POST', '/genre', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);

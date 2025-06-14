@@ -14,7 +14,7 @@ use Mvreisg\GamebaseBackend\Presentation\Controllers\AuthenticationController;
 
 class AuthenticationControllerFactory
 {
-    public static function get(): AuthenticationController
+    public static function make(): AuthenticationController
     {
         $repository = new MariaDBUserRepository(MariaDBConnection::get());
         $encrypter = new DefuseEncryption();

@@ -13,7 +13,7 @@ class GameGenreRoutes
 {
     public function register(HttpRouter $app): void
     {
-        $controller = GameGenreControllerFactory::get();
+        $controller = GameGenreControllerFactory::make();
 
         $app->add('POST', '/game/genre', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);
