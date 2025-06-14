@@ -12,7 +12,7 @@ class AuthorizationValidator
 {
     private string $token = '';
 
-    public static function make()
+    public static function make(): AuthorizationValidator
     {
         return new AuthorizationValidator();
     }
@@ -38,12 +38,12 @@ class AuthorizationValidator
         }
     }
 
-    public function getToken()
+    public function getToken(): string
     {
         return $this->token;
     }
 
-    public function validate(AuthenticationService $authenticationService)
+    public function validate(AuthenticationService $authenticationService): AuthorizationValidator
     {
         if ($this->token === '') {
             throw new AuthenticationException('Token não informado!');
