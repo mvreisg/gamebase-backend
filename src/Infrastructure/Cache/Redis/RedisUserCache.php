@@ -33,7 +33,7 @@ class RedisUserCache implements UserCacheInterface
 
     public function exists(string $key): bool
     {
-        return $this->redis->exists($key) === true;
+        return boolval($this->redis->exists($key));
     }
 
     public function delete(string $key): bool
