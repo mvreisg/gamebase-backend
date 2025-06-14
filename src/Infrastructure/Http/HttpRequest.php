@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
@@ -7,15 +9,10 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 class HttpRequest
 {
     private string $method;
-
     private string $route;
-
     private array $queries;
-
     private array $params;
-
     private string $body;
-
     private array $headers;
 
     public function __construct(
@@ -34,37 +31,37 @@ class HttpRequest
         $this->headers = $headers;
     }
 
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
 
-    public function getRoute()
+    public function getRoute(): string
     {
         return $this->route;
     }
 
-    public function getQueries()
+    public function getQueries(): array
     {
         return $this->queries;
     }
 
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }
 
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
 
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
 
-    public function parseBodyFromJSONString()
+    public function parseBodyFromJSONString(): mixed
     {
         $isAssociative = true;
         $result = json_decode($this->body, $isAssociative);

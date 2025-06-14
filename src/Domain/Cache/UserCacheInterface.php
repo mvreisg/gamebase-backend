@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Domain\Cache;
 
 interface UserCacheInterface
 {
-    public function set(string $key, mixed $token): void;
+    public function set(string $key, string $token): void;
 
     public function get(string $key): string|null;
 

@@ -26,7 +26,7 @@ class UserServiceTest extends TestCase
         $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
-    public function testIfInsertSucceds()
+    public function testIfInsertSucceds(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -38,7 +38,7 @@ class UserServiceTest extends TestCase
         $this->assertInstanceOf(User::class, $user);
     }
 
-    public function testIfInsertingUserNameThatAlreadyExistsFails()
+    public function testIfInsertingUserNameThatAlreadyExistsFails(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -50,7 +50,7 @@ class UserServiceTest extends TestCase
         $this->userService->insert($userName, $passWord, $isActive);
     }
 
-    public function testIfInsertFailsWithEmptyUserName()
+    public function testIfInsertFailsWithEmptyUserName(): void
     {
         $userName = '';
         $passWord = 'test';
@@ -61,7 +61,7 @@ class UserServiceTest extends TestCase
         $this->userService->insert($userName, $passWord, $isActive);
     }
 
-    public function testIfInsertFailsWithEmptyPassword()
+    public function testIfInsertFailsWithEmptyPassword(): void
     {
         $userName = 'test';
         $passWord = '';
@@ -72,7 +72,7 @@ class UserServiceTest extends TestCase
         $this->userService->insert($userName, $passWord, $isActive);
     }
 
-    public function testIfUpdateSuccessfullyHappensWithOneUser()
+    public function testIfUpdateSuccessfullyHappensWithOneUser(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -87,7 +87,7 @@ class UserServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdateWithDuplicatedNamesSucceds()
+    public function testIfUpdateWithDuplicatedNamesSucceds(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -106,7 +106,7 @@ class UserServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdateSuccessfullyHappensWithTenUsers()
+    public function testIfUpdateSuccessfullyHappensWithTenUsers(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -124,7 +124,7 @@ class UserServiceTest extends TestCase
         }
     }
 
-    public function testIfUpdateFailsWithInvalidId()
+    public function testIfUpdateFailsWithInvalidId(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -139,7 +139,7 @@ class UserServiceTest extends TestCase
         $this->userService->update($id, $userName, $passWord, $isActive);
     }
 
-    public function testIfUpdateFailsWithEmptyUserName()
+    public function testIfUpdateFailsWithEmptyUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -155,7 +155,7 @@ class UserServiceTest extends TestCase
         $this->userService->update($id, $userName, $passWord, $isActive);
     }
 
-    public function testIfUpdateFailsWithEmptyPassWord()
+    public function testIfUpdateFailsWithEmptyPassWord(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -171,7 +171,7 @@ class UserServiceTest extends TestCase
         $this->userService->update($id, $userName, $passWord, $isActive);
     }
 
-    public function testIfSettingIsActiveWithSameValueFails()
+    public function testIfSettingIsActiveWithSameValueFails(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -186,7 +186,7 @@ class UserServiceTest extends TestCase
         $this->assertFalse($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithDifferentValueSucceds()
+    public function testIfSettingIsActiveWithDifferentValueSucceds(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -202,7 +202,7 @@ class UserServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithInvalidIdFails()
+    public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -217,7 +217,7 @@ class UserServiceTest extends TestCase
         $this->userService->setIsActive($id, $isActive);
     }
 
-    public function testIfItFindsByIdWithSuccess()
+    public function testIfItFindsByIdWithSuccess(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -232,7 +232,7 @@ class UserServiceTest extends TestCase
         $this->assertEquals($user, $fetchedUser);
     }
 
-    public function testIfItFindsByIdWithSuccessWithTenUsers()
+    public function testIfItFindsByIdWithSuccessWithTenUsers(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -252,7 +252,7 @@ class UserServiceTest extends TestCase
         }
     }
 
-    public function testIfItCannotFindWithInvalidId()
+    public function testIfItCannotFindWithInvalidId(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -267,7 +267,7 @@ class UserServiceTest extends TestCase
         $this->userService->findById($id);
     }
 
-    public function testIfItFindsByUserNameWithSuccess()
+    public function testIfItFindsByUserNameWithSuccess(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -282,7 +282,7 @@ class UserServiceTest extends TestCase
         $this->assertEquals($user, $fetchedUser);
     }
 
-    public function testIfItCannotFindByUserName()
+    public function testIfItCannotFindByUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -297,7 +297,7 @@ class UserServiceTest extends TestCase
         $this->assertEmpty($fetchedUser);
     }
 
-    public function testIfItCannotFindWithEmptyUserName()
+    public function testIfItCannotFindWithEmptyUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -312,14 +312,14 @@ class UserServiceTest extends TestCase
         $this->userService->findByUserName($userName);
     }
 
-    public function testIfFindAllSuccedsWithZeroUsers()
+    public function testIfFindAllSuccedsWithZeroUsers(): void
     {
         $emptyArray = $this->userService->findAll();
 
         $this->assertEmpty($emptyArray);
     }
 
-    public function testIfFindAllSuccedsWithTenUsers()
+    public function testIfFindAllSuccedsWithTenUsers(): void
     {
         $userName = 'test';
         $passWord = 'test';

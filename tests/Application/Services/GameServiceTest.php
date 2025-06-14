@@ -22,7 +22,7 @@ class GameServiceTest extends TestCase
         $this->gameService = new GameService($this->gameRepository);
     }
 
-    public function testIfGameInsertionSucceds()
+    public function testIfGameInsertionSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -32,7 +32,7 @@ class GameServiceTest extends TestCase
         $this->assertInstanceOf(Game::class, $game);
     }
 
-    public function testIfTenGameInsertionSucceds()
+    public function testIfTenGameInsertionSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -43,7 +43,7 @@ class GameServiceTest extends TestCase
         }
     }
 
-    public function testIfInsertionOfTwoGamesWithTheSameNameFails()
+    public function testIfInsertionOfTwoGamesWithTheSameNameFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -54,7 +54,7 @@ class GameServiceTest extends TestCase
         $this->gameService->insert($name, $isActive);
     }
 
-    public function testIfGameInsertionFailsWithEmptyName()
+    public function testIfGameInsertionFailsWithEmptyName(): void
     {
         $this->expectException(EntityInvalidValueException::class);
 
@@ -63,7 +63,7 @@ class GameServiceTest extends TestCase
         $this->gameService->insert($name, $isActive);
     }
 
-    public function testIfUpdateSucceds()
+    public function testIfUpdateSucceds(): void
     {
         $name = 'test1';
         $isActive = true;
@@ -76,7 +76,7 @@ class GameServiceTest extends TestCase
         $this->assertTrue($hasUpdated);
     }
 
-    public function testIfUpdatingAGameWithAExistantNameSucceds()
+    public function testIfUpdatingAGameWithAExistantNameSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -90,7 +90,7 @@ class GameServiceTest extends TestCase
         $this->assertTrue($hasUpdated);
     }
 
-    public function testIfUpdateSuccedsWithTenGamesInTheRepository()
+    public function testIfUpdateSuccedsWithTenGamesInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;
@@ -107,7 +107,7 @@ class GameServiceTest extends TestCase
         }
     }
 
-    public function testIfUpdatingAGameWithAInvalidIdFails()
+    public function testIfUpdatingAGameWithAInvalidIdFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -121,7 +121,7 @@ class GameServiceTest extends TestCase
         $this->gameService->update($id, $name, $isActive);
     }
 
-    public function testIfUpdatingAGameWithAEmptyNameFails()
+    public function testIfUpdatingAGameWithAEmptyNameFails(): void
     {
         $name = 'test';
         $emptyName = '';
@@ -136,7 +136,7 @@ class GameServiceTest extends TestCase
         $this->gameService->update($id, $emptyName, $isActive);
     }
 
-    public function testIfSettingAsActiveSucceds()
+    public function testIfSettingAsActiveSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -151,7 +151,7 @@ class GameServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithSameValueDoesNotReallyChangesSomething()
+    public function testIfSettingIsActiveWithSameValueDoesNotReallyChangesSomething(): void
     {
         $name = 'test';
         $isActive = true;
@@ -165,7 +165,7 @@ class GameServiceTest extends TestCase
         $this->assertFalse($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithInvalidIdFails()
+    public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -179,7 +179,7 @@ class GameServiceTest extends TestCase
         $this->gameService->setIsActive($id, $isActive);
     }
 
-    public function testIfFindByIdSucceds()
+    public function testIfFindByIdSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -194,7 +194,7 @@ class GameServiceTest extends TestCase
         $this->assertInstanceOf(Game::class, $game);
     }
 
-    public function testIfFindByIdSuccedsWithTenPlatforms()
+    public function testIfFindByIdSuccedsWithTenPlatforms(): void
     {
         $name = 'test';
         $isActive = true;
@@ -211,14 +211,14 @@ class GameServiceTest extends TestCase
         }
     }
 
-    public function testIfFindAllSuccedsEvenWithNoGamesInTheRepository()
+    public function testIfFindAllSuccedsEvenWithNoGamesInTheRepository(): void
     {
         $allGames = $this->gameService->findAll();
 
         $this->assertEmpty($allGames);
     }
 
-    public function testIfFindAllSuccedsWithOneGameInTheRepository()
+    public function testIfFindAllSuccedsWithOneGameInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;
@@ -230,7 +230,7 @@ class GameServiceTest extends TestCase
         $this->assertNotEmpty($result);
     }
 
-    public function testIfFindAllSuccedsWithTenGamesInTheRepository()
+    public function testIfFindAllSuccedsWithTenGamesInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;

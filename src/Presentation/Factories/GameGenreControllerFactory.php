@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
@@ -14,7 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepos
 
 class GameGenreControllerFactory
 {
-    public static function get(): GameGenreController
+    public static function make(): GameGenreController
     {
         $gameGenreRepository = new MariaDBGameGenreRepository(MariaDBConnection::get());
         $gameGenreService = new GameGenreService($gameGenreRepository);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Presentation\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
@@ -12,7 +14,7 @@ use Mvreisg\GamebaseBackend\Presentation\Controllers\AuthenticationController;
 
 class AuthenticationControllerFactory
 {
-    public static function get(): AuthenticationController
+    public static function make(): AuthenticationController
     {
         $repository = new MariaDBUserRepository(MariaDBConnection::get());
         $encrypter = new DefuseEncryption();

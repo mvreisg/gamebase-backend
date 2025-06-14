@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use PDO;
-use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use PDO;
+use PDOException;
 
-class MariaDBGenreRepository implements GenreRepositoryInterface
+class MariaDBSectorRepository implements SectorRepositoryInterface
 {
     private PDO $pdo;
 
@@ -21,25 +22,31 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function insert(Genre $genre): Genre
+    public function insert(Sector $sector): Sector
     {
         try {
-            $this->pdo->beginTransaction();
+            $name = $sector->getName();
+            $isActive = $sector->getIsActive();
 
-            $name = $genre->getName();
-            $isActive = (int)$genre->getIsActive();
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
+            }
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
-                    genre (
-                        name,
-                        is_active
-                    ) 
-                VALUES 
-                    (
-                        :name,
-                        :isActive
-                    );'
+                    sector 
+                (
+                    name,
+                    is_active
+                )
+                VALUES (
+                    :name,
+                    :isActive
+                );'
             );
 
             if ($insertStatement === false) {
@@ -48,84 +55,88 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
+            $wasTheInsertSuccessful = $insertStatement->execute([
                 ':name' => $name,
                 ':isActive' => $isActive
             ]);
 
-            if ($wasInsertStatementExecutedSuccessfully === false) {
+            if ($wasTheInsertSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de inserção!'
                 );
             }
 
             $lastInsertedId = $this->pdo->lastInsertId();
-            $lastInsertedId = intval($lastInsertedId);
 
             $selectStatement = $this->pdo->prepare(
                 'SELECT 
-                    * 
-                FROM 
-                    genre 
-                WHERE 
+                    *
+                FROM
+                    sector
+                WHERE
                     id = :id;'
             );
 
             if ($selectStatement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
-            ]);
-
-            if ($wasSelectStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao tentar executar a declaração de busca!'
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
                 );
             }
 
-            $fetchResult = $selectStatement->fetch();
+            $wasTheSelectSuccessful = $selectStatement->execute([
+                ':id' => $lastInsertedId
+            ]);
+
+            if ($wasTheSelectSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $fetchResult = $selectStatement->fetchAll();
 
             if ($fetchResult === false) {
-                throw new DatabaseFetchFailureException('Ocorreu um erro ao buscar os dados do gênero!');
+                throw new DatabaseFetchFailureException(
+                    'Ocorreu um erro ao realizar a busca!'
+                );
             }
 
             $this->pdo->commit();
 
-            $genre = new Genre();
-            $genre->setId($fetchResult['id']);
-            $genre->setName($fetchResult['name']);
-            $genre->setIsActive(
+            $sector = new Sector();
+            $sector->setId($fetchResult['id']);
+            $sector->setName($fetchResult['name']);
+            $sector->setIsActive(
                 boolval($fetchResult['is_active'])
             );
 
-            return $genre;
+            return $sector;
         } catch (
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
             PDOException $e
         ) {
-            $this->pdo->rollBack();
-            throw $e;
+                $this->pdo->rollBack();
+                throw $e;
         }
     }
 
-    public function update(Genre $genre): bool
+    public function update(Sector $sector): bool
     {
-        $id = $genre->getId();
-        $name = $genre->getName();
-        $isActive = (int)$genre->getIsActive();
-
         try {
+            $id = $sector->getId();
+            $name = $sector->getName();
+            $isActive = $sector->getIsActive();
+
             $statement = $this->pdo->prepare(
-                'UPDATE 
-                    genre 
-                SET 
-                    name = :name, 
-                    is_active = :isActive 
-                WHERE 
+                'UPDATE
+                    sector
+                SET
+                    name = :name,
+                    is_active = :isActive
+                WHERE
                     id = :id;'
             );
 
@@ -135,27 +146,128 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+            $wasTheUpdateSuccessful = $statement->execute([
                 ':name' => $name,
-                ':id' => $id,
-                ':isActive' => $isActive
+                ':isActive' => $isActive,
+                ':id' => $id
             ]);
-            if ($wasTheUpdateSuccessfullyExecuted === false) {
+
+            if ($wasTheUpdateSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
                     'Ocorreu um erro ao executar a declaração de atualização!'
                 );
             }
 
-            $numberOfAffectedLines = $statement->rowCount();
-            $wasTheRepositoryAffected = $numberOfAffectedLines > 0;
-
-            return $wasTheRepositoryAffected;
+            $numberOfLinesAffected = $statement->rowCount();
+            $wasTheDatabaseAffected = $numberOfLinesAffected > 0;
+            return $wasTheDatabaseAffected;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
         ) {
-            throw $e;
+                throw $e;
+        }
+    }
+
+    public function findById(int $id): Sector|null
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM
+                    sector
+                WHERE
+                    id = :id;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
+            }
+
+            $wasTheFetchSuccessful = $statement->execute([
+                ':id' => $id
+            ]);
+
+            if ($wasTheFetchSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $fetchResult = $statement->fetch();
+
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            $sector = new Sector();
+            $sector->setId($fetchResult['id']);
+            $sector->setName($fetchResult['name']);
+            $sector->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
+
+            return $sector;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+                throw $e;
+        }
+    }
+
+    public function findAll(): array
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    *
+                FROM
+                    sector;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
+            }
+
+            $wasTheSelectSuccessful = $statement->execute();
+            if ($wasTheSelectSuccessful === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $fetchResult = $statement->fetchAll();
+
+            if ($fetchResult === false) {
+                return [];
+            }
+
+            $sectors = [];
+            foreach ($fetchResult as $row) {
+                $sector = new Sector();
+                $sector->setId($row['id']);
+                $sector->setName($row['name']);
+                $sector->setIsActive(
+                    boolval($row['is_active'])
+                );
+                $sectors[] = $sector;
+            }
+
+            return $sectors;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException $e
+        ) {
+                throw $e;
         }
     }
 
@@ -166,7 +278,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $statement = $this->pdo->prepare(
                 'UPDATE
-                    genre
+                    sector
                 SET
                     is_active = :isActive
                 WHERE
@@ -199,104 +311,6 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function findById(int $id): Genre|null
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    genre 
-                WHERE 
-                    id = :id;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
-            ]);
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $fetchResult = $statement->fetch();
-            if ($fetchResult === false) {
-                return null;
-            }
-
-            $genre = new Genre();
-            $genre->setId($fetchResult['id']);
-            $genre->setName($fetchResult['name']);
-            $genre->setIsActive(
-                boolval($fetchResult['is_active'])
-            );
-
-            return $genre;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function findAll(): array
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    genre;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute();
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $fetchResult = $statement->fetchAll();
-
-            if ($fetchResult === false) {
-                return [];
-            }
-
-            $genres = [];
-
-            foreach ($fetchResult as $row) {
-                $genre = new Genre();
-                $genre->setId($row['id']);
-                $genre->setName($row['name']);
-                $genre->setIsActive(
-                    boolval($row['is_active'])
-                );
-                $genres[] = $genre;
-            }
-
-            return $genres;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
-        }
-    }
-
     public function hasDuplicatedNames(string $name): bool
     {
         try {
@@ -304,13 +318,15 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 'SELECT 
                     * 
                 FROM 
-                    genre 
+                    sector 
                 WHERE 
                     name = :name;'
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasTheStatementExecutedSuccessfully = $statement->execute([

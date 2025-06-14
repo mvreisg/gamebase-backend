@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 
-class Game
+class Sector
 {
     private int $id;
     private string $name;
@@ -52,7 +52,7 @@ class Game
     public function validateId(): void
     {
         if ($this->id <= 0) {
-            throw new EntityInvalidValueException('O id deve ser maior que zero!');
+            throw new EntityInvalidValueException('id deve ser maior que 0!');
         }
     }
 
@@ -61,7 +61,7 @@ class Game
         $this->name = trim($this->name);
 
         if ($this->name === '') {
-            throw new EntityInvalidValueException('O nome está vazio.');
+            throw new EntityInvalidValueException('name está vazio!');
         }
     }
 }

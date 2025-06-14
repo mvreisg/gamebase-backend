@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
@@ -9,9 +11,9 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\GameGenreControllerFactory;
 
 class GameGenreRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
-        $controller = GameGenreControllerFactory::get();
+        $controller = GameGenreControllerFactory::make();
 
         $app->add('POST', '/game/genre', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);

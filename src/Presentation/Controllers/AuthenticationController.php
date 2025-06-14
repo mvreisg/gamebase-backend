@@ -134,7 +134,7 @@ class AuthenticationController
         }
     }
 
-    public function handleValidation(HttpRequest $request, HttpResponse $response)
+    public function handleValidation(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -185,7 +185,7 @@ class AuthenticationController
         }
     }
 
-    public function handleLogoff(HttpRequest $request, HttpResponse $response)
+    public function handleLogoff(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();

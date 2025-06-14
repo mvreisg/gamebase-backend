@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
@@ -9,9 +11,9 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\AuthenticationControllerFacto
 
 class AuthenticationRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
-        $controller = AuthenticationControllerFactory::get();
+        $controller = AuthenticationControllerFactory::make();
 
         $app->add('POST', '/auth/login', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->handleLogin($request, $response);

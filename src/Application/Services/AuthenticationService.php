@@ -42,7 +42,7 @@ class AuthenticationService
         $this->cache = $cache;
     }
 
-    private function encodeToken(string $userName, bool $oneWeek)
+    private function encodeToken(string $userName, bool $oneWeek): string
     {
         try {
             $user = new User();

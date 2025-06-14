@@ -21,7 +21,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService = new GamePlatformService($this->gamePlatformRepository);
     }
 
-    public function testIfItSuccessfullyInserts()
+    public function testIfItSuccessfullyInserts(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -32,7 +32,7 @@ class GamePlatformServiceTest extends TestCase
         $this->assertInstanceOf(GamePlatform::class, $gamePlatform);
     }
 
-    public function testIfItSuccessfullyInsertsTenRegisters()
+    public function testIfItSuccessfullyInsertsTenRegisters(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -48,7 +48,7 @@ class GamePlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToInsertWithInvalidPlatformId()
+    public function testIfItFailsToInsertWithInvalidPlatformId(): void
     {
         $platformId = -1;
         $gameId = 1;
@@ -58,7 +58,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->insert($platformId, $gameId);
     }
 
-    public function testIfItFailsToInsertWithInvalidGameId()
+    public function testIfItFailsToInsertWithInvalidGameId(): void
     {
         $platformId = 1;
         $gameId = -1;
@@ -68,7 +68,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->insert($platformId, $gameId);
     }
 
-    public function testIfItSuccessfullyUpdates()
+    public function testIfItSuccessfullyUpdates(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -82,7 +82,7 @@ class GamePlatformServiceTest extends TestCase
         $this->assertTrue($hasUpdated);
     }
 
-    public function testIfItSuccessfullyUpdatesWithTenRegisters()
+    public function testIfItSuccessfullyUpdatesWithTenRegisters(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -104,7 +104,7 @@ class GamePlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToUpdateWithInvalidId()
+    public function testIfItFailsToUpdateWithInvalidId(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -118,7 +118,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->update($id, $platformId, $gameId);
     }
 
-    public function testIfItFailsToUpdateWithInvalidPlatformId()
+    public function testIfItFailsToUpdateWithInvalidPlatformId(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -133,7 +133,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->update($id, $platformId, $gameId);
     }
 
-    public function testIfItFailsToUpdateWithInvalidGameId()
+    public function testIfItFailsToUpdateWithInvalidGameId(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -148,7 +148,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->update($id, $platformId, $gameId);
     }
 
-    public function testIfItSuccessfullyDeletes()
+    public function testIfItSuccessfullyDeletes(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -162,7 +162,7 @@ class GamePlatformServiceTest extends TestCase
         $this->assertTrue($hasDeleted);
     }
 
-    public function testIfItSuccessfullyDeletesWithTenRegisters()
+    public function testIfItSuccessfullyDeletesWithTenRegisters(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -184,7 +184,7 @@ class GamePlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToDeleteWithInvalidId()
+    public function testIfItFailsToDeleteWithInvalidId(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -198,7 +198,7 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->delete($id);
     }
 
-    public function testIfItSucessfullyFindsById()
+    public function testIfItSucessfullyFindsById(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -214,7 +214,7 @@ class GamePlatformServiceTest extends TestCase
         $this->assertEquals($gamePlatform, $fetchedGamePlatform);
     }
 
-    public function testIfItSucessfullyFindsByIdWithTenRegisters()
+    public function testIfItSucessfullyFindsByIdWithTenRegisters(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -236,7 +236,7 @@ class GamePlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToFindByIdWithInvalidId()
+    public function testIfItFailsToFindByIdWithInvalidId(): void
     {
         $platformId = 1;
         $gameId = 1;
@@ -250,14 +250,14 @@ class GamePlatformServiceTest extends TestCase
         $this->gamePlatformService->findById($id);
     }
 
-    public function testIfItSuccessfullyRetrievesAEmptyArrayFromFindAll()
+    public function testIfItSuccessfullyRetrievesAEmptyArrayFromFindAll(): void
     {
         $emptyArray = $this->gamePlatformService->findAll();
 
         $this->assertEmpty($emptyArray);
     }
 
-    public function testIfItSuccessfullyRetrievesFromFindAll()
+    public function testIfItSuccessfullyRetrievesFromFindAll(): void
     {
         $platformId = 1;
         $gameId = 1;

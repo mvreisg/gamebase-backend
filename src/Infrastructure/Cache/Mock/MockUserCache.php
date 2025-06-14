@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
@@ -15,7 +17,7 @@ class MockUserCache implements UserCacheInterface
         $this->data = [];
     }
 
-    public function set(string $key, mixed $token): void
+    public function set(string $key, string $token): void
     {
         $this->keyValues[$key] = $token;
     }

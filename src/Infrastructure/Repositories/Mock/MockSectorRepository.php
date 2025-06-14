@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
 
-class MockPlatformRepository implements PlatformRepositoryInterface
+class MockSectorRepository implements SectorRepositoryInterface
 {
     private array $data;
     private int $index;
@@ -18,23 +18,23 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         $this->index = 0;
     }
 
-    public function insert(Platform $platform): Platform
+    public function insert(Sector $sector): Sector
     {
         $this->index++;
-        $platform->setId($this->index);
-        $this->data[] = $platform;
-        $newPlatform = new Platform();
-        $newPlatform->setId($platform->getId());
-        $newPlatform->setName($platform->getName());
-        $newPlatform->setIsActive($platform->getIsActive());
-        return $newPlatform;
+        $sector->setId($this->index);
+        $this->data[] = $sector;
+        $newSector = new Sector();
+        $newSector->setId($sector->getId());
+        $newSector->setName($sector->getName());
+        $newSector->setIsActive($sector->getIsActive());
+        return $newSector;
     }
 
-    public function update(Platform $platform): bool
+    public function update(Sector $sector): bool
     {
         $index = null;
         foreach ($this->data as $key => $value) {
-            if ($value->getId() === $platform->getId()) {
+            if ($value->getId() === $sector->getId()) {
                 $index = $key;
             }
         }
@@ -43,13 +43,13 @@ class MockPlatformRepository implements PlatformRepositoryInterface
             return false;
         }
 
-        $modifiedPlatform = $this->data[$index];
+        $modifiedSector = $this->data[$index];
 
-        $modifiedPlatform->setId($platform->getId());
-        $modifiedPlatform->setName($platform->getName());
-        $modifiedPlatform->setIsActive($platform->getIsActive());
+        $modifiedSector->setId($sector->getId());
+        $modifiedSector->setName($sector->getName());
+        $modifiedSector->setIsActive($sector->getIsActive());
 
-        $this->data[$index] = $modifiedPlatform;
+        $this->data[$index] = $modifiedSector;
 
         return true;
     }
@@ -67,16 +67,16 @@ class MockPlatformRepository implements PlatformRepositoryInterface
             return false;
         }
 
-        $findedPlatform = $this->data[$index];
+        $foundSector = $this->data[$index];
 
-        $changedSomething = $findedPlatform->getIsActive() !== $isActive;
+        $changedSomething = $foundSector->getIsActive() !== $isActive;
 
         $this->data[$index]->setIsActive($isActive);
 
         return $changedSomething;
     }
 
-    public function findById(int $id): Platform|null
+    public function findById(int $id): Sector|null
     {
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $id) {
@@ -93,8 +93,8 @@ class MockPlatformRepository implements PlatformRepositoryInterface
 
     public function hasDuplicatedNames(string $name): bool
     {
-        $array = array_filter($this->data, function (Platform $platform) use ($name) {
-            return strcmp($platform->getName(), $name) === 0;
+        $array = array_filter($this->data, function (Sector $sector) use ($name) {
+            return strcmp($sector->getName(), $name) === 0;
         });
         return count($array) > 0;
     }

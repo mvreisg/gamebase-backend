@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
@@ -93,7 +95,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game();
             $game->setId($fetchResult['id']);
             $game->setName($fetchResult['name']);
-            $game->setIsActive($fetchResult['is_active']);
+            $game->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $game;
         } catch (
@@ -155,7 +159,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -220,16 +224,18 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
+            $fetchResult = $statement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return null;
             }
 
             $game = new Game();
-            $game->setId($result['id']);
-            $game->setName($result['name']);
-            $game->setIsActive($result['is_active']);
+            $game->setId($fetchResult['id']);
+            $game->setName($fetchResult['name']);
+            $game->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $game;
         } catch (
@@ -264,18 +270,20 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
+            $fetchResult = $statement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return [];
             }
 
             $games = [];
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $game = new Game();
                 $game->setId($row['id']);
                 $game->setName($row['name']);
-                $game->setIsActive($row['is_active']);
+                $game->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $games[] = $game;
             }
 

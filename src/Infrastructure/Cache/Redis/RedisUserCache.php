@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis;
 
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
@@ -14,9 +16,9 @@ class RedisUserCache implements UserCacheInterface
         $this->redis = $redis;
     }
 
-    public function set(string $userName, mixed $cache): void
+    public function set(string $userName, string $token): void
     {
-        $this->redis->set($userName, $cache);
+        $this->redis->set($userName, $token);
     }
 
     public function get(string $userName): string|null
@@ -31,7 +33,7 @@ class RedisUserCache implements UserCacheInterface
 
     public function exists(string $key): bool
     {
-        return $this->redis->exists($key);
+        return boolval($this->redis->exists($key));
     }
 
     public function delete(string $key): bool

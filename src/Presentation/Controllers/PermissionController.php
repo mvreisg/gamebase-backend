@@ -6,30 +6,30 @@ namespace Mvreisg\GamebaseBackend\Presentation\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use PDOException;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
-use Mvreisg\GamebaseBackend\Application\Services\GameService;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
-use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
+use Mvreisg\GamebaseBackend\Application\Services\PermissionService;
 use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
+use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
+use PDOException;
 
-class GameController
+class PermissionController
 {
-    private GameService $gameService;
+    private PermissionService $permissionService;
     private AuthenticationService $authenticationService;
 
     public function __construct(
-        GameService $gameService,
+        PermissionService $permissionService,
         AuthenticationService $authenticationService
     ) {
-        $this->gameService = $gameService;
+        $this->permissionService = $permissionService;
         $this->authenticationService = $authenticationService;
     }
 
@@ -45,35 +45,30 @@ class GameController
 
             $isNameFieldSetted = isset($body['name']);
             if ($isNameFieldSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave name não foi informada no JSON ou seu valor é null!'
-                );
+                throw new ControllerUndefinedValueException('A chave name não existe ou seu valor é null');
             }
 
             $isIsActiveFieldSetted = isset($body['isActive']);
             if ($isIsActiveFieldSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave isActive não foi informada no JSON ou seu valor é null!'
-                );
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null');
             }
 
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $game = $this->gameService->insert($name, $isActive);
+            $genre = $this->permissionService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'message' => 'Registro de jogo inserido com sucesso!',
+                    'message' => 'Permissão inserido com sucesso!',
                     'data' => [
-                        'id' => $game->getId(),
-                        'name' => $game->getName(),
-                        'isActive' => $game->getIsActive()
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
                     ]
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[201])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-
             return;
         } catch (AuthenticationException $e) {
             $response
@@ -125,25 +120,27 @@ class GameController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException('A chave id não existe ou seu valor é null!');
+                throw new ControllerUndefinedValueException(
+                    'O parâmetro id não foi informado na URL ou seu valor é null!'
+                );
             }
 
-            $isNameSetted = isset($body['name']);
-            if ($isNameSetted === false) {
-                throw new ControllerUndefinedValueException('A chave name não existe ou seu valor é null!');
+            $isNameFieldSetted = isset($body['name']);
+            if ($isNameFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave name não foi informada ou seu valor é null!');
             }
 
-            $isIsActiveSetted = isset($body['isActive']);
-            if ($isIsActiveSetted === false) {
-                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não foi informada ou seu valor é null!');
             }
 
             $id = $params['id'];
             $name = $body['name'];
             $isActive = $body['isActive'];
 
-            $wasSomeUpdateHappened = $this->gameService->update($id, $name, $isActive);
-            if ($wasSomeUpdateHappened === false) {
+            $wasAUpdateOcurred = $this->permissionService->update($id, $name, $isActive);
+            if ($wasAUpdateOcurred === false) {
                 $response
                     ->setBody([
                         'message' => 'Nenhuma linha afetada.'
@@ -155,7 +152,7 @@ class GameController
 
             $response
                 ->setBody([
-                    'message' => 'Dados do jogo atualizado com sucesso!'
+                    'message' => 'Permissão atualizado com sucesso!'
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[200])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
@@ -171,8 +168,8 @@ class GameController
         } catch (
             ControllerUndefinedValueException |
             HttpJsonParseException |
-            DatabaseDuplicatedEntryException |
-            EntityInvalidValueException $e
+            EntityInvalidValueException |
+            DatabaseDuplicatedEntryException $e
         ) {
             $response
                 ->setBody([
@@ -209,26 +206,22 @@ class GameController
 
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave id não foi informada ou seu valor é null!'
-                );
+                throw new ControllerUndefinedValueException('O parâmetro id não foi informado na URL!');
             }
 
-            $isIsActiveSetted = isset($body['isActive']);
-            if ($isIsActiveSetted === false) {
-                throw new ControllerUndefinedValueException(
-                    'A chave isActive não foi definida no JSON ou seu valor é null!'
-                );
+            $isIsActiveFieldSetted = isset($body['isActive']);
+            if ($isIsActiveFieldSetted === false) {
+                throw new ControllerUndefinedValueException('A chave isActive não existe ou seu valor é null!');
             }
 
             $id = $params['id'];
             $isActive = $body['isActive'];
 
-            $wasTheUpdateOcurred = $this->gameService->setIsActive($id, $isActive);
+            $wasTheUpdateOcurred = $this->permissionService->setIsActive($id, $isActive);
             if ($wasTheUpdateOcurred === false) {
                 $response
                     ->setBody([
-                        'message' => 'Nenhum registro foi alterado!'
+                        'message' => 'Nenhum registro foi modificado!'
                     ])
                     ->setStatus(HttpRouter::$STATUS_CODES[200])
                     ->send(HttpRouter::$CONTENT_TYPES['JSON']);
@@ -290,31 +283,31 @@ class GameController
             $isIdSetted = isset($params['id']);
             if ($isIdSetted === false) {
                 throw new ControllerUndefinedValueException(
-                    'O parâmetro id não foi informado na URL ou seu valor é null!'
+                    'O parâmetro id não foi informado ou seu valor é null!'
                 );
             }
 
             $id = $params['id'];
 
-            $game = $this->gameService->findById($id);
+            $genre = $this->permissionService->findById($id);
 
-            if ($game === null) {
+            if ($genre === null) {
                 $response
                     ->setBody([
-                        'message' => 'O registro com o id ' . $id . ' não pôde ser encontrado!',
+                        'message' => 'A permissão com o id ' . $id . ' não existe!',
                     ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[404])
+                    ->setStatus(HttpRouter::$STATUS_CODES[200])
                     ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
             $response
                 ->setBody([
-                    'message' => 'Jogo buscado com sucesso!',
+                    'message' => 'Permissão encontrado com sucesso!',
                     'data' => [
-                        'id' => $game->getId(),
-                        'name' => $game->getName(),
-                        'isActive' => $game->getIsActive()
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
                     ]
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[200])
@@ -340,7 +333,6 @@ class GameController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException $e
@@ -363,34 +355,30 @@ class GameController
                 ->setToken($headers)
                 ->validate($this->authenticationService);
 
-            $games = $this->gameService->findAll();
+            $genres = $this->permissionService->findAll();
 
-            $numberOfGamesFound = count($games);
-            if ($numberOfGamesFound === 0) {
+            $numberOfGenresFound = count($genres);
+            if ($numberOfGenresFound === 0) {
                 $response
                     ->setBody([
-                        'message' => 'A busca foi concluída e nenhum jogo foi encontrado.',
+                        'message' => 'Nenhum registro encontrado!',
                     ])
                     ->setStatus(HttpRouter::$STATUS_CODES[200])
                     ->send(HttpRouter::$CONTENT_TYPES['JSON']);
                 return;
             }
 
-            foreach ($games as $game) {
-                $gameId = $game->getId();
-                $gameName = $game->getName();
-                $gameIsActive = $game->getIsActive();
-
+            foreach ($genres as $genre) {
                 $data[] = [
-                    'id' => $gameId,
-                    'name' => $gameName,
-                    'isActive' => $gameIsActive
+                    'id' => $genre->getId(),
+                    'name' => $genre->getName(),
+                    'isActive' => $genre->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'message' => 'Jogos buscados com sucesso!',
+                    'message' => 'Permissões buscados com sucesso!',
                     'data' => $data
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[200])

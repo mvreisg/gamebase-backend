@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Presentation\Routes;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
@@ -9,9 +11,9 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\PlatformControllerFactory;
 
 class PlatformRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
-        $controller = PlatformControllerFactory::get();
+        $controller = PlatformControllerFactory::make();
 
         $app->add('POST', '/platform', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->insert($request, $response);
