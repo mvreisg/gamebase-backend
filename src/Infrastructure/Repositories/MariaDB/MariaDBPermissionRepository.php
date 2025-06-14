@@ -103,7 +103,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $this->pdo->commit();
 
-            $permission = new Permission();            
+            $permission = new Permission();
             $permission->setId($fetchResult['id']);
             $permission->setName($fetchResult['name']);
             $permission->setIsActive(

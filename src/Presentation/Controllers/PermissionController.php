@@ -20,7 +20,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use PDOException;
 
-class PermissionController 
+class PermissionController
 {
     private PermissionService $permissionService;
     private AuthenticationService $authenticationService;

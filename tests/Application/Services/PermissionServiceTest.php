@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
 use PHPUnit\Framework\TestCase;
 
-class PermissionServiceTest extends TestCase 
+class PermissionServiceTest extends TestCase
 {
     private PermissionRepositoryInterface $permissionRepository;
     private PermissionService $permissionService;
@@ -48,16 +48,15 @@ class PermissionServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        for ($i = 1; $i <= 10; $i++)
-        {
-            $permission = $this->permissionService->insert($name.$i, $isActive);
+        for ($i = 1; $i <= 10; $i++) {
+            $permission = $this->permissionService->insert($name . $i, $isActive);
 
             $this->assertNotEmpty($permission);
             $this->assertInstanceOf(Permission::class, $permission);
-        }        
+        }
     }
 
-    public function testIfUpdateSucceds(): void 
+    public function testIfUpdateSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -72,7 +71,7 @@ class PermissionServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdateSuccedsWithSameValues(): void 
+    public function testIfUpdateSuccedsWithSameValues(): void
     {
         $name = 'test';
         $isActive = true;
@@ -86,7 +85,7 @@ class PermissionServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdateWithInvalidNameFails(): void 
+    public function testIfUpdateWithInvalidNameFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -101,7 +100,7 @@ class PermissionServiceTest extends TestCase
         $this->permissionService->update($id, $name, $isActive);
     }
 
-    public function testIfSetIsActiveSucceds(): void 
+    public function testIfSetIsActiveSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -115,7 +114,7 @@ class PermissionServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfSetIsActiveDoesNotChangeRepositoryState(): void 
+    public function testIfSetIsActiveDoesNotChangeRepositoryState(): void
     {
         $name = 'test';
         $isActive = true;
@@ -126,9 +125,9 @@ class PermissionServiceTest extends TestCase
         $hasChanged = $this->permissionService->setIsActive($id, $isActive);
 
         $this->assertFalse($hasChanged);
-    }  
-    
-    public function testIfFindByIdSucceds(): void 
+    }
+
+    public function testIfFindByIdSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -143,7 +142,7 @@ class PermissionServiceTest extends TestCase
         $this->assertEquals($permission, $fetchedPermission);
     }
 
-    public function testIfFindByIdWithInvalidIdFails(): void 
+    public function testIfFindByIdWithInvalidIdFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -156,14 +155,14 @@ class PermissionServiceTest extends TestCase
         $this->permissionService->findById($id);
     }
 
-    public function testIfFindAllReturnsEmpty(): void 
+    public function testIfFindAllReturnsEmpty(): void
     {
         $emptyArray = $this->permissionService->findAll();
 
         $this->assertEmpty($emptyArray);
     }
 
-    public function testIfFindAllReturnsFilled(): void 
+    public function testIfFindAllReturnsFilled(): void
     {
         $name = 'test';
         $isActive = true;
@@ -173,5 +172,5 @@ class PermissionServiceTest extends TestCase
         $filledArray = $this->permissionService->findAll();
 
         $this->assertNotEmpty($filledArray);
-    }    
+    }
 }
