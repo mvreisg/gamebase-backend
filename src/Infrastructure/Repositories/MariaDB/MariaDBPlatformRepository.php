@@ -96,7 +96,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $platform = new Platform();
             $platform->setId($fetchResult['id']);
             $platform->setName($fetchResult['name']);
-            $platform->setIsActive($fetchResult['is_active']);
+            $platform->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $platform;
         } catch (
@@ -156,7 +158,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -217,15 +219,17 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
-            if ($result === false) {
+            $fetchResult = $statement->fetch();
+            if ($fetchResult === false) {
                 return null;
             }
 
             $platform = new Platform();
-            $platform->setId($result['id']);
-            $platform->setName($result['name']);
-            $platform->setIsActive($result['is_active']);
+            $platform->setId($fetchResult['id']);
+            $platform->setName($fetchResult['name']);
+            $platform->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $platform;
         } catch (
@@ -257,18 +261,20 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
-            if ($result === false) {
+            $fetchResult = $statement->fetchAll();
+            if ($fetchResult === false) {
                 return [];
             }
 
             $platforms = [];
 
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $platform = new Platform();
                 $platform->setId($row['id']);
                 $platform->setName($row['name']);
-                $platform->setIsActive($row['is_active']);
+                $platform->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $platforms[] = $platform;
             }
 

@@ -100,7 +100,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $user->setId($fetchResult['id']);
             $user->setUserName($fetchResult['username']);
             $user->setPassword($fetchResult['password']);
-            $user->setIsActive($fetchResult['is_active']);
+            $user->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $user;
         } catch (
@@ -165,7 +167,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -230,17 +232,19 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
+            $fetchResult = $statement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return null;
             }
 
             $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
+            $user->setId($fetchResult['id']);
+            $user->setUserName($fetchResult['username']);
+            $user->setPassword($fetchResult['password']);
+            $user->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $user;
         } catch (
@@ -279,17 +283,19 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
+            $fetchResult = $statement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return null;
             }
 
             $user = new User();
-            $user->setId($result['id']);
-            $user->setUserName($result['username']);
-            $user->setPassword($result['password']);
-            $user->setIsActive($result['is_active']);
+            $user->setId($fetchResult['id']);
+            $user->setUserName($fetchResult['username']);
+            $user->setPassword($fetchResult['password']);
+            $user->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $user;
         } catch (
@@ -324,19 +330,21 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
+            $fetchResult = $statement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return [];
             }
 
             $users = [];
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $user = new User();
                 $user->setId($row['id']);
                 $user->setUserName($row['username']);
                 $user->setPassword($row['password']);
-                $user->setIsActive($row['is_active']);
+                $user->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $users[] = $user;
             }
 

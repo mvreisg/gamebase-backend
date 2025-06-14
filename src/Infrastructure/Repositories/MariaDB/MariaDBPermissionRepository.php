@@ -93,9 +93,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 );
             }
 
-            $result = $selectStatement->fetchAll();
+            $fetchResult = $selectStatement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 throw new DatabaseFetchFailureException(
                     'Ocorreu um erro ao realizar a busca!'
                 );
@@ -103,10 +103,12 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $this->pdo->commit();
 
-            $permission = new Permission();
-            $permission->setId($result['id']);
-            $permission->setName($result['name']);
-            $permission->setIsActive($result['is_active']);
+            $permission = new Permission();            
+            $permission->setId($fetchResult['id']);
+            $permission->setName($fetchResult['name']);
+            $permission->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $permission;
         } catch (
@@ -196,16 +198,18 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
+            $fetchResult = $statement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return null;
             }
 
             $permission = new Permission();
-            $permission->setId($result['id']);
-            $permission->setName($result['name']);
-            $permission->setIsActive($result['is_active']);
+            $permission->setId($fetchResult['id']);
+            $permission->setName($fetchResult['name']);
+            $permission->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $permission;
         } catch (
@@ -240,18 +244,20 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
+            $fetchResult = $statement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return [];
             }
 
             $permissions = [];
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $permission = new Permission();
                 $permission->setId($row['id']);
                 $permission->setName($row['name']);
-                $permission->setIsActive($row['is_active']);
+                $permission->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $permissions[] = $permission;
             }
 
@@ -268,7 +274,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE

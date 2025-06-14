@@ -216,15 +216,15 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
-            if ($result === false) {
+            $fetchResult = $statement->fetch();
+            if ($fetchResult === false) {
                 return null;
             }
 
             $gameGenre = new GameGenre();
-            $gameGenre->setId($result['id']);
-            $gameGenre->setGameId($result['game_id']);
-            $gameGenre->setGenreId($result['genre_id']);
+            $gameGenre->setId($fetchResult['id']);
+            $gameGenre->setGameId($fetchResult['game_id']);
+            $gameGenre->setGenreId($fetchResult['genre_id']);
 
             return $gameGenre;
         } catch (
@@ -256,14 +256,14 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
-            if ($result === false) {
+            $fetchResult = $statement->fetchAll();
+            if ($fetchResult === false) {
                 return [];
             }
 
             $gameGenres = [];
 
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $gameGenre = new GameGenre();
                 $gameGenre->setId($row['id']);
                 $gameGenre->setGameId($row['game_id']);

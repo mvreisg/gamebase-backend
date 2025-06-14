@@ -93,9 +93,9 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 );
             }
 
-            $result = $selectStatement->fetchAll();
+            $fetchResult = $selectStatement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 throw new DatabaseFetchFailureException(
                     'Ocorreu um erro ao realizar a busca!'
                 );
@@ -104,9 +104,11 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $this->pdo->commit();
 
             $sector = new Sector();
-            $sector->setId($result['id']);
-            $sector->setName($result['name']);
-            $sector->setIsActive($result['is_active']);
+            $sector->setId($fetchResult['id']);
+            $sector->setName($fetchResult['name']);
+            $sector->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $sector;
         } catch (
@@ -196,16 +198,18 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
+            $fetchResult = $statement->fetch();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return null;
             }
 
             $sector = new Sector();
-            $sector->setId($result['id']);
-            $sector->setName($result['name']);
-            $sector->setIsActive($result['is_active']);
+            $sector->setId($fetchResult['id']);
+            $sector->setName($fetchResult['name']);
+            $sector->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $sector;
         } catch (
@@ -240,18 +244,20 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
+            $fetchResult = $statement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return [];
             }
 
             $sectors = [];
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $sector = new Sector();
                 $sector->setId($row['id']);
                 $sector->setName($row['name']);
-                $sector->setIsActive($row['is_active']);
+                $sector->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $sectors[] = $sector;
             }
 
@@ -268,7 +274,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE

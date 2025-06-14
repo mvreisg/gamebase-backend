@@ -96,7 +96,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $genre = new Genre();
             $genre->setId($fetchResult['id']);
             $genre->setName($fetchResult['name']);
-            $genre->setIsActive($fetchResult['is_active']);
+            $genre->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $genre;
         } catch (
@@ -160,7 +162,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $isActive = (int)$isActive;
+            $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -223,15 +225,17 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            $result = $statement->fetch();
-            if ($result === false) {
+            $fetchResult = $statement->fetch();
+            if ($fetchResult === false) {
                 return null;
             }
 
             $genre = new Genre();
-            $genre->setId($result['id']);
-            $genre->setName($result['name']);
-            $genre->setIsActive($result['is_active']);
+            $genre->setId($fetchResult['id']);
+            $genre->setName($fetchResult['name']);
+            $genre->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
 
             return $genre;
         } catch (
@@ -265,19 +269,21 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            $result = $statement->fetchAll();
+            $fetchResult = $statement->fetchAll();
 
-            if ($result === false) {
+            if ($fetchResult === false) {
                 return [];
             }
 
             $genres = [];
 
-            foreach ($result as $row) {
+            foreach ($fetchResult as $row) {
                 $genre = new Genre();
                 $genre->setId($row['id']);
                 $genre->setName($row['name']);
-                $genre->setIsActive($row['is_active']);
+                $genre->setIsActive(
+                    boolval($row['is_active'])
+                );
                 $genres[] = $genre;
             }
 
