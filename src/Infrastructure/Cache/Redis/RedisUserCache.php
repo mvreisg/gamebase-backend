@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis;
 
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
@@ -31,7 +33,7 @@ class RedisUserCache implements UserCacheInterface
 
     public function exists(string $key): bool
     {
-        return $this->redis->exists($key);
+        return $this->redis->exists($key) === true;
     }
 
     public function delete(string $key): bool

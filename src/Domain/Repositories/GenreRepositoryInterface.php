@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Domain\Repositories;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;

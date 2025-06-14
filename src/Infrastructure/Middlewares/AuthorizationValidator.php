@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Middlewares;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;

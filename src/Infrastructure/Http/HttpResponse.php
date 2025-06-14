@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mvreisg\GamebaseBackend\Infrastructure\Http;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
