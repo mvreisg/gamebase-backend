@@ -22,7 +22,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService = new PlatformService($this->platformRepository);
     }
 
-    public function testIfPlatformInsertionSucceds()
+    public function testIfPlatformInsertionSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -33,7 +33,7 @@ class PlatformServiceTest extends TestCase
         $this->assertInstanceOf(Platform::class, $platform);
     }
 
-    public function testIfTenPlatformsInsertionSucceds()
+    public function testIfTenPlatformsInsertionSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -46,7 +46,7 @@ class PlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfInsertionOfTwoPlatformsWithTheSameNameFails()
+    public function testIfInsertionOfTwoPlatformsWithTheSameNameFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -57,7 +57,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService->insert($name, $isActive);
     }
 
-    public function testIfPlatformInsertionFailsWithEmptyName()
+    public function testIfPlatformInsertionFailsWithEmptyName(): void
     {
         $name = '';
         $isActive = true;
@@ -67,7 +67,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService->insert($name, $isActive);
     }
 
-    public function testIfUpdateSucceds()
+    public function testIfUpdateSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -81,7 +81,7 @@ class PlatformServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdateSuccedsWithTenPlatformsInTheRepository()
+    public function testIfUpdateSuccedsWithTenPlatformsInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;
@@ -98,7 +98,7 @@ class PlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfUpdatingAPlatformWithAExistantNameSucceds()
+    public function testIfUpdatingAPlatformWithAExistantNameSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -112,7 +112,7 @@ class PlatformServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfUpdatingAPlatformWithAUnexistantIdFails()
+    public function testIfUpdatingAPlatformWithAUnexistantIdFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -126,7 +126,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService->update($id, $name, $isActive);
     }
 
-    public function testIfUpdatingAPlatformWithAEmptyNameFails()
+    public function testIfUpdatingAPlatformWithAEmptyNameFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -141,7 +141,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService->update($id, $name, $isActive);
     }
 
-    public function testIfSettingAsActiveSucceds()
+    public function testIfSettingAsActiveSucceds(): void
     {
         $name = 'test';
         $isActive = false;
@@ -156,7 +156,7 @@ class PlatformServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithSameValueFails()
+    public function testIfSettingIsActiveWithSameValueFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -170,7 +170,7 @@ class PlatformServiceTest extends TestCase
         $this->assertFalse($hasChanged);
     }
 
-    public function testIfSettingIsActiveWithInvalidIdFails()
+    public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
         $name = 'test';
         $isActive = true;
@@ -184,7 +184,7 @@ class PlatformServiceTest extends TestCase
         $this->platformService->setIsActive($id, $isActive);
     }
 
-    public function testIfFindByIdSucceds()
+    public function testIfFindByIdSucceds(): void
     {
         $name = 'test';
         $isActive = true;
@@ -199,7 +199,7 @@ class PlatformServiceTest extends TestCase
         $this->assertInstanceOf(Platform::class, $platform);
     }
 
-    public function testIfFindByIdSuccedsWithTenPlatforms()
+    public function testIfFindByIdSuccedsWithTenPlatforms(): void
     {
         $name = 'test';
         $isActive = true;
@@ -219,14 +219,14 @@ class PlatformServiceTest extends TestCase
         }
     }
 
-    public function testIfFindAllSuccedsEvenWithNoPlatformsInTheRepository()
+    public function testIfFindAllSuccedsEvenWithNoPlatformsInTheRepository(): void
     {
         $emptyArray = $this->platformService->findAll();
 
         $this->assertEmpty($emptyArray);
     }
 
-    public function testIfFindAllSuccedsWithOnePlatformInTheRepository()
+    public function testIfFindAllSuccedsWithOnePlatformInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;
@@ -238,7 +238,7 @@ class PlatformServiceTest extends TestCase
         $this->assertNotEmpty($platformsArray);
     }
 
-    public function testIfFindAllSuccedsWithTenPlatformsInTheRepository()
+    public function testIfFindAllSuccedsWithTenPlatformsInTheRepository(): void
     {
         $name = 'test';
         $isActive = true;

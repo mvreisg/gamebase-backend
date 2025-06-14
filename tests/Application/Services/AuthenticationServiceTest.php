@@ -30,7 +30,7 @@ class AuthenticationServiceTest extends TestCase
         $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
-    public function testIfUserHasCredentials()
+    public function testIfUserHasCredentials(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -40,7 +40,7 @@ class AuthenticationServiceTest extends TestCase
         $this->assertTrue($hasCredentials);
     }
 
-    public function testIfUserDoNotHaveCredentialsWithAWrongUserName()
+    public function testIfUserDoNotHaveCredentialsWithAWrongUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -50,7 +50,7 @@ class AuthenticationServiceTest extends TestCase
         $this->assertFalse($hasCredentials);
     }
 
-    public function testIfUserDoNotHaveCredentialsWithAWrongPassword()
+    public function testIfUserDoNotHaveCredentialsWithAWrongPassword(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -60,13 +60,13 @@ class AuthenticationServiceTest extends TestCase
         $this->assertFalse($hasCredentials);
     }
 
-    public function testIfLoginFailsWithoutRegisteredUsers()
+    public function testIfLoginFailsWithoutRegisteredUsers(): void
     {
         $hasCredentials = $this->authService->tryLogin('test', 'test');
         $this->assertFalse($hasCredentials);
     }
 
-    public function testIfLoginSuccedsWithTenUsers()
+    public function testIfLoginSuccedsWithTenUsers(): void
     {
         $userNamePrefix = 'test';
         $passWordPrefix = 'test';
@@ -81,7 +81,7 @@ class AuthenticationServiceTest extends TestCase
         }
     }
 
-    public function testIfLoginFailsWithTenUsersButWrongCredentials()
+    public function testIfLoginFailsWithTenUsersButWrongCredentials(): void
     {
         $userNamePrefix = 'test';
         $passWordPrefix = 'test';
@@ -96,7 +96,7 @@ class AuthenticationServiceTest extends TestCase
         }
     }
 
-    public function testIfLoginFailsWithEmptyUserName()
+    public function testIfLoginFailsWithEmptyUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -106,7 +106,7 @@ class AuthenticationServiceTest extends TestCase
         $this->authService->tryLogin('', $passWord);
     }
 
-    public function testIfLoginFailsWithEmptyPassWord()
+    public function testIfLoginFailsWithEmptyPassWord(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -116,7 +116,7 @@ class AuthenticationServiceTest extends TestCase
         $this->authService->tryLogin($userName, '');
     }
 
-    public function testIfUserCanRetrieveAuthenticationToken()
+    public function testIfUserCanRetrieveAuthenticationToken(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -132,7 +132,7 @@ class AuthenticationServiceTest extends TestCase
         $this->assertNotEmpty($token, 'Token');
     }
 
-    public function testIfGenerationOfAuthenticationTokenFailsDueToEmptyUserName()
+    public function testIfGenerationOfAuthenticationTokenFailsDueToEmptyUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -148,7 +148,7 @@ class AuthenticationServiceTest extends TestCase
         $this->authService->generateToken('', $oneWeek);
     }
 
-    public function testIfSessionTokenIsSuccessfullyRetrievedFromCache()
+    public function testIfSessionTokenIsSuccessfullyRetrievedFromCache(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -168,7 +168,7 @@ class AuthenticationServiceTest extends TestCase
         $this->assertNotEmpty($token);
     }
 
-    public function testIfItFailsToRetrieveSessionTokenFromTheCacheDueToUnexistantUserName()
+    public function testIfItFailsToRetrieveSessionTokenFromTheCacheDueToUnexistantUserName(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -188,7 +188,7 @@ class AuthenticationServiceTest extends TestCase
         $this->assertEmpty($token);
     }
 
-    public function testIfAValidTokenIsSuccessfullyValidated()
+    public function testIfAValidTokenIsSuccessfullyValidated(): void
     {
         $userName = 'test';
         $passWord = 'test';
@@ -206,13 +206,13 @@ class AuthenticationServiceTest extends TestCase
         $this->assertTrue($isTokenValid);
     }
 
-    public function testIfAInvalidTokenFailsToValidate()
+    public function testIfAInvalidTokenFailsToValidate(): void
     {
         $isTokenValid = $this->authService->validateToken('');
         $this->assertFalse($isTokenValid);
     }
 
-    public function testIfLogoffSucceds()
+    public function testIfLogoffSucceds(): void
     {
         $userName = 'test';
         $passWord = 'test';

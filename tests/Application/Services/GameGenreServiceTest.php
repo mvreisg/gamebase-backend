@@ -21,7 +21,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService = new GameGenreService($this->gameGenreRepository);
     }
 
-    public function testIfItSuccessfullyInserts()
+    public function testIfItSuccessfullyInserts(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -32,7 +32,7 @@ class GameGenreServiceTest extends TestCase
         $this->assertInstanceOf(GameGenre::class, $gameGenre);
     }
 
-    public function testIfItSuccessfullyInsertsTenRegisters()
+    public function testIfItSuccessfullyInsertsTenRegisters(): void
     {
         for ($i = 1; $i <= 10; $i++) {
             $genreId = $i;
@@ -44,7 +44,7 @@ class GameGenreServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToInsertWithInvalidGenreId()
+    public function testIfItFailsToInsertWithInvalidGenreId(): void
     {
         $genreId = -1;
         $gameId = 1;
@@ -54,7 +54,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->insert($genreId, $gameId);
     }
 
-    public function testIfItFailsToInsertWithInvalidGameId()
+    public function testIfItFailsToInsertWithInvalidGameId(): void
     {
         $genreId = 1;
         $gameId = -1;
@@ -64,7 +64,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->insert($genreId, $gameId);
     }
 
-    public function testIfItSuccessfullyUpdates()
+    public function testIfItSuccessfullyUpdates(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -78,7 +78,7 @@ class GameGenreServiceTest extends TestCase
         $this->assertTrue($hasChanged);
     }
 
-    public function testIfItSuccessfullyUpdatesWithTenRegisters()
+    public function testIfItSuccessfullyUpdatesWithTenRegisters(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -101,7 +101,7 @@ class GameGenreServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToUpdateWithInvalidId()
+    public function testIfItFailsToUpdateWithInvalidId(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -115,7 +115,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
 
-    public function testIfItFailsToUpdateWithInvalidGenreId()
+    public function testIfItFailsToUpdateWithInvalidGenreId(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -130,7 +130,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
 
-    public function testIfItFailsToUpdateWithInvalidGameId()
+    public function testIfItFailsToUpdateWithInvalidGameId(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -145,7 +145,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
 
-    public function testIfItSuccessfullyDeletes()
+    public function testIfItSuccessfullyDeletes(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -159,7 +159,7 @@ class GameGenreServiceTest extends TestCase
         $this->assertTrue($hasDeleted);
     }
 
-    public function testIfItSuccessfullyDeletesWithTenRegisters()
+    public function testIfItSuccessfullyDeletesWithTenRegisters(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -180,7 +180,7 @@ class GameGenreServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToDeleteWithInvalidId()
+    public function testIfItFailsToDeleteWithInvalidId(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -194,7 +194,7 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->delete($id);
     }
 
-    public function testIfItSucessfullyFindsById()
+    public function testIfItSucessfullyFindsById(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -210,7 +210,7 @@ class GameGenreServiceTest extends TestCase
         $this->assertEquals($gameGenre, $fetchedGameGenre);
     }
 
-    public function testIfItSucessfullyFindsByIdWithTenRegisters()
+    public function testIfItSucessfullyFindsByIdWithTenRegisters(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -234,7 +234,7 @@ class GameGenreServiceTest extends TestCase
         }
     }
 
-    public function testIfItFailsToFindByIdWithInvalidId()
+    public function testIfItFailsToFindByIdWithInvalidId(): void
     {
         $genreId = 1;
         $gameId = 1;
@@ -248,14 +248,14 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->findById($id);
     }
 
-    public function testIfItSuccessfullyFindsAllWithNoRegisters()
+    public function testIfItSuccessfullyFindsAllWithNoRegisters(): void
     {
         $emptyArray = $this->gameGenreService->findAll();
 
         $this->assertEmpty($emptyArray);
     }
 
-    public function testIfItSuccessfullyFindsAll()
+    public function testIfItSuccessfullyFindsAll(): void
     {
         $genreId = 1;
         $gameId = 1;
