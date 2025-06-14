@@ -34,7 +34,7 @@ class PlatformController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response)
+    public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -113,7 +113,7 @@ class PlatformController
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response)
+    public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -197,7 +197,7 @@ class PlatformController
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -274,7 +274,7 @@ class PlatformController
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response)
+    public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -350,7 +350,7 @@ class PlatformController
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response)
+    public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();

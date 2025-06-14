@@ -33,7 +33,7 @@ class GameController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response)
+    public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -112,7 +112,7 @@ class GameController
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response)
+    public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -196,7 +196,7 @@ class GameController
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response)
+    public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -277,7 +277,7 @@ class GameController
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response)
+    public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
@@ -355,7 +355,7 @@ class GameController
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response)
+    public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
             $headers = $request->getHeaders();
