@@ -16,9 +16,9 @@ class RedisUserCache implements UserCacheInterface
         $this->redis = $redis;
     }
 
-    public function set(string $userName, mixed $cache): void
+    public function set(string $userName, string $token): void
     {
-        $this->redis->set($userName, $cache);
+        $this->redis->set($userName, $token);
     }
 
     public function get(string $userName): string|null
