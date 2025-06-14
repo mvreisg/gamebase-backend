@@ -13,7 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
-class AuthenticationServiceTest extends TestCase
+class AuthenticationServiceTestCase extends TestCase
 {
     private UserCacheInterface $userCache;
     private UserRepositoryInterface $userRepository;
