@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\PlatformControllerFactory;
 
 class PlatformRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
         $controller = PlatformControllerFactory::get();
 

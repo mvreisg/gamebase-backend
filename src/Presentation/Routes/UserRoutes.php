@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\UserControllerFactory;
 
 class UserRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
         $controller = UserControllerFactory::get();
 

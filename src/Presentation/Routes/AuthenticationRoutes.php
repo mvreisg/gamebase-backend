@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\AuthenticationControllerFacto
 
 class AuthenticationRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
         $controller = AuthenticationControllerFactory::get();
 

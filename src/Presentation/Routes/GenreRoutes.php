@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Presentation\Factories\GenreControllerFactory;
 
 class GenreRoutes
 {
-    public function register(HttpRouter $app)
+    public function register(HttpRouter $app): void
     {
         $controller = GenreControllerFactory::get();
 
