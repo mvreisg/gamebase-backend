@@ -13,7 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
-class UserServiceTestCase extends TestCase
+class UserServiceTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
     private EncryptionInterface $encrypter;

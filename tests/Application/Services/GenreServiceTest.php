@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreRepository;
 use PHPUnit\Framework\TestCase;
 
-class GenreServiceTestCase extends TestCase
+class GenreServiceTest extends TestCase
 {
     private GenreRepositoryInterface $genreRepository;
     private GenreService $genreService;

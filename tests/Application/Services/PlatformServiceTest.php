@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformRepository;
 use PHPUnit\Framework\TestCase;
 
-class PlatformServiceTestCase extends TestCase
+class PlatformServiceTest extends TestCase
 {
     private PlatformRepositoryInterface $platformRepository;
     private PlatformService $platformService;

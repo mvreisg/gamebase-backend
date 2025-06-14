@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreRepository;
 use PHPUnit\Framework\TestCase;
 
-class GameGenreServiceTestCase extends TestCase
+class GameGenreServiceTest extends TestCase
 {
     private GameGenreRepositoryInterface $gameGenreRepository;
     private GameGenreService $gameGenreService;

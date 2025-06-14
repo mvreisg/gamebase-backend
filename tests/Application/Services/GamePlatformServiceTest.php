@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGamePlatformRepository;
 use PHPUnit\Framework\TestCase;
 
-class GamePlatformServiceTestCase extends TestCase
+class GamePlatformServiceTest extends TestCase
 {
     private GamePlatformRepositoryInterface $gamePlatformRepository;
     private GamePlatformService $gamePlatformService;
