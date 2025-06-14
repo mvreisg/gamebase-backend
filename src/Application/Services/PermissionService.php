@@ -26,7 +26,7 @@ class PermissionService
     public function insert(string $name, bool $isActive): Permission
     {
         try {
-            $permission = new Permission(0, $name, $isActive);
+            $permission = new Permission(PHP_INT_MAX, $name, $isActive);
             $permission->validateId();
             $permission->validateName();
             $validatedName = $permission->getName();
