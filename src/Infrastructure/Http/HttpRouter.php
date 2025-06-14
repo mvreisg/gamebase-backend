@@ -37,7 +37,7 @@ class HttpRouter
         ];
     }
 
-    public function add(string $method, string $route, callable $callback)
+    public function add(string $method, string $route, callable $callback): void
     {
         $this->routes[] = [
             'method' => strtoupper($method),
@@ -46,7 +46,7 @@ class HttpRouter
         ];
     }
 
-    public function run()
+    public function run(): void
     {
         foreach ($this->headers as $header) {
             header($header);

@@ -9,7 +9,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 class HttpResponse
 {
     private array $headers;
-
     private array $body;
 
     public function __construct(array $headers = [], array $body = [])
@@ -18,25 +17,25 @@ class HttpResponse
         $this->body = $body;
     }
 
-    public function setBody(array $data)
+    public function setBody(array $data): HttpResponse
     {
         $this->body = $data;
         return $this;
     }
 
-    public function addHeader(string $header)
+    public function addHeader(string $header): HttpResponse
     {
         $this->headers[] = $header;
         return $this;
     }
 
-    public function setStatus(string $setStatus)
+    public function setStatus(string $setStatus): HttpResponse
     {
         header($setStatus);
         return $this;
     }
 
-    public function send(string $contentType = 'default')
+    public function send(string $contentType = 'default'): void
     {
         foreach ($this->headers as $header) {
             header($header);
