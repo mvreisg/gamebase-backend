@@ -9,9 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 class Game
 {
     private int $id;
-
     private string $name;
-
     private bool $isActive;
 
     public function __construct(int $id = 0, string $name = '', bool $isActive = false)

@@ -9,9 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 class GamePlatform
 {
     private int $id;
-
     private int $platformId;
-
     private int $gameId;
 
     public function __construct(int $id = 0, int $platformId = 0, int $gameId = 0)
@@ -21,32 +19,32 @@ class GamePlatform
         $this->gameId = $gameId;
     }
 
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id)
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    public function getPlatformId()
+    public function getPlatformId(): int
     {
         return $this->platformId;
     }
 
-    public function setPlatformId(int $platformId)
+    public function setPlatformId(int $platformId): void
     {
         $this->platformId = $platformId;
     }
 
-    public function getGameId()
+    public function getGameId(): int
     {
         return $this->gameId;
     }
 
-    public function setGameId(int $gameId)
+    public function setGameId(int $gameId): void
     {
         $this->gameId = $gameId;
     }
@@ -58,14 +56,14 @@ class GamePlatform
         }
     }
 
-    public function validatePlatformId()
+    public function validatePlatformId(): void
     {
         if ($this->platformId <= 0) {
             throw new EntityInvalidValueException('O platformId deve ser maior que zero!');
         }
     }
 
-    public function validateGameId()
+    public function validateGameId(): void
     {
         if ($this->gameId <= 0) {
             throw new EntityInvalidValueException('O gameId deve ser maior que zero!');

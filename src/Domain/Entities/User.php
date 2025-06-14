@@ -68,7 +68,7 @@ class User
         }
     }
 
-    public function validateUserName()
+    public function validateUserName(): void
     {
         $this->userName = trim($this->userName);
 
@@ -77,7 +77,7 @@ class User
         }
     }
 
-    public function validatePassWord()
+    public function validatePassWord(): void
     {
         $this->passWord = trim($this->passWord);
 
