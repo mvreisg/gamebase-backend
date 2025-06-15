@@ -43,6 +43,17 @@ class PermissionServiceTest extends TestCase
         $this->permissionService->insert($name, $isActive);
     }
 
+    public function testIfDuplicatedInsertionsFails(): void
+    {
+        $name = 'test';
+        $isActive = true;
+
+        $this->expectException(DatabaseDuplicatedEntryException::class);
+
+        $this->permissionService->insert($name, $isActive);
+        $this->permissionService->insert($name, $isActive);
+    }    
+
     public function testIfTenInsertionsSucceds(): void
     {
         $name = 'test';
