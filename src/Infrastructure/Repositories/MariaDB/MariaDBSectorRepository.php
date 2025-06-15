@@ -93,7 +93,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 );
             }
 
-            $fetchResult = $selectStatement->fetchAll();
+            $fetchResult = $selectStatement->fetch();
 
             if ($fetchResult === false) {
                 throw new DatabaseFetchFailureException(

@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Presentation\Routes\GamePlatformRoutes;
 use Throwable;
 use Mvreisg\GamebaseBackend\Presentation\Routes\AuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\PermissionRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Routes\SectorRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Routes\UserRoutes;
 
 include_once dirname(__DIR__) . '/vendor/autoload.php';
@@ -30,6 +31,7 @@ try {
     $platformRoutes = new PlatformRoutes();
     $userRoutes = new UserRoutes();
     $permissionRoutes = new PermissionRoutes();
+    $sectorRoutes = new SectorRoutes();
     $authenticationRoutes = new AuthenticationRoutes();
 
     $gameRoutes->register($app);
@@ -39,6 +41,7 @@ try {
     $platformRoutes->register($app);
     $userRoutes->register($app);
     $permissionRoutes->register($app);
+    $sectorRoutes->register($app);
     $authenticationRoutes->register($app);
 
     $app->run();
