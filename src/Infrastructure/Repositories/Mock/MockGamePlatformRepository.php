@@ -72,6 +72,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
+    /*
     public function setIsActive(int $id, bool $isActive): bool
     {
         $index = null;
@@ -93,7 +94,8 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 
         return $changedSomething;
     }
-
+    */
+    
     public function findById(int $id): GamePlatform|null
     {
         foreach ($this->data as $key => $value) {

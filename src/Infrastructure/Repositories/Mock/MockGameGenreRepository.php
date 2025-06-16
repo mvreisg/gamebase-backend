@@ -72,6 +72,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
+    /*
     public function setIsActive(int $id, bool $isActive): bool
     {
         $index = null;
@@ -93,6 +94,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
 
         return $changedSomething;
     }
+    */
 
     public function findById(int $id): GameGenre|null
     {
