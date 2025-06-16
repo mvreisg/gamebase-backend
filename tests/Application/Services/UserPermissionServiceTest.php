@@ -122,7 +122,6 @@ class UserPermissionServiceTest extends TestCase
 
         $userId = $usersIterator->current()->getId();
         $usersIterator->next();
-        print($userId);
 
         $permissionId = $permissionsIterator->current()->getId();
         $permissionsIterator->next();
