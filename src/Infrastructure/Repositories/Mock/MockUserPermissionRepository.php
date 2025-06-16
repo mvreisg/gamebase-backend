@@ -5,30 +5,61 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegister;
 
 class MockUserPermissionRepository implements UserPermissionRepositoryInterface
 {
     private array $data;
     private int $id;
+    private UserRepositoryInterface $userRepository;
+    private PermissionRepositoryInterface $permissionRepository;
 
-    public function __construct()
-    {
+    public function __construct(
+        UserRepositoryInterface $userRepository,
+        PermissionRepositoryInterface $permissionRepository
+    ) {
         $this->data = [];
         $this->id = 0;
+        $this->userRepository = $userRepository;
+        $this->permissionRepository = $permissionRepository;
     }
 
     public function insert(UserPermission $userPermission): UserPermission
     {
-        $this->id++;
-        $userPermission->setId($this->id);
-        $this->data[] = $userPermission;
-        $newUserPermission = new UserPermission(
-            $userPermission->getId(),
-            $userPermission->getUserId(),
-            $userPermission->getPermissionId()
-        );
-        return $newUserPermission;
+        try{
+            $userId = $userPermission->getUserId();
+            $user = $this->userRepository->findById($userId);
+            if ($user === null){
+                throw new DatabaseUnexistantRegister(
+                    'O registro com o id ' . $userId . ' não existe!'
+                );
+            }
+
+            $permissionId = $userPermission->getPermissionId();
+            $permission = $this->permissionRepository->findById($permissionId);
+            if ($permission === null){
+                throw new DatabaseUnexistantRegister(
+                    'O registro com o id ' . $permissionId . ' não existe!'
+                );                
+            }
+
+            $this->id++;
+            $id = $this->id;
+
+            $userPermission->setId($id);
+            $this->data[] = $userPermission;
+            $newUserPermission = new UserPermission(
+                $id,
+                $userId,
+                $permissionId
+            );
+            return $newUserPermission;
+        } catch (DatabaseUnexistantRegister $e){
+            throw $e;
+        }        
     }
 
     public function update(UserPermission $userPermission): bool
@@ -37,22 +68,33 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $userPermission->getId()) {
                 $idToUpdate = $key;
+                break;
             }
         }
 
-        if ($idToUpdate === null) {
+        if ($idToUpdate === null) {            
             return false;
         }
 
-        $modifiedUserPermission = $this->data[$idToUpdate];
+        $userPermissionToBeModified = $this->data[$idToUpdate];
 
-        $modifiedUserPermission->setId($userPermission->getId());
-        $modifiedUserPermission->setUserId($userPermission->getUserId());
-        $modifiedUserPermission->setPermissionId($userPermission->getPermissionId());
+        $hasDifferentUserId = 
+            $userPermissionToBeModified->getUserId() !== $userPermission->getUserId();
 
-        $this->data[$idToUpdate] = $modifiedUserPermission;
+        $hasDifferentPermissionId = 
+            $userPermissionToBeModified->getPermissionId() !== $userPermission->getPermissionId();            
 
-        return true;
+        $userPermissionToBeModified->setUserId(
+            $userPermission->getUserId()
+        );
+        $userPermissionToBeModified->setPermissionId(
+            $userPermission->getPermissionId()
+        );
+
+        $this->data[$idToUpdate] = $userPermissionToBeModified;
+
+        $wasModified = $hasDifferentUserId || $hasDifferentPermissionId;
+        return $wasModified;
     }
 
     public function delete(UserPermission $userPermission): bool
@@ -73,6 +115,7 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
         }
     }
 
+    /*
     public function setIsActive(int $id, bool $isActive): bool
     {
         $idToSet = null;
@@ -97,6 +140,7 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
         
         return false;
     }
+    */
 
     public function findById(int $id): UserPermission|null
     {
