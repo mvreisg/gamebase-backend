@@ -8,7 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegister;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 
 class MockUserPermissionRepository implements UserPermissionRepositoryInterface
 {
@@ -33,7 +33,7 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
             $userId = $userPermission->getUserId();
             $user = $this->userRepository->findById($userId);
             if ($user === null){
-                throw new DatabaseUnexistantRegister(
+                throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $userId . ' não existe!'
                 );
             }
@@ -41,7 +41,7 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
             $permissionId = $userPermission->getPermissionId();
             $permission = $this->permissionRepository->findById($permissionId);
             if ($permission === null){
-                throw new DatabaseUnexistantRegister(
+                throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $permissionId . ' não existe!'
                 );                
             }
@@ -57,7 +57,7 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
                 $permissionId
             );
             return $newUserPermission;
-        } catch (DatabaseUnexistantRegister $e){
+        } catch (DatabaseUnexistantRegisterException $e){
             throw $e;
         }        
     }
