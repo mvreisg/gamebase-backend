@@ -17,8 +17,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
-use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
+use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 
 class GameController
 {
@@ -36,10 +36,7 @@ class GameController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -115,10 +112,7 @@ class GameController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);           
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -199,10 +193,7 @@ class GameController
     public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -280,10 +271,7 @@ class GameController
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
 
@@ -358,10 +346,7 @@ class GameController
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $games = $this->gameService->findAll();
 

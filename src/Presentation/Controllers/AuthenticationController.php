@@ -15,8 +15,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
-use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
+use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 use PDOException;
 
 class AuthenticationController
@@ -137,10 +137,7 @@ class AuthenticationController
     public function handleValidation(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $response
                 ->setBody([
@@ -188,11 +185,7 @@ class AuthenticationController
     public function handleLogoff(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            $token = AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService)
-                ->getToken();
+            $token = RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $hasSuccess = $this->authenticationService->tryLogoff($token);
 
