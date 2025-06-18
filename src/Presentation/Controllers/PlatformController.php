@@ -84,10 +84,9 @@ class PlatformController
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException $e
         ) {
-            $messages[] = $e->getMessage();
             $response
                 ->setBody([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
@@ -99,10 +98,9 @@ class PlatformController
             DatabaseFetchFailureException |
             PDOException $e
         ) {
-            $messages[] = $e->getMessage();
             $response
                 ->setBody([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[500])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
