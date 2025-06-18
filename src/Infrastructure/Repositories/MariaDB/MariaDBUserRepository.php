@@ -221,58 +221,6 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findByUserName(mixed $userName): User|null
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    user 
-                WHERE 
-                    username = :userName;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
-            ]);
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $fetchResult = $statement->fetch();
-
-            if ($fetchResult === false) {
-                return null;
-            }
-
-            $user = new User();
-            $user->setId($fetchResult['id']);
-            $user->setUserName($fetchResult['username']);
-            $user->setPassword($fetchResult['password']);
-            $user->setIsActive(
-                boolval($fetchResult['is_active'])
-            );
-
-            return $user;
-        } catch (
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException | 
-            Throwable $e
-        ) {
-            throw $e;
-        }
-    }
-
     public function findById(mixed $id): User|null
     {
         try {
@@ -324,6 +272,58 @@ class MariaDBUserRepository implements UserRepositoryInterface
             throw $e;
         }
     }
+
+    public function findByUserName(mixed $userName): User|null
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    user 
+                WHERE 
+                    username = :userName;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':userName' => $userName
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $fetchResult = $statement->fetch();
+
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            $user = new User();
+            $user->setId($fetchResult['id']);
+            $user->setUserName($fetchResult['username']);
+            $user->setPassword($fetchResult['password']);
+            $user->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
+
+            return $user;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException | 
+            Throwable $e
+        ) {
+            throw $e;
+        }
+    }    
 
     public function findAll(): array
     {

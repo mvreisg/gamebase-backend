@@ -176,6 +176,47 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         }
     }
 
+    public function setIsActive(int $id, bool $isActive): bool
+    {
+        try {
+            $isActive = intval($isActive);
+
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    sector
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException | 
+            Throwable $e
+        ) {
+            throw $e;
+        }
+    }
+
     public function findById(int $id): Sector|null
     {
         try {
@@ -276,47 +317,6 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             Throwable $e
         ) {
                 throw $e;
-        }
-    }
-
-    public function setIsActive(int $id, bool $isActive): bool
-    {
-        try {
-            $isActive = intval($isActive);
-
-            $statement = $this->pdo->prepare(
-                'UPDATE
-                    sector
-                SET
-                    is_active = :isActive
-                WHERE
-                    id = :id;'
-            );
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de atualização!'
-                );
-            }
-
-            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $isActive
-            ]);
-            if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de atualização!'
-                );
-            }
-
-            $wasTheUpdateOcurred = $statement->rowCount() > 0;
-            return $wasTheUpdateOcurred;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException | 
-            Throwable $e
-        ) {
-            throw $e;
         }
     }
 

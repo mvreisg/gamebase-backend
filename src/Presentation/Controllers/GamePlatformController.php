@@ -19,6 +19,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 use PDOException;
+use Throwable;
 
 class GamePlatformController
 {
@@ -94,7 +95,8 @@ class GamePlatformController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             $response
                 ->setBody([

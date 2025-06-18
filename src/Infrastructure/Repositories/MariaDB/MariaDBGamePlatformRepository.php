@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 {
@@ -100,7 +101,8 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -182,7 +184,10 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $wasDeletionSuccessful = $numberOfAffectedLinesInTheRepository > 0;
 
             return $wasDeletionSuccessful;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException | 
+            PDOException $e
+        ) {
             throw $e;
         }
     }

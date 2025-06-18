@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Throwable;
 
 class UserService
 {
@@ -58,7 +59,8 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseDuplicatedEntryException |
             PDOException |
-            EntityInvalidValueException $e
+            EntityInvalidValueException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -98,7 +100,8 @@ class UserService
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -121,7 +124,8 @@ class UserService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -144,7 +148,8 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -167,7 +172,8 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -182,7 +188,8 @@ class UserService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
