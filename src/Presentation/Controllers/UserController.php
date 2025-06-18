@@ -279,6 +279,16 @@ class UserController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
+            DatabaseUnexistantRegisterException $e
+        ) {
+            $response
+                ->setBody([
+                    'message' => $e->getMessage()
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[404])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;             
+        } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException |

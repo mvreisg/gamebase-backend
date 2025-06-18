@@ -124,6 +124,7 @@ class UserService
             return $wasTheUpdateSuccessful;
         } catch (
             EntityInvalidValueException |
+            DatabaseUnexistantRegisterException | 
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException |

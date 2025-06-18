@@ -190,15 +190,46 @@ class MariaDBUserRepository implements UserRepositoryInterface
         try {
             $isActive = intval($isActive);
 
+            $query = $this->pdo->prepare(
+                'SELECT * FROM user WHERE id = :id'
+            );
+            if ($query === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheQuerySuccessfullyExecuted = $query->execute([
+                ':id' => $id
+            ]);
+            if ($wasTheQuerySuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+            
+            $registerExists = $query->rowCount() > 0;
+            if ($registerExists === false){
+                throw new DatabaseUnexistantRegisterException(
+                    'O registro com o id ' . $id . ' não existe!'
+                );
+            }
+
+            $result = $query->fetch();
+            $fetchedIsActive = intval(
+                $result['is_active']
+            );
+            if ($fetchedIsActive === $isActive){
+                return false;
+            }                    
+
             $statement = $this->pdo->prepare(
                 'UPDATE
                     user
                 SET
                     is_active = :isActive
                 WHERE
-                    id = :id
-                AND
-                    is_active <> :isActive;'
+                    id = :id;'
             );
             if ($statement === false) {
                 throw new DatabaseStatementCreationFailureException(
@@ -216,8 +247,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            $wasTheUpdateOcurred = $statement->rowCount() > 0;
-            return $wasTheUpdateOcurred;
+            $registerHasBeenChanged = $statement->rowCount() > 0;
+            return $registerHasBeenChanged;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
