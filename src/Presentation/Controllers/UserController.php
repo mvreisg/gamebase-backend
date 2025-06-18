@@ -16,6 +16,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
@@ -192,6 +193,16 @@ class UserController
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
+        } catch (
+            DatabaseUnexistantRegisterException $e
+        ) {
+            $response
+                ->setBody([
+                    'message' => $e->getMessage()
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[404])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;            
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

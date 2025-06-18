@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use Throwable;
 
 class MariaDBUserRepository implements UserRepositoryInterface
@@ -167,8 +168,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $numberOfLinesAffected = $statement->rowCount();
             $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
+            if ($wasSomeUpdateHappened == false){
+                throw new DatabaseUnexistantRegisterException(
+                    'O registro com o id ' . $id . ' não existe!'
+                );
+            }
             return $wasSomeUpdateHappened;
         } catch (
+            DatabaseUnexistantRegisterException | 
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException |

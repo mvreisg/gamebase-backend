@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryExc
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use Throwable;
 
 class UserService
@@ -97,6 +98,7 @@ class UserService
             return $wasSomeUpdateHappened;
         } catch (
             EntityInvalidValueException |
+            DatabaseUnexistantRegisterException | 
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
