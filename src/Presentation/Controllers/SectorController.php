@@ -16,8 +16,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
-use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\AuthorizationValidator;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
+use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 use PDOException;
 
 class SectorController
@@ -36,10 +36,7 @@ class SectorController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -110,10 +107,7 @@ class SectorController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -196,10 +190,7 @@ class SectorController
     public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
             $body = $request->parseBodyFromJSONString();
@@ -273,10 +264,7 @@ class SectorController
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
 
@@ -350,10 +338,7 @@ class SectorController
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $headers = $request->getHeaders();
-            AuthorizationValidator::make()
-                ->setToken($headers)
-                ->validate($this->authenticationService);
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $sectors = $this->sectorService->findAll();
 

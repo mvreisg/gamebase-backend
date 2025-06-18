@@ -6,70 +6,129 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 
 class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 {
     private array $data;
     private int $index;
+    private GameRepositoryInterface $gameRepository;
+    private PlatformRepositoryInterface $platformRepository;
 
-    public function __construct()
-    {
+    public function __construct(
+        GameRepositoryInterface $gameRepository,
+        PlatformRepositoryInterface $platformRepository
+    ) {
         $this->data = [];
         $this->index = 0;
+        $this->gameRepository = $gameRepository;
+        $this->platformRepository = $platformRepository;
     }
 
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
+        $gameId = $gamePlatform->getGameId();
+        $game = $this->gameRepository->findById($gameId);
+        if ($game === null){
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $gameId . ' não existe!'
+            );
+        }
+
+        $platformId = $gamePlatform->getPlatformId();
+        $platform = $this->platformRepository->findById($platformId);
+        if ($platform === null){
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $platformId . ' não existe!'
+            );            
+        }
+
         $this->index++;
-        $gamePlatform->setId($this->index);
+        $id = $this->index;
+
+        $gamePlatform->setId($id);
         $this->data[] = $gamePlatform;
-        $newGamePlatform = new GamePlatform();
-        $newGamePlatform->setId($gamePlatform->getId());
-        $newGamePlatform->setGameId($gamePlatform->getGameId());
-        $newGamePlatform->setPlatformId($gamePlatform->getPlatformId());
+
+        $newGamePlatform = new GamePlatform(
+            $id,
+            $gameId,
+            $platformId
+        );
         return $newGamePlatform;
     }
 
     public function update(GamePlatform $gamePlatform): bool
     {
-        $index = null;
+        $gameId = $gamePlatform->getGameId();
+        $game = $this->gameRepository->findById($gameId);
+        if ($game === null){
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $gameId . ' não existe!'
+            );
+        }
+
+        $platformId = $gamePlatform->getPlatformId();
+        $platform = $this->platformRepository->findById($platformId);
+        if ($platform === null){
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $platformId . ' não existe!'
+            );            
+        }
+
+        $idToUpdate = null;
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $gamePlatform->getId()) {
-                $index = $key;
+                $idToUpdate = $key;
             }
         }
 
-        if ($index === null) {
+        if ($idToUpdate === null) {
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $idToUpdate . ' não existe!'
+            );
+        }
+
+        $gamePlatformToUpdate = $this->data[$idToUpdate];
+
+        $hasDifferentGameId = 
+            $gamePlatformToUpdate->getGameId() !== $gamePlatform->getGameId();
+
+        $hasDifferentPlatformId = 
+            $gamePlatformToUpdate->getPlatformId() !== $gamePlatform->getPlatformId();
+
+        $hasDifferences = $hasDifferentGameId || $hasDifferentPlatformId;
+
+        if ($hasDifferences === false){
             return false;
         }
 
-        $modifiedGamePlatform = $this->data[$index];
+        $gamePlatformToUpdate->setGameId($gamePlatform->getGameId());
+        $gamePlatformToUpdate->setPlatformId($gamePlatform->getPlatformId());
+        return true;
 
-        $modifiedGamePlatform->setId($gamePlatform->getId());
-        $modifiedGamePlatform->setGameId($gamePlatform->getGameId());
-        $modifiedGamePlatform->setPlatformId($gamePlatform->getPlatformId());
-
-        $this->data[$index] = $modifiedGamePlatform;
+        $this->data[$idToUpdate] = $gamePlatformToUpdate;
 
         return true;
     }
 
     public function delete(GamePlatform $gamePlatform): bool
     {
-        $index = -1;
+        $idToDelete = null;
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $gamePlatform->getId()) {
-                $index = $key;
+                $idToDelete = $key;
                 break;
             }
         }
 
-        if ($index > -1) {
-            unset($this->data[$index]);
-            return true;
-        } else {
-            return false;
-        }
+        if ($idToDelete === null) {
+            return false;            
+        } 
+
+        unset($this->data[$idToDelete]);
+        return true;
     }
 
     /*
