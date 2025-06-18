@@ -93,7 +93,7 @@ class GenreController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -177,7 +177,7 @@ class GenreController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -252,7 +252,7 @@ class GenreController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -327,7 +327,7 @@ class GenreController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -385,7 +385,7 @@ class GenreController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response

@@ -37,7 +37,7 @@ class GamePlatformController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);          
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -95,7 +95,7 @@ class GamePlatformController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response

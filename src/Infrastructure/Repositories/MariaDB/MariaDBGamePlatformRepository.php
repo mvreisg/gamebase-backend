@@ -34,7 +34,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             $platformId = $gamePlatform->getPlatformId();
-            $gameId = $gamePlatform->getGameId();            
+            $gameId = $gamePlatform->getGameId();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -101,7 +101,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $this->pdo->rollBack();
@@ -114,7 +114,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $id = $gamePlatform->getId();
             $platformId = $gamePlatform->getPlatformId();
-            $gameId = $gamePlatform->getGameId();            
+            $gameId = $gamePlatform->getGameId();
 
             $statement = $this->pdo->prepare(
                 'UPDATE 
@@ -158,7 +158,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $id = $gamePlatform->getId();
-                        
+
             $statement = $this->pdo->prepare(
                 'DELETE FROM
                     game_platform
@@ -185,7 +185,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
             return $wasDeletionSuccessful;
         } catch (
-            DatabaseStatementCreationFailureException | 
+            DatabaseStatementCreationFailureException |
             PDOException $e
         ) {
             throw $e;

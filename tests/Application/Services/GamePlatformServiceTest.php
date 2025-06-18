@@ -55,10 +55,10 @@ class GamePlatformServiceTest extends TestCase
     public function testIfTenInsertionsSucceds(): void
     {
         for ($i = 1; $i <= 10; $i++) {
-            $platform = $this->platformService->insert('test'.$i, true);
+            $platform = $this->platformService->insert('test' . $i, true);
             $platformId = $platform->getId();
 
-            $game = $this->gameService->insert('test'.$i, true);
+            $game = $this->gameService->insert('test' . $i, true);
             $gameId = $game->getId();
 
             $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
@@ -73,7 +73,7 @@ class GamePlatformServiceTest extends TestCase
         $platformId = -1;
 
         $game = $this->gameService->insert('test', true);
-        $gameId = $game->getId();        
+        $gameId = $game->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -83,7 +83,7 @@ class GamePlatformServiceTest extends TestCase
     public function testIfInsertWithInvalidGameIdFails(): void
     {
         $platform = $this->platformService->insert('test', true);
-        $platformId = $platform->getId();        
+        $platformId = $platform->getId();
 
         $gameId = -1;
 
@@ -96,9 +96,9 @@ class GamePlatformServiceTest extends TestCase
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -130,9 +130,9 @@ class GamePlatformServiceTest extends TestCase
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -164,9 +164,9 @@ class GamePlatformServiceTest extends TestCase
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -180,7 +180,7 @@ class GamePlatformServiceTest extends TestCase
         $gamesIterator->next();
         $gameId = $game->getId();
 
-        $this->gamePlatformService->insert($platformId, $gameId);        
+        $this->gamePlatformService->insert($platformId, $gameId);
         $id = 999;
 
         $platform = $platformsIterator->current();
@@ -192,15 +192,15 @@ class GamePlatformServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gamePlatformService->update($id, $platformId, $gameId);
-    }    
+    }
 
     public function testIfUpdateWithInvalidGenreIdFails(): void
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -231,9 +231,9 @@ class GamePlatformServiceTest extends TestCase
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -258,15 +258,15 @@ class GamePlatformServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gamePlatformService->update($id, $platformId, $gameId);
-    }     
+    }
 
     public function testIfUpdateWithInvalidGameIdFails(): void
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -291,15 +291,15 @@ class GamePlatformServiceTest extends TestCase
         $this->expectException(EntityInvalidValueException::class);
 
         $this->gamePlatformService->update($id, $platformId, $gameId);
-    }    
+    }
 
     public function testIfUpdateWithUnexistantGameIdFails(): void
     {
         $platforms = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $platforms[] = $this->platformService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $platforms[] = $this->platformService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -324,7 +324,7 @@ class GamePlatformServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gamePlatformService->update($id, $platformId, $gameId);
-    }     
+    }
 
     public function testIfDeleteSucceds(): void
     {
@@ -351,7 +351,7 @@ class GamePlatformServiceTest extends TestCase
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
-        $id = -1;        
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -367,12 +367,12 @@ class GamePlatformServiceTest extends TestCase
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
-        $id = 999;        
+        $id = 999;
 
         $hasDeleted = $this->gamePlatformService->delete($id);
 
         $this->assertFalse($hasDeleted);
-    }    
+    }
 
     public function testIfFindByIdSucceds(): void
     {
@@ -422,7 +422,7 @@ class GamePlatformServiceTest extends TestCase
         $fetchedGameGenre = $this->gamePlatformService->findById($id);
 
         $this->assertEmpty($fetchedGameGenre);
-    }    
+    }
 
     public function testIfFindAllSucceds(): void
     {

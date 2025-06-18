@@ -98,7 +98,7 @@ class GameController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -114,7 +114,7 @@ class GameController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);           
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -180,7 +180,7 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -259,7 +259,7 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -335,7 +335,7 @@ class GameController
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response
@@ -397,7 +397,7 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $response

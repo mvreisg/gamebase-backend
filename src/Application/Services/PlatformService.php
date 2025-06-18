@@ -53,7 +53,7 @@ class PlatformService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -89,7 +89,7 @@ class PlatformService
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -113,7 +113,7 @@ class PlatformService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -136,7 +136,7 @@ class PlatformService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -152,7 +152,7 @@ class PlatformService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

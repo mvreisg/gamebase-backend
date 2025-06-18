@@ -181,7 +181,7 @@ class PlatformController
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
         } catch (
-            DatabaseStatementCreationFailureException | 
+            DatabaseStatementCreationFailureException |
             PDOException |
             Throwable $e
         ) {

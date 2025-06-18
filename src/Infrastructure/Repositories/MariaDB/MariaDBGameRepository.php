@@ -25,7 +25,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
     public function insert(Game $game): Game
     {
-        try {                        
+        try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new DatabaseTransactionCreationFailureException(
@@ -36,7 +36,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $name = $game->getName();
             $isActive = intval(
                 $game->getIsActive()
-            );            
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -110,11 +110,11 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             return $game;
         } catch (
-            DatabaseTransactionCreationFailureException | 
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $this->pdo->rollBack();
@@ -307,7 +307,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

@@ -25,7 +25,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
     public function insert(GameGenre $gameGenre): GameGenre
     {
-        try {        
+        try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new DatabaseTransactionCreationFailureException(

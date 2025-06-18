@@ -37,7 +37,7 @@ class GameGenreController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);           
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
 
@@ -115,7 +115,7 @@ class GameGenreController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);             
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -201,7 +201,7 @@ class GameGenreController
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);           
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
 
@@ -270,7 +270,7 @@ class GameGenreController
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);          
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $params = $request->getParams();
 
@@ -345,7 +345,7 @@ class GameGenreController
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);          
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $gameGenres = $this->gameGenreService->findAll();
 

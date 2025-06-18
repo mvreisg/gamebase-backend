@@ -10,7 +10,7 @@ use Throwable;
 
 class JWTBearerTokenValidator
 {
-    private string $token;    
+    private string $token;
 
     public static function make(string $token): JWTBearerTokenValidator
     {
@@ -23,9 +23,8 @@ class JWTBearerTokenValidator
     }
 
     public function validate(AuthenticationService $authenticationService): void
-    {        
-        try
-        {
+    {
+        try {
             if ($this->token === '') {
                 throw new AuthenticationException('Token não informado!');
             }
@@ -34,10 +33,10 @@ class JWTBearerTokenValidator
                 throw new AuthenticationException('Usuário não autenticado!');
             }
         } catch (
-            Throwable | 
+            Throwable |
             AuthenticationException $e
-        ){
+        ) {
             throw $e;
-        }        
+        }
     }
 }

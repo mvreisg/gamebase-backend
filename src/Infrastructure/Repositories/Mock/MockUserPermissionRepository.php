@@ -29,10 +29,10 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
 
     public function insert(UserPermission $userPermission): UserPermission
     {
-        try{
+        try {
             $userId = $userPermission->getUserId();
             $user = $this->userRepository->findById($userId);
-            if ($user === null){
+            if ($user === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $userId . ' não existe!'
                 );
@@ -40,10 +40,10 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
 
             $permissionId = $userPermission->getPermissionId();
             $permission = $this->permissionRepository->findById($permissionId);
-            if ($permission === null){
+            if ($permission === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $permissionId . ' não existe!'
-                );                
+                );
             }
 
             $this->id++;
@@ -57,9 +57,9 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
                 $permissionId
             );
             return $newUserPermission;
-        } catch (DatabaseUnexistantRegisterException $e){
+        } catch (DatabaseUnexistantRegisterException $e) {
             throw $e;
-        }        
+        }
     }
 
     public function update(UserPermission $userPermission): bool
@@ -72,17 +72,17 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
             }
         }
 
-        if ($idToUpdate === null) {            
+        if ($idToUpdate === null) {
             return false;
         }
 
         $userPermissionToBeModified = $this->data[$idToUpdate];
 
-        $hasDifferentUserId = 
+        $hasDifferentUserId =
             $userPermissionToBeModified->getUserId() !== $userPermission->getUserId();
 
-        $hasDifferentPermissionId = 
-            $userPermissionToBeModified->getPermissionId() !== $userPermission->getPermissionId();            
+        $hasDifferentPermissionId =
+            $userPermissionToBeModified->getPermissionId() !== $userPermission->getPermissionId();
 
         $userPermissionToBeModified->setUserId(
             $userPermission->getUserId()
@@ -136,8 +136,8 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
         if ($changedSomething) {
             $this->data[$idToSet]->setIsActive($isActive);
             return true;
-        }        
-        
+        }
+
         return false;
     }
     */

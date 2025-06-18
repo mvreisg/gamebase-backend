@@ -59,7 +59,7 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseDuplicatedEntryException |
             PDOException |
-            EntityInvalidValueException | 
+            EntityInvalidValueException |
             Throwable $e
         ) {
             throw $e;
@@ -100,7 +100,7 @@ class UserService
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -124,7 +124,7 @@ class UserService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -148,7 +148,7 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -172,7 +172,7 @@ class UserService
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -188,7 +188,7 @@ class UserService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

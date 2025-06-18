@@ -46,7 +46,7 @@ class PermissionService
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
             EntityInvalidValueException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -76,7 +76,7 @@ class PermissionService
             DatabaseStatementExecutionFailureException |
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -95,7 +95,7 @@ class PermissionService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             EntityInvalidValueException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -114,7 +114,7 @@ class PermissionService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             EntityInvalidValueException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -129,7 +129,7 @@ class PermissionService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;

@@ -46,7 +46,7 @@ class GenreService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -80,7 +80,7 @@ class GenreService
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -102,7 +102,7 @@ class GenreService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -124,7 +124,7 @@ class GenreService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -139,7 +139,7 @@ class GenreService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

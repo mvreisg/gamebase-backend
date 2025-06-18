@@ -26,8 +26,8 @@ class UserPermissionService
     public function insert(int $userId, int $permissionId): UserPermission
     {
         $userPermission = new UserPermission(
-            PHP_INT_MAX, 
-            $userId, 
+            PHP_INT_MAX,
+            $userId,
             $permissionId
         );
 

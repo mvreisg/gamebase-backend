@@ -115,11 +115,11 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
-            DatabaseTransactionCreationFailureException | 
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $this->pdo->rollBack();
@@ -171,7 +171,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -214,7 +214,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -266,7 +266,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -318,12 +318,12 @@ class MariaDBUserRepository implements UserRepositoryInterface
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
         }
-    }    
+    }
 
     public function findAll(): array
     {
@@ -369,7 +369,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

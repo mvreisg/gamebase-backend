@@ -25,7 +25,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
     public function insert(Platform $platform): Platform
     {
-        try {                        
+        try {
             $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
             if ($wasTheTransactionCreationSuccessful === false) {
                 throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
@@ -34,7 +34,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $name = $platform->getName();
             $isActive = intval(
                 $platform->getIsActive()
-            );            
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -109,7 +109,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $this->pdo->rollBack();
@@ -159,7 +159,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -200,7 +200,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -247,7 +247,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -295,7 +295,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

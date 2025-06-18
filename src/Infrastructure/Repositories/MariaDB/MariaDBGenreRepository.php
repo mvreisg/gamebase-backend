@@ -36,7 +36,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $name = $genre->getName();
             $isActive = intval(
                 $genre->getIsActive()
-            );            
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -111,11 +111,11 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             return $genre;
         } catch (
-            DatabaseTransactionCreationFailureException | 
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             $this->pdo->rollBack();
@@ -166,7 +166,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -207,7 +207,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -256,7 +256,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -307,7 +307,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;

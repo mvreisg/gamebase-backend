@@ -52,7 +52,7 @@ class PermissionServiceTest extends TestCase
 
         $this->permissionService->insert($name, $isActive);
         $this->permissionService->insert($name, $isActive);
-    }    
+    }
 
     public function testIfTenInsertionsSucceds(): void
     {

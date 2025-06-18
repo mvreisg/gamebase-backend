@@ -31,7 +31,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         $gameId = $gamePlatform->getGameId();
         $game = $this->gameRepository->findById($gameId);
-        if ($game === null){
+        if ($game === null) {
             throw new DatabaseUnexistantRegisterException(
                 'O registro com o id ' . $gameId . ' não existe!'
             );
@@ -39,10 +39,10 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 
         $platformId = $gamePlatform->getPlatformId();
         $platform = $this->platformRepository->findById($platformId);
-        if ($platform === null){
+        if ($platform === null) {
             throw new DatabaseUnexistantRegisterException(
                 'O registro com o id ' . $platformId . ' não existe!'
-            );            
+            );
         }
 
         $this->index++;
@@ -63,7 +63,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         $gameId = $gamePlatform->getGameId();
         $game = $this->gameRepository->findById($gameId);
-        if ($game === null){
+        if ($game === null) {
             throw new DatabaseUnexistantRegisterException(
                 'O registro com o id ' . $gameId . ' não existe!'
             );
@@ -71,10 +71,10 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 
         $platformId = $gamePlatform->getPlatformId();
         $platform = $this->platformRepository->findById($platformId);
-        if ($platform === null){
+        if ($platform === null) {
             throw new DatabaseUnexistantRegisterException(
                 'O registro com o id ' . $platformId . ' não existe!'
-            );            
+            );
         }
 
         $idToUpdate = null;
@@ -92,15 +92,15 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 
         $gamePlatformToUpdate = $this->data[$idToUpdate];
 
-        $hasDifferentGameId = 
+        $hasDifferentGameId =
             $gamePlatformToUpdate->getGameId() !== $gamePlatform->getGameId();
 
-        $hasDifferentPlatformId = 
+        $hasDifferentPlatformId =
             $gamePlatformToUpdate->getPlatformId() !== $gamePlatform->getPlatformId();
 
         $hasDifferences = $hasDifferentGameId || $hasDifferentPlatformId;
 
-        if ($hasDifferences === false){
+        if ($hasDifferences === false) {
             return false;
         }
 
@@ -124,8 +124,8 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         }
 
         if ($idToDelete === null) {
-            return false;            
-        } 
+            return false;
+        }
 
         unset($this->data[$idToDelete]);
         return true;
@@ -154,7 +154,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         return $changedSomething;
     }
     */
-    
+
     public function findById(int $id): GamePlatform|null
     {
         foreach ($this->data as $key => $value) {

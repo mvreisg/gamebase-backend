@@ -55,10 +55,10 @@ class GameGenreServiceTest extends TestCase
     public function testIfTenInsertionsSucceds(): void
     {
         for ($i = 1; $i <= 10; $i++) {
-            $genre = $this->genreService->insert('test'.$i, true);
+            $genre = $this->genreService->insert('test' . $i, true);
             $genreId = $genre->getId();
 
-            $game = $this->gameService->insert('test'.$i, true);
+            $game = $this->gameService->insert('test' . $i, true);
             $gameId = $game->getId();
 
             $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
@@ -73,7 +73,7 @@ class GameGenreServiceTest extends TestCase
         $genreId = -1;
 
         $game = $this->gameService->insert('test', true);
-        $gameId = $game->getId();        
+        $gameId = $game->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -83,7 +83,7 @@ class GameGenreServiceTest extends TestCase
     public function testIfInsertWithInvalidGameIdFails(): void
     {
         $genre = $this->genreService->insert('test', true);
-        $genreId = $genre->getId();        
+        $genreId = $genre->getId();
 
         $gameId = -1;
 
@@ -96,9 +96,9 @@ class GameGenreServiceTest extends TestCase
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -130,9 +130,9 @@ class GameGenreServiceTest extends TestCase
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -164,9 +164,9 @@ class GameGenreServiceTest extends TestCase
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -180,7 +180,7 @@ class GameGenreServiceTest extends TestCase
         $gamesIterator->next();
         $gameId = $game->getId();
 
-        $this->gameGenreService->insert($genreId, $gameId);        
+        $this->gameGenreService->insert($genreId, $gameId);
         $id = 999;
 
         $genre = $genresIterator->current();
@@ -192,15 +192,15 @@ class GameGenreServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
-    }    
+    }
 
     public function testIfUpdateWithInvalidGenreIdFails(): void
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -231,9 +231,9 @@ class GameGenreServiceTest extends TestCase
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -258,15 +258,15 @@ class GameGenreServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
-    }     
+    }
 
     public function testIfUpdateWithInvalidGameIdFails(): void
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -291,15 +291,15 @@ class GameGenreServiceTest extends TestCase
         $this->expectException(EntityInvalidValueException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
-    }    
+    }
 
     public function testIfUpdateWithUnexistantGameIdFails(): void
     {
         $genres = [];
         $games = [];
-        for ($i = 1; $i <= 2; $i++){
-            $genres[] = $this->genreService->insert('test'.$i, true);
-            $games[] = $this->gameService->insert('test'.$i, true);
+        for ($i = 1; $i <= 2; $i++) {
+            $genres[] = $this->genreService->insert('test' . $i, true);
+            $games[] = $this->gameService->insert('test' . $i, true);
         }
 
         $genresIterator = new ArrayIterator($genres);
@@ -324,7 +324,7 @@ class GameGenreServiceTest extends TestCase
         $this->expectException(DatabaseUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
-    }     
+    }
 
     public function testIfDeleteSucceds(): void
     {
@@ -351,7 +351,7 @@ class GameGenreServiceTest extends TestCase
         $gameId = $game->getId();
 
         $this->gameGenreService->insert($genreId, $gameId);
-        $id = -1;        
+        $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -367,12 +367,12 @@ class GameGenreServiceTest extends TestCase
         $gameId = $game->getId();
 
         $this->gameGenreService->insert($genreId, $gameId);
-        $id = 999;        
+        $id = 999;
 
         $hasDeleted = $this->gameGenreService->delete($id);
 
         $this->assertFalse($hasDeleted);
-    }    
+    }
 
     public function testIfFindByIdSucceds(): void
     {
@@ -422,7 +422,7 @@ class GameGenreServiceTest extends TestCase
         $fetchedGameGenre = $this->gameGenreService->findById($id);
 
         $this->assertEmpty($fetchedGameGenre);
-    }    
+    }
 
     public function testIfFindAllSucceds(): void
     {

@@ -16,14 +16,14 @@ class UserPermissionRoutes
         $controller = UserPermissionControllerFactory::make();
 
         $app->add('POST', '/user/permission', function (
-            HttpRequest $request, 
+            HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->insert($request, $response);
         });
 
         $app->add('PUT', '/user/permission/:id', function (
-            HttpRequest $request, 
+            HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->update($request, $response);
@@ -37,14 +37,14 @@ class UserPermissionRoutes
         });
 
         $app->add('GET', '/user/permission/:id', function (
-            HttpRequest $request, 
+            HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->findById($request, $response);
         });
 
         $app->add('GET', '/user/permission', function (
-            HttpRequest $request, 
+            HttpRequest $request,
             HttpResponse $response
         ) use ($controller) {
             $controller->findAll($request, $response);

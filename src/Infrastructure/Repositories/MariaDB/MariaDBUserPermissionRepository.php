@@ -34,7 +34,7 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             }
 
             $userId = $userPermission->getUserId();
-            $permissionId = $userPermission->getPermissionId();            
+            $permissionId = $userPermission->getPermissionId();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -119,7 +119,7 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
         try {
             $id = $userPermission->getId();
             $userId = $userPermission->getUserId();
-            $permissionId = $userPermission->getPermissionId();            
+            $permissionId = $userPermission->getPermissionId();
 
             $statement = $this->pdo->prepare(
                 'UPDATE 

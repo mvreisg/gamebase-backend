@@ -36,7 +36,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $name = $sector->getName();
             $isActive = intval(
                 $sector->getIsActive()
-            );            
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -118,7 +118,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 $this->pdo->rollBack();
@@ -169,7 +169,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -210,7 +210,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -262,7 +262,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;
@@ -313,7 +313,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
                 throw $e;

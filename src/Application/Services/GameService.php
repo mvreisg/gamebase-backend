@@ -51,7 +51,7 @@ class GameService
             DatabaseFetchFailureException |
             DatabaseDuplicatedEntryException |
             PDOException |
-            EntityInvalidValueException | 
+            EntityInvalidValueException |
             Throwable $e
         ) {
             throw $e;
@@ -85,7 +85,7 @@ class GameService
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -109,7 +109,7 @@ class GameService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -133,7 +133,7 @@ class GameService
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException |  
+            PDOException |
             Throwable $e
         ) {
             throw $e;
@@ -149,7 +149,7 @@ class GameService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException | 
+            PDOException |
             Throwable $e
         ) {
             throw $e;
