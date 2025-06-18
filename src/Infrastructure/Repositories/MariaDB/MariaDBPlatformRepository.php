@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBPlatformRepository implements PlatformRepositoryInterface
 {
@@ -31,7 +32,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $name = $platform->getName();
-            $isActive = (int)$platform->getIsActive();
+            $isActive = intval(
+                $platform->getIsActive()
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -106,7 +109,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -115,11 +119,13 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
     public function update(Platform $platform): bool
     {
-        $id = $platform->getId();
-        $name = $platform->getName();
-        $isActive = (int)$platform->getIsActive();
-
         try {
+            $id = $platform->getId();
+            $name = $platform->getName();
+            $isActive = intval(
+                $platform->getIsActive()
+            );
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     platform 
@@ -150,7 +156,12 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $wasTheRepositoryAffected = $numberOfLinesAffected > 0;
 
             return $wasTheRepositoryAffected;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             throw $e;
         }
     }
@@ -189,7 +200,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -235,7 +247,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -282,7 +295,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }

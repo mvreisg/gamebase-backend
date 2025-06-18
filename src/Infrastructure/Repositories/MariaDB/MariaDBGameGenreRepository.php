@@ -25,14 +25,16 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
     public function insert(GameGenre $gameGenre): GameGenre
     {
-        $genreId = $gameGenre->getGenreId();
-        $gameId = $gameGenre->getGameId();
-
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
             }
+
+            $genreId = $gameGenre->getGenreId();
+            $gameId = $gameGenre->getGameId();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 

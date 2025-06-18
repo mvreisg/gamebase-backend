@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureExcept
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 {
@@ -27,8 +28,13 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
             }
+
+            $platformId = $gamePlatform->getPlatformId();
+            $gameId = $gamePlatform->getGameId();
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -44,8 +50,8 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             $wasTheInsertStatementExecutionSuccessful = $insertStatement->execute([
-                ':platformId' => $gamePlatform->getPlatformId(),
-                ':gameId' => $gamePlatform->getGameId()
+                ':platformId' => $platformId,
+                ':gameId' => $gameId
             ]);
             if ($wasTheInsertStatementExecutionSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -95,7 +101,8 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -104,11 +111,11 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
     public function update(GamePlatform $gamePlatform): bool
     {
-        $id = $gamePlatform->getId();
-        $platformId = $gamePlatform->getPlatformId();
-        $gameId = $gamePlatform->getGameId();
-
         try {
+            $id = $gamePlatform->getId();
+            $platformId = $gamePlatform->getPlatformId();
+            $gameId = $gamePlatform->getGameId();
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game_platform 
@@ -149,9 +156,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
     public function delete(GamePlatform $gamePlatform): bool
     {
-        $id = $gamePlatform->getId();
-
         try {
+            $id = $gamePlatform->getId();
+
             $statement = $this->pdo->prepare(
                 'DELETE FROM
                     game_platform
@@ -177,7 +184,10 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $wasDeletionSuccessful = $numberOfAffectedLinesInTheRepository > 0;
 
             return $wasDeletionSuccessful;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            PDOException $e
+        ) {
             throw $e;
         }
     }

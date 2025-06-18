@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBUserRepository implements UserRepositoryInterface
 {
@@ -24,11 +26,18 @@ class MariaDBUserRepository implements UserRepositoryInterface
     public function insert(User $user): User
     {
         try {
-            $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
+            }
 
             $userName = $user->getUserName();
             $passWord = $user->getPassWord();
-            $isActive = (int)$user->getIsActive();
+            $isActive = intval(
+                $user->getIsActive()
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -106,10 +115,12 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -118,12 +129,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
     public function update(User $user): bool
     {
-        $id = $user->getId();
-        $userName = $user->getUserName();
-        $passWord = $user->getPassWord();
-        $isActive = (int)$user->getIsActive();
-
         try {
+            $id = $user->getId();
+            $userName = $user->getUserName();
+            $passWord = $user->getPassWord();
+            $isActive = intval(
+                $user->getIsActive()
+            );
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     user 
@@ -158,7 +171,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -200,58 +214,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
-        }
-    }
-
-    public function findByUserName(mixed $userName): User|null
-    {
-        try {
-            $statement = $this->pdo->prepare(
-                'SELECT 
-                    * 
-                FROM 
-                    user 
-                WHERE 
-                    username = :userName;'
-            );
-
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
-            }
-
-            $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userName' => $userName
-            ]);
-
-            if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de busca!'
-                );
-            }
-
-            $fetchResult = $statement->fetch();
-
-            if ($fetchResult === false) {
-                return null;
-            }
-
-            $user = new User();
-            $user->setId($fetchResult['id']);
-            $user->setUserName($fetchResult['username']);
-            $user->setPassword($fetchResult['password']);
-            $user->setIsActive(
-                boolval($fetchResult['is_active'])
-            );
-
-            return $user;
-        } catch (
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -302,7 +266,60 @@ class MariaDBUserRepository implements UserRepositoryInterface
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function findByUserName(mixed $userName): User|null
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    user 
+                WHERE 
+                    username = :userName;'
+            );
+
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':userName' => $userName
+            ]);
+
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de busca!'
+                );
+            }
+
+            $fetchResult = $statement->fetch();
+
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            $user = new User();
+            $user->setId($fetchResult['id']);
+            $user->setUserName($fetchResult['username']);
+            $user->setPassword($fetchResult['password']);
+            $user->setIsActive(
+                boolval($fetchResult['is_active'])
+            );
+
+            return $user;
+        } catch (
+            DatabaseFetchFailureException |
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -352,13 +369,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
     }
 
-    public function hasDuplicatedUserName(string $userName): bool
+    public function hasDuplicatedUserNames(string $userName): bool
     {
         try {
             $statement = $this->pdo->prepare(

@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpResponse;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\JWTBearerTokenRetriever;
 use Mvreisg\GamebaseBackend\Infrastructure\Middlewares\JWTBearerTokenValidator;
 
-class RouteAuthenticator 
+class RouteAuthenticator
 {
     private AuthenticationService $authenticationService;
 
@@ -29,7 +29,7 @@ class RouteAuthenticator
     {
         $headers = $request->getHeaders();
         $token = JWTBearerTokenRetriever::make()->retrieveFromHeaders($headers);
-        JWTBearerTokenValidator::make($token)->validate($this->authenticationService);    
+        JWTBearerTokenValidator::make($token)->validate($this->authenticationService);
         return $token;
     }
 }

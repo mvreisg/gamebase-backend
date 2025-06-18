@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBGameRepository implements GameRepositoryInterface
 {
@@ -24,10 +26,17 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function insert(Game $game): Game
     {
         try {
-            $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
+            }
 
             $name = $game->getName();
-            $isActive = (int)$game->getIsActive();
+            $isActive = intval(
+                $game->getIsActive()
+            );
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -101,10 +110,12 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             return $game;
         } catch (
+            DatabaseTransactionCreationFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -113,11 +124,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
     public function update(Game $game): bool
     {
-        $id = $game->getId();
-        $name = $game->getName();
-        $isActive = (int)$game->getIsActive();
-
         try {
+            $id = $game->getId();
+            $name = $game->getName();
+            $isActive = intval(
+                $game->getIsActive()
+            );
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game 
@@ -150,7 +163,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -192,7 +206,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -242,7 +257,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -291,7 +307,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }

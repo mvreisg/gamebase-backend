@@ -19,6 +19,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 use PDOException;
+use Throwable;
 
 class PermissionController
 {
@@ -92,7 +93,8 @@ class PermissionController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -175,7 +177,8 @@ class PermissionController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -249,7 +252,8 @@ class PermissionController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -323,7 +327,8 @@ class PermissionController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -380,7 +385,8 @@ class PermissionController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([

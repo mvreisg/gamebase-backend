@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationF
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDOException;
+use Throwable;
 
 class PlatformService
 {
@@ -52,7 +53,8 @@ class PlatformService
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -87,7 +89,8 @@ class PlatformService
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -110,7 +113,8 @@ class PlatformService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -132,7 +136,8 @@ class PlatformService
             EntityInvalidValueException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }
@@ -147,7 +152,8 @@ class PlatformService
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             throw $e;
         }

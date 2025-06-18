@@ -19,6 +19,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
+use Throwable;
 
 class GameController
 {
@@ -97,7 +98,8 @@ class GameController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -112,7 +114,7 @@ class GameController
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);           
+            RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
             $body = $request->parseBodyFromJSONString();
             $params = $request->getParams();
@@ -178,7 +180,8 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -256,7 +259,8 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -331,7 +335,8 @@ class GameController
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -392,7 +397,8 @@ class GameController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([

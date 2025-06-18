@@ -16,7 +16,6 @@ class JWTBearerTokenRetriever
 
     private function __construct()
     {
-        
     }
 
     public function retrieveFromHeaders(array $headers): string

@@ -20,5 +20,5 @@ interface UserRepositoryInterface
 
     public function findAll(): array;
 
-    public function hasDuplicatedUserName(string $name): bool;
+    public function hasDuplicatedUserNames(string $name): bool;
 }

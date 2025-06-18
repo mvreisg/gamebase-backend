@@ -103,7 +103,7 @@ class MockUserRepository implements UserRepositoryInterface
         return $this->data;
     }
 
-    public function hasDuplicatedUserName(string $name): bool
+    public function hasDuplicatedUserNames(string $name): bool
     {
         $array = array_filter($this->data, function (User $user) use ($name) {
             return strcmp($user->getUserName(), $name) === 0;

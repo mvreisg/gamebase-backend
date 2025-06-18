@@ -20,6 +20,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Presentation\Exceptions\ControllerUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Middlewares\RouteAuthenticator;
 use PDOException;
+use Throwable;
 
 class PlatformController
 {
@@ -84,10 +85,9 @@ class PlatformController
             DatabaseDuplicatedEntryException |
             EntityInvalidValueException $e
         ) {
-            $messages[] = $e->getMessage();
             $response
                 ->setBody([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
@@ -97,12 +97,12 @@ class PlatformController
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
-            $messages[] = $e->getMessage();
             $response
                 ->setBody([
-                    'messages' => $messages
+                    'message' => $e->getMessage()
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[500])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
@@ -180,7 +180,11 @@ class PlatformController
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
-        } catch (DatabaseStatementCreationFailureException | PDOException $e) {
+        } catch (
+            DatabaseStatementCreationFailureException |
+            PDOException |
+            Throwable $e
+        ) {
             $response
                 ->setBody([
                     'message' => $e->getMessage()
@@ -253,7 +257,8 @@ class PlatformController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -326,7 +331,8 @@ class PlatformController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([
@@ -383,7 +389,8 @@ class PlatformController
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException |
+            Throwable $e
         ) {
             $response
                 ->setBody([

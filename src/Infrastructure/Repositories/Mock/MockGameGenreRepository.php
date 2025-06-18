@@ -29,11 +29,10 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
 
     public function insert(GameGenre $gameGenre): GameGenre
     {
-        try
-        {
+        try {
             $gameId = $gameGenre->getGameId();
             $game = $this->gameRepository->findById($gameId);
-            if ($game === null){
+            if ($game === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $gameId . ' não existe!'
                 );
@@ -41,12 +40,12 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
 
             $genreId = $gameGenre->getGenreId();
             $genre = $this->genreRepository->findById($genreId);
-            if ($genre === null){
+            if ($genre === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $genreId . ' não existe!'
-                );                
+                );
             }
-            
+
             $this->id++;
             $id = $this->id;
             $gameGenre->setId($id);
@@ -57,18 +56,17 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
                 $gameId
             );
             return $newGameGenre;
-        } catch (DatabaseUnexistantRegisterException $e){
+        } catch (DatabaseUnexistantRegisterException $e) {
             throw $e;
         }
     }
 
     public function update(GameGenre $gameGenre): bool
     {
-        try
-        {
+        try {
             $gameId = $gameGenre->getGameId();
             $game = $this->gameRepository->findById($gameId);
-            if ($game === null){
+            if ($game === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $gameId . ' não existe!'
                 );
@@ -76,10 +74,10 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
 
             $genreId = $gameGenre->getGenreId();
             $genre = $this->genreRepository->findById($genreId);
-            if ($genre === null){
+            if ($genre === null) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $genreId . ' não existe!'
-                );                
+                );
             }
 
             $idToUpdate = null;
@@ -98,15 +96,15 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
 
             $gameGenreToUpdate = $this->data[$idToUpdate];
 
-            $hasDifferendGameId = 
+            $hasDifferendGameId =
                 $gameGenreToUpdate->getGameId() !== $gameGenre->getGameId();
 
-            $hasDifferendGenreId = 
-                $gameGenreToUpdate->getGenreId() !== $gameGenre->getGenreId();            
+            $hasDifferendGenreId =
+                $gameGenreToUpdate->getGenreId() !== $gameGenre->getGenreId();
 
             $isDifferent = $hasDifferendGameId || $hasDifferendGenreId;
 
-            if ($isDifferent === false){
+            if ($isDifferent === false) {
                 return false;
             }
 
@@ -116,7 +114,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
             $this->data[$idToUpdate] = $gameGenreToUpdate;
 
             return true;
-        } catch (DatabaseUnexistantRegisterException $e){
+        } catch (DatabaseUnexistantRegisterException $e) {
             throw $e;
         }
     }
@@ -134,7 +132,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         if ($idToDelete === null) {
             return false;
         }
-        
+
         unset($this->data[$idToDelete]);
         return true;
     }
