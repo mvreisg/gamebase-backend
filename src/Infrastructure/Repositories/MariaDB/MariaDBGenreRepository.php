@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
+use Throwable;
 
 class MariaDBGenreRepository implements GenreRepositoryInterface
 {
@@ -24,10 +26,17 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function insert(Genre $genre): Genre
     {
         try {
-            $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            if ($wasTheTransactionSuccessfullyCreated === false) {
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
+            }
 
             $name = $genre->getName();
-            $isActive = (int)$genre->getIsActive();
+            $isActive = intval(
+                $genre->getIsActive()
+            );            
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -102,10 +111,12 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             return $genre;
         } catch (
+            DatabaseTransactionCreationFailureException | 
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             $this->pdo->rollBack();
             throw $e;
@@ -114,11 +125,13 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
     public function update(Genre $genre): bool
     {
-        $id = $genre->getId();
-        $name = $genre->getName();
-        $isActive = (int)$genre->getIsActive();
-
         try {
+            $id = $genre->getId();
+            $name = $genre->getName();
+            $isActive = intval(
+                $genre->getIsActive()
+            );
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     genre 
@@ -153,7 +166,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -193,7 +207,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -241,7 +256,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }
@@ -291,7 +307,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }

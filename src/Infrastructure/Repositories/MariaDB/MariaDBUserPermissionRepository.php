@@ -25,9 +25,6 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
 
     public function insert(UserPermission $userPermission): UserPermission
     {
-        $userId = $userPermission->getUserId();
-        $permissionId = $userPermission->getPermissionId();
-
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
@@ -35,6 +32,9 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
                     'Ocorreu um erro ao criar a transação!'
                 );
             }
+
+            $userId = $userPermission->getUserId();
+            $permissionId = $userPermission->getPermissionId();            
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 

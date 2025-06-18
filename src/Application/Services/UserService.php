@@ -39,7 +39,7 @@ class UserService
 
             $validatedUserName = $user->getUserName();
 
-            $hasDuplicatedNames = $this->repository->hasDuplicatedUserName($validatedUserName);
+            $hasDuplicatedNames = $this->repository->hasDuplicatedUserNames($validatedUserName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome do usuário a ser inserido já existe no repositório!'
@@ -80,7 +80,7 @@ class UserService
 
             /*
             $validatedUserName = $user->getUserName();
-            $hasDuplicatedNames = $this->repository->hasDuplicatedUserName($validatedUserName);
+            $hasDuplicatedNames = $this->repository->hasDuplicatedUserNames($validatedUserName);
             if ($hasDuplicatedNames) {
                 throw new DatabaseDuplicatedEntryException(
                     'O nome do usuário a ser atualizado já existe no repositório!'

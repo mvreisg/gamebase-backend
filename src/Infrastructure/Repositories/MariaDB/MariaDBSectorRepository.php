@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDO;
 use PDOException;
+use Throwable;
 
 class MariaDBSectorRepository implements SectorRepositoryInterface
 {
@@ -25,16 +26,17 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     public function insert(Sector $sector): Sector
     {
         try {
-            $name = $sector->getName();
-            $isActive = $sector->getIsActive();
-
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
-
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new DatabaseTransactionCreationFailureException(
                     'Ocorreu um erro ao criar a transação!'
                 );
             }
+
+            $name = $sector->getName();
+            $isActive = intval(
+                $sector->getIsActive()
+            );            
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -116,7 +118,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 $this->pdo->rollBack();
                 throw $e;
@@ -128,7 +131,9 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         try {
             $id = $sector->getId();
             $name = $sector->getName();
-            $isActive = $sector->getIsActive();
+            $isActive = intval(
+                $sector->getIsActive()
+            );
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -164,7 +169,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
         }
@@ -215,7 +221,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
         }
@@ -265,7 +272,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
         }
@@ -305,7 +313,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
             throw $e;
         }

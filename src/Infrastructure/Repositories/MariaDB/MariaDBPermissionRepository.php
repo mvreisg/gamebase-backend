@@ -12,6 +12,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecution
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
 use PDO;
 use PDOException;
+use Throwable;
 
 class MariaDBPermissionRepository implements PermissionRepositoryInterface
 {
@@ -25,16 +26,17 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     public function insert(Permission $permission): Permission
     {
         try {
-            $name = $permission->getName();
-            $isActive = $permission->getIsActive();
-
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
-
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new DatabaseTransactionCreationFailureException(
                     'Ocorreu um erro ao criar a transação!'
                 );
             }
+
+            $name = $permission->getName();
+            $isActive = intval(
+                $permission->getIsActive()
+            );            
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -116,7 +118,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             DatabaseFetchFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 $this->pdo->rollBack();
                 throw $e;
@@ -128,7 +131,9 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         try {
             $id = $permission->getId();
             $name = $permission->getName();
-            $isActive = $permission->getIsActive();
+            $isActive = intval(
+                $permission->getIsActive()
+            );
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -164,9 +169,51 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
+        }
+    }
+
+    public function setIsActive(int $id, bool $isActive): bool
+    {
+        try {
+            $isActive = intval($isActive);
+
+            $statement = $this->pdo->prepare(
+                'UPDATE
+                    permission
+                SET
+                    is_active = :isActive
+                WHERE
+                    id = :id;'
+            );
+            if ($statement === false) {
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
+                ':id' => $id,
+                ':isActive' => $isActive
+            ]);
+            if ($wasTheUpdateSuccessfullyExecuted === false) {
+                throw new DatabaseStatementExecutionFailureException(
+                    'Ocorreu um erro ao executar a declaração de atualização!'
+                );
+            }
+
+            $wasTheUpdateOcurred = $statement->rowCount() > 0;
+            return $wasTheUpdateOcurred;
+        } catch (
+            DatabaseStatementCreationFailureException |
+            DatabaseStatementExecutionFailureException |
+            PDOException | 
+            Throwable $e
+        ) {
+            throw $e;
         }
     }
 
@@ -215,7 +262,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
         }
@@ -265,49 +313,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
-            PDOException $e
+            PDOException | 
+            Throwable $e
         ) {
                 throw $e;
-        }
-    }
-
-    public function setIsActive(int $id, bool $isActive): bool
-    {
-        try {
-            $isActive = intval($isActive);
-
-            $statement = $this->pdo->prepare(
-                'UPDATE
-                    permission
-                SET
-                    is_active = :isActive
-                WHERE
-                    id = :id;'
-            );
-            if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException(
-                    'Ocorreu um erro ao criar a declaração de atualização!'
-                );
-            }
-
-            $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $isActive
-            ]);
-            if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new DatabaseStatementExecutionFailureException(
-                    'Ocorreu um erro ao executar a declaração de atualização!'
-                );
-            }
-
-            $wasTheUpdateOcurred = $statement->rowCount() > 0;
-            return $wasTheUpdateOcurred;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
-            throw $e;
         }
     }
 

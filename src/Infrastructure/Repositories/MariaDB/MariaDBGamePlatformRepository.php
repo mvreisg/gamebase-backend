@@ -27,8 +27,13 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new DatabaseTransactionCreationFailureException('Ocorreu um erro ao criar a transação!');
+                throw new DatabaseTransactionCreationFailureException(
+                    'Ocorreu um erro ao criar a transação!'
+                );
             }
+
+            $platformId = $gamePlatform->getPlatformId();
+            $gameId = $gamePlatform->getGameId();            
 
             $insertStatement = $this->pdo->prepare(
                 'INSERT INTO 
@@ -44,8 +49,8 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             $wasTheInsertStatementExecutionSuccessful = $insertStatement->execute([
-                ':platformId' => $gamePlatform->getPlatformId(),
-                ':gameId' => $gamePlatform->getGameId()
+                ':platformId' => $platformId,
+                ':gameId' => $gameId
             ]);
             if ($wasTheInsertStatementExecutionSuccessful === false) {
                 throw new DatabaseStatementExecutionFailureException(
@@ -104,11 +109,11 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
     public function update(GamePlatform $gamePlatform): bool
     {
-        $id = $gamePlatform->getId();
-        $platformId = $gamePlatform->getPlatformId();
-        $gameId = $gamePlatform->getGameId();
-
         try {
+            $id = $gamePlatform->getId();
+            $platformId = $gamePlatform->getPlatformId();
+            $gameId = $gamePlatform->getGameId();            
+
             $statement = $this->pdo->prepare(
                 'UPDATE 
                     game_platform 
@@ -149,9 +154,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
     public function delete(GamePlatform $gamePlatform): bool
     {
-        $id = $gamePlatform->getId();
-
         try {
+            $id = $gamePlatform->getId();
+                        
             $statement = $this->pdo->prepare(
                 'DELETE FROM
                     game_platform
