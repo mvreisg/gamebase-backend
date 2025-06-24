@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\HttpJsonParseException;
 use Mvreisg\GamebaseBackend\Infrastructure\Http\HttpRequest;
@@ -54,13 +55,14 @@ class AuthenticationController
             $passWord = $body['password'];
             $oneWeek = $body['oneWeek'];
 
-            $token = $this->authenticationService->checkIfTokenExists($userName);
-            if ($token !== null && $token !== "") {
-                $isTokenValid = $this->authenticationService->validateToken($userName, $token);
+            $doTokenExists = $this->authenticationService->checkTokenExistance($userName);
+            if ($doTokenExists) {
+                $token = $this->authenticationService->retrieveToken($userName);
+                $isTokenValid = $this->authenticationService->validateToken($token);
                 if ($isTokenValid) {
                     $response
                         ->setBody([
-                            'message' => 'Já existe uma sessão!',
+                            'message' => 'Sessão existente!',
                             'token' => $token
                         ])
                         ->setStatus(HttpRouter::$STATUS_CODES[200])
@@ -69,34 +71,18 @@ class AuthenticationController
                 }
             }
 
-            $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
-            if ($hasCredentials) {
-                $token = $this->authenticationService->checkIfTokenExists($userName);
-                if ($token === null || $token === "") {
-                    $token = $this->authenticationService->generateToken($userName, $oneWeek);
-                    $response
-                        ->setBody([
-                            'message' =>
-                                'Login realizado com sucesso! Durará ' .
-                                ($oneWeek ? '1 semana' : '1 dia') . '.',
-                            'token' => $token
-                        ])
-                        ->setStatus(HttpRouter::$STATUS_CODES[200])
-                        ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                    return;
-                } else {
-                    $response
-                        ->setBody([
-                            'message' => 'Já existe uma sessão!',
-                            'token' => $token
-                        ])
-                        ->setStatus(HttpRouter::$STATUS_CODES[200])
-                        ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                    return;
-                }
-            } else {
-                throw new AuthenticationException('Verifique seu nome de usuário e senha.');
-            }
+            $this->authenticationService->tryLogin($userName, $passWord);
+            $token = $this->authenticationService->generateToken($userName, $oneWeek);
+            $response
+                ->setBody([
+                    'message' =>
+                        'Login realizado com sucesso! Durará ' .
+                        ($oneWeek ? '1 semana' : '1 dia') . '.',
+                    'token' => $token
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;
         } catch (AuthenticationException $e) {
             $response
                 ->setBody([
@@ -116,7 +102,7 @@ class AuthenticationController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;
+            return;        
         } catch (
             EncryptionException |
             DatabaseFetchFailureException |

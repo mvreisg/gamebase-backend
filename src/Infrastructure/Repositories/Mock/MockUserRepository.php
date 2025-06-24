@@ -101,14 +101,17 @@ class MockUserRepository implements UserRepositoryInterface
         );
     }
 
-    public function findByUserName(string $userName): User|null
+    public function findByUserName(string $userName): User
     {
         foreach ($this->data as $key => $value) {
             if (strcmp($value->getUserName(), $userName) === 0) {
                 return $value;
             }
         }
-        return null;
+
+        throw new DatabaseUnexistantRegisterException(
+            'O registro com o username ' . $userName . ' não existe!'
+        );
     }
 
     public function findAll(): array

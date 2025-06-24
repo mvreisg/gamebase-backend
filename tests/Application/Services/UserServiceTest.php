@@ -11,6 +11,7 @@ use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
 class UserServiceTest extends TestCase
@@ -292,9 +293,9 @@ class UserServiceTest extends TestCase
 
         $fetchedUserName = 'batata';
 
-        $fetchedUser = $this->userService->findByUserName($fetchedUserName);
+        $this->expectException(DatabaseUnexistantRegisterException::class);
 
-        $this->assertEmpty($fetchedUser);
+        $this->userService->findByUserName($fetchedUserName);
     }
 
     public function testIfItCannotFindWithEmptyUserName(): void

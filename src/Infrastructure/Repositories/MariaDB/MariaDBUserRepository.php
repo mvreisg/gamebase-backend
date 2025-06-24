@@ -317,7 +317,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findByUserName(mixed $userName): User|null
+    public function findByUserName(string $userName): User
     {
         try {
             $statement = $this->pdo->prepare(
@@ -346,7 +346,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $fetchResult = $statement->fetch();
 
             if ($fetchResult === false) {
-                return null;
+                throw new DatabaseUnexistantRegisterException(
+                    'O registro com o username ' . $userName . ' não existe!'
+                );
             }
 
             $user = new User();
@@ -359,6 +361,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
+            DatabaseUnexistantRegisterException | 
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

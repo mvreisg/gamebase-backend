@@ -23,6 +23,7 @@ use Firebase\JWT\SignatureInvalidException;
 use InvalidArgumentException;
 use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 use stdClass;
 use UnexpectedValueException;
 
@@ -42,7 +43,7 @@ class AuthenticationService
         $this->userCache = $userCache;
     }
 
-    private function encodeToken(string $userName, bool $oneWeek): string
+    public function encodeToken(string $userName, bool $oneWeek): string
     {
         try {
             $user = new User();
@@ -69,24 +70,24 @@ class AuthenticationService
         }
     }
 
-    private function decodeToken(string $token): stdClass
+    public function decodeToken(string $token): stdClass
     {
         try {
             $secretKey = $_SERVER['JWT_SECRET'];
             $payload = JWT::decode($token, new Key($secretKey, 'HS256'));
             return $payload;
         } catch (InvalidArgumentException $e) {
-            throw new AuthenticationException('Objeto key inválido!', 0, $e);
+            throw new AuthenticationException('Objeto key inválido!', 0x00000001, $e);
         } catch (DomainException $e) {
-            throw new AuthenticationException('JWT malformado!', 0, $e);
+            throw new AuthenticationException('JWT malformado!', 0x00000002, $e);
         } catch (UnexpectedValueException $e) {
-            throw new AuthenticationException('JWT inválido!', 0, $e);
+            throw new AuthenticationException('JWT inválido!', 0x00000003, $e);
         } catch (SignatureInvalidException $e) {
-            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0, $e);
+            throw new AuthenticationException('Falha na verificação de assinatura do JWT', 0x00000004, $e);
         } catch (BeforeValidException  $e) {
-            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0, $e);
+            throw new AuthenticationException('JWT está tentando ser usado antes de ser elegível!', 0x00000005, $e);
         } catch (ExpiredException $e) {
-            throw new AuthenticationException('JWT expirado!', 0, $e);
+            throw new AuthenticationException('JWT expirado!', 0x00000006, $e);
         }
     }
 
@@ -104,9 +105,11 @@ class AuthenticationService
             $requestUserName = $requestUser->getUserName();
             $requestPassWord = $requestUser->getPassWord();
 
-            $fetchUser = $this->userRepository->findByUserName($requestUserName);            
+            $fetchUser = $this->userRepository->findByUserName($requestUserName);                  
             if ($fetchUser === null) {
-                return false;
+                throw new AuthenticationException(
+                    'Usuário ou senha inválidos!'
+                );
             }
 
             $fetchedAndEncodedPassWord = $fetchUser->getPassWord();
@@ -114,8 +117,21 @@ class AuthenticationService
 
             $doTheTwoPassWordsMatchesEqually = strcmp($requestPassWord, $decodedPassword) === 0;
 
+            if ($doTheTwoPassWordsMatchesEqually === false){
+                throw new AuthenticationException(
+                    'Usuário ou senha inválidos!'
+                );
+            }
+
             return $doTheTwoPassWordsMatchesEqually;
         } catch (
+            DatabaseUnexistantRegisterException $e
+        ) {
+            throw new AuthenticationException(
+                'Usuário ou senha inválidos!'
+            );
+        } catch (
+            AuthenticationException | 
             EncryptionException |
             EntityInvalidValueException |
             DatabaseFetchFailureException |
@@ -132,15 +148,41 @@ class AuthenticationService
         try {
             $payload = $this->decodeToken($token);
             $userName = $payload->sub;
-            return $this->userCache->exists($userName);
-        } catch (AuthenticationException $e) {
-            return false;
+
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();
+
+            $exists = $this->checkTokenExistance($userName);            
+            if ($exists === false){
+                throw new AuthenticationException('Token não existe!');
+            }
+            $newToken = $this->retrieveToken($userName);
+            $newPayload = $this->decodeToken($newToken);
+            $newUserName = $newPayload->sub;
+
+            $newUser = new User();
+            $newUser->setUserName($newUserName);
+            $newUser->validateUserName();
+
+            $isValid = strcmp($userName, $newUserName) === 0;
+
+            return $isValid;
+        } catch (
+            EntityInvalidValueException | 
+            AuthenticationException $e
+        ) {
+            throw $e;
         }
     }
 
     public function generateToken(string $userName, bool $oneWeek): string
     {
         try {
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();
+
             $token = $this->encodeToken($userName, $oneWeek);
 
             $oneDayInSeconds = 60 * 60 * 24;
@@ -155,14 +197,72 @@ class AuthenticationService
             }
 
             return $token;
-        } catch (EntityInvalidValueException $e) {
+        } catch (
+            EntityInvalidValueException $e
+        ) {
             throw $e;
         }
     }
 
-    public function checkIfTokenExists(string $userName): string|null
+    public function deleteToken(string $userName): bool
     {
-        return $this->userCache->get($userName);
+        try
+        {            
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();            
+
+            $exists = $this->checkTokenExistance($userName);
+            if ($exists === false){
+                throw new AuthenticationException(
+                    'O token não existe!'
+                );
+            }
+
+            return $this->userCache->delete($userName);
+        } catch (
+            AuthenticationException | 
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }
+    }    
+
+    public function checkTokenExistance(string $userName): bool
+    {
+        try{
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();   
+
+            return $this->userCache->exists($userName);
+        } catch (
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }        
+    }    
+
+    public function retrieveToken(string $userName): string
+    {
+        try{
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();   
+
+            $exists = $this->checkTokenExistance($userName);
+            if ($exists === false){
+                throw new AuthenticationException(
+                    'O token não existe!'
+                );
+            }
+            return $this->userCache->get($userName);            
+        } catch (
+            AuthenticationException | 
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }
     }
 
     public function tryLogoff(string $token): bool
@@ -170,8 +270,16 @@ class AuthenticationService
         try {
             $payload = $this->decodeToken($token);
             $userName = $payload->sub;
-            return $this->userCache->delete($userName);
-        } catch (AuthenticationException $e) {
+
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();   
+
+            return $this->deleteToken($userName);
+        } catch (
+            EntityInvalidValueException | 
+            AuthenticationException $e
+        ) {
             throw $e;
         }
     }

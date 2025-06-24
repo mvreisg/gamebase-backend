@@ -16,7 +16,7 @@ interface UserRepositoryInterface
 
     public function findById(int $id): User;
 
-    public function findByUserName(string $userName): User|null;
+    public function findByUserName(string $userName): User;
 
     public function findAll(): array;
 

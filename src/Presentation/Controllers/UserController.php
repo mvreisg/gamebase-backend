@@ -399,17 +399,6 @@ class UserController
 
             $user = $this->userService->findByUserName($userName);
 
-            if ($user === null) {
-                $response
-                    ->setBody([
-                        'message' => 'O registro de usuário com o nome de usuário ' .
-                            $userName . ' não pôde ser encontrado!',
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[200])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
-            }
-
             $response
                 ->setBody([
                     'message' => 'Usuário buscado com sucesso!',
@@ -442,6 +431,16 @@ class UserController
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
             return;
+        } catch (
+            DatabaseUnexistantRegisterException $e
+        ) {
+            $response
+                ->setBody([
+                    'message' => $e->getMessage()
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[404])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;            
         } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
