@@ -98,7 +98,7 @@ class UserService
             return $wasSomeUpdateHappened;
         } catch (
             EntityInvalidValueException |
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseDuplicatedEntryException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -124,7 +124,7 @@ class UserService
             return $wasTheUpdateSuccessful;
         } catch (
             EntityInvalidValueException |
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException |
@@ -148,7 +148,7 @@ class UserService
             return $user;
         } catch (
             EntityInvalidValueException |
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -172,7 +172,7 @@ class UserService
 
             return $user;
         } catch (
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             EntityInvalidValueException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |

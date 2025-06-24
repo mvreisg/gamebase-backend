@@ -202,7 +202,7 @@ class UserController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[404])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;            
+            return;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -287,7 +287,7 @@ class UserController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[404])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;             
+            return;
         } catch (
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -363,7 +363,7 @@ class UserController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[404])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;                    
+            return;
         } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
@@ -440,7 +440,7 @@ class UserController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[404])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;            
+            return;
         } catch (
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |

@@ -40,10 +40,10 @@ class MockUserRepository implements UserRepositoryInterface
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $id) {
                 $hasFound = true;
-                $index = $key;                             
+                $index = $key;
                 break;
             }
-        }        
+        }
 
         if ($hasFound === false) {
             throw new DatabaseUnexistantRegisterException(
@@ -52,7 +52,7 @@ class MockUserRepository implements UserRepositoryInterface
         }
 
         $userToBeModified = $this->data[$index];
-        
+
         $userToBeModified->setUserName($user->getUserName());
         $userToBeModified->setPassword($user->getPassWord());
         $userToBeModified->setIsActive($user->getIsActive());

@@ -28,18 +28,22 @@ class AuthenticationServiceTest extends TestCase
         $this->userCache = new MockUserCache();
         $this->userRepository = new MockUserRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->authenticationService = new AuthenticationService($this->userRepository, $this->encrypter, $this->userCache);
+        $this->authenticationService = new AuthenticationService(
+            $this->userRepository,
+            $this->encrypter,
+            $this->userCache
+        );
         $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
     public function testIfUserHasCredentials(): void
     {
+        $this->expectNotToPerformAssertions();
         $userName = 'test';
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
     }
 
     public function testIfUserDoNotHaveCredentialsWithAWrongUserName(): void
@@ -49,7 +53,7 @@ class AuthenticationServiceTest extends TestCase
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(AuthenticationException::class);
 
         $this->authenticationService->tryLogin('batata', $passWord);
     }
@@ -66,8 +70,8 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfLoginFailsWithoutRegisteredUsers(): void
     {
-        $this->expectException(DatabaseUnexistantRegisterException::class);
-        $hasCredentials = $this->authenticationService->tryLogin('test', 'test');
+        $this->expectException(AuthenticationException::class);
+        $this->authenticationService->tryLogin('test', 'test');
     }
 
     public function testIfLoginSuccedsWithTenUsers(): void
@@ -80,8 +84,8 @@ class AuthenticationServiceTest extends TestCase
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $hasCredentials = $this->authenticationService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
-            $this->assertTrue($hasCredentials);
+            $this->expectNotToPerformAssertions();
+            $this->authenticationService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
         }
     }
 
@@ -95,8 +99,8 @@ class AuthenticationServiceTest extends TestCase
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $this->expectException(DatabaseUnexistantRegisterException::class);
-            $hasCredentials = $this->authenticationService->tryLogin($userNamePrefix, $passWordPrefix);
+            $this->expectException(AuthenticationException::class);
+            $this->authenticationService->tryLogin($userNamePrefix, $passWordPrefix);
         }
     }
 
@@ -126,9 +130,8 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
 
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
         $token = $this->authenticationService->generateToken($userName, $oneWeek);
@@ -142,9 +145,8 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
 
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -158,9 +160,7 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
         $token = $this->authenticationService->generateToken($userName, $oneWeek);
@@ -178,9 +178,7 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
         $token = $this->authenticationService->generateToken($userName, $oneWeek);
@@ -222,17 +220,13 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authenticationService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
         $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token);
 
-        $hasSuccessfullyLoggedOff = $this->authenticationService->tryLogoff($token);
-
-        $this->assertTrue($hasSuccessfullyLoggedOff);
+        $this->authenticationService->tryLogoff($token);
     }
 }

@@ -91,7 +91,7 @@ class AuthenticationService
         }
     }
 
-    public function tryLogin(string $userName, string $passWord): bool
+    public function tryLogin(string $userName, string $passWord): void
     {
         try {
             $requestUser = new User();
@@ -105,7 +105,7 @@ class AuthenticationService
             $requestUserName = $requestUser->getUserName();
             $requestPassWord = $requestUser->getPassWord();
 
-            $fetchUser = $this->userRepository->findByUserName($requestUserName);                  
+            $fetchUser = $this->userRepository->findByUserName($requestUserName);
             if ($fetchUser === null) {
                 throw new AuthenticationException(
                     'Usuário ou senha inválidos!'
@@ -113,17 +113,15 @@ class AuthenticationService
             }
 
             $fetchedAndEncodedPassWord = $fetchUser->getPassWord();
-            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);            
+            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);
 
             $doTheTwoPassWordsMatchesEqually = strcmp($requestPassWord, $decodedPassword) === 0;
 
-            if ($doTheTwoPassWordsMatchesEqually === false){
+            if ($doTheTwoPassWordsMatchesEqually === false) {
                 throw new AuthenticationException(
                     'Usuário ou senha inválidos!'
                 );
             }
-
-            return $doTheTwoPassWordsMatchesEqually;
         } catch (
             DatabaseUnexistantRegisterException $e
         ) {
@@ -131,7 +129,7 @@ class AuthenticationService
                 'Usuário ou senha inválidos!'
             );
         } catch (
-            AuthenticationException | 
+            AuthenticationException |
             EncryptionException |
             EntityInvalidValueException |
             DatabaseFetchFailureException |
@@ -153,8 +151,8 @@ class AuthenticationService
             $user->setUserName($userName);
             $user->validateUserName();
 
-            $exists = $this->checkTokenExistance($userName);            
-            if ($exists === false){
+            $exists = $this->checkTokenExistance($userName);
+            if ($exists === false) {
                 throw new AuthenticationException('Token não existe!');
             }
             $newToken = $this->retrieveToken($userName);
@@ -169,7 +167,7 @@ class AuthenticationService
 
             return $isValid;
         } catch (
-            EntityInvalidValueException | 
+            EntityInvalidValueException |
             AuthenticationException $e
         ) {
             throw $e;
@@ -206,14 +204,13 @@ class AuthenticationService
 
     public function deleteToken(string $userName): bool
     {
-        try
-        {            
+        try {
             $user = new User();
             $user->setUserName($userName);
-            $user->validateUserName();            
+            $user->validateUserName();
 
             $exists = $this->checkTokenExistance($userName);
-            if ($exists === false){
+            if ($exists === false) {
                 throw new AuthenticationException(
                     'O token não existe!'
                 );
@@ -221,51 +218,51 @@ class AuthenticationService
 
             return $this->userCache->delete($userName);
         } catch (
-            AuthenticationException | 
-            EntityInvalidValueException $e
-        ) {
-            throw $e;
-        }
-    }    
-
-    public function checkTokenExistance(string $userName): bool
-    {
-        try{
-            $user = new User();
-            $user->setUserName($userName);
-            $user->validateUserName();   
-
-            return $this->userCache->exists($userName);
-        } catch (
-            EntityInvalidValueException $e
-        ) {
-            throw $e;
-        }        
-    }    
-
-    public function retrieveToken(string $userName): string
-    {
-        try{
-            $user = new User();
-            $user->setUserName($userName);
-            $user->validateUserName();   
-
-            $exists = $this->checkTokenExistance($userName);
-            if ($exists === false){
-                throw new AuthenticationException(
-                    'O token não existe!'
-                );
-            }
-            return $this->userCache->get($userName);            
-        } catch (
-            AuthenticationException | 
+            AuthenticationException |
             EntityInvalidValueException $e
         ) {
             throw $e;
         }
     }
 
-    public function tryLogoff(string $token): bool
+    public function checkTokenExistance(string $userName): bool
+    {
+        try {
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();
+
+            return $this->userCache->exists($userName);
+        } catch (
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function retrieveToken(string $userName): string
+    {
+        try {
+            $user = new User();
+            $user->setUserName($userName);
+            $user->validateUserName();
+
+            $exists = $this->checkTokenExistance($userName);
+            if ($exists === false) {
+                throw new AuthenticationException(
+                    'O token não existe!'
+                );
+            }
+            return $this->userCache->get($userName);
+        } catch (
+            AuthenticationException |
+            EntityInvalidValueException $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function tryLogoff(string $token): void
     {
         try {
             $payload = $this->decodeToken($token);
@@ -273,11 +270,11 @@ class AuthenticationService
 
             $user = new User();
             $user->setUserName($userName);
-            $user->validateUserName();   
+            $user->validateUserName();
 
-            return $this->deleteToken($userName);
+            $this->deleteToken($userName);
         } catch (
-            EntityInvalidValueException | 
+            EntityInvalidValueException |
             AuthenticationException $e
         ) {
             throw $e;

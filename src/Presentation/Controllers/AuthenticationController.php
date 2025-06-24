@@ -102,7 +102,7 @@ class AuthenticationController
                 ])
                 ->setStatus(HttpRouter::$STATUS_CODES[400])
                 ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-            return;        
+            return;
         } catch (
             EncryptionException |
             DatabaseFetchFailureException |
@@ -173,19 +173,15 @@ class AuthenticationController
         try {
             $token = RouteAuthenticator::make($this->authenticationService)->validate($request, $response);
 
-            $hasSuccess = $this->authenticationService->tryLogoff($token);
+            $this->authenticationService->tryLogoff($token);
 
-            if ($hasSuccess) {
-                $response
-                    ->setBody([
-                        'message' => 'Logoff realizado com sucesso!'
-                    ])
-                    ->setStatus(HttpRouter::$STATUS_CODES[200])
-                    ->send(HttpRouter::$CONTENT_TYPES['JSON']);
-                return;
-            } else {
-                throw new AuthenticationException('Erro ao realizar o logoff!');
-            }
+            $response
+                ->setBody([
+                    'message' => 'Logoff realizado com sucesso!'
+                ])
+                ->setStatus(HttpRouter::$STATUS_CODES[200])
+                ->send(HttpRouter::$CONTENT_TYPES['JSON']);
+            return;
         } catch (AuthenticationException $e) {
             $response
                 ->setBody([

@@ -49,6 +49,6 @@ try {
 
     $app->run();
 } catch (InvalidFileException | InvalidEncodingException | Throwable $e) {
-    header(HttpRouter::$STATUS_CODES[500]);    
+    header(HttpRouter::$STATUS_CODES[500]);
     print('Ocorreu um erro. Contate o suporte. Código do erro: ' . $e->getCode());
 }

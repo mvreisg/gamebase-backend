@@ -170,14 +170,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $numberOfLinesAffected = $statement->rowCount();
             $wasSomeUpdateHappened = $numberOfLinesAffected > 0;
-            if ($wasSomeUpdateHappened == false){
+            if ($wasSomeUpdateHappened == false) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $id . ' não existe!'
                 );
             }
             return $wasSomeUpdateHappened;
         } catch (
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
             PDOException |
@@ -209,9 +209,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
                     'Ocorreu um erro ao executar a declaração de atualização!'
                 );
             }
-            
+
             $registerExists = $query->rowCount() > 0;
-            if ($registerExists === false){
+            if ($registerExists === false) {
                 throw new DatabaseUnexistantRegisterException(
                     'O registro com o id ' . $id . ' não existe!'
                 );
@@ -221,9 +221,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $fetchedIsActive = intval(
                 $result['is_active']
             );
-            if ($fetchedIsActive === $isActive){
+            if ($fetchedIsActive === $isActive) {
                 return false;
-            }                    
+            }
 
             $statement = $this->pdo->prepare(
                 'UPDATE
@@ -306,7 +306,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
@@ -361,7 +361,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
-            DatabaseUnexistantRegisterException | 
+            DatabaseUnexistantRegisterException |
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
