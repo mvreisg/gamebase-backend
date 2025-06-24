@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
 
 class MockUserRepository implements UserRepositoryInterface
 {
@@ -58,34 +59,41 @@ class MockUserRepository implements UserRepositoryInterface
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $index = null;
+        $idToSetIsActive = null;
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $id) {
-                $index = $key;
+                $idToSetIsActive = $key;
             }
         }
 
-        if ($index === null) {
-            return false;
+        if ($idToSetIsActive === null) {
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $id . ' não existe!'
+            );
         }
 
-        $findedUser = $this->data[$index];
+        $foundUser = $this->data[$idToSetIsActive];
 
-        $changedSomething = $findedUser->getIsActive() !== $isActive;
+        $hasDifference = $foundUser->getIsActive() !== $isActive;
 
-        $this->data[$index]->setIsActive($isActive);
+        $foundUser->setIsActive($isActive);
 
-        return $changedSomething;
+        $this->data[$idToSetIsActive] = $foundUser;
+
+        return $hasDifference;
     }
 
-    public function findById(int $id): User|null
+    public function findById(int $id): User
     {
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $id) {
                 return $value;
             }
         }
-        return null;
+
+        throw new DatabaseUnexistantRegisterException(
+            'O registro com o id ' . $id . ' não existe!'
+        );
     }
 
     public function findByUserName(string $userName): User|null

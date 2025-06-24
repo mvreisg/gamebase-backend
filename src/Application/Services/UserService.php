@@ -148,6 +148,7 @@ class UserService
             return $user;
         } catch (
             EntityInvalidValueException |
+            DatabaseUnexistantRegisterException | 
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |

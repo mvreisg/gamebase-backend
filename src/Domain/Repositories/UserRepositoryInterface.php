@@ -14,7 +14,7 @@ interface UserRepositoryInterface
 
     public function setIsActive(int $id, bool $isActive): bool;
 
-    public function findById(int $id): User|null;
+    public function findById(int $id): User;
 
     public function findByUserName(string $userName): User|null;
 

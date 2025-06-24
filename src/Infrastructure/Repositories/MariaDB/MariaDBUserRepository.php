@@ -150,7 +150,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
@@ -259,7 +261,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findById(mixed $id): User|null
+    public function findById(int $id): User
     {
         try {
             $statement = $this->pdo->prepare(
@@ -272,7 +274,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new DatabaseStatementCreationFailureException('Ocorreu um erro ao criar a declaração de busca!');
+                throw new DatabaseStatementCreationFailureException(
+                    'Ocorreu um erro ao criar a declaração de busca!'
+                );
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
@@ -286,9 +290,10 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $fetchResult = $statement->fetch();
-
             if ($fetchResult === false) {
-                return null;
+                throw new DatabaseUnexistantRegisterException(
+                    'O registro com o id ' . $id . ' não existe!'
+                );
             }
 
             $user = new User();
@@ -301,6 +306,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             return $user;
         } catch (
+            DatabaseUnexistantRegisterException | 
             DatabaseFetchFailureException |
             DatabaseStatementCreationFailureException |
             DatabaseStatementExecutionFailureException |
