@@ -34,51 +34,56 @@ class MockUserRepository implements UserRepositoryInterface
 
     public function update(User $user): bool
     {
+        $id = $user->getId();
+        $hasFound = false;
         $index = null;
         foreach ($this->data as $key => $value) {
-            if ($value->getId() === $user->getId()) {
-                $index = $key;
+            if ($value->getId() === $id) {
+                $hasFound = true;
+                $index = $key;                             
+                break;
             }
+        }        
+
+        if ($hasFound === false) {
+            throw new DatabaseUnexistantRegisterException(
+                'O registro com o id ' . $id . ' não existe!'
+            );
         }
 
-        if ($index === null) {
-            return false;
-        }
+        $userToBeModified = $this->data[$index];
+        
+        $userToBeModified->setUserName($user->getUserName());
+        $userToBeModified->setPassword($user->getPassWord());
+        $userToBeModified->setIsActive($user->getIsActive());
 
-        $modifiedUser = $this->data[$index];
-
-        $modifiedUser->setId($user->getId());
-        $modifiedUser->setUserName($user->getUserName());
-        $modifiedUser->setPassword($user->getPassWord());
-        $modifiedUser->setIsActive($user->getIsActive());
-
-        $this->data[$index] = $modifiedUser;
+        $this->data[$index] = $userToBeModified;
 
         return true;
     }
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $idToSetIsActive = null;
+        $index = null;
         foreach ($this->data as $key => $value) {
             if ($value->getId() === $id) {
-                $idToSetIsActive = $key;
+                $index = $key;
             }
         }
 
-        if ($idToSetIsActive === null) {
+        if ($index === null) {
             throw new DatabaseUnexistantRegisterException(
                 'O registro com o id ' . $id . ' não existe!'
             );
         }
 
-        $foundUser = $this->data[$idToSetIsActive];
+        $foundUser = $this->data[$index];
 
         $hasDifference = $foundUser->getIsActive() !== $isActive;
 
         $foundUser->setIsActive($isActive);
 
-        $this->data[$idToSetIsActive] = $foundUser;
+        $this->data[$index] = $foundUser;
 
         return $hasDifference;
     }
