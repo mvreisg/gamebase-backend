@@ -28,18 +28,18 @@ use UnexpectedValueException;
 
 class AuthenticationService
 {
-    private UserRepositoryInterface $repository;
+    private UserRepositoryInterface $userRepository;
     private EncryptionInterface $encrypter;
-    private UserCacheInterface $cache;
+    private UserCacheInterface $userCache;
 
     public function __construct(
-        UserRepositoryInterface $repository,
+        UserRepositoryInterface $userRepository,
         EncryptionInterface $encrypter,
-        UserCacheInterface $cache
+        UserCacheInterface $userCache
     ) {
-        $this->repository = $repository;
+        $this->userRepository = $userRepository;
         $this->encrypter = $encrypter;
-        $this->cache = $cache;
+        $this->userCache = $userCache;
     }
 
     private function encodeToken(string $userName, bool $oneWeek): string
@@ -104,13 +104,13 @@ class AuthenticationService
             $requestUserName = $requestUser->getUserName();
             $requestPassWord = $requestUser->getPassWord();
 
-            $fetchUser = $this->repository->findByUserName($requestUserName);
+            $fetchUser = $this->userRepository->findByUserName($requestUserName);            
             if ($fetchUser === null) {
                 return false;
             }
 
             $fetchedAndEncodedPassWord = $fetchUser->getPassWord();
-            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);
+            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);            
 
             $doTheTwoPassWordsMatchesEqually = strcmp($requestPassWord, $decodedPassword) === 0;
 
@@ -132,7 +132,7 @@ class AuthenticationService
         try {
             $payload = $this->decodeToken($token);
             $userName = $payload->sub;
-            return $this->cache->exists($userName);
+            return $this->userCache->exists($userName);
         } catch (AuthenticationException $e) {
             return false;
         }
@@ -146,12 +146,12 @@ class AuthenticationService
             $oneDayInSeconds = 60 * 60 * 24;
             $oneWeekInSeconds = $oneDayInSeconds * 7;
 
-            $this->cache->set($userName, $token);
+            $this->userCache->set($userName, $token);
 
             if ($oneWeek) {
-                $this->cache->expire($userName, $oneWeekInSeconds);
+                $this->userCache->expire($userName, $oneWeekInSeconds);
             } else {
-                $this->cache->expire($userName, $oneDayInSeconds);
+                $this->userCache->expire($userName, $oneDayInSeconds);
             }
 
             return $token;
@@ -162,7 +162,7 @@ class AuthenticationService
 
     public function checkIfTokenExists(string $userName): string|null
     {
-        return $this->cache->get($userName);
+        return $this->userCache->get($userName);
     }
 
     public function tryLogoff(string $token): bool
@@ -170,7 +170,7 @@ class AuthenticationService
         try {
             $payload = $this->decodeToken($token);
             $userName = $payload->sub;
-            return $this->cache->delete($userName);
+            return $this->userCache->delete($userName);
         } catch (AuthenticationException $e) {
             throw $e;
         }
