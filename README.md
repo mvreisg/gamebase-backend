@@ -114,10 +114,28 @@ Makes a linting operation on the code, checking by errors.
 composer lint:fix
 ```
 
-Fixes the errors and throw warnings.
+Fixes the errors.
 
 ```
-composer test
+composer format
+```
+
+Makes a formatting operation on the code, checking by errors.
+
+```
+composer format:fix
+```
+
+Fixes the formatting errors and throw warnings.
+
+```
+composer phpunit:test
 ```
 
 Runs the PHPUnit Test Suite.
+
+```
+composer phinx
+```
+
+The Phinx executable to make migrations.
