@@ -49,7 +49,7 @@ class SectorService
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -79,7 +79,7 @@ class SectorService
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -98,7 +98,7 @@ class SectorService
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -117,7 +117,7 @@ class SectorService
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -132,7 +132,7 @@ class SectorService
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 }

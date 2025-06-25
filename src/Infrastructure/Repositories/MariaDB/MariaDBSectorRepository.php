@@ -121,8 +121,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             PDOException |
             Throwable $e
         ) {
-                $this->pdo->rollBack();
-                throw $e;
+            $this->pdo->rollBack();
+            throw $e;
         }
     }
 
@@ -172,7 +172,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -265,7 +265,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
@@ -316,7 +316,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             PDOException |
             Throwable $e
         ) {
-                throw $e;
+            throw $e;
         }
     }
 
