@@ -164,11 +164,11 @@ class AuthenticationService
             $newUser->validateUserName();
 
             $isSameUserName = strcmp($userName, $newUserName) === 0;
-            $isSameIat = $payload->iat === $newPayload->iat;            
+            $isSameIat = $payload->iat === $newPayload->iat;
 
             $isValid = $isSameUserName && $isSameIat;
 
-            if ($isValid === false){
+            if ($isValid === false) {
                 throw new AuthenticationException(
                     'Token inválido!'
                 );
