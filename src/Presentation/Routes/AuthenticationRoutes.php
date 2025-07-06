@@ -19,7 +19,7 @@ class AuthenticationRoutes
             $controller->handleLogin($request, $response);
         });
 
-        $app->add('POST', '/auth/validate', function (HttpRequest $request, HttpResponse $response) use ($controller) {
+        $app->add('GET', '/auth/validate', function (HttpRequest $request, HttpResponse $response) use ($controller) {
             $controller->handleValidation($request, $response);
         });
 
