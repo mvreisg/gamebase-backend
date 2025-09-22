@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend;
 
-use Dotenv\Dotenv;
-use Throwable;
+use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 try {
-    include_once dirname(__DIR__) . '/vendor/autoload.php';
+    require_once dirname(__DIR__) . '/constants.php';
+    require_once PROJECT_ROOT . '/vendor/autoload.php';
 
-    Dotenv::createImmutable(dirname(__DIR__))->load();
-} catch (Throwable $e) {
-    print_r('Ocorreu um erro! Código ' . $e->getCode());
+    DotenvEnvironment::load();
+} catch (\Throwable $e) {
+    print_r('Error! ' . $e->getMessage());
 }

@@ -10,7 +10,7 @@ final class AddingPermissionTable extends AbstractMigration
     {
         $table = $this->table('permission');
         $table->addColumn('name', 'text', [
-            'null' => false,            
+            'null' => false,
         ]);
         $table->addIndex('name', [
             'unique' => true

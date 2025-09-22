@@ -4,40 +4,53 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException as ApplicationAuthenticationException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Authentication\AuthenticationException as InfrastructureAuthenticationException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\TokenAuthenticationInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\MockUserCache;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class AuthenticationServiceTest extends TestCase
 {
-    private UserCacheInterface $userCache;
-    private UserRepositoryInterface $userRepository;
+    private CacheInterface $userCache;
+    private UserEntityRepositoryInterface $userEntityRepository;
     private EncryptionInterface $encrypter;
-    private AuthenticationService $authService;
+    private TokenAuthenticationInterface $authenticator;
+    private AuthenticationService $authenticationService;
     private UserService $userService;
 
     protected function setUp(): void
     {
         $this->userCache = new MockUserCache();
-        $this->userRepository = new MockUserRepository();
+        $this->userEntityRepository = new MockUserEntityRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->authService = new AuthenticationService($this->userRepository, $this->encrypter, $this->userCache);
-        $this->userService = new UserService($this->userRepository, $this->encrypter);
+        $this->authenticator = new JwtTokenAuthentication();
+        $this->authenticationService = new AuthenticationService(
+            $this->userEntityRepository,
+            $this->encrypter,
+            $this->userCache,
+            $this->authenticator
+        );
+        $this->userService = new UserService($this->userEntityRepository, $this->encrypter);
     }
 
     public function testIfUserHasCredentials(): void
     {
+        $this->expectNotToPerformAssertions();
         $userName = 'test';
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
     }
 
     public function testIfUserDoNotHaveCredentialsWithAWrongUserName(): void
@@ -46,8 +59,10 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin('batata', $passWord);
-        $this->assertFalse($hasCredentials);
+
+        $this->expectException(RepositoryUnexistantRegisterException::class);
+
+        $this->authenticationService->tryLogin('batata', $passWord);
     }
 
     public function testIfUserDoNotHaveCredentialsWithAWrongPassword(): void
@@ -56,14 +71,14 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, 'batata');
-        $this->assertFalse($hasCredentials);
+        $this->expectException(ApplicationAuthenticationException::class);
+        $this->authenticationService->tryLogin($userName, 'batata');
     }
 
     public function testIfLoginFailsWithoutRegisteredUsers(): void
     {
-        $hasCredentials = $this->authService->tryLogin('test', 'test');
-        $this->assertFalse($hasCredentials);
+        $this->expectException(RepositoryException::class);
+        $this->authenticationService->tryLogin('test', 'test');
     }
 
     public function testIfLoginSuccedsWithTenUsers(): void
@@ -76,8 +91,8 @@ class AuthenticationServiceTest extends TestCase
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $hasCredentials = $this->authService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
-            $this->assertTrue($hasCredentials);
+            $this->expectNotToPerformAssertions();
+            $this->authenticationService->tryLogin($userNamePrefix . $i, $passWordPrefix . $i);
         }
     }
 
@@ -91,8 +106,8 @@ class AuthenticationServiceTest extends TestCase
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $hasCredentials = $this->authService->tryLogin($userNamePrefix, $passWordPrefix);
-            $this->assertFalse($hasCredentials);
+            $this->expectException(RepositoryException::class);
+            $this->authenticationService->tryLogin($userNamePrefix, $passWordPrefix);
         }
     }
 
@@ -103,7 +118,7 @@ class AuthenticationServiceTest extends TestCase
         $isActive = true;
         $this->expectException(EntityInvalidValueException::class);
         $this->userService->insert($userName, $passWord, $isActive);
-        $this->authService->tryLogin('', $passWord);
+        $this->authenticationService->tryLogin('', $passWord);
     }
 
     public function testIfLoginFailsWithEmptyPassWord(): void
@@ -113,7 +128,7 @@ class AuthenticationServiceTest extends TestCase
         $isActive = true;
         $this->expectException(EntityInvalidValueException::class);
         $this->userService->insert($userName, $passWord, $isActive);
-        $this->authService->tryLogin($userName, '');
+        $this->authenticationService->tryLogin($userName, '');
     }
 
     public function testIfUserCanRetrieveAuthenticationToken(): void
@@ -122,12 +137,11 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
 
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
-        $token = $this->authService->generateToken($userName, $oneWeek);
+        $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token, 'Token');
     }
@@ -138,14 +152,13 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
 
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $this->expectException(EntityInvalidValueException::class);
 
         $oneWeek = true;
-        $this->authService->generateToken('', $oneWeek);
+        $this->authenticationService->generateToken('', $oneWeek);
     }
 
     public function testIfSessionTokenIsSuccessfullyRetrievedFromCache(): void
@@ -154,16 +167,14 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
-        $token = $this->authService->generateToken($userName, $oneWeek);
+        $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token);
 
-        $token = $this->authService->checkIfTokenExists($userName);
+        $token = $this->authenticationService->retrieveToken($userName);
 
         $this->assertNotEmpty($token);
     }
@@ -174,18 +185,16 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
-        $token = $this->authService->generateToken($userName, $oneWeek);
+        $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token);
 
-        $token = $this->authService->checkIfTokenExists('batata');
+        $this->expectException(ApplicationAuthenticationException::class);
 
-        $this->assertEmpty($token);
+        $this->authenticationService->retrieveToken('batata');
     }
 
     public function testIfAValidTokenIsSuccessfullyValidated(): void
@@ -197,19 +206,19 @@ class AuthenticationServiceTest extends TestCase
         $this->userService->insert($userName, $passWord, $isActive);
 
         $oneWeek = true;
-        $token = $this->authService->generateToken($userName, $oneWeek);
+        $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token);
 
-        $isTokenValid = $this->authService->validateToken($token);
+        $isTokenValid = $this->authenticationService->validateToken($token);
 
         $this->assertTrue($isTokenValid);
     }
 
     public function testIfAInvalidTokenFailsToValidate(): void
     {
-        $isTokenValid = $this->authService->validateToken('');
-        $this->assertFalse($isTokenValid);
+        $this->expectException(InfrastructureAuthenticationException::class);
+        $isTokenValid = $this->authenticationService->validateToken('');
     }
 
     public function testIfLogoffSucceds(): void
@@ -218,17 +227,13 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $hasCredentials = $this->authService->tryLogin($userName, $passWord);
-
-        $this->assertTrue($hasCredentials);
+        $this->authenticationService->tryLogin($userName, $passWord);
 
         $oneWeek = true;
-        $token = $this->authService->generateToken($userName, $oneWeek);
+        $token = $this->authenticationService->generateToken($userName, $oneWeek);
 
         $this->assertNotEmpty($token);
 
-        $hasSuccessfullyLoggedOff = $this->authService->tryLogoff($token);
-
-        $this->assertTrue($hasSuccessfullyLoggedOff);
+        $this->authenticationService->tryLogoff($token);
     }
 }

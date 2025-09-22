@@ -14,7 +14,7 @@ final class AddingSectorTable extends AbstractMigration
         ]);
         $table->addIndex('name', [
             'unique' => true
-        ]);        
+        ]);
         $table->addColumn('is_active', 'boolean', [
             'null' => false
         ]);

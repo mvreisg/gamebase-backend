@@ -4,118 +4,91 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreEntityRepositoryInterface;
 
 class GameGenreService
 {
-    private GameGenreRepositoryInterface $repository;
+    private GameGenreEntityRepositoryInterface $repository;
 
-    public function __construct(GameGenreRepositoryInterface $repository)
+    public function __construct(GameGenreEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(int $genreId, int $gameId): GameGenre
+    public function insert(int $genreId, int $gameId): GameGenreEntity
     {
-        $gameGenre = new GameGenre();
+        $gameGenreEntity = new GameGenreEntity(
+            PHP_INT_MAX,
+            $genreId,
+            $gameId
+        );
 
         try {
-            $gameGenre->setGenreId($genreId);
-            $gameGenre->setGameId($gameId);
+            $gameGenreEntity->validateGenreId();
+            $gameGenreEntity->validateGameId();
 
-            $gameGenre->validateGenreId();
-            $gameGenre->validateGameId();
+            $insertedGameGenreEntity = $this->repository->insert($gameGenreEntity);
 
-            $gameGenre = $this->repository->insert($gameGenre);
-
-            return $gameGenre;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseTransactionCreationFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $insertedGameGenreEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, int $genreId, int $gameId): bool
     {
-        $gameGenre = new GameGenre();
+        $gameGenreEntity = new GameGenreEntity(
+            $id,
+            $genreId,
+            $gameId
+        );
 
         try {
-            $gameGenre->setId($id);
-            $gameGenre->setGenreId($genreId);
-            $gameGenre->setGameId($gameId);
+            $gameGenreEntity->validateId();
+            $gameGenreEntity->validateGenreId();
+            $gameGenreEntity->validateGameId();
 
-            $gameGenre->validateId();
-            $gameGenre->validateGenreId();
-            $gameGenre->validateGameId();
+            $wasUpdated = $this->repository->update($gameGenreEntity);
 
-            $wasTheUpdateSuccessful = $this->repository->update($gameGenre);
-
-            return $wasTheUpdateSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function delete(int $id): bool
     {
-        $gameGenre = new GameGenre();
+        $gameGenreEntity = new GameGenreEntity(
+            $id
+        );
 
         try {
-            $gameGenre->setId($id);
+            $gameGenreEntity->validateId();
 
-            $gameGenre->validateId();
+            $wasDeleted = $this->repository->delete($gameGenreEntity);
 
-            $wasTheDeleteSuccessful = $this->repository->delete($gameGenre);
-
-            return $wasTheDeleteSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $wasDeleted;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): GameGenre|null
+    public function findById(int $id): GameGenreEntity|null
     {
-        $gameGenre = new GameGenre();
+        $gameGenreEntity = new GameGenreEntity(
+            $id
+        );
 
         try {
-            $gameGenre->setId($id);
+            $gameGenreEntity->validateId();
 
-            $gameGenre->validateId();
+            $fetchedGameGenreEntity = $this->repository->findById(
+                $gameGenreEntity->getId()
+            );
 
-            $gameGenre = $this->repository->findById($id);
-
-            return $gameGenre;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $fetchedGameGenreEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -123,14 +96,10 @@ class GameGenreService
     public function findAll(): array
     {
         try {
-            $gameGenres = $this->repository->findAll();
+            $fetchedGameGenreEntities = $this->repository->findAll();
 
-            return $gameGenres;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $fetchedGameGenreEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

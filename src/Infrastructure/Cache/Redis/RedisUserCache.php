@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis;
 
-use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
 use Predis\Client;
 
-class RedisUserCache implements UserCacheInterface
+class RedisUserCache implements CacheInterface
 {
     private Client $redis;
 

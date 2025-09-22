@@ -4,111 +4,91 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformEntityRepositoryInterface;
 
 class GamePlatformService
 {
-    private GamePlatformRepositoryInterface $repository;
+    private GamePlatformEntityRepositoryInterface $repository;
 
-    public function __construct(GamePlatformRepositoryInterface $repository)
+    public function __construct(GamePlatformEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(int $platformId, int $gameId): GamePlatform
+    public function insert(int $platformId, int $gameId): GamePlatformEntity
     {
-        $gamePlatform = new GamePlatform();
+        $gamePlatformEntity = new GamePlatformEntity(
+            PHP_INT_MAX,
+            $platformId,
+            $gameId
+        );
 
         try {
-            $gamePlatform->setPlatformId($platformId);
-            $gamePlatform->setGameId($gameId);
+            $gamePlatformEntity->validatePlatformId();
+            $gamePlatformEntity->validateGameId();
 
-            $gamePlatform->validatePlatformId();
-            $gamePlatform->validateGameId();
+            $insertedGamePlatformEntity = $this->repository->insert($gamePlatformEntity);
 
-            $gamePlatform = $this->repository->insert($gamePlatform);
-
-            return $gamePlatform;
-        } catch (
-            DatabaseTransactionCreationFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $insertedGamePlatformEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, int $platformId, int $gameId): bool
     {
-        $gamePlatform = new GamePlatform();
+        $gamePlatformEntity = new GamePlatformEntity(
+            $id,
+            $platformId,
+            $gameId
+        );
 
         try {
-            $gamePlatform->setId($id);
-            $gamePlatform->setPlatformId($platformId);
-            $gamePlatform->setGameId($gameId);
+            $gamePlatformEntity->validateId();
+            $gamePlatformEntity->validatePlatformId();
+            $gamePlatformEntity->validateGameId();
 
-            $gamePlatform->validateId();
-            $gamePlatform->validatePlatformId();
-            $gamePlatform->validateGameId();
+            $wasUpdated = $this->repository->update($gamePlatformEntity);
 
-            $wasTheUpdateSuccessful = $this->repository->update($gamePlatform);
-
-            return $wasTheUpdateSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function delete(int $id): bool
     {
-        $gamePlatform = new GamePlatform();
+        $gamePlatformEntity = new GamePlatformEntity(
+            $id
+        );
 
         try {
-            $gamePlatform->setId($id);
+            $gamePlatformEntity->validateId();
 
-            $gamePlatform->validateId();
+            $wasDeleted = $this->repository->delete($gamePlatformEntity);
 
-            $wasTheDeletionSuccessful = $this->repository->delete($gamePlatform);
-
-            return $wasTheDeletionSuccessful;
-        } catch (EntityInvalidValueException | DatabaseStatementCreationFailureException | PDOException $e) {
+            return $wasDeleted;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): GamePlatform|null
+    public function findById(int $id): GamePlatformEntity|null
     {
-        $gamePlatform = new GamePlatform();
+        $gamePlatformEntity = new GamePlatformEntity(
+            $id
+        );
+
         try {
-            $gamePlatform->setId($id);
+            $gamePlatformEntity->validateId();
 
-            $gamePlatform->validateId();
+            $validatedId = $gamePlatformEntity->getId();
 
-            $gamePlatform = $this->repository->findById($id);
+            $fetchedGamePlatformEntity = $this->repository->findById($validatedId);
 
-            return $gamePlatform;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $fetchedGamePlatformEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -116,14 +96,10 @@ class GamePlatformService
     public function findAll(): array
     {
         try {
-            $gamePlatforms = $this->repository->findAll();
+            $fetchedGamePlatformEntities = $this->repository->findAll();
 
-            return $gamePlatforms;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $fetchedGamePlatformEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
