@@ -4,27 +4,28 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserEntity;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserEntityRepository;
 use PHPUnit\Framework\TestCase;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 
 class UserServiceTest extends TestCase
 {
-    private UserRepositoryInterface $userRepository;
+    private UserEntityRepositoryInterface $userEntityRepository;
     private EncryptionInterface $encrypter;
     private UserService $userService;
 
     protected function setUp(): void
     {
-        $this->userRepository = new MockUserRepository();
+        $this->userEntityRepository = new MockUserEntityRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->userService = new UserService($this->userRepository, $this->encrypter);
+        $this->userService = new UserService($this->userEntityRepository, $this->encrypter);
     }
 
     public function testIfInsertSucceds(): void
@@ -36,7 +37,7 @@ class UserServiceTest extends TestCase
         $user = $this->userService->insert($userName, $passWord, $isActive);
 
         $this->assertNotEmpty($user);
-        $this->assertInstanceOf(User::class, $user);
+        $this->assertInstanceOf(UserEntity::class, $user);
     }
 
     public function testIfInsertingUserNameThatAlreadyExistsFails(): void
@@ -45,7 +46,7 @@ class UserServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectException(MockDuplicatedEntryException::class);
 
         $this->userService->insert($userName, $passWord, $isActive);
         $this->userService->insert($userName, $passWord, $isActive);
@@ -293,7 +294,7 @@ class UserServiceTest extends TestCase
 
         $fetchedUserName = 'batata';
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(MockUnexistantRegisterException::class);
 
         $this->userService->findByUserName($fetchedUserName);
     }

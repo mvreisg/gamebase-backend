@@ -4,71 +4,52 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameEntityRepositoryInterface;
 
 class GameService
 {
-    private GameRepositoryInterface $repository;
+    private GameEntityRepositoryInterface $repository;
 
-    public function __construct(GameRepositoryInterface $repository)
+    public function __construct(GameEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Game
+    public function insert(string $name, bool $isActive): GameEntity
     {
-        $game = new Game();
+        $gameEntity = new GameEntity(
+            PHP_INT_MAX,
+            $name,
+            $isActive
+        );
 
         try {
-            $game->setName($name);
-            $game->setIsActive($isActive);
+            $gameEntity->validateName();
 
-            $game->validateName();
+            $validatedName = $gameEntity->getName();
 
-            $validatedName = $game->getName();
+            $this->repository->checkDuplicatedNames($validatedName);
 
-            $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
-            if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException(
-                    'O nome do jogo a ser inserido já existe no repositório!'
-                );
-            }
+            $insertedGameEntity = $this->repository->insert($gameEntity);
 
-            $game = $this->repository->insert($game);
-
-            return $game;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            DatabaseDuplicatedEntryException |
-            PDOException |
-            EntityInvalidValueException |
-            Throwable $e
-        ) {
+            return $insertedGameEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, string $name, bool $isActive): bool
     {
-        $game = new Game();
+        $gameEntity = new GameEntity(
+            $id,
+            $name,
+            $isActive
+        );
 
         try {
-            $game->setId($id);
-            $game->setName($name);
-            $game->setIsActive($isActive);
-
-            $game->validateId();
-            $game->validateName();
+            $gameEntity->validateId();
+            $gameEntity->validateName();
 
             /*
             $validatedName = $game->getName();
@@ -77,65 +58,57 @@ class GameService
                 throw new DatabaseDuplicatedEntryException('O nome do jogo a ser atualizado já existe no repositório!');
             }
             */
-            $wasSomeUpdateHappened = $this->repository->update($game);
 
-            return $wasSomeUpdateHappened;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseDuplicatedEntryException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $wasUpdated = $this->repository->update($gameEntity);
+
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $game = new Game();
+        $gameEntity = new GameEntity(
+            $id,
+            '',
+            $isActive
+        );
 
         try {
-            $game->setId($id);
-            $game->setIsActive($isActive);
+            $gameEntity->validateId($id);
 
-            $game->validateId($id);
+            $validatedId = $gameEntity->getId();
+            $validatedIsActive = $gameEntity->getIsActive();
 
-            $wasTheUpdateSuccessful = $this->repository->setIsActive($id, $isActive);
+            $wasUpdated = $this->repository->setIsActive(
+                $validatedId,
+                $validatedIsActive
+            );
 
-            return $wasTheUpdateSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Game|null
+    public function findById(int $id): GameEntity|null
     {
-        $game = new Game();
+        $gameEntity = new GameEntity(
+            $id
+        );
 
         try {
-            $game->setId($id);
+            $gameEntity->validateId();
 
-            $game->validateId();
+            $validatedId = $gameEntity->getId();
 
-            $game = $this->repository->findById($id);
+            $fetchedGameEntity = $this->repository->findById(
+                $validatedId
+            );
 
-            return $game;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedGameEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -143,15 +116,10 @@ class GameService
     public function findAll(): array
     {
         try {
-            $games = $this->repository->findAll();
+            $fetchedGameEntities = $this->repository->findAll();
 
-            return $games;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedGameEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

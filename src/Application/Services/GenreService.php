@@ -4,66 +4,54 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Domain\Entities\GenreEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GenreEntityRepositoryInterface;
 
 class GenreService
 {
-    private GenreRepositoryInterface $repository;
+    private GenreEntityRepositoryInterface $repository;
 
-    public function __construct(GenreRepositoryInterface $repository)
+    public function __construct(GenreEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Genre
+    public function insert(string $name, bool $isActive): GenreEntity
     {
-        $genre = new Genre();
+        $genreEntity = new GenreEntity(
+            PHP_INT_MAX,
+            $name,
+            $isActive
+        );
 
         try {
-            $genre->setName($name);
-            $genre->setIsActive($isActive);
+            $genreEntity->validateName();
 
-            $genre->validateName();
+            $validatedName = $genreEntity->getName();
 
-            $validatedName = $genre->getName();
-            $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
-            if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException('O nome do gênero a ser inserido já existe no repositório!');
-            }
-            $genre = $this->repository->insert($genre);
-            return $genre;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseDuplicatedEntryException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $this->repository->checkDuplicatedNames($validatedName);
+
+            $insertedGenreEntity = $this->repository->insert($genreEntity);
+
+            return $insertedGenreEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, string $name, bool $isActive): bool
     {
-        $genre = new Genre();
+        $genreEntity = new GenreEntity(
+            $id,
+            $name,
+            $isActive
+        );
 
         try {
-            $genre->setId($id);
-            $genre->setName($name);
-            $genre->setIsActive($isActive);
+            $genreEntity->validateId();
+            $genreEntity->validateName();
 
-            $genre->validateId();
-            $genre->validateName();
             /*
             $validatedName = $genre->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -73,60 +61,57 @@ class GenreService
                 );
             }
             */
-            $wasItSuccessful = $this->repository->update($genre);
-            return $wasItSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseDuplicatedEntryException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+
+            $wasUpdated = $this->repository->update($genreEntity);
+
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $genre = new Genre();
+        $genreEntity = new GenreEntity(
+            $id,
+            '',
+            $isActive
+        );
+
         try {
-            $genre->setId($id);
-            $genre->setIsActive($isActive);
+            $genreEntity->validateId();
 
-            $genre->validateId();
+            $validatedId = $genreEntity->getId();
+            $validatedIsActive = $genreEntity->getIsActive();
 
-            $wasSuccessful = $this->repository->setIsActive($id, $isActive);
-            return $wasSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $wasUpdated = $this->repository->setIsActive(
+                $validatedId,
+                $validatedIsActive
+            );
+
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Genre|null
+    public function findById(int $id): GenreEntity|null
     {
-        $genre = new Genre();
+        $genreEntity = new GenreEntity(
+            $id
+        );
 
         try {
-            $genre->setId($id);
+            $genreEntity->validateId();
 
-            $genre->validateId();
+            $validatedId = $genreEntity->getId();
 
-            $genre = $this->repository->findById($id);
-            return $genre;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $fetchedGenreEntity = $this->repository->findById(
+                $validatedId
+            );
+
+            return $fetchedGenreEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -134,14 +119,10 @@ class GenreService
     public function findAll(): array
     {
         try {
-            $allGenres = $this->repository->findAll();
-            return $allGenres;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $fetchedGenreEntities = $this->repository->findAll();
+
+            return $fetchedGenreEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

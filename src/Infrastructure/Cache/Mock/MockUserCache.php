@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
 
-class MockUserCache implements UserCacheInterface
+class MockUserCache implements CacheInterface
 {
     private array $keyValues;
     private array $data;

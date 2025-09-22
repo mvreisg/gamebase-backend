@@ -4,82 +4,65 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use PDOException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
 
 class UserService
 {
-    private UserRepositoryInterface $repository;
+    private UserEntityRepositoryInterface $repository;
     private EncryptionInterface $encrypter;
 
-    public function __construct(UserRepositoryInterface $repository, EncryptionInterface $encrypter)
-    {
+    public function __construct(
+        UserEntityRepositoryInterface $repository,
+        EncryptionInterface $encrypter
+    ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
     }
 
-    public function insert(string $userName, string $passWord, bool $isActive): User
+    public function insert(string $userName, string $passWord, bool $isActive): UserEntity
     {
-        $user = new User();
+        $userEntity = new UserEntity(
+            PHP_INT_MAX,
+            $userName,
+            $passWord,
+            $isActive
+        );
 
         try {
-            $user->setUserName($userName);
-            $user->setPassword($passWord);
-            $user->setIsActive($isActive);
+            $userEntity->validateUserName();
+            $userEntity->validatePassWord();
 
-            $user->validateUserName();
-            $user->validatePassWord();
+            $validatedUserName = $userEntity->getUserName();
 
-            $validatedUserName = $user->getUserName();
+            $this->repository->checkDuplicatedUserNames($validatedUserName);
 
-            $hasDuplicatedNames = $this->repository->hasDuplicatedUserNames($validatedUserName);
-            if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException(
-                    'O nome do usuário a ser inserido já existe no repositório!'
-                );
-            }
-
-            $plainPassword = $user->getPassWord();
+            $plainPassword = $userEntity->getPassWord();
             $encodedPassword = $this->encrypter->encrypt($plainPassword);
-            $user->setPassword($encodedPassword);
-            $user = $this->repository->insert($user);
+            $userEntity->setPassword($encodedPassword);
+            $insertedUserEntity = $this->repository->insert($userEntity);
 
-            return $user;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            DatabaseDuplicatedEntryException |
-            PDOException |
-            EntityInvalidValueException |
-            Throwable $e
-        ) {
+            return $insertedUserEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, string $userName, string $passWord, bool $isActive): bool
     {
-        $user = new User();
+        $userEntity = new UserEntity(
+            $id,
+            $userName,
+            $passWord,
+            $isActive
+        );
 
         try {
-            $user->setId($id);
-            $user->setUserName($userName);
-            $user->setPassword($passWord);
-            $user->setIsActive($isActive);
-
-            $user->validateId();
-            $user->validateUserName();
-            $user->validatePassWord();
+            $userEntity->validateId();
+            $userEntity->validateUserName();
+            $userEntity->validatePassWord();
 
             /*
             $validatedUserName = $user->getUserName();
@@ -90,96 +73,75 @@ class UserService
                 );
             }*/
 
-            $plainPassword = $user->getPassWord();
+            $plainPassword = $userEntity->getPassWord();
             $encodedPassword = $this->encrypter->encrypt($plainPassword);
-            $user->setPassword($encodedPassword);
-            $wasSomeUpdateHappened = $this->repository->update($user);
+            $userEntity->setPassword($encodedPassword);
+            $wasUpdated = $this->repository->update($userEntity);
 
-            return $wasSomeUpdateHappened;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseUnexistantRegisterException |
-            DatabaseDuplicatedEntryException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $user = new User();
+        $userEntity = new UserEntity(
+            $id,
+            '',
+            '',
+            $isActive
+        );
 
         try {
-            $user->setId($id);
-            $user->setIsActive($isActive);
+            $userEntity->validateId();
 
-            $user->validateId();
+            $validatedId = $userEntity->getId();
+            $validatedIsActive = $userEntity->getIsActive();
 
-            $wasTheUpdateSuccessful = $this->repository->setIsActive($id, $isActive);
+            $wasUpdated = $this->repository->setIsActive($validatedId, $validatedIsActive);
 
-            return $wasTheUpdateSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseUnexistantRegisterException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): User|null
+    public function findById(int $id): UserEntity|null
     {
-        $user = new User();
+        $userEntity = new UserEntity(
+            $id
+        );
 
         try {
-            $user->setId($id);
+            $userEntity->validateId();
 
-            $user->validateId();
+            $validatedId = $userEntity->getId();
 
-            $user = $this->repository->findById($id);
+            $fetchedUserEntity = $this->repository->findById($validatedId);
 
-            return $user;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseUnexistantRegisterException |
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedUserEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findByUserName(string $userName): User|null
+    public function findByUserName(string $userName): UserEntity|null
     {
-        $user = new User();
+        $userEntity = new UserEntity(
+            PHP_INT_MAX,
+            $userName
+        );
 
         try {
-            $user->setUserName($userName);
+            $userEntity->validateUserName();
 
-            $user->validateUserName();
+            $validatedUserName = $userEntity->getUserName();
 
-            $user = $this->repository->findByUserName($userName);
+            $fetchedUserEntity = $this->repository->findByUserName($validatedUserName);
 
-            return $user;
-        } catch (
-            DatabaseUnexistantRegisterException |
-            EntityInvalidValueException |
-            DatabaseFetchFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedUserEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -187,15 +149,10 @@ class UserService
     public function findAll(): array
     {
         try {
-            $users = $this->repository->findAll();
+            $fetchedUserEntities = $this->repository->findAll();
 
-            return $users;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedUserEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

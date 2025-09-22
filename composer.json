@@ -3,6 +3,9 @@
     "description": "A simple PHP API for game database.",
     "type": "project",
     "autoload": {
+        "files": [
+            "bootstrap.php"
+        ],
         "psr-4": {
             "Mvreisg\\GamebaseBackend\\": "src/"
         }
@@ -36,6 +39,7 @@
         "format": "vendor/bin/phpcs --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
         "format:fix": "vendor/bin/phpcbf --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
         "phinx": "vendor/bin/phinx",
-        "phpunit:test": "vendor/bin/phpunit ./tests --testdox"
+        "phpunit:test": "vendor/bin/phpunit",
+        "phpunit:test:all": "vendor/bin/phpunit ./tests --testdox"        
     }
 }

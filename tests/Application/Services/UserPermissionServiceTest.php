@@ -5,41 +5,42 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use ArrayIterator;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserPermissionRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserPermissionEntity;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserPermissionEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class UserPermissionServiceTest extends TestCase
 {
-    private UserPermissionRepositoryInterface $userPermissionRepository;
+    private UserPermissionEntityRepositoryInterface $userPermissionEntityRepository;
     private UserPermissionService $userPermissionService;
-    private UserRepositoryInterface $userRepository;
+    private UserEntityRepositoryInterface $userEntityRepository;
     private UserService $userService;
     private EncryptionInterface $encrypter;
-    private PermissionRepositoryInterface $permissionRepository;
+    private PermissionEntityRepositoryInterface $permissionEntityRepository;
     private PermissionService $permissionService;
 
     protected function setUp(): void
     {
-        $this->userRepository = new MockUserRepository();
+        $this->userEntityRepository = new MockUserEntityRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->userService = new UserService($this->userRepository, $this->encrypter);
-        $this->permissionRepository = new MockPermissionRepository();
-        $this->permissionService = new PermissionService($this->permissionRepository);
-        $this->userPermissionRepository = new MockUserPermissionRepository(
-            $this->userRepository,
-            $this->permissionRepository
+        $this->userService = new UserService($this->userEntityRepository, $this->encrypter);
+        $this->permissionEntityRepository = new MockPermissionEntityRepository();
+        $this->permissionService = new PermissionService($this->permissionEntityRepository);
+        $this->userPermissionEntityRepository = new MockUserPermissionEntityRepository(
+            $this->userEntityRepository,
+            $this->permissionEntityRepository
         );
-        $this->userPermissionService = new UserPermissionService($this->userPermissionRepository);
+        $this->userPermissionService = new UserPermissionService($this->userPermissionEntityRepository);
     }
 
     public function testIfInsertionSucceds(): void
@@ -53,7 +54,7 @@ class UserPermissionServiceTest extends TestCase
         $userPermission = $this->userPermissionService->insert($userId, $permissionId);
 
         $this->assertNotEmpty($userPermission);
-        $this->assertInstanceOf(UserPermission::class, $userPermission);
+        $this->assertInstanceOf(UserPermissionEntity::class, $userPermission);
     }
 
     public function testIfTenInsertionsSucceds(): void
@@ -68,7 +69,7 @@ class UserPermissionServiceTest extends TestCase
             $userPermission = $this->userPermissionService->insert($userId, $permissionId);
 
             $this->assertNotEmpty($userPermission);
-            $this->assertInstanceOf(UserPermission::class, $userPermission);
+            $this->assertInstanceOf(UserPermissionEntity::class, $userPermission);
         }
     }
 
@@ -91,7 +92,7 @@ class UserPermissionServiceTest extends TestCase
         $permission = $this->permissionService->insert('test', true);
         $permissionId = $permission->getId();
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(MockUnexistantRegisterException::class);
 
         $this->userPermissionService->insert($userId, $permissionId);
     }
@@ -266,7 +267,7 @@ class UserPermissionServiceTest extends TestCase
         $fetchedUserPermission = $this->userPermissionService->findById($id);
 
         $this->assertNotEmpty($fetchedUserPermission);
-        $this->assertInstanceOf(UserPermission::class, $fetchedUserPermission);
+        $this->assertInstanceOf(UserPermissionEntity::class, $fetchedUserPermission);
         $this->assertEquals($userPermission, $fetchedUserPermission);
     }
 

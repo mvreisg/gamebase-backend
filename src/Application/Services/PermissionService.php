@@ -4,51 +4,39 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionEntityRepositoryInterface;
 
 class PermissionService
 {
-    private PermissionRepositoryInterface $repository;
+    private PermissionEntityRepositoryInterface $repository;
 
-    public function __construct(PermissionRepositoryInterface $repository)
+    public function __construct(PermissionEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Permission
+    public function insert(string $name, bool $isActive): PermissionEntity
     {
         try {
-            $permission = new Permission(PHP_INT_MAX, $name, $isActive);
-            $permission->validateId();
-            $permission->validateName();
-            $validatedName = $permission->getName();
-            $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
-            if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException(
-                    'O nome da permissão a ser inserida já existe no repositório!'
-                );
-            }
+            $permissionEntity = new PermissionEntity(
+                PHP_INT_MAX,
+                $name,
+                $isActive
+            );
 
-            $permissionCopy = $this->repository->insert($permission);
-            return $permissionCopy;
-        } catch (
-            DatabaseTransactionCreationFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            EntityInvalidValueException |
-            PDOException |
-            Throwable $e
-        ) {
+            $permissionEntity->validateId();
+            $permissionEntity->validateName();
+
+            $validatedName = $permissionEntity->getName();
+
+            $this->repository->checkDuplicatedNames($validatedName);
+
+            $insertedPermissionEntity = $this->repository->insert($permissionEntity);
+
+            return $insertedPermissionEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -56,9 +44,15 @@ class PermissionService
     public function update(int $id, string $name, bool $isActive): bool
     {
         try {
-            $permission = new Permission($id, $name, $isActive);
-            $permission->validateId();
-            $permission->validateName();
+            $permissionEntity = new PermissionEntity(
+                $id,
+                $name,
+                $isActive
+            );
+
+            $permissionEntity->validateId();
+            $permissionEntity->validateName();
+
             /*
             $validatedName = $permission->getName();
             $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
@@ -69,16 +63,9 @@ class PermissionService
             }
             */
 
-            $wasTheUpdateSuccessful = $this->repository->update($permission);
-            return $wasTheUpdateSuccessful;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseDuplicatedEntryException |
-            EntityInvalidValueException |
-            PDOException |
-            Throwable $e
-        ) {
+            $wasUpdated = $this->repository->update($permissionEntity);
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -86,37 +73,43 @@ class PermissionService
     public function setIsActive(int $id, bool $isActive): bool
     {
         try {
-            $permission = new Permission($id, '', $isActive);
-            $permission->validateId();
+            $permissionEntity = new PermissionEntity(
+                $id,
+                '',
+                $isActive
+            );
 
-            $wasSomethingChanged = $this->repository->setIsActive($id, $isActive);
-            return $wasSomethingChanged;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            EntityInvalidValueException |
-            PDOException |
-            Throwable $e
-        ) {
+            $permissionEntity->validateId();
+
+            $validatedId = $permissionEntity->getId();
+            $validatedIsActive = $permissionEntity->getIsActive();
+
+            $wasUpdated = $this->repository->setIsActive(
+                $validatedId,
+                $validatedIsActive
+            );
+
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Permission
+    public function findById(int $id): PermissionEntity
     {
         try {
-            $permission = new Permission($id);
-            $permission->validateId();
+            $permissionEntity = new PermissionEntity(
+                $id
+            );
 
-            $fetchedPermission = $this->repository->findById($id);
-            return $fetchedPermission;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            EntityInvalidValueException |
-            PDOException |
-            Throwable $e
-        ) {
+            $permissionEntity->validateId();
+
+            $validatedId = $permissionEntity->getId();
+
+            $fetchedPermissionEntity = $this->repository->findById($validatedId);
+
+            return $fetchedPermissionEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -124,14 +117,10 @@ class PermissionService
     public function findAll(): array
     {
         try {
-            $fetchedPermissions = $this->repository->findAll();
-            return $fetchedPermissions;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            $fetchedPermissionEntities = $this->repository->findAll();
+
+            return $fetchedPermissionEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

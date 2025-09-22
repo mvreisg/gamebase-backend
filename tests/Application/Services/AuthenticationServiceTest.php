@@ -4,36 +4,43 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\AuthenticationException;
-use Mvreisg\GamebaseBackend\Domain\Cache\UserCacheInterface;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException as ApplicationAuthenticationException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Authentication\AuthenticationException as InfrastructureAuthenticationException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\TokenAuthenticationInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\MockUserCache;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class AuthenticationServiceTest extends TestCase
 {
-    private UserCacheInterface $userCache;
-    private UserRepositoryInterface $userRepository;
+    private CacheInterface $userCache;
+    private UserEntityRepositoryInterface $userEntityRepository;
     private EncryptionInterface $encrypter;
+    private TokenAuthenticationInterface $authenticator;
     private AuthenticationService $authenticationService;
     private UserService $userService;
 
     protected function setUp(): void
     {
         $this->userCache = new MockUserCache();
-        $this->userRepository = new MockUserRepository();
+        $this->userEntityRepository = new MockUserEntityRepository();
         $this->encrypter = new DefuseEncryption();
+        $this->authenticator = new JwtTokenAuthentication();
         $this->authenticationService = new AuthenticationService(
-            $this->userRepository,
+            $this->userEntityRepository,
             $this->encrypter,
-            $this->userCache
+            $this->userCache,
+            $this->authenticator
         );
-        $this->userService = new UserService($this->userRepository, $this->encrypter);
+        $this->userService = new UserService($this->userEntityRepository, $this->encrypter);
     }
 
     public function testIfUserHasCredentials(): void
@@ -53,7 +60,7 @@ class AuthenticationServiceTest extends TestCase
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
 
-        $this->expectException(AuthenticationException::class);
+        $this->expectException(RepositoryUnexistantRegisterException::class);
 
         $this->authenticationService->tryLogin('batata', $passWord);
     }
@@ -64,13 +71,13 @@ class AuthenticationServiceTest extends TestCase
         $passWord = 'test';
         $isActive = true;
         $this->userService->insert($userName, $passWord, $isActive);
-        $this->expectException(AuthenticationException::class);
+        $this->expectException(ApplicationAuthenticationException::class);
         $this->authenticationService->tryLogin($userName, 'batata');
     }
 
     public function testIfLoginFailsWithoutRegisteredUsers(): void
     {
-        $this->expectException(AuthenticationException::class);
+        $this->expectException(RepositoryException::class);
         $this->authenticationService->tryLogin('test', 'test');
     }
 
@@ -99,7 +106,7 @@ class AuthenticationServiceTest extends TestCase
         }
 
         for ($i = 1; $i <= 10; $i++) {
-            $this->expectException(AuthenticationException::class);
+            $this->expectException(RepositoryException::class);
             $this->authenticationService->tryLogin($userNamePrefix, $passWordPrefix);
         }
     }
@@ -185,7 +192,7 @@ class AuthenticationServiceTest extends TestCase
 
         $this->assertNotEmpty($token);
 
-        $this->expectException(AuthenticationException::class);
+        $this->expectException(ApplicationAuthenticationException::class);
 
         $this->authenticationService->retrieveToken('batata');
     }
@@ -210,7 +217,7 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAInvalidTokenFailsToValidate(): void
     {
-        $this->expectException(AuthenticationException::class);
+        $this->expectException(InfrastructureAuthenticationException::class);
         $isTokenValid = $this->authenticationService->validateToken('');
     }
 

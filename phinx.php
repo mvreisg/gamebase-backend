@@ -2,50 +2,52 @@
 
 declare(strict_types=1);
 
-include_once __DIR__ . '/vendor/autoload.php';
+use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 try {
-    Dotenv\Dotenv::createImmutable(__DIR__)->load();
-} catch (Throwable $e) {
-    print_r('Erro ao carregar o .env em phinx.php');
-}
+    require_once __DIR__ . '/bootstrap.php';
 
-return
-[
-    'paths' => [
-        'migrations' => '%%PHINX_CONFIG_DIR%%/db/migrations',
-        'seeds' => '%%PHINX_CONFIG_DIR%%/db/seeds'
-    ],
-    'environments' => [
-        'default_migration_table' => 'phinxlog',
-        'default_environment' => 'development',
-        'production' => [
-            'adapter' => '',
-            'host' => '',
-            'name' => '',
-            'user' => '',
-            'pass' => '',
-            'port' => '',
-            'charset' => '',
+    DotenvEnvironment::load();
+
+    return
+    [
+        'paths' => [
+            'migrations' => '%%PHINX_CONFIG_DIR%%/db/migrations',
+            'seeds' => '%%PHINX_CONFIG_DIR%%/db/seeds'
         ],
-        'development' => [
-            'adapter' => $_SERVER['DATABASE_ADAPTER'],
-            'host' => $_SERVER['DATABASE_HOST'],
-            'name' => $_SERVER['DATABASE_NAME'],
-            'user' => $_SERVER['DATABASE_USERNAME'],
-            'pass' => $_SERVER['DATABASE_PASSWORD'],
-            'port' => $_SERVER['DATABASE_PORT'],
-            'charset' => $_SERVER['DATABASE_CHARSET'],
+        'environments' => [
+            'default_migration_table' => 'phinxlog',
+            'default_environment' => 'development',
+            'production' => [
+                'adapter' => DotenvEnvironment::get('REPOSITORY_ADAPTER'),
+                'host' => DotenvEnvironment::get('REPOSITORY_HOST'),
+                'name' => DotenvEnvironment::get('REPOSITORY_DATABASE'),
+                'user' => DotenvEnvironment::get('REPOSITORY_USERNAME'),
+                'pass' => DotenvEnvironment::get('REPOSITORY_PASSWORD'),
+                'port' => DotenvEnvironment::get('REPOSITORY_PORT'),
+                'charset' => DotenvEnvironment::get('REPOSITORY_CHARSET'),
+            ],
+            'development' => [
+                'adapter' => DotenvEnvironment::get('REPOSITORY_ADAPTER'),
+                'host' => DotenvEnvironment::get('REPOSITORY_HOST'),
+                'name' => DotenvEnvironment::get('REPOSITORY_DATABASE'),
+                'user' => DotenvEnvironment::get('REPOSITORY_USERNAME'),
+                'pass' => DotenvEnvironment::get('REPOSITORY_PASSWORD'),
+                'port' => DotenvEnvironment::get('REPOSITORY_PORT'),
+                'charset' => DotenvEnvironment::get('REPOSITORY_CHARSET'),
+            ],
+            'testing' => [
+                'adapter' => DotenvEnvironment::get('REPOSITORY_ADAPTER'),
+                'host' => DotenvEnvironment::get('REPOSITORY_HOST'),
+                'name' => DotenvEnvironment::get('REPOSITORY_DATABASE'),
+                'user' => DotenvEnvironment::get('REPOSITORY_USERNAME'),
+                'pass' => DotenvEnvironment::get('REPOSITORY_PASSWORD'),
+                'port' => DotenvEnvironment::get('REPOSITORY_PORT'),
+                'charset' => DotenvEnvironment::get('REPOSITORY_CHARSET'),
+            ]
         ],
-        'testing' => [
-            'adapter' => '',
-            'host' => '',
-            'name' => '',
-            'user' => '',
-            'pass' => '',
-            'port' => '',
-            'charset' => '',
-        ]
-    ],
-    'version_order' => 'creation'
-];
+        'version_order' => 'creation'
+    ];
+} catch (\Throwable $e) {
+    print('Error: ' . $e->getMessage());
+}

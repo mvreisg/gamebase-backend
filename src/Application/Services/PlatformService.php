@@ -4,73 +4,53 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Domain\Entities\PlatformEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformEntityRepositoryInterface;
 
 class PlatformService
 {
-    private PlatformRepositoryInterface $repository;
+    private PlatformEntityRepositoryInterface $repository;
 
-    public function __construct(PlatformRepositoryInterface $repository)
+    public function __construct(PlatformEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Platform
+    public function insert(string $name, bool $isActive): PlatformEntity
     {
-        $platform = new Platform();
+        $platformEntity = new PlatformEntity(
+            PHP_INT_MAX,
+            $name,
+            $isActive
+        );
 
         try {
-            $platform->setName($name);
-            $platform->setIsActive($isActive);
+            $platformEntity->validateName();
 
-            $platform->validateName();
+            $validatedName = $platformEntity->getName();
 
-            $validatedName = $platform->getName();
+            $this->repository->checkDuplicatedNames($validatedName);
 
-            $hasDuplicatedNames = $this->repository->hasDuplicatedNames($validatedName);
-            if ($hasDuplicatedNames) {
-                throw new DatabaseDuplicatedEntryException(
-                    'O nome da plataforma a ser inserida já existe no repositório!'
-                );
-            }
+            $insertedPlatformEntity = $this->repository->insert($platformEntity);
 
-            $platform = $this->repository->insert($platform);
-
-            return $platform;
-        } catch (
-            DatabaseDuplicatedEntryException |
-            EntityInvalidValueException |
-            DatabaseTransactionCreationFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $insertedPlatformEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, string $name, bool $isActive): bool
     {
-        $platform = new Platform();
+        $platformEntity = new PlatformEntity(
+            $id,
+            $name,
+            $isActive
+        );
 
         try {
-            $platform->setId($id);
-            $platform->setName($name);
-            $platform->setIsActive($isActive);
-
-            $platform->validateId();
-            $platform->validateName();
+            $platformEntity->validateId();
+            $platformEntity->validateName();
 
             /*
             $validatedName = $platform->getName();
@@ -82,63 +62,54 @@ class PlatformService
             }
             */
 
-            $wasTheUpdateSuccessful = $this->repository->update($platform);
+            $wasUpdated = $this->repository->update($platformEntity);
 
-            return $wasTheUpdateSuccessful;
-        } catch (
-            DatabaseDuplicatedEntryException |
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function setIsActive(int $id, bool $isActive): bool
     {
-        $platform = new Platform();
+        $platformEntity = new PlatformEntity(
+            $id,
+            '',
+            $isActive
+        );
 
         try {
-            $platform->setId($id);
-            $platform->setIsActive($isActive);
+            $platformEntity->validateId();
 
-            $platform->validateId();
+            $validatedId = $platformEntity->getId();
+            $validatedIsActive = $platformEntity->getIsActive();
 
-            $wasSuccessful = $this->repository->setIsActive($id, $isActive);
+            $wasUpdated = $this->repository->setIsActive(
+                $validatedId,
+                $validatedIsActive
+            );
 
-            return $wasSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Platform|null
+    public function findById(int $id): PlatformEntity|null
     {
-        $platform = new Platform();
+        $platformEntity = new PlatformEntity(
+            $id
+        );
 
         try {
-            $platform->setId($id);
+            $platformEntity->validateId();
 
-            $platform->validateId();
+            $validatedId = $platformEntity->getId();
 
-            $platform = $this->repository->findById($id);
+            $fetchedPlatformEntity = $this->repository->findById($validatedId);
 
-            return $platform;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedPlatformEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -146,15 +117,10 @@ class PlatformService
     public function findAll(): array
     {
         try {
-            $platforms = $this->repository->findAll();
+            $fetchedPlatformEntity = $this->repository->findAll();
 
-            return $platforms;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $fetchedPlatformEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

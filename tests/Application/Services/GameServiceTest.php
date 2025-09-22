@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameRepository;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameEntity;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class GameServiceTest extends TestCase
 {
-    private GameRepositoryInterface $gameRepository;
+    private GameEntityRepositoryInterface $gameEntityRepository;
     private GameService $gameService;
 
     protected function setUp(): void
     {
-        $this->gameRepository = new MockGameRepository();
-        $this->gameService = new GameService($this->gameRepository);
+        $this->gameEntityRepository = new MockGameEntityRepository();
+        $this->gameService = new GameService($this->gameEntityRepository);
     }
 
     public function testIfGameInsertionSucceds(): void
@@ -29,7 +31,7 @@ class GameServiceTest extends TestCase
 
         $game = $this->gameService->insert($name, $isActive);
 
-        $this->assertInstanceOf(Game::class, $game);
+        $this->assertInstanceOf(GameEntity::class, $game);
     }
 
     public function testIfTenGameInsertionSucceds(): void
@@ -39,7 +41,7 @@ class GameServiceTest extends TestCase
 
         for ($i = 1; $i <= 10; $i++) {
             $game = $this->gameService->insert($name . $i, $isActive);
-            $this->assertInstanceOf(Game::class, $game);
+            $this->assertInstanceOf(GameEntity::class, $game);
         }
     }
 
@@ -48,7 +50,7 @@ class GameServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectException(RepositoryDuplicatedEntryException::class);
 
         $this->gameService->insert($name, $isActive);
         $this->gameService->insert($name, $isActive);
@@ -191,7 +193,7 @@ class GameServiceTest extends TestCase
         $game = $this->gameService->findById($id);
 
         $this->assertNotEmpty($game);
-        $this->assertInstanceOf(Game::class, $game);
+        $this->assertInstanceOf(GameEntity::class, $game);
     }
 
     public function testIfFindByIdSuccedsWithTenPlatforms(): void
@@ -207,7 +209,7 @@ class GameServiceTest extends TestCase
         for ($i = 1; $i <= 10; $i++) {
             $game = $this->gameService->findById($i);
             $this->assertNotEmpty($game);
-            $this->assertInstanceOf(Game::class, $game);
+            $this->assertInstanceOf(GameEntity::class, $game);
         }
     }
 

@@ -3,6 +3,8 @@
 
 # .env
 .env
+.env.development.local
+.env.development.docker
 
 # PHP CS Fixer
 .php-cs-fixer.cache

@@ -5,37 +5,37 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use ArrayIterator;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreEntity;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GenreEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class GameGenreServiceTest extends TestCase
 {
-    private GameRepositoryInterface $gameRepository;
+    private GameEntityRepositoryInterface $gameEntityRepository;
     private GameService $gameService;
-    private GenreRepositoryInterface $genreRepository;
+    private GenreEntityRepositoryInterface $genreEntityRepository;
     private GenreService $genreService;
-    private GameGenreRepositoryInterface $gameGenreRepository;
+    private GameGenreEntityRepositoryInterface $gameGenreEntityRepository;
     private GameGenreService $gameGenreService;
 
     protected function setUp(): void
     {
-        $this->gameRepository = new MockGameRepository();
-        $this->gameService = new GameService($this->gameRepository);
-        $this->genreRepository = new MockGenreRepository();
-        $this->genreService = new GenreService($this->genreRepository);
-        $this->gameGenreRepository = new MockGameGenreRepository(
-            $this->gameRepository,
-            $this->genreRepository
+        $this->gameEntityRepository = new MockGameEntityRepository();
+        $this->gameService = new GameService($this->gameEntityRepository);
+        $this->genreEntityRepository = new MockGenreEntityRepository();
+        $this->genreService = new GenreService($this->genreEntityRepository);
+        $this->gameGenreEntityRepository = new MockGameGenreEntityRepository(
+            $this->gameEntityRepository,
+            $this->genreEntityRepository
         );
-        $this->gameGenreService = new GameGenreService($this->gameGenreRepository);
+        $this->gameGenreService = new GameGenreService($this->gameGenreEntityRepository);
     }
 
     public function testIfInsertSucceds(): void
@@ -49,7 +49,7 @@ class GameGenreServiceTest extends TestCase
         $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
         $this->assertNotEmpty($gameGenre);
-        $this->assertInstanceOf(GameGenre::class, $gameGenre);
+        $this->assertInstanceOf(GameGenreEntity::class, $gameGenre);
     }
 
     public function testIfTenInsertionsSucceds(): void
@@ -64,7 +64,7 @@ class GameGenreServiceTest extends TestCase
             $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
             $this->assertNotEmpty($gameGenre);
-            $this->assertInstanceOf(GameGenre::class, $gameGenre);
+            $this->assertInstanceOf(GameGenreEntity::class, $gameGenre);
         }
     }
 
@@ -189,7 +189,7 @@ class GameGenreServiceTest extends TestCase
         $game = $gamesIterator->current();
         $gameId = $game->getId();
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(MockUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
@@ -255,7 +255,7 @@ class GameGenreServiceTest extends TestCase
         $game = $gamesIterator->current();
         $gameId = $game->getId();
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(MockUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
@@ -321,7 +321,7 @@ class GameGenreServiceTest extends TestCase
 
         $gameId = 999;
 
-        $this->expectException(DatabaseUnexistantRegisterException::class);
+        $this->expectException(MockUnexistantRegisterException::class);
 
         $this->gameGenreService->update($id, $genreId, $gameId);
     }
@@ -385,11 +385,11 @@ class GameGenreServiceTest extends TestCase
         $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
         $id = $gameGenre->getId();
 
-        $fetchedGameGenre = $this->gameGenreService->findById($id);
+        $fetchedGameGenreEntity = $this->gameGenreService->findById($id);
 
-        $this->assertNotEmpty($fetchedGameGenre);
-        $this->assertInstanceOf(GameGenre::class, $fetchedGameGenre);
-        $this->assertEquals($gameGenre, $fetchedGameGenre);
+        $this->assertNotEmpty($fetchedGameGenreEntity);
+        $this->assertInstanceOf(GameGenreEntity::class, $fetchedGameGenreEntity);
+        $this->assertEquals($gameGenre, $fetchedGameGenreEntity);
     }
 
     public function testIfFindByIdWithInvalidIdFails(): void
@@ -419,9 +419,9 @@ class GameGenreServiceTest extends TestCase
         $this->gameGenreService->insert($genreId, $gameId);
         $id = 999;
 
-        $fetchedGameGenre = $this->gameGenreService->findById($id);
+        $fetchedGameGenreEntity = $this->gameGenreService->findById($id);
 
-        $this->assertEmpty($fetchedGameGenre);
+        $this->assertEmpty($fetchedGameGenreEntity);
     }
 
     public function testIfFindAllSucceds(): void

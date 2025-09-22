@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
+use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionEntity;
+use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionEntityRepository;
 use PHPUnit\Framework\TestCase;
 
 class PermissionServiceTest extends TestCase
 {
-    private PermissionRepositoryInterface $permissionRepository;
+    private PermissionEntityRepositoryInterface $permissionEntityRepository;
     private PermissionService $permissionService;
 
     protected function setUp(): void
     {
-        $this->permissionRepository = new MockPermissionRepository();
-        $this->permissionService = new PermissionService($this->permissionRepository);
+        $this->permissionEntityRepository = new MockPermissionEntityRepository();
+        $this->permissionService = new PermissionService($this->permissionEntityRepository);
     }
 
     public function testIfASingleInsertionSucceds(): void
@@ -30,7 +31,7 @@ class PermissionServiceTest extends TestCase
         $permission = $this->permissionService->insert($name, $isActive);
 
         $this->assertNotEmpty($permission);
-        $this->assertInstanceOf(Permission::class, $permission);
+        $this->assertInstanceOf(PermissionEntity::class, $permission);
     }
 
     public function testIfASingleInsertionWithInvalidNameFails(): void
@@ -48,7 +49,7 @@ class PermissionServiceTest extends TestCase
         $name = 'test';
         $isActive = true;
 
-        $this->expectException(DatabaseDuplicatedEntryException::class);
+        $this->expectException(MockDuplicatedEntryException::class);
 
         $this->permissionService->insert($name, $isActive);
         $this->permissionService->insert($name, $isActive);
@@ -63,7 +64,7 @@ class PermissionServiceTest extends TestCase
             $permission = $this->permissionService->insert($name . $i, $isActive);
 
             $this->assertNotEmpty($permission);
-            $this->assertInstanceOf(Permission::class, $permission);
+            $this->assertInstanceOf(PermissionEntity::class, $permission);
         }
     }
 
@@ -149,7 +150,7 @@ class PermissionServiceTest extends TestCase
         $fetchedPermission = $this->permissionService->findById($id);
 
         $this->assertNotEmpty($fetchedPermission);
-        $this->assertInstanceOf(Permission::class, $fetchedPermission);
+        $this->assertInstanceOf(PermissionEntity::class, $fetchedPermission);
         $this->assertEquals($permission, $fetchedPermission);
     }
 

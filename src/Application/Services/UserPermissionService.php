@@ -4,119 +4,91 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\DatabaseTransactionCreationFailureException;
-use PDOException;
-use Throwable;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserPermissionEntity;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionEntityRepositoryInterface;
 
 class UserPermissionService
 {
-    private UserPermissionRepositoryInterface $repository;
+    private UserPermissionEntityRepositoryInterface $repository;
 
-    public function __construct(UserPermissionRepositoryInterface $repository)
+    public function __construct(UserPermissionEntityRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
-    public function insert(int $userId, int $permissionId): UserPermission
+    public function insert(int $userId, int $permissionId): UserPermissionEntity
     {
-        $userPermission = new UserPermission(
+        $userPermissionEntity = new UserPermissionEntity(
             PHP_INT_MAX,
             $userId,
             $permissionId
         );
 
         try {
-            $userPermission->validateUserId();
-            $userPermission->validatePermissionId();
+            $userPermissionEntity->validateUserId();
+            $userPermissionEntity->validatePermissionId();
 
-            $userPermission = $this->repository->insert($userPermission);
+            $insertedUserPermissionEntity = $this->repository->insert($userPermissionEntity);
 
-            return $userPermission;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseTransactionCreationFailureException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            DatabaseFetchFailureException |
-            PDOException |
-            Throwable $e
-        ) {
+            return $insertedUserPermissionEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function update(int $id, int $userId, int $permissionId): bool
     {
-        $userPermission = new UserPermission(
+        $userPermissionEntity = new UserPermissionEntity(
             $id,
             $userId,
             $permissionId
         );
 
         try {
-            $userPermission->validateId();
-            $userPermission->validateUserId();
-            $userPermission->validatePermissionId();
+            $userPermissionEntity->validateId();
+            $userPermissionEntity->validateUserId();
+            $userPermissionEntity->validatePermissionId();
 
-            $wasTheUpdateSuccessful = $this->repository->update($userPermission);
+            $wasUpdated = $this->repository->update($userPermissionEntity);
 
-            return $wasTheUpdateSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $wasUpdated;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
     public function delete(int $id): bool
     {
-        $userPermission = new UserPermission(
+        $userPermissionEntity = new UserPermissionEntity(
             $id
         );
 
         try {
-            $userPermission->validateId();
+            $userPermissionEntity->validateId();
 
-            $wasTheDeleteSuccessful = $this->repository->delete($userPermission);
+            $wasDeleted = $this->repository->delete($userPermissionEntity);
 
-            return $wasTheDeleteSuccessful;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $wasDeleted;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): UserPermission|null
+    public function findById(int $id): UserPermissionEntity|null
     {
-        $userPermission = new UserPermission(
+        $userPermissionEntity = new UserPermissionEntity(
             $id
         );
 
         try {
-            $userPermission->validateId();
+            $userPermissionEntity->validateId();
 
-            $userPermission = $this->repository->findById($id);
+            $validatedId = $userPermissionEntity->getId();
 
-            return $userPermission;
-        } catch (
-            EntityInvalidValueException |
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            $fetchedUserPermissionEntity = $this->repository->findById($validatedId);
+
+            return $fetchedUserPermissionEntity;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
@@ -124,14 +96,10 @@ class UserPermissionService
     public function findAll(): array
     {
         try {
-            $userPermissions = $this->repository->findAll();
+            $fetchedUserPermissionsEntities = $this->repository->findAll();
 
-            return $userPermissions;
-        } catch (
-            DatabaseStatementCreationFailureException |
-            DatabaseStatementExecutionFailureException |
-            PDOException $e
-        ) {
+            return $fetchedUserPermissionsEntities;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
