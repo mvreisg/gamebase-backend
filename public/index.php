@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGameRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGenreRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpPlatformRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpSectorPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpSectorRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserRoutes;
@@ -45,6 +46,9 @@ try {
         )
         ->addRoutes(
             HttpUserPermissionRoutes::get()
+        )
+        ->addRoutes(
+            HttpSectorPermissionRoutes::get()
         )
         ->run();
 } catch (\Throwable $e) {
