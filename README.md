@@ -14,11 +14,11 @@ Uses [JWT](https://jwt.io/) for authentication and [Redis](https://redis.io/) fo
 
 Has [Docker](https://www.docker.com/) support.
 
-## Run with Docker
+## Running with Docker
 
 ### Setup
 
-Make sure to create a `.env` file in the root directory with `ENVIRONMENT={your-environment}` and `MACHINE={your-machine}`, and another with the values specified below following the pattern: `.env.{environment}.{machine}`.
+Make sure to create a `.env` file in the root directory with `ENVIRONMENT={environment}` and `MACHINE={machine}`, and another with the values specified below following the pattern: `.env.{environment}.{machine}`.
 
 For example, the `.env` should be something like this:
 
@@ -30,20 +30,101 @@ MACHINE="local"
 
 So the `Dotenv` can recognize which environment and machine you want. In the case above, it will search for `.env.development.local` and this file should have everything that is inside `.env.example`.
 
-<hr/>
+### Setting `NGINX` environment variables.
 
-### Running with Docker
-
-*Windows:*
+`NGINX_PORT` is the Docker internal port and `NGINX_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
 
 ```
-docker-compose up --build -d
+NGINX_PORT="80"
+NGINX_EXPOSE_PORT="8081"
 ```
 
-*Ubuntu:*
+### Setting `API_CONSUMERS` environment variables.
+
+Put the URLs string in `API_CONSUMERS_ADDRESSES` and use the `API_CONSUMERS_ADDRESSES_SEPARATOR` between them.
+
+Example:
 
 ```
-docker compose up --build -d
+API_CONSUMERS_ADDRESSES="http://localhost:8082,http://localhost:8083"
+API_CONSUMERS_ADDRESSES_SEPARATOR=","
+```
+
+### Setting `REPOSITORY` environment variables.
+
+`REPOSITORY_PORT` is the Docker internal port and `REPOSITORY_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
+
+```
+REPOSITORY_ROOT_USERNAME="your root backend username"
+REPOSITORY_ROOT_PASSWORD="your root backend password"
+REPOSITORY_HOST="database address"
+REPOSITORY_DATABASE="database name"
+REPOSITORY_USERNAME="database username"
+REPOSITORY_PASSWORD="database password"
+REPOSITORY_PORT="internal port"
+REPOSITORY_CHARSET="database charset"
+REPOSITORY_EXPOSE_PORT="docker expose port"
+```
+
+### Setting `DEFUSE_PHP_ENCRYPTION_KEY` environment variable.
+
+Run
+
+```
+docker compose --env-file ./.env.{environment}.{machine} up php --build
+```
+
+Then access `bash` inside `gamebase-backend-php` container then:
+
+```
+cd config
+php defuse_key.php
+```
+
+And copy the code inside the parenthesis to `DEFUSE_PHP_ENCRYPTION_KEY` variable field on your `.env.{environment}.{machine}` file. **keep it a secret!**
+
+### Setting `SODIUM_CRYPTO_SECRETBOX_KEY` environment variable.
+
+Run
+
+```
+docker compose --env-file ./.env.{environment}.{machine} up php --build
+```
+
+Then access `bash` inside `gamebase-backend-php` container then:
+
+```
+cd config
+php sodium_key.php
+```
+
+And copy the code inside the parenthesis to `SODIUM_CRYPTO_SECRETBOX_KEY` variable field on your `.env.{environment}.{machine}` file. **keep it a secret!**
+
+### Setting `JWT_SECRET` environment variable.
+
+This value can be a string with any value, **but keep it a secret!**
+
+```
+JWT_SECRET="potato"
+```
+
+### Setting `REDIS` environment variables.
+
+`REDIS_PORT` is the Docker internal port and `REDIS_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
+
+```
+REDIS_SCHEME="redis protocol"
+REDIS_HOST="redis address"
+REDIS_PORT="redis internal port"
+REDIS_EXPOSE_PORT="redis expose port"
+```
+
+### Starting the application
+
+Run
+
+```
+docker compose --env-file ./.env.{environment}.{machine} up --build
 ```
 
 Make sure all the containers were successfully initiated, then access the `gamebase-backend-php` container `bash` and execute:
@@ -91,7 +172,7 @@ composer format:fix
 Fixes the formatting errors and throw warnings.
 
 ```
-composer phpunit:test
+composer phpunit:test:all
 ```
 
 Runs the PHPUnit Test Suite.
