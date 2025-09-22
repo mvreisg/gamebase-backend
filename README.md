@@ -30,6 +30,15 @@ MACHINE="local"
 
 So the `Dotenv` can recognize which environment and machine you want. In the case above, it will search for `.env.development.local` and this file should have everything that is inside `.env.example`.
 
+### Setting `NGINX` environment variables.
+
+`NGINX_PORT` is the Docker internal port and `NGINX_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
+
+```
+NGINX_PORT="80"
+NGINX_EXPOSE_PORT="8081"
+```
+
 ### Setting `API_CONSUMERS` environment variables.
 
 Put the URLs string in `API_CONSUMERS_ADDRESSES` and use the `API_CONSUMERS_ADDRESSES_SEPARATOR` between them.
@@ -43,6 +52,8 @@ API_CONSUMERS_ADDRESSES_SEPARATOR=","
 
 ### Setting `REPOSITORY` environment variables.
 
+`REPOSITORY_PORT` is the Docker internal port and `REPOSITORY_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
+
 ```
 REPOSITORY_ROOT_USERNAME="your root backend username"
 REPOSITORY_ROOT_PASSWORD="your root backend password"
@@ -50,8 +61,9 @@ REPOSITORY_HOST="database address"
 REPOSITORY_DATABASE="database name"
 REPOSITORY_USERNAME="database username"
 REPOSITORY_PASSWORD="database password"
-REPOSITORY_PORT="database port"
+REPOSITORY_PORT="internal port"
 REPOSITORY_CHARSET="database charset"
+REPOSITORY_EXPOSE_PORT="docker expose port"
 ```
 
 ### Setting `DEFUSE_PHP_ENCRYPTION_KEY` environment variable.
@@ -98,10 +110,13 @@ JWT_SECRET="potato"
 
 ### Setting `REDIS` environment variables.
 
+`REDIS_PORT` is the Docker internal port and `REDIS_EXPOSE_PORT` is the base machine port. By pinging on the base machine port you ping on the docker internal port.
+
 ```
 REDIS_SCHEME="redis protocol"
 REDIS_HOST="redis address"
-REDIS_PORT="redis port"
+REDIS_PORT="redis internal port"
+REDIS_EXPOSE_PORT="redis expose port"
 ```
 
 ### Starting the application
