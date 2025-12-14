@@ -159,24 +159,7 @@ class AuthenticationService
         try {
             $decoded = $this->authenticator->decode($token);
 
-            $status = $this->userCache->delete($decoded->sub);
-
-            switch ($status) {
-                case CacheInterfaceDeletionStatesEnum::Unexistant:
-                    throw new AuthenticationServiceCacheException(
-                        "Authentication service error: Unexistant cache.",
-                    );
-                case CacheInterfaceDeletionStatesEnum::Error:
-                    throw new AuthenticationServiceCacheException(
-                        "Authentication service error: Cannot delete cache.",
-                    );
-                case CacheInterfaceDeletionStatesEnum::Success:
-                    break;
-                default:
-                    throw new AuthenticationServiceCacheException(
-                        "Authentication service error: Unhandled state: $status",
-                    );
-            }
+            $this->userCache->delete($decoded->sub);
         } catch (
             AuthenticationServiceUnauthorizedException |
             AuthenticationServiceCacheException

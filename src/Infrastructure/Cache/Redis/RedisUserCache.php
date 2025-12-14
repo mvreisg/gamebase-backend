@@ -28,7 +28,6 @@ class RedisUserCache implements CacheInterface
                     "Redis set error: status is null.",
                 );
             }
-            $status->getPayload();
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -88,19 +87,22 @@ class RedisUserCache implements CacheInterface
         }
     }
 
-    public function delete(string $key): CacheInterfaceDeletionStatesEnum
+    public function delete(string $key): void
     {
         try {
             $exists = $this->exists($key);
             if ($exists === false) {
-                return CacheInterfaceDeletionStatesEnum::Unexistant;
+                throw new RedisCacheException(
+                    "Redis delete error: unexistant key $key."
+                );
             }
             $status = $this->redis->del($key);
             $status = boolval($status);
             if ($status === false) {
-                return CacheInterfaceDeletionStatesEnum::Error;
+                throw new RedisCacheException(
+                    "Redis delete error: unsuccesful deletion of $key."
+                );
             }
-            return CacheInterfaceDeletionStatesEnum::Success;
         } catch (\Throwable $e) {
             throw $e;
         }
