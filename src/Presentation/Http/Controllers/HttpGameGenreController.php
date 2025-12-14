@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenreService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGameIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGenreIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameGenreException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGenreException;
+use Mvreisg\GamebaseBackend\Application\Services\GameGenre\GameGenreService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGameGenreController
 {
@@ -32,34 +34,15 @@ class HttpGameGenreController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
+            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
+            $genreId = $request->getParsedBodyPartOrDieTrying('genreId');
 
-            $isGameIdSetted = isset($body['gameId']);
-            if ($isGameIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'gameId value not informed!'
-                );
-            }
-
-            $isGenreIdSetted = isset($body['genreId']);
-            if ($isGenreIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'genreId value not informed!'
-                );
-            }
-
-            $gameId = $body['gameId'];
-            $genreId = $body['genreId'];
-
-            $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
+            $gameGenre = $this->gameGenreService->insert($gameId, $genreId);
 
             $data = [
                 'id' => $gameGenre->getId(),
@@ -69,229 +52,129 @@ class HttpGameGenreController
 
             $response
                 ->setBody([
-                    'message' => 'Successfully inserted!',
                     'data' => $data
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            GameGenreServiceUnexistantGameException |
+            GameGenreServiceUnexistantGenreException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            GameGenreServiceInvalidGameIdException |
+            GameGenreServiceInvalidGenreIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
+            $id = $request->getParamOrDieTrying('id');
+            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
+            $genreId = $request->getParsedBodyPartOrDieTrying('genreId');
 
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isGameIdSetted = isset($body['gameId']);
-            if ($isGameIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'gameId value not informed!'
-                );
-            }
-
-            $isGenreIdSetted = isset($body['genreId']);
-            if ($isGenreIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'genreId value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $gameId = $body['gameId'];
-            $genreId = $body['genreId'];
-
-            $wasUpdated = $this->gameGenreService->update($id, $genreId, $gameId);
+            $wasUpdated = $this->gameGenreService->update($id, $gameId, $genreId);
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'State updated!' : 'No changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            GameGenreServiceInvalidIdException |
+            GameGenreServiceInvalidGameIdException |
+            GameGenreServiceInvalidGenreIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            GameGenreServiceUnexistantGameException |
+            GameGenreServiceUnexistantGenreException |
+            GameGenreServiceUnexistantGameGenreException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $wasDeleted = $this->gameGenreService->delete($id);
             $response
                 ->setBody([
-                    'message' => $wasDeleted ? 'Value deleted!' : 'No deletions!'
+                    'wasDeleted' => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (GameGenreServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GameGenreServiceUnexistantGameGenreException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $gameGenre = $this->gameGenreService->findById($id);
 
             if ($gameGenre === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Value not found!'
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    "Game genre with the id $id not found!"
+                );
             }
 
             $response
                 ->setBody([
-                    'message' => 'Value found!',
                     'data' => [
                         'id' => $gameGenre->getId(),
                         'gameId' => $gameGenre->getGameId(),
@@ -300,68 +183,41 @@ class HttpGameGenreController
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
+        } catch (GameGenreServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GameGenreServiceUnexistantGameGenreException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
             $gameGenres = $this->gameGenreService->findAll();
 
             $numberOfGameGenres = count($gameGenres);
             if ($numberOfGameGenres === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'No results found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    'No game genres found!'
+                );
             }
 
+            $data = [];
             foreach ($gameGenres as $gameGenre) {
                 $data[] = [
                     'id' => $gameGenre->getId(),
@@ -372,42 +228,15 @@ class HttpGameGenreController
 
             $response
                 ->setBody([
-                    'message' => 'Results found!',
+                    'number' => $numberOfGameGenres,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }

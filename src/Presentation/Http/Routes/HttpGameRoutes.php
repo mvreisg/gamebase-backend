@@ -6,9 +6,10 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Controllers\HttpGameControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpGameControllerFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
 
 class HttpGameRoutes
 {
@@ -19,91 +20,117 @@ class HttpGameRoutes
 
             $routes = [
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Post
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'game',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'game',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->insert($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->insert(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Put
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'game',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'game',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->update($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->update(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Patch
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'game',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'game',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->setIsActive($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->setIsActive(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'game',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'game',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->findById($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->findById(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'game',
-                                HttpRouteParameterTypesEnum::Route
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'game',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->findAll($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->findAll(...)
+                            )
                     )
             ];
 

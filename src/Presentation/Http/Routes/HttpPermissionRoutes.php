@@ -6,9 +6,10 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Controllers\HttpPermissionControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpPermissionControllerFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
 
 class HttpPermissionRoutes
 {
@@ -22,88 +23,109 @@ class HttpPermissionRoutes
                     ->setMethod(
                         HttpMethodTypesEnum::Post
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'permission',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'permission',
+                            HttpRouteParameterTypesEnum::Route
+                        ),
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->insert($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->insert(...)
+                            )
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
                         HttpMethodTypesEnum::Put
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'permission',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'permission',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->update($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->update(...)
+                            )
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
                         HttpMethodTypesEnum::Patch
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'permission',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'permission',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->setIsActive($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->setIsActive(...)
+                            )
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'permission',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'id',
-                                HttpRouteParameterTypesEnum::Integer
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'permission',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'id',
+                            HttpRouteParameterTypesEnum::Integer
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->findById($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->findById(...)
+                            )
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'permission',
-                                HttpRouteParameterTypesEnum::Route
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'permission',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->findAll($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->findAll(...)
+                            )
                     )
             ];
 

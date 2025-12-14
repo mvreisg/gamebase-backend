@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUntreatedContentType;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInternalServerError;
 
 class HttpResponse
 {
@@ -86,8 +86,8 @@ class HttpResponse
 
             switch ($contentType) {
                 default:
-                    throw new HttpUntreatedContentType(
-                        'Untreated content-type: ' . $contentType->value
+                    throw new HttpInternalServerError(
+                        'Untreated Content-Type: ' . $contentType->value
                     );
                 case HttpContentTypesEnum::Text:
                     header(HttpContentTypesEnum::Text->value);
@@ -100,11 +100,17 @@ class HttpResponse
                 case HttpContentTypesEnum::Json:
                     header(HttpContentTypesEnum::Json->value);
 
-                    print(
-                        json_encode(
-                            $this->body
-                        )
+                    $json = json_encode(
+                        $this->body
                     );
+
+                    if ($json === false) {
+                        throw new HttpInternalServerError(
+                            "JSON Parse Error."
+                        );
+                    }
+
+                    print($json);
 
                     break;
             }

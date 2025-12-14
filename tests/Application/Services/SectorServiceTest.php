@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorEntityRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorRepository;
 use PHPUnit\Framework\TestCase;
 
 class SectorServiceTest extends TestCase
 {
-    private SectorEntityRepositoryInterface $sectorEntityRepository;
+    private SectorRepositoryInterface $sectorEntityRepository;
     private SectorService $sectorService;
 
     protected function setUp(): void
     {
-        $this->sectorEntityRepository = new MockSectorEntityRepository();
+        $this->sectorEntityRepository = new MockSectorRepository();
         $this->sectorService = new SectorService($this->sectorEntityRepository);
     }
 
@@ -31,7 +31,7 @@ class SectorServiceTest extends TestCase
         $sector = $this->sectorService->insert($name, $isActive);
 
         $this->assertNotEmpty($sector);
-        $this->assertInstanceOf(SectorEntity::class, $sector);
+        $this->assertInstanceOf(Sector::class, $sector);
     }
 
     public function testIfASingleInsertionWithInvalidNameFails(): void
@@ -64,7 +64,7 @@ class SectorServiceTest extends TestCase
             $sector = $this->sectorService->insert($name . $i, $isActive);
 
             $this->assertNotEmpty($sector);
-            $this->assertInstanceOf(SectorEntity::class, $sector);
+            $this->assertInstanceOf(Sector::class, $sector);
         }
     }
 
@@ -150,7 +150,7 @@ class SectorServiceTest extends TestCase
         $fetchedPermission = $this->sectorService->findById($id);
 
         $this->assertNotEmpty($fetchedPermission);
-        $this->assertInstanceOf(SectorEntity::class, $fetchedPermission);
+        $this->assertInstanceOf(Sector::class, $fetchedPermission);
         $this->assertEquals($sector, $fetchedPermission);
     }
 

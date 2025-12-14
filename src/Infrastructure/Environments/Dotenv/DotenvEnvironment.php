@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv;
 
 use Dotenv\Dotenv;
+use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\Exceptions\DotenvEnvironmentException;
 
 class DotenvEnvironment
 {
@@ -21,7 +22,10 @@ class DotenvEnvironment
             $dotenv = Dotenv::createMutable(PROJECT_ROOT, '.env.' . $environment . '.' . $machine);
             $dotenv->load();
         } catch (\Throwable $e) {
-            throw $e;
+            throw new DotenvEnvironmentException(
+                "Dotenv environment error: {$e->getMessage()}",
+                $e
+            );
         }
     }
 
@@ -31,7 +35,10 @@ class DotenvEnvironment
             $value = $_SERVER[$key];
             return $value;
         } catch (\Throwable $e) {
-            throw $e;
+            throw new DotenvEnvironmentException(
+                "Dotenv environment error: {$e->getMessage()}",
+                $e
+            );
         }
     }
 
@@ -44,7 +51,10 @@ class DotenvEnvironment
             );
             return $values;
         } catch (\Throwable $e) {
-            throw $e;
+            throw new DotenvEnvironmentException(
+                "Dotenv environment error: {$e->getMessage()}",
+                $e
+            );
         }
     }
 }

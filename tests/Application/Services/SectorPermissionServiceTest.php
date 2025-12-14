@@ -6,36 +6,36 @@ namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use ArrayIterator;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermissionEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorPermissionEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorPermissionRepository;
 use PHPUnit\Framework\TestCase;
 
 class SectorPermissionServiceTest extends TestCase
 {
-    private SectorPermissionEntityRepositoryInterface $sectorPermissionEntityRepository;
+    private SectorPermissionInterface $sectorPermissionEntityRepository;
     private SectorPermissionService $sectorPermissionService;
-    private SectorEntityRepositoryInterface $sectorEntityRepository;
+    private SectorRepositoryInterface $sectorEntityRepository;
     private SectorService $sectorService;
     private EncryptionInterface $encrypter;
-    private PermissionEntityRepositoryInterface $permissionEntityRepository;
+    private PermissionRepositoryInterface $permissionEntityRepository;
     private PermissionService $permissionService;
 
     protected function setUp(): void
     {
-        $this->sectorEntityRepository = new MockSectorEntityRepository();
+        $this->sectorEntityRepository = new MockSectorRepository();
         $this->encrypter = new DefuseEncryption();
         $this->sectorService = new SectorService($this->sectorEntityRepository, $this->encrypter);
-        $this->permissionEntityRepository = new MockPermissionEntityRepository();
+        $this->permissionEntityRepository = new MockPermissionRepository();
         $this->permissionService = new PermissionService($this->permissionEntityRepository);
-        $this->sectorPermissionEntityRepository = new MockSectorPermissionEntityRepository(
+        $this->sectorPermissionEntityRepository = new MockSectorPermissionRepository(
             $this->sectorEntityRepository,
             $this->permissionEntityRepository
         );
@@ -53,7 +53,7 @@ class SectorPermissionServiceTest extends TestCase
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
 
         $this->assertNotEmpty($userPermission);
-        $this->assertInstanceOf(SectorPermissionEntity::class, $userPermission);
+        $this->assertInstanceOf(SectorPermission::class, $userPermission);
     }
 
     public function testIfTenInsertionsSucceds(): void
@@ -68,7 +68,7 @@ class SectorPermissionServiceTest extends TestCase
             $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
 
             $this->assertNotEmpty($userPermission);
-            $this->assertInstanceOf(SectorPermissionEntity::class, $userPermission);
+            $this->assertInstanceOf(SectorPermission::class, $userPermission);
         }
     }
 
@@ -266,7 +266,7 @@ class SectorPermissionServiceTest extends TestCase
         $fetchedUserPermission = $this->sectorPermissionService->findById($id);
 
         $this->assertNotEmpty($fetchedUserPermission);
-        $this->assertInstanceOf(SectorPermissionEntity::class, $fetchedUserPermission);
+        $this->assertInstanceOf(SectorPermission::class, $fetchedUserPermission);
         $this->assertEquals($userPermission, $fetchedUserPermission);
     }
 

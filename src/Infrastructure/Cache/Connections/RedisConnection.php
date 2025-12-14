@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\Exceptions\RedisConnectionException;
 use Predis\Client;
 
 class RedisConnection
@@ -18,7 +19,10 @@ class RedisConnection
                 'port' => DotenvEnvironment::get('REDIS_PORT'),
             ]);
         } catch (\Throwable $e) {
-            throw $e;
+            throw new RedisConnectionException(
+                "Redis Connection error: {$e->getMessage()}",
+                $e
+            );
         }
     }
 }

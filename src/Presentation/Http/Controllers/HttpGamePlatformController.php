@@ -5,17 +5,26 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\GamePlatformService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceInvalidGameIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceInvalidPlatformIdException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceUnexistantGameException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceUnexistantGamePlatformException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\Exceptions\GamePlatformServiceUnexistantPlatformException;
+use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\GamePlatformService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Http\Router\HttpRouter;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInvalidParameterException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJwtAuthenticationTokenRetriever;
 
 class HttpGamePlatformController
 {
@@ -33,384 +42,209 @@ class HttpGamePlatformController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
+            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
+            $platformId = $request->getParsedBodyPartOrDieTrying('platformId');
 
-            $isGameIdSetted = isset($body['gameId']);
-            if ($isGameIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'gameId value not informed!'
-                );
-            }
-
-            $isPlatformIdSetted = isset($body['platformId']);
-            if ($isPlatformIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'platformId value not informed!'
-                );
-            }
-
-            $gameId = $body['gameId'];
-            $platformId = $body['platformId'];
-
-            $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
+            $gamePlatform = $this->gamePlatformService->insert($gameId, $platformId);
 
             $data = [
                 'id' => $gamePlatform->getId(),
-                'platformId' => $gamePlatform->getPlatformId(),
-                'gameId' => $gamePlatform->getGameId()
+                'gameId' => $gamePlatform->getGameId(),
+                'platformId' => $gamePlatform->getPlatformId()
             ];
 
             $response
                 ->setBody([
-                    'message' => 'Register created!',
                     'data' => $data
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            GamePlatformServiceUnexistantGameException |
+            GamePlatformServiceUnexistantPlatformException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            GamePlatformServiceInvalidGameIdException |
+            GamePlatformServiceInvalidPlatformIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-            $body = $request->parseBodyFromJSONString();
+            $id = $request->getParamOrDieTrying('id');
+            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
+            $platformId = $request->getParsedBodyPartOrDieTrying('platformId');
 
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isGameIdSetted = isset($body['gameId']);
-            if ($isGameIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'gameId value not informed!'
-                );
-            }
-
-            $isPlatformIdSetted = isset($body['platformId']);
-            if ($isPlatformIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'platformId value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $gameId = $body['gameId'];
-            $platformId = $body['platformId'];
-
-            $wasUpdated = $this->gamePlatformService->update($id, $platformId, $gameId);
-
+            $wasUpdated = $this->gamePlatformService->update($id, $gameId, $platformId);
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'State updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            GamePlatformServiceInvalidIdException |
+            GamePlatformServiceInvalidGameIdException |
+            GamePlatformServiceInvalidPlatformIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            GamePlatformServiceUnexistantGameException |
+            GamePlatformServiceUnexistantPlatformException |
+            GamePlatformServiceUnexistantGamePlatformException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $wasDeleted = $this->gamePlatformService->delete($id);
-
             $response
                 ->setBody([
-                    'message' => $wasDeleted ? 'Register deleted!' : 'No deletions!'
+                    'wasDeleted' => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (GamePlatformServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GamePlatformServiceUnexistantGamePlatformException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
+
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $gamePlatform = $this->gamePlatformService->findById($id);
-            if ($gamePlatform === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Register not found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
 
-            $data = [
-                'id' => $gamePlatform->getId(),
-                'platformId' => $gamePlatform->getPlatformId(),
-                'gameId' => $gamePlatform->getGameId()
-            ];
+            if ($gamePlatform === null) {
+                throw new HttpNotFoundException(
+                    "Game platform with the id $id not found!"
+                );
+            }
 
             $response
                 ->setBody([
-                    'message' => 'Register found!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $gamePlatform->getId(),
+                        'gameId' => $gamePlatform->getGameId(),
+                        'platformId' => $gamePlatform->getPlatformId()
+                    ]
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
+        } catch (GamePlatformServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GamePlatformServiceUnexistantGamePlatformException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
             $gamePlatforms = $this->gamePlatformService->findAll();
 
             $numberOfGamePlatforms = count($gamePlatforms);
             if ($numberOfGamePlatforms === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'No values found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    'No game platforms found!'
+                );
             }
 
+            $data = [];
             foreach ($gamePlatforms as $gamePlatform) {
                 $data[] = [
                     'id' => $gamePlatform->getId(),
-                    'platformId' => $gamePlatform->getPlatformId(),
-                    'gameId' => $gamePlatform->getGameId()
+                    'gameId' => $gamePlatform->getGameId(),
+                    'platformId' => $gamePlatform->getPlatformId()
                 ];
             }
 
             $response
                 ->setBody([
-                    'message' => 'Game Platform bonds successfully found!',
+                    'number' => $numberOfGamePlatforms,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }
