@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Sector;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockSectorRepository implements SectorRepositoryInterface
 {
     private array $data;
-    private int $index;
+    private int $idIndex;
 
     public function __construct()
     {
         $this->data = [];
-        $this->index = 0;
+        $this->idIndex = 0;
     }
 
     public function insert(Sector $sector): Sector
     {
-        $this->index++;
-        $sector->setId($this->index);
+        $this->idIndex++;
+        $sector->setId($this->idIndex);
         $this->data[] = $sector;
-        $newSectorEntity = new Sector(
+        return new Sector(
             $sector->getId(),
             $sector->getName(),
             $sector->getIsActive()
         );
-        return $newSectorEntity;
     }
 
     public function update(Sector $sector): bool
@@ -42,6 +42,20 @@ class MockSectorRepository implements SectorRepositoryInterface
         }
 
         if ($index < 0) {
+            return false;
+        }
+
+        $foundSector = $this->data[$index];
+
+        $hasDifferentNames =
+            $foundSector->getName() !== $sector->getName();
+
+        $hasDifferentIsActive =
+            $foundSector->getIsActive() !== $sector->getIsActive();
+
+        $isDifferent = $hasDifferentNames || $hasDifferentIsActive;
+
+        if ($isDifferent === false) {
             return false;
         }
 
@@ -67,14 +81,17 @@ class MockSectorRepository implements SectorRepositoryInterface
             return false;
         }
 
-        $foundSectorEntity = $this->data[$index];
+        $foundSector = $this->data[$index];
 
-        $wasUpdated =
-            $foundSectorEntity->getIsActive() !== $isActive;
+        $wasUpdated = $foundSector->getIsActive() !== $isActive;
+
+        if ($wasUpdated === false) {
+            return false;
+        }
 
         $this->data[$index]->setIsActive($isActive);
 
-        return $wasUpdated;
+        return true;
     }
 
     public function findById(int $id): Sector
@@ -84,12 +101,26 @@ class MockSectorRepository implements SectorRepositoryInterface
                 return $value;
             }
         }
-        return null;
+        throw new MockUnexistantRegisterException(
+            "Unexistant sector with id $id"
+        );
     }
 
     public function findAll(): array
     {
         return $this->data;
+    }
+
+    public function checkIfExists(int $id): void
+    {
+        foreach ($this->data as $key => $value) {
+            if ($value->getId() === $id) {
+                return;
+            }
+        }
+        throw new MockUnexistantRegisterException(
+            "Unexistant sector with id $id"
+        );
     }
 
     public function checkDuplicatedNames(string $name): void
@@ -99,8 +130,8 @@ class MockSectorRepository implements SectorRepositoryInterface
             fn (Sector $sector) => strcmp($sector->getName(), $name) === 0
         );
         if (count($array) > 0) {
-            throw new MockDuplicatedEntryException(
-                $name
+            throw new MockDuplicatedNameException(
+                "Duplicated sector name: $name"
             );
         }
     }

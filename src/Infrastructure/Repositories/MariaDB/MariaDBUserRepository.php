@@ -425,7 +425,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function checkDuplicatedUserNames(string $username): void
+    public function checkDuplicatedUsernames(string $username): void
     {
         try {
             $statement = $this->pdo->prepare(

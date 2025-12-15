@@ -6,49 +6,67 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\User\User;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedUsernameException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockUserRepository implements UserRepositoryInterface
 {
+    /**
+     * @var User[]
+     */
     private array $data;
-    private int $index;
+    private int $idIndex;
 
     public function __construct()
     {
         $this->data = [];
-        $this->index = 0;
+        $this->idIndex = 0;
     }
 
     public function insert(User $user): User
     {
-        $this->index++;
-        $user->setId($this->index);
+        $this->idIndex++;
+        $user->setId($this->idIndex);
         $this->data[] = $user;
-        $newUserEntity = new User(
+        return new User(
             $user->getId(),
             $user->getUsername(),
             $user->getPassword(),
             $user->getIsActive()
         );
-        return $newUserEntity;
     }
 
     public function update(User $user): bool
     {
-        $id = $user->getId();
         $index = -1;
         foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
+            if ($value->getId() === $user->getId()) {
                 $index = $key;
-                break;
             }
         }
 
         if ($index < 0) {
-            throw new MockUnexistantRegisterException(
-                "id: $id"
-            );
+            return false;
+        }
+
+        $foundUser = $this->data[$index];
+
+        $hasDifferentUsernames =
+            $foundUser->getUsername() !== $user->getUsername();
+
+        $hasDifferentPasswords =
+            $foundUser->getPassword() !== $user->getPassword();
+
+        $hasDifferentIsActive =
+            $foundUser->getIsActive() !== $user->getIsActive();
+
+        $isDifferent =
+            $hasDifferentUsernames ||
+            $hasDifferentPasswords ||
+            $hasDifferentIsActive;
+
+        if ($isDifferent === false) {
+            return false;
         }
 
         $this->data[$index] = new User(
@@ -71,19 +89,20 @@ class MockUserRepository implements UserRepositoryInterface
         }
 
         if ($index < 0) {
-            throw new MockUnexistantRegisterException(
-                "id: $id"
-            );
+            return false;
         }
 
-        $foundUserEntity = $this->data[$index];
+        $foundUser = $this->data[$index];
 
-        $wasUpdated =
-            $foundUserEntity->getIsActive() !== $isActive;
+        $wasUpdated = $foundUser->getIsActive() !== $isActive;
+
+        if ($wasUpdated === false) {
+            return false;
+        }
 
         $this->data[$index]->setIsActive($isActive);
 
-        return $wasUpdated;
+        return true;
     }
 
     public function findById(int $id): User
@@ -93,9 +112,8 @@ class MockUserRepository implements UserRepositoryInterface
                 return $value;
             }
         }
-
         throw new MockUnexistantRegisterException(
-            "id: $id"
+            "Unexistant user with id $id"
         );
     }
 
@@ -106,9 +124,8 @@ class MockUserRepository implements UserRepositoryInterface
                 return $value;
             }
         }
-
         throw new MockUnexistantRegisterException(
-            "username: $username"
+            "Unexistant username: $username"
         );
     }
 
@@ -117,15 +134,27 @@ class MockUserRepository implements UserRepositoryInterface
         return $this->data;
     }
 
-    public function checkDuplicatedUserNames(string $name): void
+    public function checkIfExists(int $id): void
+    {
+        foreach ($this->data as $key => $value) {
+            if ($value->getId() === $id) {
+                return;
+            }
+        }
+        throw new MockUnexistantRegisterException(
+            "Unexistant user with id $id"
+        );
+    }
+
+    public function checkDuplicatedUsernames(string $name): void
     {
         $array = array_filter(
             $this->data,
             fn (User $user) => strcmp($user->getUsername(), $name) === 0
         );
         if (count($array) > 0) {
-            throw new MockDuplicatedEntryException(
-                $name
+            throw new MockDuplicatedUsernameException(
+                "Duplicated username: $name"
             );
         }
     }

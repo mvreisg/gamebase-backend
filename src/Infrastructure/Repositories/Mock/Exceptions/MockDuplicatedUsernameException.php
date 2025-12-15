@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions;
 
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedUsernameException;
 
-class MockDuplicatedEntryException extends RepositoryDuplicatedEntryException
+class MockDuplicatedUsernameException extends RepositoryDuplicatedUsernameException
 {
     public const EXCEPTION_CODE = 0;
 

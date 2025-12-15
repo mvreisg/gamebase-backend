@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionInterface;
@@ -13,50 +13,25 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnex
 class MockSectorPermissionRepository implements SectorPermissionInterface
 {
     private array $data;
-    private int $id;
-    private SectorRepositoryInterface $sectorEntityRepository;
-    private PermissionRepositoryInterface $permissionEntityRepository;
+    private int $idIndex;
 
-    public function __construct(
-        SectorRepositoryInterface $sectorEntityRepository,
-        PermissionRepositoryInterface $permissionEntityRepository
-    ) {
+    public function __construct()
+    {
         $this->data = [];
-        $this->id = 0;
-        $this->sectorEntityRepository = $sectorEntityRepository;
-        $this->permissionEntityRepository = $permissionEntityRepository;
+        $this->idIndex = 0;
     }
 
     public function insert(SectorPermission $sectorPermission): SectorPermission
     {
         try {
-            $sectorId = $sectorPermission->getSectorId();
-            $user = $this->sectorEntityRepository->findById($sectorId);
-            if ($user === null) {
-                throw new MockUnexistantRegisterException(
-                    "sectorId: $sectorId"
-                );
-            }
-
-            $permissionId = $sectorPermission->getPermissionId();
-            $permission = $this->permissionEntityRepository->findById($permissionId);
-            if ($permission === null) {
-                throw new MockUnexistantRegisterException(
-                    "permissionId: $permissionId"
-                );
-            }
-
-            $this->id++;
-            $id = $this->id;
-
-            $sectorPermission->setId($id);
+            $this->idIndex++;
+            $sectorPermission->setId($this->idIndex);
             $this->data[] = $sectorPermission;
-            $newsectorPermissionEntity = new SectorPermission(
-                $id,
-                $sectorId,
-                $permissionId
+            return new SectorPermission(
+                $sectorPermission->getId(),
+                $sectorPermission->getSectorId(),
+                $sectorPermission->getPermissionId()
             );
-            return $newsectorPermissionEntity;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -64,35 +39,43 @@ class MockSectorPermissionRepository implements SectorPermissionInterface
 
     public function update(SectorPermission $sectorPermission): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $sectorPermission->getId()) {
-                $index = $key;
-                break;
+        try {
+            $index = -1;
+            foreach ($this->data as $key => $value) {
+                if ($value->getId() === $sectorPermission->getId()) {
+                    $index = $key;
+                    break;
+                }
             }
+
+            if ($index < 0) {
+                return false;
+            }
+
+            $foundSectorPermission = $this->data[$index];
+
+            $hasDifferentSectorId =
+                $foundSectorPermission->getSectorId() !== $sectorPermission->getSectorId();
+
+            $hasDifferentPermissionId =
+                $foundSectorPermission->getPermissionId() !== $sectorPermission->getPermissionId();
+
+            $isDifferent = $hasDifferentSectorId || $hasDifferentPermissionId;
+
+            if ($isDifferent === false) {
+                return false;
+            }
+
+            $this->data[$index] = new SectorPermission(
+                $sectorPermission->getId(),
+                $sectorPermission->getSectorId(),
+                $sectorPermission->getPermissionId()
+            );
+
+            return true;
+        } catch (\Throwable $e) {
+            throw $e;
         }
-
-        if ($index < 0) {
-            return false;
-        }
-
-        $sectorPermissionEntityToBeModified = $this->data[$index];
-
-        $hasDifferentSectorId =
-            $sectorPermissionEntityToBeModified->getSectorId() !== $sectorPermission->getSectorId();
-
-        $hasDifferentPermissionId =
-            $sectorPermissionEntityToBeModified->getPermissionId() !== $sectorPermission->getPermissionId();
-
-        $wasUpdated = $hasDifferentSectorId || $hasDifferentPermissionId;
-
-        $this->data[$index] = new SectorPermission(
-            $sectorPermission->getId(),
-            $sectorPermission->getSectorId(),
-            $sectorPermission->getPermissionId()
-        );
-
-        return $wasUpdated;
     }
 
     public function delete(SectorPermission $sectorPermission): bool
@@ -113,33 +96,6 @@ class MockSectorPermissionRepository implements SectorPermissionInterface
         return true;
     }
 
-    /*
-    public function setIsActive(int $id, bool $isActive): bool
-    {
-        $idToSet = null;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $idToSet = $key;
-            }
-        }
-
-        if ($idToSet === null) {
-            return false;
-        }
-
-        $findedsectorPermissionEntity = $this->data[$idToSet];
-
-        $changedSomething = $findedsectorPermissionEntity->getIsActive() !== $isActive;
-
-        if ($changedSomething) {
-            $this->data[$idToSet]->setIsActive($isActive);
-            return true;
-        }
-
-        return false;
-    }
-    */
-
     public function findById(int $id): SectorPermission
     {
         foreach ($this->data as $key => $value) {
@@ -147,11 +103,25 @@ class MockSectorPermissionRepository implements SectorPermissionInterface
                 return $value;
             }
         }
-        return null;
+        throw new MockUnexistantRegisterException(
+            "Unexistant user permission with id $id"
+        );
     }
 
     public function findAll(): array
     {
         return $this->data;
+    }
+
+    public function checkIfExists(int $id): void
+    {
+        foreach ($this->data as $key => $value) {
+            if ($value->getId() === $id) {
+                return;
+            }
+        }
+        throw new MockUnexistantRegisterException(
+            "Unexistant user permission with id $id"
+        );
     }
 }

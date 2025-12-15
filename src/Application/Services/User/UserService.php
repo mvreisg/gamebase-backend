@@ -50,7 +50,7 @@ class UserService
             $validatedUserName = $user->getUsername();
             $validatedPassword = $user->getPassword();
 
-            $this->repository->checkDuplicatedUserNames($validatedUserName);
+            $this->repository->checkDuplicatedUsernames($validatedUserName);
 
             $encodedPassword = $this->encrypter->encrypt($validatedPassword);
             $user->setPassword($encodedPassword);
@@ -102,7 +102,7 @@ class UserService
             $user->validatePassword();
 
             $validatedUserName = $user->getUsername();
-            $this->repository->checkDuplicatedUserNames($validatedUserName);
+            $this->repository->checkDuplicatedUsernames($validatedUserName);
 
             $validatedPassword = $user->getPassword();
             $encodedPassword = $this->encrypter->encrypt($validatedPassword);

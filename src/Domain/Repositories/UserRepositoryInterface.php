@@ -22,5 +22,5 @@ interface UserRepositoryInterface
 
     public function checkIfExists(int $id): void;
 
-    public function checkDuplicatedUserNames(string $name): void;
+    public function checkDuplicatedUsernames(string $name): void;
 }

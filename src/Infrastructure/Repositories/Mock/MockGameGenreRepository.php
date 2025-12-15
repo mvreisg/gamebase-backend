@@ -4,58 +4,32 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGameGenreRepository implements GameGenreRepositoryInterface
 {
     private array $data;
-    private int $id;
-    private GameRepositoryInterface $gameEntityRepository;
-    private GenreRepositoryInterface $genreEntityRepository;
+    private int $idIndex;
 
-    public function __construct(
-        GameRepositoryInterface $gameEntityRepository,
-        GenreRepositoryInterface $genreEntityRepository
-    ) {
+    public function __construct()
+    {
         $this->data = [];
-        $this->id = 0;
-        $this->gameEntityRepository = $gameEntityRepository;
-        $this->genreEntityRepository = $genreEntityRepository;
+        $this->idIndex = 0;
     }
 
     public function insert(GameGenre $gameGenre): GameGenre
     {
         try {
-            $gameId = $gameGenre->getGameId();
-            $game = $this->gameEntityRepository->findById($gameId);
-            if ($game === null) {
-                throw new MockUnexistantRegisterException(
-                    "gameId: $gameId"
-                );
-            }
-
-            $genreId = $gameGenre->getGenreId();
-            $genre = $this->genreEntityRepository->findById($genreId);
-            if ($genre === null) {
-                throw new MockUnexistantRegisterException(
-                    "genreId: $genreId"
-                );
-            }
-
-            $this->id++;
-            $id = $this->id;
-            $gameGenre->setId($id);
+            $this->idIndex++;
+            $gameGenre->setId($this->idIndex);
             $this->data[] = $gameGenre;
-            $newGameGenreEntity = new GameGenre(
-                $id,
-                $genreId,
-                $gameId
+            return new GameGenre(
+                $gameGenre->getId(),
+                $gameGenre->getGameId(),
+                $gameGenre->getGenreId()
             );
-            return $newGameGenreEntity;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -64,46 +38,27 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
     public function update(GameGenre $gameGenre): bool
     {
         try {
-            $gameId = $gameGenre->getGameId();
-            $game = $this->gameEntityRepository->findById($gameId);
-            if ($game === null) {
-                throw new MockUnexistantRegisterException(
-                    "gameId: $gameId"
-                );
-            }
-
-            $genreId = $gameGenre->getGenreId();
-            $genre = $this->genreEntityRepository->findById($genreId);
-            if ($genre === null) {
-                throw new MockUnexistantRegisterException(
-                    "genreId: $genreId"
-                );
-            }
-
             $index = -1;
-            $idToSearch = $gameGenre->getId();
             foreach ($this->data as $key => $value) {
-                if ($value->getId() === $idToSearch) {
+                if ($value->getId() === $gameGenre->getId()) {
                     $index = $key;
                     break;
                 }
             }
 
             if ($index < 0) {
-                throw new MockUnexistantRegisterException(
-                    "idToSearch: $idToSearch"
-                );
+                return false;
             }
 
-            $gameGenreEntityToUpdate = $this->data[$index];
+            $foundGameGenre = $this->data[$index];
 
-            $hasDifferendGameId =
-                $gameGenreEntityToUpdate->getGameId() !== $gameGenre->getGameId();
+            $hasDifferentGameId =
+                $foundGameGenre->getGameId() !== $gameGenre->getGameId();
 
-            $hasDifferendGenreId =
-                $gameGenreEntityToUpdate->getGenreId() !== $gameGenre->getGenreId();
+            $hasDifferentGenreId =
+                $foundGameGenre->getGenreId() !== $gameGenre->getGenreId();
 
-            $isDifferent = $hasDifferendGameId || $hasDifferendGenreId;
+            $isDifferent = $hasDifferentGameId || $hasDifferentGenreId;
 
             if ($isDifferent === false) {
                 return false;
@@ -139,30 +94,6 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         return true;
     }
 
-    /*
-    public function setIsActive(int $id, bool $isActive): bool
-    {
-        $index = null;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $index = $key;
-            }
-        }
-
-        if ($index === null) {
-            return false;
-        }
-
-        $findedGameGenre = $this->data[$index];
-
-        $changedSomething = $findedGameGenre->getIsActive() !== $isActive;
-
-        $this->data[$index]->setIsActive($isActive);
-
-        return $changedSomething;
-    }
-    */
-
     public function findById(int $id): GameGenre
     {
         foreach ($this->data as $key => $value) {
@@ -170,11 +101,25 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
                 return $value;
             }
         }
-        return null;
+        throw new MockUnexistantRegisterException(
+            "Unexistant game genre with id $id"
+        );
     }
 
     public function findAll(): array
     {
         return $this->data;
+    }
+
+    public function checkIfExists(int $id): void
+    {
+        foreach ($this->data as $key => $value) {
+            if ($value->getId() === $id) {
+                return;
+            }
+        }
+        throw new MockUnexistantRegisterException(
+            "Unexistant game genre with id $id"
+        );
     }
 }

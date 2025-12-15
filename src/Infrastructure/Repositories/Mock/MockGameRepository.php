@@ -6,30 +6,33 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Game\Game;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGameRepository implements GameRepositoryInterface
 {
+    /**
+     * @var Game[]
+     */
     private array $data;
-    private int $index;
+    private int $idIndex;
 
     public function __construct()
     {
         $this->data = [];
-        $this->index = 0;
+        $this->idIndex = 0;
     }
 
     public function insert(Game $game): Game
     {
-        $this->index++;
-        $game->setId($this->index);
+        $this->idIndex++;
+        $game->setId($this->idIndex);
         $this->data[] = $game;
-        $newGameEntity = new Game(
+        return new Game(
             $game->getId(),
             $game->getName(),
             $game->getIsActive()
         );
-        return $newGameEntity;
     }
 
     public function update(Game $game): bool
@@ -42,6 +45,20 @@ class MockGameRepository implements GameRepositoryInterface
         }
 
         if ($index < 0) {
+            return false;
+        }
+
+        $foundGame = $this->data[$index];
+
+        $hasDifferentNames =
+            $foundGame->getName() !== $game->getName();
+
+        $hasDifferentIsActive =
+            $foundGame->getIsActive() !== $game->getIsActive();
+
+        $isDifferent = $hasDifferentNames || $hasDifferentIsActive;
+
+        if ($isDifferent === false) {
             return false;
         }
 
@@ -67,14 +84,17 @@ class MockGameRepository implements GameRepositoryInterface
             return false;
         }
 
-        $foundGameEntity = $this->data[$index];
+        $foundGame = $this->data[$index];
 
-        $wasUpdated =
-            $foundGameEntity->getIsActive() !== $isActive;
+        $wasUpdated = $foundGame->getIsActive() !== $isActive;
+
+        if ($wasUpdated === false) {
+            return false;
+        }
 
         $this->data[$index]->setIsActive($isActive);
 
-        return $wasUpdated;
+        return true;
     }
 
     public function findById(int $id): Game
@@ -84,12 +104,26 @@ class MockGameRepository implements GameRepositoryInterface
                 return $value;
             }
         }
-        return null;
+        throw new MockUnexistantRegisterException(
+            "Unexistant game with id $id"
+        );
     }
 
     public function findAll(): array
     {
         return $this->data;
+    }
+
+    public function checkIfExists(int $id): void
+    {
+        foreach ($this->data as $key => $value) {
+            if ($value->getId() === $id) {
+                return;
+            }
+        }
+        throw new MockUnexistantRegisterException(
+            "Unexistant game with id $id"
+        );
     }
 
     public function checkDuplicatedNames(string $name): void
@@ -99,8 +133,8 @@ class MockGameRepository implements GameRepositoryInterface
             fn (Game $game) => strcmp($game->getName(), $name) === 0
         );
         if (count($array) > 0) {
-            throw new MockDuplicatedEntryException(
-                $name
+            throw new MockDuplicatedNameException(
+                "Duplicated game name: $name"
             );
         }
     }
