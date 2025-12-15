@@ -97,7 +97,6 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             return new Platform(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -243,7 +242,6 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             return new Platform(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -292,7 +290,6 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 $platform = new Platform(
                     $row['id'],
                     $row['name'],
-
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */

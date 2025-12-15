@@ -163,7 +163,8 @@ class AuthenticationService
         } catch (
             AuthenticationServiceUnauthorizedException |
             AuthenticationServiceCacheException
-        $e) {
+            $e
+        ) {
             throw $e;
         } catch (AuthenticationException $e) {
             throw new AuthenticationServiceUnauthorizedException(

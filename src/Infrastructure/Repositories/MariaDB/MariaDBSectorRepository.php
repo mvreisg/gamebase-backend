@@ -103,7 +103,6 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             return new Sector(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -253,7 +252,6 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             return new Sector(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -303,7 +301,6 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 $sector = new Sector(
                     $row['id'],
                     $row['name'],
-
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */

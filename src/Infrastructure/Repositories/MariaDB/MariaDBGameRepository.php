@@ -102,7 +102,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
             return new Game(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -252,7 +251,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $game = new Game(
                 $fetchResult['id'],
                 $fetchResult['name'],
-
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -305,7 +303,6 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 $game = new Game(
                     $row['id'],
                     $row['name'],
-
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */

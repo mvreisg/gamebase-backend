@@ -94,7 +94,8 @@ class SectorPermissionService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -144,7 +145,8 @@ class SectorPermissionService
         } catch (
             SectorPermissionServiceUnexistantSectorException |
             SectorPermissionServiceUnexistantPermissionException
-        $e) {
+            $e
+        ) {
             throw $e;
         } catch (SectorPermissionInvalidIdException $e) {
             throw new SectorPermissionServiceInvalidIdException(
@@ -170,7 +172,8 @@ class SectorPermissionService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -205,7 +208,8 @@ class SectorPermissionService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -241,7 +245,8 @@ class SectorPermissionService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -255,7 +260,8 @@ class SectorPermissionService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }

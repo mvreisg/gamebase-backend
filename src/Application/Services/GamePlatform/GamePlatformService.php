@@ -94,7 +94,8 @@ class GamePlatformService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -144,7 +145,8 @@ class GamePlatformService
         } catch (
             GamePlatformServiceUnexistantGameException |
             GamePlatformServiceUnexistantPlatformException
-        $e) {
+            $e
+        ) {
             throw $e;
         } catch (GamePlatformInvalidIdException $e) {
             throw new GamePlatformServiceInvalidIdException(
@@ -170,7 +172,8 @@ class GamePlatformService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -205,7 +208,8 @@ class GamePlatformService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -241,7 +245,8 @@ class GamePlatformService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -255,7 +260,8 @@ class GamePlatformService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }

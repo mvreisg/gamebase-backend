@@ -78,7 +78,8 @@ class HttpAuthenticationController
         } catch (
             AuthenticationServiceCacheException |
             AuthenticationServiceEncryptionException
-        $e) {
+            $e
+        ) {
             throw new HttpInternalServerError(
                 "Internal server error: {$e->getMessage()}",
                 $e

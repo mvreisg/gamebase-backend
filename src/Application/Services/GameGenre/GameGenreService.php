@@ -94,7 +94,8 @@ class GameGenreService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -144,7 +145,8 @@ class GameGenreService
         } catch (
             GameGenreServiceUnexistantGameException |
             GameGenreServiceUnexistantGenreException
-        $e) {
+            $e
+        ) {
             throw $e;
         } catch (GameGenreInvalidIdException $e) {
             throw new GameGenreServiceInvalidIdException(
@@ -170,7 +172,8 @@ class GameGenreService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -205,7 +208,8 @@ class GameGenreService
             RepositoryStatementCreationFailureException |
             RepositoryStatementExecutionFailureException |
             \Throwable
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -241,7 +245,8 @@ class GameGenreService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
@@ -255,7 +260,8 @@ class GameGenreService
             RepositoryStatementExecutionFailureException |
             \Throwable
 
-        $e) {
+            $e
+        ) {
             throw $e;
         }
     }
