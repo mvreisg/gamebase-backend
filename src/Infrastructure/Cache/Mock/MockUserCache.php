@@ -11,10 +11,12 @@ use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Exceptions\MockCacheExcept
 class MockUserCache implements CacheInterface
 {
     private array $data;
+    private array $expirationArray;
 
     public function __construct()
     {
         $this->data = [];
+        $this->expirationArray = [];
     }
 
     public function set(string $key, string $value): void
@@ -31,7 +33,7 @@ class MockUserCache implements CacheInterface
                     "Mock get error: Unexistant key $key",
                 );
             }
-            $expired = $this->data['key']['expireCallback']();
+            $expired = $this->expirationArray[$key]['expireCallback']();
             if ($expired) {
                 $this->delete($key);
                 throw new MockCacheException(
@@ -66,8 +68,11 @@ class MockUserCache implements CacheInterface
                         "Mock expire error: Untreated time: $time"
                     );
             }
-            $this->data[$key]['expire'] = time() + $seconds;
-            $this->data[$key]['expireCallback'] = fn () => time() >= $this->data[$key]['expire'];
+            $expirationDate = time() + $seconds;
+            $this->expirationArray[$key] = [
+                'expire' => $expirationDate,
+                'expireCallback' => fn () => time() >= $expirationDate
+            ];
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -87,7 +92,10 @@ class MockUserCache implements CacheInterface
                     "Mock expire error: Unexistant key $key",
                 );
             }
-            unset($this->data[$key]);
+            unset(
+                $this->data[$key],
+                $this->expirationArray[$key]
+            );
         } catch (\Throwable $e) {
             throw $e;
         }
