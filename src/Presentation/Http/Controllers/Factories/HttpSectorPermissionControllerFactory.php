@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\SectorPermissionService;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Entities\JwtTokenAuthenticationClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
@@ -14,6 +15,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Connections\MariaDBConne
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpSectorPermissionController;
 
@@ -21,52 +23,73 @@ class HttpSectorPermissionControllerFactory
 {
     public static function make(): HttpSectorPermissionController
     {
-        $repositoryConnection = MariaDBConnection::get();
+        try {
+            $repositoryConnection = MariaDBConnection::get();
 
-        $sectorRepository = new MariaDBSectorRepository(
-            $repositoryConnection
-        );
+            $sectorRepository = new MariaDBSectorRepository(
+                $repositoryConnection
+            );
 
-        $permissionRepository = new MariaDBPermissionRepository(
-            $repositoryConnection
-        );
+            $permissionRepository = new MariaDBPermissionRepository(
+                $repositoryConnection
+            );
 
-        $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
-            $repositoryConnection
-        );
+            $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
+                $repositoryConnection
+            );
 
-        $sectorPermissionService = new SectorPermissionService(
-            $sectorRepository,
-            $permissionRepository,
-            $sectorPermissionRepository
-        );
+            $sectorPermissionService = new SectorPermissionService(
+                $sectorRepository,
+                $permissionRepository,
+                $sectorPermissionRepository
+            );
 
-        $userRepository = new MariaDBUserRepository(
-            $repositoryConnection
-        );
+            $userRepository = new MariaDBUserRepository(
+                $repositoryConnection
+            );
 
-        $encrypter = new DefuseEncryption();
+            $userPermissionRepository = new MariaDBUserPermissionRepository(
+                $repositoryConnection
+            );
 
-        $cacheConnection = RedisConnection::get();
+            $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
+                $repositoryConnection
+            );
 
-        $userCache = new RedisUserCache(
-            $cacheConnection
-        );
+            $encrypter = new DefuseEncryption();
 
-        $authenticator = new JwtTokenAuthentication();
+            $cacheConnection = RedisConnection::get();
 
-        $authService = new AuthenticationService(
-            $userRepository,
-            $encrypter,
-            $userCache,
-            $authenticator
-        );
+            $userCache = new RedisUserCache(
+                $cacheConnection
+            );
 
-        $controller = new HttpSectorPermissionController(
-            $sectorPermissionService,
-            $authService
-        );
+            $authenticationClock = new JwtTokenAuthenticationClock();
 
-        return $controller;
+            $authenticator = new JwtTokenAuthentication(
+                $authenticationClock
+            );
+
+            $authService = new AuthenticationService(
+                $userRepository,
+                $permissionRepository,
+                $sectorRepository,
+                $userPermissionRepository,
+                $sectorPermissionRepository,
+                $encrypter,
+                $userCache,
+                $authenticator,
+                $authenticationClock
+            );
+
+            $controller = new HttpSectorPermissionController(
+                $sectorPermissionService,
+                $authService
+            );
+
+            return $controller;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Repositories;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
 
-interface SectorPermissionInterface
+interface SectorPermissionRepositoryInterface
 {
     public function insert(SectorPermission $sectorPermission): SectorPermission;
 
@@ -15,6 +15,11 @@ interface SectorPermissionInterface
     public function delete(SectorPermission $sectorPermission): bool;
 
     public function findById(int $id): SectorPermission;
+
+    /**
+     * @return SectorPermission[]
+     */
+    public function findAllByPermissionId(int $permissionId): array;
 
     public function findAll(): array;
 

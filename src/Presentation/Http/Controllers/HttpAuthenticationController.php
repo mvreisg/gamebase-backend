@@ -75,15 +75,6 @@ class HttpAuthenticationController
                 "Unauthorized: {$e->getMessage()}",
                 $e
             );
-        } catch (
-            AuthenticationServiceCacheException |
-            AuthenticationServiceEncryptionException
-            $e
-        ) {
-            throw new HttpInternalServerError(
-                "Internal server error: {$e->getMessage()}",
-                $e
-            );
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -100,11 +91,6 @@ class HttpAuthenticationController
         } catch (AuthenticationServiceUnauthorizedException $e) {
             throw new HttpUnauthorizedException(
                 "Unauthorized: {$e->getMessage()}",
-                $e
-            );
-        } catch (AuthenticationServiceCacheException $e) {
-            throw new HttpInternalServerError(
-                "Internal server error: {$e->getMessage()}",
                 $e
             );
         } catch (\Throwable $e) {
@@ -127,11 +113,6 @@ class HttpAuthenticationController
         } catch (AuthenticationServiceUnauthorizedException $e) {
             throw new HttpUnauthorizedException(
                 "Unauthorized: {$e->getMessage()}",
-                $e
-            );
-        } catch (AuthenticationServiceCacheException $e) {
-            throw new HttpInternalServerError(
-                "Internal server error: {$e->getMessage()}",
                 $e
             );
         } catch (\Throwable $e) {

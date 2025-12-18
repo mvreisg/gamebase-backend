@@ -18,19 +18,19 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCr
 use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
 
 class SectorPermissionService
 {
     private SectorRepositoryInterface $sectorRepository;
     private PermissionRepositoryInterface $permissionRepository;
-    private SectorPermissionInterface $sectorPermissionRepository;
+    private SectorPermissionRepositoryInterface $sectorPermissionRepository;
 
     public function __construct(
         SectorRepositoryInterface $sectorRepository,
         PermissionRepositoryInterface $permissionRepository,
-        SectorPermissionInterface $sectorPermissionRepository
+        SectorPermissionRepositoryInterface $sectorPermissionRepository
     ) {
         $this->sectorRepository = $sectorRepository;
         $this->permissionRepository = $permissionRepository;

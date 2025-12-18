@@ -6,17 +6,20 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Enums\AuthenticationTimesEnum;
 use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\Interfaces\CacheClockInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Exceptions\MockCacheException;
 
 class MockUserCache implements CacheInterface
 {
     private array $data;
     private array $expirationArray;
+    private CacheClockInterface $clock;
 
-    public function __construct()
+    public function __construct(CacheClockInterface $clock)
     {
         $this->data = [];
         $this->expirationArray = [];
+        $this->clock = $clock;
     }
 
     public function set(string $key, string $value): void
@@ -33,7 +36,9 @@ class MockUserCache implements CacheInterface
                     "Mock get error: Unexistant key $key",
                 );
             }
-            $expired = $this->expirationArray[$key]['expireCallback']();
+            $expiresIn = $this->expirationArray[$key];
+            //echo $this->clock->now()->getTimestamp() - $expiresIn;
+            $expired = $this->clock->now()->getTimestamp() >= $expiresIn;
             if ($expired) {
                 $this->delete($key);
                 throw new MockCacheException(
@@ -68,11 +73,7 @@ class MockUserCache implements CacheInterface
                         "Mock expire error: Untreated time: $time"
                     );
             }
-            $expirationDate = time() + $seconds;
-            $this->expirationArray[$key] = [
-                'expire' => $expirationDate,
-                'expireCallback' => fn () => time() >= $expirationDate
-            ];
+            $this->expirationArray[$key] = $this->clock->add($seconds)->getTimestamp();
         } catch (\Throwable $e) {
             throw $e;
         }

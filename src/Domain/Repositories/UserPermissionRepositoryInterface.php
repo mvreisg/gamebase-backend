@@ -16,6 +16,11 @@ interface UserPermissionRepositoryInterface
 
     public function findById(int $id): UserPermission;
 
+    /**
+     * @return UserPermission[]
+     */
+    public function findAllByUserId(int $userId): array;
+
     public function findAll(): array;
 
     public function checkIfExists(int $id): void;

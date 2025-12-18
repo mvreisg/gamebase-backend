@@ -8,7 +8,7 @@ class GenreServiceInvalidIdException extends \Exception
 {
     public const EXCEPTION_CODE = 0;
 
-    public function __construct(string $message = '', ?\Throwable $previous)
+    public function __construct(string $message, ?\Throwable $previous)
     {
         parent::__construct(
             $message,

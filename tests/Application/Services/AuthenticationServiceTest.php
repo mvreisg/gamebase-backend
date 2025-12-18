@@ -4,236 +4,441 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException as ApplicationAuthenticationException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Authentication\AuthenticationException as InfrastructureAuthenticationException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationLoginResultValueObject;
+use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\AuthenticationInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\AuthenticationException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Interfaces\AuthenticationClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Cache\Interfaces\CacheClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Entities\MockTokenAuthenticationClock;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\MockTokenAuthentication;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Entities\MockCacheClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\MockUserCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
 class AuthenticationServiceTest extends TestCase
 {
+    private MockCacheClock $cacheClock;
     private CacheInterface $userCache;
     private UserRepositoryInterface $userRepository;
+    private PermissionRepositoryInterface $permissionRepository;
+    private SectorRepositoryInterface $sectorRepository;
+    private UserPermissionRepositoryInterface $userPermissionRepository;
+    private SectorPermissionRepositoryInterface $sectorPermissionRepository;
     private EncryptionInterface $encrypter;
+    private MockTokenAuthenticationClock $authenticationClock;
     private AuthenticationInterface $authenticator;
     private AuthenticationService $authenticationService;
     private UserService $userService;
 
     protected function setUp(): void
     {
-        $this->userCache = new MockUserCache();
+        $this->cacheClock = new MockCacheClock(
+            new \DateTimeImmutable()
+        );
+        $this->userCache = new MockUserCache(
+            $this->cacheClock
+        );
         $this->userRepository = new MockUserRepository();
+        $this->permissionRepository = new MockPermissionRepository();
+        $this->sectorRepository = new MockSectorRepository();
+        $this->userPermissionRepository = new MockUserPermissionRepository();
+        $this->sectorPermissionRepository = new MockSectorPermissionRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->authenticator = new JwtTokenAuthentication();
+        $this->authenticationClock = new MockTokenAuthenticationClock(
+            new \DateTimeImmutable()
+        );
+        $this->authenticator = new MockTokenAuthentication(
+            $this->authenticationClock
+        );
         $this->authenticationService = new AuthenticationService(
             $this->userRepository,
+            $this->permissionRepository,
+            $this->sectorRepository,
+            $this->userPermissionRepository,
+            $this->sectorPermissionRepository,
             $this->encrypter,
             $this->userCache,
-            $this->authenticator
+            $this->authenticator,
+            $this->authenticationClock
         );
         $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
-    public function testIfUserHasCredentials(): void
-    {
-        $this->expectNotToPerformAssertions();
-        $username = 'test';
-        $password = 'test';
-        $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin($username, $password);
-    }
-
-    public function testIfUserDoNotHaveCredentialsWithAWrongUserName(): void
+    public function testIfANewLoginValidForOneDayWithAnExistantUserSucceds(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-
-        $this->expectException(RepositoryUnexistantRegisterException::class);
-
-        $this->authenticationService->tryLogin('batata', $password);
+        $oneWeek = false;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
     }
 
-    public function testIfUserDoNotHaveCredentialsWithAWrongPassword(): void
+    public function testIfANewLoginValidForOneWeekWithAnExistantUserSucceds(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-        $this->expectException(ApplicationAuthenticationException::class);
-        $this->authenticationService->tryLogin($username, 'batata');
-    }
-
-    public function testIfLoginFailsWithoutRegisteredUsers(): void
-    {
-        $this->expectException(RepositoryException::class);
-        $this->authenticationService->tryLogin('test', 'test');
-    }
-
-    public function testIfLoginSuccedsWithTenUsers(): void
-    {
-        $usernamePrefix = 'test';
-        $passWordPrefix = 'test';
-        $isActive = true;
-        for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($usernamePrefix . $i, $passWordPrefix . $i, $isActive);
-        }
-
-        for ($i = 1; $i <= 10; $i++) {
-            $this->expectNotToPerformAssertions();
-            $this->authenticationService->tryLogin($usernamePrefix . $i, $passWordPrefix . $i);
-        }
-    }
-
-    public function testIfLoginFailsWithTenUsersButWrongCredentials(): void
-    {
-        $usernamePrefix = 'test';
-        $passWordPrefix = 'test';
-        $isActive = true;
-        for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($usernamePrefix . $i, $passWordPrefix . $i, $isActive);
-        }
-
-        for ($i = 1; $i <= 10; $i++) {
-            $this->expectException(RepositoryException::class);
-            $this->authenticationService->tryLogin($usernamePrefix, $passWordPrefix);
-        }
-    }
-
-    public function testIfLoginFailsWithEmptyUserName(): void
-    {
-        $username = 'test';
-        $password = 'test';
-        $isActive = true;
-        $this->expectException(EntityInvalidValueException::class);
-        $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin('', $password);
-    }
-
-    public function testIfLoginFailsWithEmptyPassWord(): void
-    {
-        $username = 'test';
-        $password = 'test';
-        $isActive = true;
-        $this->expectException(EntityInvalidValueException::class);
-        $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin($username, '');
-    }
-
-    public function testIfUserCanRetrieveAuthenticationToken(): void
-    {
-        $username = 'test';
-        $password = 'test';
-        $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
-
-        $this->authenticationService->tryLogin($username, $password);
-
         $oneWeek = true;
-        $token = $this->authenticationService->generateToken($username, $oneWeek);
-
-        $this->assertNotEmpty($token, 'Token');
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
     }
 
-    public function testIfGenerationOfAuthenticationTokenFailsDueToEmptyUserName(): void
+    public function testIfANewLoginValidForOneDayWithAnExistantUserButWithAInvalidUsernameFails(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-
-        $this->authenticationService->tryLogin($username, $password);
-
-        $this->expectException(EntityInvalidValueException::class);
-
-        $oneWeek = true;
-        $this->authenticationService->generateToken('', $oneWeek);
+        $oneWeek = false;
+        $wrongUsername = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfSessionTokenIsSuccessfullyRetrievedFromCache(): void
+    public function testIfANewLoginValidForOneWeekWithAnExistantUserButWithAInvalidUsernameFails(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin($username, $password);
-
         $oneWeek = true;
-        $token = $this->authenticationService->generateToken($username, $oneWeek);
-
-        $this->assertNotEmpty($token);
-
-        $token = $this->authenticationService->retrieveToken($username);
-
-        $this->assertNotEmpty($token);
+        $wrongUsername = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfItFailsToRetrieveSessionTokenFromTheCacheDueToUnexistantUserName(): void
+    public function testIfANewLoginValidForOneDayWithAnExistantUserButWithAInvalidPasswordFails(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin($username, $password);
-
-        $oneWeek = true;
-        $token = $this->authenticationService->generateToken($username, $oneWeek);
-
-        $this->assertNotEmpty($token);
-
-        $this->expectException(ApplicationAuthenticationException::class);
-
-        $this->authenticationService->retrieveToken('batata');
+        $oneWeek = false;
+        $wrongPassword = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
     }
 
-    public function testIfAValidTokenIsSuccessfullyValidated(): void
-    {
-        $username = 'test';
-        $password = 'test';
-        $isActive = true;
-
-        $this->userService->insert($username, $password, $isActive);
-
-        $oneWeek = true;
-        $token = $this->authenticationService->generateToken($username, $oneWeek);
-
-        $this->assertNotEmpty($token);
-
-        $isTokenValid = $this->authenticationService->validateToken($token);
-
-        $this->assertTrue($isTokenValid);
-    }
-
-    public function testIfAInvalidTokenFailsToValidate(): void
-    {
-        $this->expectException(InfrastructureAuthenticationException::class);
-        $isTokenValid = $this->authenticationService->validateToken('');
-    }
-
-    public function testIfLogoffSucceds(): void
+    public function testIfANewLoginValidForOneWeekWithAnExistantUserButWithAInvalidPasswordFails(): void
     {
         $username = 'test';
         $password = 'test';
         $isActive = true;
         $this->userService->insert($username, $password, $isActive);
-        $this->authenticationService->tryLogin($username, $password);
-
         $oneWeek = true;
-        $token = $this->authenticationService->generateToken($username, $oneWeek);
+        $wrongPassword = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
+    }
 
-        $this->assertNotEmpty($token);
+    public function testIfANewLoginValidForOneDayWithAnUnexistantUserFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $oneWeek = false;
+        $this->expectException(AuthenticationServiceUnexistantUserException::class);
+        $this->authenticationService->tryLogin($username, $password, $oneWeek);
+    }
 
+    public function testIfANewLoginValidForOneWeekWithAnUnexistantUserFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $oneWeek = true;
+        $this->expectException(AuthenticationServiceUnexistantUserException::class);
+        $this->authenticationService->tryLogin($username, $password, $oneWeek);
+    }
+
+    public function testIfAExistantLoginValidForOneDayWithAnExistantUserSucceds(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $existingResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existingResult->getState());
+        $this->assertNotEmpty($existingResult->getToken());
+    }
+
+    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserSucceds(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $existingResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existingResult->getState());
+        $this->assertNotEmpty($existingResult->getToken());
+    }
+
+    public function testIfAExistantLoginValidForOneDayWithAnExistantUserButInvalidUsernameFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $wrongUsername = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
+    }
+
+    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserButInvalidUsernameFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $wrongUsername = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
+    }
+
+    public function testIfAExistantLoginValidForOneDayWithAnExistantUserButInvalidPasswordFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $wrongPassword = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
+    }
+
+    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserButInvalidPasswordFails(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $wrongPassword = '-';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
+    }
+
+    public function testIfAOneDayExistantLoginDoesNotLoginAfterOneDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $oneDayInSeconds = 60 * 60 * 24;
+        $this->cacheClock->toTheFuture($oneDayInSeconds);
+        $this->authenticationClock->toTheFuture($oneDayInSeconds);
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $password, $oneWeek);
+    }
+
+    public function testIfAOneDayExistantLoginDoesNotLoginAfterOneWeek(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $oneWeekInSeconds = 60 * 60 * 24 * 7;
+        $this->cacheClock->toTheFuture($oneWeekInSeconds);
+        $this->authenticationClock->toTheFuture($oneWeekInSeconds);
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $password, $oneWeek);
+    }
+
+    public function testIfAOneWeekExistantLoginDoesLoginAfterOneDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $oneDayInSeconds = 60 * 60 * 24;
+        $this->cacheClock->toTheFuture($oneDayInSeconds);
+        $this->authenticationClock->toTheFuture($oneDayInSeconds);
+        $existantResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existantResult->getState());
+        $this->assertNotEmpty($existantResult->getToken());
+    }
+
+    public function testIfAOneWeekExistantLoginDoesNotLoginAfterOneWeek(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
+        $this->assertNotEmpty($newResult->getToken());
+        $oneWeekInSeconds = 60 * 60 * 24 * 7;
+        $this->cacheClock->toTheFuture($oneWeekInSeconds);
+        $this->authenticationClock->toTheFuture($oneWeekInSeconds);
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->tryLogin($username, $password, $oneWeek);
+    }
+
+    public function testIfAEmittedTokenValidForOneDayIsStillValidInThatDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfAEmittedTokenValidForOneDayTurnsInvalidAfterOneDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $oneDayInSeconds = 60 * 60 * 24;
+        $this->cacheClock->toTheFuture($oneDayInSeconds);
+        $this->authenticationClock->toTheFuture($oneDayInSeconds);
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfAEmittedTokenValidForOneWeekIsStillValidInThatDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfAEmittedTokenValidForOneWeekIsStillValidAfterOneDay(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $oneDayInSeconds = 60 * 60 * 24;
+        $this->cacheClock->toTheFuture($oneDayInSeconds);
+        $this->authenticationClock->toTheFuture($oneDayInSeconds);
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfAEmittedTokenValidForOneWeekTurnsInvalidAfterOneWeek(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $oneWeekInSeconds = 60 * 60 * 24 * 7;
+        $this->cacheClock->toTheFuture($oneWeekInSeconds);
+        $this->authenticationClock->toTheFuture($oneWeekInSeconds);
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfAInvalidTokenDoesNotValidate(): void
+    {
+        $token = 'abcde';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
+        $this->authenticationService->validateLogin($token);
+    }
+
+    public function testIfALogoffSuccedsWithAValidToken(): void
+    {
+        $username = 'test';
+        $password = 'test';
+        $isActive = true;
+        $this->userService->insert($username, $password, $isActive);
+        $oneWeek = false;
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+        $token = $result->getToken();
+        $this->authenticationService->tryLogoff($token);
+    }
+
+    public function testIfAInvalidTokenDoesNotLogoff(): void
+    {
+        $token = 'abcde';
+        $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogoff($token);
     }
 }

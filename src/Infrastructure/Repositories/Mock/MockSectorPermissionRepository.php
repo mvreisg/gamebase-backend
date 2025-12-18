@@ -7,10 +7,10 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
-class MockSectorPermissionRepository implements SectorPermissionInterface
+class MockSectorPermissionRepository implements SectorPermissionRepositoryInterface
 {
     private array $data;
     private int $idIndex;
@@ -106,6 +106,17 @@ class MockSectorPermissionRepository implements SectorPermissionInterface
         throw new MockUnexistantRegisterException(
             "Unexistant user permission with id $id"
         );
+    }
+
+    public function findAllByPermissionId(int $permissionId): array
+    {
+        $data = [];
+        foreach ($this->data as $key => $value) {
+            if ($value->getPermissionId() === $permissionId) {
+                $data[] = $value;
+            }
+        }
+        return $data;
     }
 
     public function findAll(): array

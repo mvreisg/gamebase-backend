@@ -6,7 +6,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Enums\AuthenticationTimesEnum;
 use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Cache\Enums\CacheInterfaceDeletionStatesEnum;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Exceptions\RedisCacheException;
 use Predis\Client;
 
@@ -90,17 +89,11 @@ class RedisUserCache implements CacheInterface
     public function delete(string $key): void
     {
         try {
-            $exists = $this->exists($key);
-            if ($exists === false) {
-                throw new RedisCacheException(
-                    "Redis delete error: unexistant key $key."
-                );
-            }
             $status = $this->redis->del($key);
             $status = boolval($status);
             if ($status === false) {
                 throw new RedisCacheException(
-                    "Redis delete error: unsuccesful deletion of $key."
+                    "Redis delete error: unsuccesful deletion."
                 );
             }
         } catch (\Throwable $e) {

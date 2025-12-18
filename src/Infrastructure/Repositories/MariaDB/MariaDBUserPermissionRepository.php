@@ -228,6 +228,56 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
         }
     }
 
+    public function findAllByUserId(int $userId): array
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    user_permission
+                WHERE
+                    user_id = :userId;'
+            );
+            if ($statement === false) {
+                throw new MariaDBStatementCreationFailureException();
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':userId' => $userId
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new MariaDBStatementExecutionFailureException();
+            }
+
+            $fetchResult = $statement->fetchAll();
+            if ($fetchResult === false) {
+                return [];
+            }
+
+            $userPermissions = [];
+            foreach ($fetchResult as $row) {
+                $userPermission = new UserPermission(
+                    $row['id'],
+                    $row['user_id'],
+                    $row['permission_id']
+                );
+
+                $userPermissions[] = $userPermission;
+            }
+
+            return $userPermissions;
+        } catch (
+            MariaDBStatementCreationFailureException |
+            MariaDBStatementExecutionFailureException |
+            PDOException |
+            \Throwable
+            $e
+        ) {
+            throw $e;
+        }
+    }
+
     public function findAll(): array
     {
         try {

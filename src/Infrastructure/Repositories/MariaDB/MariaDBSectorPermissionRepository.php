@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use PDO;
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
@@ -14,7 +14,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
 use PDOException;
 
-class MariaDBSectorPermissionRepository implements SectorPermissionInterface
+class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInterface
 {
     private PDO $pdo;
 
@@ -220,6 +220,56 @@ class MariaDBSectorPermissionRepository implements SectorPermissionInterface
             MariaDBStatementCreationFailureException |
             MariaDBStatementExecutionFailureException |
             MariaDBUnexistantRegisterException |
+            PDOException |
+            \Throwable
+            $e
+        ) {
+            throw $e;
+        }
+    }
+
+    public function findAllByPermissionId(int $permissionId): array
+    {
+        try {
+            $statement = $this->pdo->prepare(
+                'SELECT 
+                    * 
+                FROM 
+                    sector_permission
+                WHERE
+                    permission_id = :permissionId;'
+            );
+            if ($statement === false) {
+                throw new MariaDBStatementCreationFailureException();
+            }
+
+            $wasTheStatementSuccessfullyExecuted = $statement->execute([
+                ':permissionId' => $permissionId
+            ]);
+            if ($wasTheStatementSuccessfullyExecuted === false) {
+                throw new MariaDBStatementExecutionFailureException();
+            }
+
+            $fetchResult = $statement->fetchAll();
+            if ($fetchResult === false) {
+                return [];
+            }
+
+            $sectorPermissions = [];
+            foreach ($fetchResult as $row) {
+                $sectorPermission = new SectorPermission(
+                    $row['id'],
+                    $row['sector_id'],
+                    $row['permission_id']
+                );
+
+                $sectorPermissions[] = $sectorPermission;
+            }
+
+            return $sectorPermissions;
+        } catch (
+            MariaDBStatementCreationFailureException |
+            MariaDBStatementExecutionFailureException |
             PDOException |
             \Throwable
             $e

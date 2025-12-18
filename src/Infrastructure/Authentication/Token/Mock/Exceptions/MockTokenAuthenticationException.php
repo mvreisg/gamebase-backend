@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Exceptions;
 
-class AuthenticationServiceCacheException extends \Exception
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\AuthenticationException;
+
+class MockTokenAuthenticationException extends AuthenticationException
 {
     public const EXCEPTION_CODE = 0;
 

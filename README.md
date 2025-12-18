@@ -2,7 +2,7 @@
 
 A simple RESTful PHP backend for game database.
 
-Using [PHP 8.3.25](https://www.php.net/) as the main language and [Nginx](https://nginx.org/) as the HTTP server.
+Using [PHP 8.3.6](https://www.php.net/) as the main language and [Nginx](https://nginx.org/) as the HTTP server.
 
 Uses [Composer](https://getcomposer.org/) as the project package manager.
 

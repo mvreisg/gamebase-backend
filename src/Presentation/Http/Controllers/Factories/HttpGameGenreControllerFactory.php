@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenre\GameGenreService;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Entities\JwtTokenAuthenticationClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
@@ -14,6 +15,10 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Connections\MariaDBConne
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGameGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGameRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGenreRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameGenreController;
 
@@ -21,52 +26,81 @@ class HttpGameGenreControllerFactory
 {
     public static function make(): HttpGameGenreController
     {
-        $repositoryConnection = MariaDBConnection::get();
+        try {
+            $repositoryConnection = MariaDBConnection::get();
 
-        $gameGenreRepository = new MariaDBGameGenreRepository(
-            $repositoryConnection
-        );
+            $gameGenreRepository = new MariaDBGameGenreRepository(
+                $repositoryConnection
+            );
 
-        $gameRepository = new MariaDBGameRepository(
-            $repositoryConnection
-        );
+            $gameRepository = new MariaDBGameRepository(
+                $repositoryConnection
+            );
 
-        $genreRepository = new MariaDBGenreRepository(
-            $repositoryConnection
-        );
+            $genreRepository = new MariaDBGenreRepository(
+                $repositoryConnection
+            );
 
-        $userRepository = new MariaDBUserRepository(
-            $repositoryConnection
-        );
+            $userRepository = new MariaDBUserRepository(
+                $repositoryConnection
+            );
 
-        $encrypter = new DefuseEncryption();
+            $permissionRepository = new MariaDBPermissionRepository(
+                $repositoryConnection
+            );
 
-        $cacheConnection = RedisConnection::get();
+            $sectorRepository = new MariaDBSectorRepository(
+                $repositoryConnection
+            );
 
-        $userCache = new RedisUserCache(
-            $cacheConnection
-        );
+            $userPermissionRepository = new MariaDBUserPermissionRepository(
+                $repositoryConnection
+            );
 
-        $gameGenreService = new GameGenreService(
-            $gameGenreRepository,
-            $gameRepository,
-            $genreRepository
-        );
+            $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
+                $repositoryConnection
+            );
 
-        $authenticator = new JwtTokenAuthentication();
+            $encrypter = new DefuseEncryption();
 
-        $authService = new AuthenticationService(
-            $userRepository,
-            $encrypter,
-            $userCache,
-            $authenticator
-        );
+            $cacheConnection = RedisConnection::get();
 
-        $controller = new HttpGameGenreController(
-            $gameGenreService,
-            $authService
-        );
+            $userCache = new RedisUserCache(
+                $cacheConnection
+            );
 
-        return $controller;
+            $gameGenreService = new GameGenreService(
+                $gameGenreRepository,
+                $gameRepository,
+                $genreRepository
+            );
+
+            $authenticationClock = new JwtTokenAuthenticationClock();
+
+            $authenticator = new JwtTokenAuthentication(
+                $authenticationClock
+            );
+
+            $authService = new AuthenticationService(
+                $userRepository,
+                $permissionRepository,
+                $sectorRepository,
+                $userPermissionRepository,
+                $sectorPermissionRepository,
+                $encrypter,
+                $userCache,
+                $authenticator,
+                $authenticationClock
+            );
+
+            $controller = new HttpGameGenreController(
+                $gameGenreService,
+                $authService
+            );
+
+            return $controller;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 }

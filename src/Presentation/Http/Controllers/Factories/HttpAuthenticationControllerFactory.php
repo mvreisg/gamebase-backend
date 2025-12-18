@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Entities\JwtTokenAuthenticationClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Connections\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
 
@@ -20,7 +25,23 @@ class HttpAuthenticationControllerFactory
         try {
             $repositoryConnection = MariaDBConnection::get();
 
-            $repository = new MariaDBUserRepository(
+            $userRepository = new MariaDBUserRepository(
+                $repositoryConnection
+            );
+
+            $permissionRepository = new MariaDBPermissionRepository(
+                $repositoryConnection
+            );
+
+            $sectorRepository = new MariaDBSectorRepository(
+                $repositoryConnection
+            );
+
+            $userPermissionRepository = new MariaDBUserPermissionRepository(
+                $repositoryConnection
+            );
+
+            $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
                 $repositoryConnection
             );
 
@@ -28,17 +49,26 @@ class HttpAuthenticationControllerFactory
 
             $cacheConnection = RedisConnection::get();
 
-            $cache = new RedisUserCache(
+            $userCache = new RedisUserCache(
                 $cacheConnection
             );
 
-            $authenticator = new JwtTokenAuthentication();
+            $authenticationClock = new JwtTokenAuthenticationClock();
+
+            $authenticator = new JwtTokenAuthentication(
+                $authenticationClock
+            );
 
             $service = new AuthenticationService(
-                $repository,
+                $userRepository,
+                $permissionRepository,
+                $sectorRepository,
+                $userPermissionRepository,
+                $sectorPermissionRepository,
                 $encrypter,
-                $cache,
-                $authenticator
+                $userCache,
+                $authenticator,
+                $authenticationClock
             );
 
             $controller = new HttpAuthenticationController(

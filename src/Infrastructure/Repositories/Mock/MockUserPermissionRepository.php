@@ -106,6 +106,17 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
         );
     }
 
+    public function findAllByUserId(int $userId): array
+    {
+        $data = [];
+        foreach ($this->data as $key => $value) {
+            if ($value->getUserId() === $userId) {
+                $data[] = $value;
+            }
+        }
+        return $data;
+    }
+
     public function findAll(): array
     {
         return $this->data;
