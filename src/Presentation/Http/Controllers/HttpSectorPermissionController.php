@@ -5,16 +5,25 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermissionService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidPermissionIdException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidSectorIdException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantPermissionException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorPermissionException;
+use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\SectorPermissionService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInvalidParameterException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUndefinedValueException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJwtAuthenticationTokenRetriever;
 
 class HttpSectorPermissionController
 {
@@ -32,340 +41,188 @@ class HttpSectorPermissionController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-
-            $isSectorIdSetted = isset($body['sectorId']);
-            if ($isSectorIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'sectorId value not informed!'
-                );
-            }
-
-            $isPermissionIdSetted = isset($body['permissionId']);
-            if ($isPermissionIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'permissionId value not informed!'
-                );
-            }
-
-            $sectorId = $body['sectorId'];
-            $permissionId = $body['permissionId'];
+            $sectorId = $request->getParsedBodyPartOrDieTrying('sectorId');
+            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
 
             $sectorPermission = $this->sectorPermissionService->insert($sectorId, $permissionId);
 
-            $data = [
-                'id' => $sectorPermission->getId(),
-                'sectorId' => $sectorPermission->getSectorId(),
-                'permissionId' => $sectorPermission->getPermissionId()
-            ];
-
             $response
                 ->setBody([
-                    'message' => 'Successfully inserted!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $sectorPermission->getId(),
+                        'sectorId' => $sectorPermission->getSectorId(),
+                        'permissionId' => $sectorPermission->getPermissionId()
+                    ]
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            SectorPermissionServiceUnexistantSectorException |
+            SectorPermissionServiceUnexistantPermissionException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            SectorPermissionServiceInvalidSectorIdException |
+            SectorPermissionServiceInvalidPermissionIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isSectorIdSetted = isset($body['sectorId']);
-            if ($isSectorIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'sectorId value not informed!'
-                );
-            }
-
-            $isPermissionIdSetted = isset($body['permissionId']);
-            if ($isPermissionIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'permissionId value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $sectorId = $body['sectorId'];
-            $permissionId = $body['permissionId'];
+            $id = $request->getParamOrDieTrying('id');
+            $sectorId = $request->getParsedBodyPartOrDieTrying('sectorId');
+            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
 
             $wasUpdated = $this->sectorPermissionService->update($id, $sectorId, $permissionId);
-
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'State updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            SectorPermissionServiceInvalidIdException |
+            SectorPermissionServiceInvalidSectorIdException |
+            SectorPermissionServiceInvalidPermissionIdException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
+            SectorPermissionServiceUnexistantSectorException |
+            SectorPermissionServiceUnexistantPermissionException |
+            SectorPermissionServiceUnexistantSectorPermissionException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function delete(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $wasDeleted = $this->sectorPermissionService->delete($id);
-
             $response
                 ->setBody([
-                    'message' => $wasDeleted ? 'Register deleted' : 'No changes!'
+                    'wasDeleted' => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (SectorPermissionServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (SectorPermissionServiceUnexistantSectorPermissionException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id paramter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $sectorPermission = $this->sectorPermissionService->findById($id);
 
             if ($sectorPermission === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Not found!'
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    "Sector permission with the id $id not found!"
+                );
             }
-
-            $data = [
-                'id' => $sectorPermission->getId(),
-                'sectorId' => $sectorPermission->getSectorId(),
-                'permissionId' => $sectorPermission->getPermissionId()
-            ];
 
             $response
                 ->setBody([
-                    'message' => 'Value found!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $sectorPermission->getId(),
+                        'sectorId' => $sectorPermission->getSectorId(),
+                        'permissionId' => $sectorPermission->getPermissionId()
+                    ]
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
+        } catch (SectorPermissionServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (SectorPermissionServiceUnexistantSectorPermissionException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
             $sectorPermissions = $this->sectorPermissionService->findAll();
 
-            $numberOfGameGenres = count($sectorPermissions);
-            if ($numberOfGameGenres === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+            $numberOfSectorPermissions = count($sectorPermissions);
+            if ($numberOfSectorPermissions === 0) {
+                throw new HttpNotFoundException(
+                    'No sector permissions found!'
+                );
             }
 
+            $data = [];
             foreach ($sectorPermissions as $sectorPermission) {
                 $data[] = [
                     'id' => $sectorPermission->getId(),
@@ -376,42 +233,15 @@ class HttpSectorPermissionController
 
             $response
                 ->setBody([
-                    'message' => 'Registers found!',
+                    'number' => $numberOfSectorPermissions,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }

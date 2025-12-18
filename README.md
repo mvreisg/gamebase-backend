@@ -2,7 +2,7 @@
 
 A simple RESTful PHP backend for game database.
 
-Using [PHP 8.3.25](https://www.php.net/)
+Using [PHP 8.3.6](https://www.php.net/) as the main language and [Nginx](https://nginx.org/) as the HTTP server.
 
 Uses [Composer](https://getcomposer.org/) as the project package manager.
 
@@ -41,7 +41,7 @@ NGINX_EXPOSE_PORT="8081"
 
 ### Setting `API_CONSUMERS` environment variables.
 
-Put the URLs string in `API_CONSUMERS_ADDRESSES` and use the `API_CONSUMERS_ADDRESSES_SEPARATOR` between them.
+Put the URLs string in `API_CONSUMERS_ADDRESSES` and use the `API_CONSUMERS_ADDRESSES_SEPARATOR` between them. (Don't worry, if you put the separator the code will return a collection of values).
 
 Example:
 
@@ -119,6 +119,10 @@ REDIS_PORT="redis internal port"
 REDIS_EXPOSE_PORT="redis expose port"
 ```
 
+### Creating the `DATABASE` *(if it does not exist!)*.
+
+`Phinx` does not creates databases, so you must create it yourself by running the `create_database_[insert your database here].php` configuration file or by manually run the `CREATE DATABASE gamebase;` SQL query on your Database Management System. A MariaDB implementation of the configuration already exists as an example (located in `./config` folder on the root folder of this project).
+
 ### Starting the application
 
 Run
@@ -139,46 +143,25 @@ to run the database migrations, and:
 composer phinx seed:run
 ```
 
-to insert the root user to the database. The root username and password are specified in `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD` `.env.{environment}.{machine}` file. 
+to insert the root user to the database. The root username and password are specified in `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD` `.env.{environment}.{machine}` file.
 
-## Commands
+## Commands (to be used with Composer)
 
-See `composer.json` on the project root folder.
+All the commands can be edited in the `composer.json` file on the project root folder.
 
-All the operations follows the PSR-12 patterns by [PHP-FIG](https://www.php-fig.org/psr/).
+All formatting operations follows the PSR-12 patterns designed by [PHP-FIG](https://www.php-fig.org/psr/).
 
-```
-composer lint
-```
+`composer lint:fix` 
+Tries to fix the code errors using *php-cs-fixer*.
 
-Makes a linting operation on the code, checking by errors.
+`composer format`
+Outputs the formatting errors based on PSR-12 pattern using *phpcs*.
 
-```
-composer lint:fix
-```
+`composer format:fix`
+Tries to fix the formatting errors based on PSR-12 pattern using *phpcbf*.
 
-Fixes the errors.
+`composer phpunit:test`
+Runs the *PHPUnit* executable, allowing commands like `phpunit:test:all` to run all the unitary tests.
 
-```
-composer format
-```
-
-Makes a formatting operation on the code, checking by errors.
-
-```
-composer format:fix
-```
-
-Fixes the formatting errors and throw warnings.
-
-```
-composer phpunit:test:all
-```
-
-Runs the PHPUnit Test Suite.
-
-```
-composer phinx
-```
-
-The Phinx executable.
+`composer phinx`
+Runs the *Phinx* executable, allowing commands like `phinx migrate` and `phinx seed:run`.

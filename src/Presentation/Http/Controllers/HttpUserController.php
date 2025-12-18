@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\UserService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceDuplicatedUsernameException;
+use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidPasswordException;
+use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidUsernameException;
+use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceUnexistantUserException;
+use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypesEnum;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpUserController
 {
@@ -32,500 +35,269 @@ class HttpUserController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
+            $username = $request->getParsedBodyPartOrDieTrying('username');
+            $password = $request->getParsedBodyPartOrDieTrying('password');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
-            $isUserNameFieldSetted = isset($body['username']);
-            if ($isUserNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'username value not informed'
-                );
-            }
-
-            $isPassWordFieldSetted = isset($body['password']);
-            if ($isPassWordFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'password value not informed'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed'
-                );
-            }
-
-            $userName = $body['username'];
-            $passWord = $body['password'];
-            $isActive = $body['isActive'];
-
-            $user = $this->userService->insert($userName, $passWord, $isActive);
-
-            $data = [
-                'id' => $user->getId(),
-                'username' => $user->getUserName(),
-                'password' => $user->getPassWord(),
-                'isActive' => $user->getIsActive()
-            ];
+            $user = $this->userService->insert($username, $password, $isActive);
 
             $response
                 ->setBody([
-                    'message' => 'User successfully inserted!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $user->getId(),
+                        'username' => $user->getUsername(),
+                        'password' => $user->getPassword(),
+                        'isActive' => $user->getIsActive()
+                    ]
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
+        } catch (UserServiceDuplicatedUsernameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            UserServiceInvalidUsernameException |
+            UserServiceInvalidPasswordException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
+            $id = $request->getParamOrDieTrying('id');
+            $username = $request->getParsedBodyPartOrDieTrying('username');
+            $password = $request->getParsedBodyPartOrDieTrying('password');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isUserNameSetted = isset($body['username']);
-            if ($isUserNameSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'username value not informed!'
-                );
-            }
-
-            $isPassWordSetted = isset($body['password']);
-            if ($isPassWordSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'password value not informed!'
-                );
-            }
-
-            $isIsActiveSetted = isset($body['isActive']);
-            if ($isIsActiveSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $userName = $body['username'];
-            $passWord = $body['password'];
-            $isActive = $body['isActive'];
-
-            $wasUpdated = $this->userService->update($id, $userName, $passWord, $isActive);
+            $wasUpdated = $this->userService->update($id, $username, $password, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'State updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
+        } catch (UserServiceDuplicatedUsernameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            UserServiceInvalidIdException |
+            UserServiceInvalidUsernameException |
+            UserServiceInvalidPasswordException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (UserServiceUnexistantUserException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-            $body = $request->parseBodyFromJSONString();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isIsActiveSetted = isset($body['isActive']);
-            if ($isIsActiveSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $isActive = $body['isActive'];
+            $id = $request->getParamOrDieTrying('id');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $wasUpdated = $this->userService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'Active state changed!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (UserServiceUnexistantUserException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $user = $this->userService->findById($id);
 
-            if ($user === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!'
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
-
             $data = [
                 'id' => $user->getId(),
-                'username' => $user->getUserName(),
-                'password' => $user->getPassWord(),
+                'username' => $user->getUsername(),
                 'isActive' => $user->getIsActive()
             ];
 
+            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            if ($showPasswordQuery) {
+                if (
+                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getValue() === true
+                ) {
+                    $data['password'] = $user->getPassword();
+                }
+            }
+
             $response
                 ->setBody([
-                    'message' => 'Value found!',
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (UserServiceUnexistantUserException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
-    public function findByUserName(HttpRequest $request, HttpResponse $response): void
+    public function findByUsername(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
+            $username = $request->getParamOrDieTrying('username');
 
-            $isUserNameSetted = isset($params['username']);
-            if ($isUserNameSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'username parameter not informed'
-                );
-            }
-
-            $userName = $params['username'];
-
-            $user = $this->userService->findByUserName($userName);
-
-            if ($user === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!'
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
+            $user = $this->userService->findByUsername($username);
 
             $data = [
                 'id' => $user->getId(),
-                'username' => $user->getUserName(),
-                'password' => $user->getPassWord(),
+                'username' => $user->getUsername(),
                 'isActive' => $user->getIsActive()
             ];
 
+            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            if ($showPasswordQuery) {
+                if (
+                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getValue() === true
+                ) {
+                    $data['password'] = $user->getPassword();
+                }
+            }
+
             $response
                 ->setBody([
-                    'message' => 'Value found!',
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (UserServiceUnexistantUserException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
+        } catch (UserServiceInvalidUsernameException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
             $users = $this->userService->findAll();
 
             $numberOfUsersFound = count($users);
             if ($numberOfUsersFound === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    "Nothing found!"
+                );
             }
 
+            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            $showPassword = false;
+            if ($showPasswordQuery) {
+                if (
+                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getValue() === true
+                ) {
+                    $showPassword = true;
+                }
+            }
+
+            $data = [];
             foreach ($users as $user) {
-                $data[] = [
+                $value = [
                     'id' => $user->getId(),
-                    'username' => $user->getUserName(),
-                    'password' => $user->getPassWord(),
+                    'username' => $user->getUsername(),
                     'isActive' => $user->getIsActive()
                 ];
+
+                if ($showPassword) {
+                    $value['password'] = $user->getPassword();
+                }
+
+                $data[] = $value;
             }
 
             $response
                 ->setBody([
-                    'message' => 'Results found!',
+                    'number' => $numberOfUsersFound,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }

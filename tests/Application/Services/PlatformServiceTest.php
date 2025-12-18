@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
-use Mvreisg\GamebaseBackend\Domain\Entities\PlatformEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformEntityRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformRepository;
 use PHPUnit\Framework\TestCase;
 
 class PlatformServiceTest extends TestCase
 {
-    private PlatformEntityRepositoryInterface $platformEntityRepository;
+    private PlatformRepositoryInterface $platformEntityRepository;
     private PlatformService $platformService;
 
     protected function setUp(): void
     {
-        $this->platformEntityRepository = new MockPlatformEntityRepository();
+        $this->platformEntityRepository = new MockPlatformRepository();
         $this->platformService = new PlatformService($this->platformEntityRepository);
     }
 
@@ -31,7 +31,7 @@ class PlatformServiceTest extends TestCase
         $platform = $this->platformService->insert($name, $isActive);
 
         $this->assertNotEmpty($platform);
-        $this->assertInstanceOf(PlatformEntity::class, $platform);
+        $this->assertInstanceOf(Platform::class, $platform);
     }
 
     public function testIfTenPlatformsInsertionSucceds(): void
@@ -43,7 +43,7 @@ class PlatformServiceTest extends TestCase
             $platform = $this->platformService->insert($name . $i, $isActive);
 
             $this->assertNotEmpty($platform);
-            $this->assertInstanceOf(PlatformEntity::class, $platform);
+            $this->assertInstanceOf(Platform::class, $platform);
         }
     }
 
@@ -197,7 +197,7 @@ class PlatformServiceTest extends TestCase
         $platform = $this->platformService->findById($id);
 
         $this->assertNotEmpty($platform);
-        $this->assertInstanceOf(PlatformEntity::class, $platform);
+        $this->assertInstanceOf(Platform::class, $platform);
     }
 
     public function testIfFindByIdSuccedsWithTenPlatforms(): void
@@ -216,7 +216,7 @@ class PlatformServiceTest extends TestCase
             $platform = $this->platformService->findById($id);
 
             $this->assertNotEmpty($platform);
-            $this->assertInstanceOf(PlatformEntity::class, $platform);
+            $this->assertInstanceOf(Platform::class, $platform);
         }
     }
 

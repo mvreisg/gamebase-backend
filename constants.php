@@ -1,3 +1,3 @@
 <?php
 
-define("PROJECT_ROOT", __DIR__);
+const PROJECT_ROOT = __DIR__;

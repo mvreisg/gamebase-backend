@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GenreEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreEntityRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreRepository;
 use PHPUnit\Framework\TestCase;
 
 class GenreServiceTest extends TestCase
 {
-    private GenreEntityRepositoryInterface $genreEntityRepository;
+    private GenreRepositoryInterface $genreEntityRepository;
     private GenreService $genreService;
 
     protected function setUp(): void
     {
-        $this->genreEntityRepository = new MockGenreEntityRepository();
+        $this->genreEntityRepository = new MockGenreRepository();
         $this->genreService = new GenreService($this->genreEntityRepository);
     }
 
@@ -31,7 +31,7 @@ class GenreServiceTest extends TestCase
         $genre = $this->genreService->insert($name, $isActive);
 
         $this->assertNotEmpty($genre);
-        $this->assertInstanceOf(GenreEntity::class, $genre);
+        $this->assertInstanceOf(Genre::class, $genre);
     }
 
     public function testIfTenGenreInsertionSucceds(): void
@@ -42,7 +42,7 @@ class GenreServiceTest extends TestCase
         for ($i = 1; $i <= 10; $i++) {
             $genre = $this->genreService->insert($name . $i, $isActive);
             $this->assertNotEmpty($genre);
-            $this->assertInstanceOf(GenreEntity::class, $genre);
+            $this->assertInstanceOf(Genre::class, $genre);
         }
     }
 
@@ -199,7 +199,7 @@ class GenreServiceTest extends TestCase
         $genre = $this->genreService->findById($id);
 
         $this->assertNotEmpty($genre);
-        $this->assertInstanceOf(GenreEntity::class, $genre);
+        $this->assertInstanceOf(Genre::class, $genre);
     }
 
     public function testIfFindByIdSuccedsWithTenGenres(): void
@@ -218,7 +218,7 @@ class GenreServiceTest extends TestCase
             $genre = $this->genreService->findById($id);
 
             $this->assertNotEmpty($genre);
-            $this->assertInstanceOf(GenreEntity::class, $genre);
+            $this->assertInstanceOf(Genre::class, $genre);
         }
     }
 

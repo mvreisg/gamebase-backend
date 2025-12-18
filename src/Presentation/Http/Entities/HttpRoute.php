@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
 
 class HttpRoute
 {
     private HttpMethodTypesEnum $method;
     private string $separator;
-    private array $parts;
-    private int $head;
+    /**
+     * @var HttpRoutePart[] $pathParts
+     */
+    private array $pathParts;
+    private int $pathPartIndex;
     private $callback;
 
     public function __construct()
     {
-        $this->head = 0;
+        $this->pathPartIndex = 0;
     }
 
     public function getMethod(): HttpMethodTypesEnum
@@ -42,35 +44,36 @@ class HttpRoute
         return $this->separator;
     }
 
-    public function getPart(int $index): HttpRoutePart|null
+    public function getPathPart(int $index): ?HttpRoutePart
     {
-        if (isset($this->parts[$index])) {
-            return $this->parts[$index];
+        $exists = isset($this->pathParts[$index]);
+        if ($exists) {
+            return $this->pathParts[$index];
         }
         return null;
     }
 
-    public function getPartsCount(): int
+    public function getPathPartsCount(): int
     {
-        return count($this->parts);
+        return count($this->pathParts);
     }
 
-    public function append(string $name, HttpRouteParameterTypesEnum $type): HttpRoute
+    public function appendPathPart(HttpRoutePart $part): HttpRoute
     {
-        return $this->appendObject(new HttpRoutePart($name, $type));
-    }
-
-    public function appendObject(HttpRoutePart $part): HttpRoute
-    {
-        $this->parts[$this->head] = $part;
-        $this->head++;
+        $this->pathParts[$this->pathPartIndex] = $part;
+        $this->pathPartIndex++;
         return $this;
     }
 
-    public function setParts(array $parts): HttpRoute
+    public function getStringPath(): string
     {
-        $this->parts = $parts;
-        return $this;
+        return join(
+            $this->getSeparator(),
+            array_map(
+                fn (HttpRoutePart $part) => $part->getName(),
+                $this->pathParts
+            )
+        );
     }
 
     public function getCallback(): callable

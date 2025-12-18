@@ -5,33 +5,33 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use ArrayIterator;
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGamePlatformEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformEntityRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGamePlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPlatformRepository;
 use PHPUnit\Framework\TestCase;
 
 class GamePlatformServiceTest extends TestCase
 {
-    private GameEntityRepositoryInterface $gameEntityRepository;
+    private GameRepositoryInterface $gameEntityRepository;
     private GameService $gameService;
-    private PlatformEntityRepositoryInterface $platformEntityRepository;
+    private PlatformRepositoryInterface $platformEntityRepository;
     private PlatformService $platformService;
-    private GamePlatformEntityRepositoryInterface $gamePlatformEntityRepository;
+    private GamePlatformRepositoryInterface $gamePlatformEntityRepository;
     private GamePlatformService $gamePlatformService;
 
     protected function setUp(): void
     {
-        $this->gameEntityRepository = new MockGameEntityRepository();
+        $this->gameEntityRepository = new MockGameRepository();
         $this->gameService = new GameService($this->gameEntityRepository);
-        $this->platformEntityRepository = new MockPlatformEntityRepository();
+        $this->platformEntityRepository = new MockPlatformRepository();
         $this->platformService = new PlatformService($this->platformEntityRepository);
-        $this->gamePlatformEntityRepository = new MockGamePlatformEntityRepository(
+        $this->gamePlatformEntityRepository = new MockGamePlatformRepository(
             $this->gameEntityRepository,
             $this->platformEntityRepository
         );
@@ -49,7 +49,7 @@ class GamePlatformServiceTest extends TestCase
         $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
 
         $this->assertNotEmpty($gamePlatform);
-        $this->assertInstanceOf(GamePlatformEntity::class, $gamePlatform);
+        $this->assertInstanceOf(GamePlatform::class, $gamePlatform);
     }
 
     public function testIfTenInsertionsSucceds(): void
@@ -64,7 +64,7 @@ class GamePlatformServiceTest extends TestCase
             $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
 
             $this->assertNotEmpty($gamePlatform);
-            $this->assertInstanceOf(GamePlatformEntity::class, $gamePlatform);
+            $this->assertInstanceOf(GamePlatform::class, $gamePlatform);
         }
     }
 
@@ -388,7 +388,7 @@ class GamePlatformServiceTest extends TestCase
         $fetchedGameGenreEntity = $this->gamePlatformService->findById($id);
 
         $this->assertNotEmpty($fetchedGameGenreEntity);
-        $this->assertInstanceOf(GamePlatformEntity::class, $fetchedGameGenreEntity);
+        $this->assertInstanceOf(GamePlatform::class, $fetchedGameGenreEntity);
         $this->assertEquals($gamePlatform, $fetchedGameGenreEntity);
     }
 

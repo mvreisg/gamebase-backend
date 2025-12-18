@@ -6,9 +6,10 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Controllers\HttpAuthenticationControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Factories\Entities\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpAuthenticationControllerFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
 
 class HttpAuthenticationRoutes
 {
@@ -19,61 +20,79 @@ class HttpAuthenticationRoutes
 
             $routes = [
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Post
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'auth',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'login',
-                                HttpRouteParameterTypesEnum::Route
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'auth',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'login',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->handleLogin($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->handleLogin(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'auth',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'validate',
-                                HttpRouteParameterTypesEnum::Route
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'auth',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'validate',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->handleValidation($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->handleValidation(...)
+                            )
                     ),
                 HttpRouteFactory::make()
+                    ->setSeparator('/')
                     ->setMethod(
                         HttpMethodTypesEnum::Delete
                     )
-                    ->setParts(
-                        [
-                            HttpRoutePartFactory::make(
-                                'auth',
-                                HttpRouteParameterTypesEnum::Route
-                            ),
-                            HttpRoutePartFactory::make(
-                                'logoff',
-                                HttpRouteParameterTypesEnum::Route
-                            )
-                        ]
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'auth',
+                            HttpRouteParameterTypesEnum::Route
+                        )
+                    )
+                    ->appendPathPart(
+                        HttpRoutePartFactory::make(
+                            'logoff',
+                            HttpRouteParameterTypesEnum::Route
+                        )
                     )
                     ->setCallback(
-                        fn ($request, $response) => $controller->handleLogoff($request, $response)
+                        fn ($request, $response)
+                            => HttpControllerHandler::use(
+                                $request,
+                                $response,
+                                $controller->handleLogoff(...)
+                            )
                     )
             ];
 

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\PermissionService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidNameException;
+use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceUnexistantPermissionException;
+use Mvreisg\GamebaseBackend\Application\Services\Permission\PermissionService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Router\HttpRouter;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpPermissionController
 {
@@ -33,394 +33,192 @@ class HttpPermissionController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
+            $name = $request->getParsedBodyPartOrDieTrying('name');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
-            $isNameFieldSetted = isset($body['name']);
-            if ($isNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'name value not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $name = $body['name'];
-            $isActive = $body['isActive'];
-
-            $genre = $this->permissionService->insert($name, $isActive);
-
-            $data = [
-                'id' => $genre->getId(),
-                'name' => $genre->getName(),
-                'isActive' => $genre->getIsActive()
-            ];
+            $permission = $this->permissionService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'message' => 'Successfully inserted!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $permission->getId(),
+                        'name' => $permission->getName(),
+                        'isActive' => $permission->getIsActive()
+                    ]
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (PermissionServiceDuplicatedNameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
+        } catch (PermissionServiceInvalidNameException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isNameFieldSetted = isset($body['name']);
-            if ($isNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'name value not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $name = $body['name'];
-            $isActive = $body['isActive'];
+            $id = $request->getParamOrDieTrying('id');
+            $name = $request->getParsedBodyPartOrDieTrying('name');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $wasUpdated = $this->permissionService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'Successfully updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
+        } catch (PermissionServiceDuplicatedNameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            PermissionServiceInvalidIdException |
+            PermissionServiceInvalidNameException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (PermissionServiceUnexistantPermissionException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-            $body = $request->parseBodyFromJSONString();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $isActive = $body['isActive'];
+            $id = $request->getParamOrDieTrying('id');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $wasUpdated = $this->permissionService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'Active state updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (PermissionServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (PermissionServiceUnexistantPermissionException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
+            $id = $request->getParamOrDieTrying('id');
 
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
-
-            $genre = $this->permissionService->findById($id);
-
-            if ($genre === null) {
-                $response
-                    ->setBody([
-                        'message' => 'No results!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
-
-            $data = [
-                'id' => $genre->getId(),
-                'name' => $genre->getName(),
-                'isActive' => $genre->getIsActive()
-            ];
+            $permission = $this->permissionService->findById($id);
 
             $response
                 ->setBody([
-                    'message' => 'Successfully found!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $permission->getId(),
+                        'name' => $permission->getName(),
+                        'isActive' => $permission->getIsActive()
+                    ]
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (PermissionServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (PermissionServiceUnexistantPermissionException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
+
+            $permissions = $this->permissionService->findAll();
+
+            $numberOfPermissionsFound = count($permissions);
+            if ($numberOfPermissionsFound === 0) {
+                throw new HttpNotFoundException(
+                    "Nothing found!"
                 );
             }
 
-            $genres = $this->permissionService->findAll();
-
-            $numberOfGenresFound = count($genres);
-            if ($numberOfGenresFound === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'No results!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
-
-            foreach ($genres as $genre) {
+            $data = [];
+            foreach ($permissions as $permission) {
                 $data[] = [
-                    'id' => $genre->getId(),
-                    'name' => $genre->getName(),
-                    'isActive' => $genre->getIsActive()
+                    'id' => $permission->getId(),
+                    'name' => $permission->getName(),
+                    'isActive' => $permission->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'message' => 'Results found!',
+                    'number' => $numberOfPermissionsFound,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }

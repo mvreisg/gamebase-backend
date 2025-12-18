@@ -5,33 +5,33 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use ArrayIterator;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreEntityRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreEntityRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreEntityRepository;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameGenreRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGenreRepository;
 use PHPUnit\Framework\TestCase;
 
 class GameGenreServiceTest extends TestCase
 {
-    private GameEntityRepositoryInterface $gameEntityRepository;
+    private GameRepositoryInterface $gameEntityRepository;
     private GameService $gameService;
-    private GenreEntityRepositoryInterface $genreEntityRepository;
+    private GenreRepositoryInterface $genreEntityRepository;
     private GenreService $genreService;
-    private GameGenreEntityRepositoryInterface $gameGenreEntityRepository;
+    private GameGenreRepositoryInterface $gameGenreEntityRepository;
     private GameGenreService $gameGenreService;
 
     protected function setUp(): void
     {
-        $this->gameEntityRepository = new MockGameEntityRepository();
+        $this->gameEntityRepository = new MockGameRepository();
         $this->gameService = new GameService($this->gameEntityRepository);
-        $this->genreEntityRepository = new MockGenreEntityRepository();
+        $this->genreEntityRepository = new MockGenreRepository();
         $this->genreService = new GenreService($this->genreEntityRepository);
-        $this->gameGenreEntityRepository = new MockGameGenreEntityRepository(
+        $this->gameGenreEntityRepository = new MockGameGenreRepository(
             $this->gameEntityRepository,
             $this->genreEntityRepository
         );
@@ -49,7 +49,7 @@ class GameGenreServiceTest extends TestCase
         $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
         $this->assertNotEmpty($gameGenre);
-        $this->assertInstanceOf(GameGenreEntity::class, $gameGenre);
+        $this->assertInstanceOf(GameGenre::class, $gameGenre);
     }
 
     public function testIfTenInsertionsSucceds(): void
@@ -64,7 +64,7 @@ class GameGenreServiceTest extends TestCase
             $gameGenre = $this->gameGenreService->insert($genreId, $gameId);
 
             $this->assertNotEmpty($gameGenre);
-            $this->assertInstanceOf(GameGenreEntity::class, $gameGenre);
+            $this->assertInstanceOf(GameGenre::class, $gameGenre);
         }
     }
 
@@ -388,7 +388,7 @@ class GameGenreServiceTest extends TestCase
         $fetchedGameGenreEntity = $this->gameGenreService->findById($id);
 
         $this->assertNotEmpty($fetchedGameGenreEntity);
-        $this->assertInstanceOf(GameGenreEntity::class, $fetchedGameGenreEntity);
+        $this->assertInstanceOf(GameGenre::class, $fetchedGameGenreEntity);
         $this->assertEquals($gameGenre, $fetchedGameGenreEntity);
     }
 

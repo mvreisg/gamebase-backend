@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceEncryptionException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInternalServerError;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpAuthenticationController
 {
@@ -26,204 +30,93 @@ class HttpAuthenticationController
 
     public function handleLogin(HttpRequest $request, HttpResponse $response): void
     {
-        $userName = null;
         try {
-            $body = $request->parseBodyFromJSONString();
+            $request->parseBodyFromJsonString();
 
-            $isUserNameFieldSetted = isset($body['username']);
-            if ($isUserNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'username field not informed!'
-                );
-            }
+            $username = $request->getParsedBodyPartOrDieTrying('username');
+            $password = $request->getParsedBodyPartOrDieTrying('password');
+            $oneWeek = $request->getParsedBodyPartOrDieTrying('oneWeek');
 
-            $isPassWordFieldSetted = isset($body['password']);
-            if ($isPassWordFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'password field not informed!'
-                );
-            }
-
-            $isOneWeekFieldSetted = isset($body['oneWeek']);
-            if ($isOneWeekFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'oneWeek field not informed!'
-                );
-            }
-
-            $userName = $body['username'];
-            $passWord = $body['password'];
-            $oneWeek = $body['oneWeek'];
-
-            $doTokenExists = $this->authenticationService->checkTokenExistance($userName);
-            if ($doTokenExists) {
-                $token = $this->authenticationService->retrieveToken($userName);
-                $isTokenValid = $this->authenticationService->validateToken($token);
-                if ($isTokenValid) {
+            $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+            $state = $result->getState();
+            switch ($state) {
+                case AuthenticationLoginExistanceStatesEnum::New:
+                    $token = $result->getToken();
+                    $timeText = $oneWeek ? '1 week' : '1 day';
                     $response
                         ->setBody([
-                            'message' => 'A session already exists!',
+                            'daysToExpire' => $oneWeek ? 7 : 1,
+                            'token' => $token
+                        ])
+                        ->setStatusCreated()
+                        ->sendJson();
+                    return;
+                case AuthenticationLoginExistanceStatesEnum::Existing:
+                    $token = $result->getToken();
+                    $response
+                        ->setBody([
                             'token' => $token
                         ])
                         ->setStatusOk()
                         ->sendJson();
                     return;
-                }
+                default:
+                    throw new HttpInternalServerError(
+                        "Unhandled state: $state"
+                    );
             }
-
-            $this->authenticationService->tryLogin($userName, $passWord);
-            $token = $this->authenticationService->generateToken($userName, $oneWeek);
-            $response
-                ->setBody([
-                    'message' => implode(
-                        ' ',
-                        [
-                            'Login successful! Expires in',
-                            $oneWeek ?
-                                '1 week' :
-                                '1 day',
-                            '.'
-                        ]
-                    ),
-                    'token' => $token
-                ])
-                ->setStatusOk()
-                ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (AuthenticationServiceUnexistantUserException $e) {
+            throw new HttpBadRequestException(
+                "Bad Request: {$e->getMessage()}",
+                $e
+            );
+        } catch (AuthenticationServiceUnauthorizedException $e) {
+            throw new HttpUnauthorizedException(
+                "Unauthorized: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function handleValidation(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
-
-            $response
-                ->setBody([
-                    'message' => 'User is authenticated!'
-                ])
-                ->setStatusOk()
-                ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
+            $response->setStatusOk();
+        } catch (AuthenticationServiceUnauthorizedException $e) {
+            throw new HttpUnauthorizedException(
+                "Unauthorized: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function handleLogoff(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
-
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
+            $token = HttpJwtAuthenticationTokenRetriever::retrieve(
+                $request->getHeaderOrDieTrying('Authorization')
+            );
             $this->authenticationService->tryLogoff($token);
-
-            $response
-                ->setBody([
-                    'message' => 'Logoff successful!'
-                ])
-                ->setStatusOk()
-                ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            $response->setStatusOk();
+        } catch (AuthenticationServiceUnauthorizedException $e) {
+            throw new HttpUnauthorizedException(
+                "Unauthorized: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }

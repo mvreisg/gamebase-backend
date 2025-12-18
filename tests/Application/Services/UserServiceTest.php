@@ -6,180 +6,180 @@ namespace Mvreisg\GamebaseBackend\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserEntity;
-use Mvreisg\GamebaseBackend\Domain\Exceptions\Entities\EntityInvalidValueException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserEntityRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\User\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockDuplicatedEntryException;
-use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\Mock\MockUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserEntityRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
 class UserServiceTest extends TestCase
 {
-    private UserEntityRepositoryInterface $userEntityRepository;
+    private UserRepositoryInterface $userRepository;
     private EncryptionInterface $encrypter;
     private UserService $userService;
 
     protected function setUp(): void
     {
-        $this->userEntityRepository = new MockUserEntityRepository();
+        $this->userRepository = new MockUserRepository();
         $this->encrypter = new DefuseEncryption();
-        $this->userService = new UserService($this->userEntityRepository, $this->encrypter);
+        $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
     public function testIfInsertSucceds(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $this->assertNotEmpty($user);
-        $this->assertInstanceOf(UserEntity::class, $user);
+        $this->assertInstanceOf(User::class, $user);
     }
 
     public function testIfInsertingUserNameThatAlreadyExistsFails(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
         $this->expectException(MockDuplicatedEntryException::class);
 
-        $this->userService->insert($userName, $passWord, $isActive);
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
+        $this->userService->insert($username, $password, $isActive);
     }
 
     public function testIfInsertFailsWithEmptyUserName(): void
     {
-        $userName = '';
-        $passWord = 'test';
+        $username = '';
+        $password = 'test';
         $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
     }
 
     public function testIfInsertFailsWithEmptyPassword(): void
     {
-        $userName = 'test';
-        $passWord = '';
+        $username = 'test';
+        $password = '';
         $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
     }
 
     public function testIfUpdateSuccessfullyHappensWithOneUser(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $id = $user->getId();
 
-        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
+        $hasChanged = $this->userService->update($id, $username, $password, $isActive);
 
         $this->assertTrue($hasChanged);
     }
 
     public function testIfUpdateWithDuplicatedNamesSucceds(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $id = $user->getId();
 
-        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
+        $hasChanged = $this->userService->update($id, $username, $password, $isActive);
 
         $this->assertTrue($hasChanged);
 
-        $hasChanged = $this->userService->update($id, $userName, $passWord, $isActive);
+        $hasChanged = $this->userService->update($id, $username, $password, $isActive);
 
         $this->assertTrue($hasChanged);
     }
 
     public function testIfUpdateSuccessfullyHappensWithTenUsers(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
         $users = [];
         for ($i = 1; $i <= 10; $i++) {
-            $users[$i] = $this->userService->insert($userName . $i, $passWord . $i, $isActive);
+            $users[$i] = $this->userService->insert($username . $i, $password . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {
             $id = $users[$i]->getId();
-            $hasChanged = $this->userService->update($id, $userName . $i, $passWord . $i, $isActive);
+            $hasChanged = $this->userService->update($id, $username . $i, $password . $i, $isActive);
             $this->assertTrue($hasChanged);
         }
     }
 
     public function testIfUpdateFailsWithInvalidId(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
 
         $id = -1;
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->update($id, $userName, $passWord, $isActive);
+        $this->userService->update($id, $username, $password, $isActive);
     }
 
     public function testIfUpdateFailsWithEmptyUserName(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
-        $userName = '';
+        $username = '';
         $id = $user->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->update($id, $userName, $passWord, $isActive);
+        $this->userService->update($id, $username, $password, $isActive);
     }
 
     public function testIfUpdateFailsWithEmptyPassWord(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
-        $passWord = '';
+        $password = '';
         $id = $user->getId();
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->update($id, $userName, $passWord, $isActive);
+        $this->userService->update($id, $username, $password, $isActive);
     }
 
     public function testIfSettingIsActiveWithSameValueFails(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $id = $user->getId();
 
@@ -190,11 +190,11 @@ class UserServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithDifferentValueSucceds(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $id = $user->getId();
         $isActive = false;
@@ -206,11 +206,11 @@ class UserServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
 
         $id = -1;
 
@@ -221,11 +221,11 @@ class UserServiceTest extends TestCase
 
     public function testIfItFindsByIdWithSuccess(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
         $id = $user->getId();
 
@@ -236,13 +236,13 @@ class UserServiceTest extends TestCase
 
     public function testIfItFindsByIdWithSuccessWithTenUsers(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
         $users = [];
         for ($i = 1; $i <= 10; $i++) {
-            $users[$i] = $this->userService->insert($userName . $i, $passWord . $i, $isActive);
+            $users[$i] = $this->userService->insert($username . $i, $password . $i, $isActive);
         }
 
         for ($i = 1; $i <= 10; $i++) {
@@ -256,11 +256,11 @@ class UserServiceTest extends TestCase
 
     public function testIfItCannotFindWithInvalidId(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
 
         $id = -1;
 
@@ -271,13 +271,13 @@ class UserServiceTest extends TestCase
 
     public function testIfItFindsByUserNameWithSuccess(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $user = $this->userService->insert($userName, $passWord, $isActive);
+        $user = $this->userService->insert($username, $password, $isActive);
 
-        $fetchedUserName = $user->getUserName();
+        $fetchedUserName = $user->getUsername();
 
         $fetchedUser = $this->userService->findByUserName($fetchedUserName);
 
@@ -286,11 +286,11 @@ class UserServiceTest extends TestCase
 
     public function testIfItCannotFindByUserName(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
 
         $fetchedUserName = 'batata';
 
@@ -301,17 +301,17 @@ class UserServiceTest extends TestCase
 
     public function testIfItCannotFindWithEmptyUserName(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
-        $this->userService->insert($userName, $passWord, $isActive);
+        $this->userService->insert($username, $password, $isActive);
 
-        $userName = '';
+        $username = '';
 
         $this->expectException(EntityInvalidValueException::class);
 
-        $this->userService->findByUserName($userName);
+        $this->userService->findByUserName($username);
     }
 
     public function testIfFindAllSuccedsWithZeroUsers(): void
@@ -323,12 +323,12 @@ class UserServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithTenUsers(): void
     {
-        $userName = 'test';
-        $passWord = 'test';
+        $username = 'test';
+        $password = 'test';
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
-            $this->userService->insert($userName . $i, $passWord . $i, $isActive);
+            $this->userService->insert($username . $i, $password . $i, $isActive);
         }
 
         $allUsers = $this->userService->findAll();

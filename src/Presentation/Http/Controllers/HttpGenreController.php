@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
-use Mvreisg\GamebaseBackend\Application\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\GenreService;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceInvalidIdException;
+use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceInvalidNameException;
+use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceUnexistantGenreException;
+use Mvreisg\GamebaseBackend\Application\Services\Genre\GenreService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Exceptions\Http\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJWTBearerTokenRetriever;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGenreController
 {
@@ -32,347 +33,171 @@ class HttpGenreController
     public function insert(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-
-            $isNameFieldSetted = isset($body['name']);
-            if ($isNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'name value not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $name = $body['name'];
-            $isActive = $body['isActive'];
+            $name = $request->getParsedBodyPartOrDieTrying('name');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $genre = $this->genreService->insert($name, $isActive);
 
-            $data = [
-                'id' => $genre->getId(),
-                'name' => $genre->getName(),
-                'isActive' => $genre->getIsActive()
-            ];
-
             $response
                 ->setBody([
-                    'message' => 'Successfully inserted!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
+                    ]
                 ])
                 ->setStatusCreated()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (GenreServiceDuplicatedNameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
+        } catch (GenreServiceInvalidNameException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function update(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $body = $request->parseBodyFromJSONString();
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isNameFieldSetted = isset($body['name']);
-            if ($isNameFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'name value not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $name = $body['name'];
-            $isActive = $body['isActive'];
+            $id = $request->getParamOrDieTrying('id');
+            $name = $request->getParsedBodyPartOrDieTrying('name');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $wasUpdated = $this->genreService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'State updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
+        } catch (GenreServiceDuplicatedNameException $e) {
+            throw new HttpForbiddenException(
+                "Forbidden: {$e->getMessage()}",
+                $e
+            );
         } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
+            GenreServiceInvalidIdException |
+            GenreServiceInvalidNameException
+            $e
         ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GenreServiceUnexistantGenreException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function setIsActive(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-            $body = $request->parseBodyFromJSONString();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $isIsActiveFieldSetted = isset($body['isActive']);
-            if ($isIsActiveFieldSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'isActive value not informed!'
-                );
-            }
-
-            $id = $params['id'];
-            $isActive = $body['isActive'];
+            $id = $request->getParamOrDieTrying('id');
+            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
 
             $wasUpdated = $this->genreService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'message' => $wasUpdated ? 'Active state updated!' : 'No state changes!'
+                    'hasChanged' => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (GenreServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
+        } catch (GenreServiceUnexistantGenreException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findById(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
-            $params = $request->getParams();
-
-            $isIdSetted = isset($params['id']);
-            if ($isIdSetted === false) {
-                throw new HttpUndefinedValueException(
-                    'id parameter not informed!'
-                );
-            }
-
-            $id = $params['id'];
+            $id = $request->getParamOrDieTrying('id');
 
             $genre = $this->genreService->findById($id);
 
-            if ($genre === null) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
-            }
-
-            $data = [
-                'id' => $genre->getId(),
-                'name' => $genre->getName(),
-                'isActive' => $genre->getIsActive()
-            ];
-
             $response
                 ->setBody([
-                    'message' => 'Results found!',
-                    'data' => $data
+                    'data' => [
+                        'id' => $genre->getId(),
+                        'name' => $genre->getName(),
+                        'isActive' => $genre->getIsActive()
+                    ]
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (GenreServiceUnexistantGenreException $e) {
+            throw new HttpNotFoundException(
+                "Not found: {$e->getMessage()}",
+                $e
+            );
+        } catch (GenreServiceInvalidIdException $e) {
+            throw new HttpBadRequestException(
+                "Bad request: {$e->getMessage()}",
+                $e
+            );
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 
     public function findAll(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            $token = HttpJWTBearerTokenRetriever::retrieveFromHeaders($request->getHeaders());
-            $isTokenValid = $this->authenticationService->validateToken($token);
-            if ($isTokenValid === false) {
-                throw new HttpUnauthorizedException(
-                    'Invalid token!'
-                );
-            }
+            HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying('Authorization'),
+                $this->authenticationService
+            );
 
             $genres = $this->genreService->findAll();
 
             $numberOfGenresFound = count($genres);
             if ($numberOfGenresFound === 0) {
-                $response
-                    ->setBody([
-                        'message' => 'Nothing found!',
-                    ])
-                    ->setStatus(
-                        HttpStatusCodeTypesEnum::NotFound
-                    )
-                    ->send(
-                        HttpContentTypesEnum::Json
-                    );
-                return;
+                throw new HttpNotFoundException(
+                    "Nothing found!"
+                );
             }
 
             foreach ($genres as $genre) {
@@ -385,42 +210,15 @@ class HttpGenreController
 
             $response
                 ->setBody([
-                    'message' => 'Results found!',
+                    'number' => $numberOfGenresFound,
                     'data' => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
-            return;
-        } catch (
-            AuthenticationException |
-            HttpUnauthorizedException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusUnauthorized()
-                ->sendJson();
-            return;
-        } catch (
-            HttpUndefinedValueException |
-            HttpInvalidParameterException $e
-        ) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusBadRequest()
-                ->sendJson();
-            return;
+        } catch (HttpNotFoundException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            $response
-                ->setBody([
-                    'message' => $e->getMessage()
-                ])
-                ->setStatusInternalServerError()
-                ->sendJson();
-            return;
+            throw $e;
         }
     }
 }
