@@ -79,6 +79,7 @@ class MockTokenAuthentication implements AuthenticationInterface
                 );
             }
             $dto = new AuthenticationPayloadValueDTO(
+                $payload->userId,
                 $payload->username,
                 $payload->permissions,
                 $payload->sectors

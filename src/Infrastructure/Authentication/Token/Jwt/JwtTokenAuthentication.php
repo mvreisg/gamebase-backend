@@ -66,6 +66,7 @@ class JwtTokenAuthentication implements AuthenticationInterface
             $secretKey = DotenvEnvironment::get('JWT_SECRET');
             $payload = JWT::decode($token, new Key($secretKey, 'HS256'));
             $dto = new AuthenticationPayloadValueDTO(
+                $payload->sub->userId,
                 $payload->sub->username,
                 $payload->sub->permissions,
                 $payload->sub->sectors
