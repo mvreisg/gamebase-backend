@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services;
+namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
@@ -83,7 +83,7 @@ class AuthenticationServiceTest extends TestCase
         $this->userService = new UserService($this->userRepository, $this->encrypter);
     }
 
-    public function testIfANewLoginValidForOneDayWithAnExistantUserWithoutPermissionsSucceds(): void
+    public function testIfANewLoginValidForOneDayWithARegisteredUserWithoutPermissionsSucceds(): void
     {
         $username = "test";
         $password = "test";
@@ -103,7 +103,7 @@ class AuthenticationServiceTest extends TestCase
         );
     }
 
-    public function testIfANewLoginValidForOneDayWithAnExistantUserWithPermissionsToSectorsSucceds(): void
+    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsSucceds(): void
     {
         $permission = new Permission(
             null,
@@ -162,7 +162,29 @@ class AuthenticationServiceTest extends TestCase
         );
     }
 
-    public function testIfANewLoginValidForOneWeekWithAnExistantUserSucceds(): void
+    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithoutPermissionsSucceds(): void
+    {
+        $username = "test";
+        $password = "test";
+        $isActive = true;
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+        $oneWeek = true;
+
+        $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
+        $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
+        $this->assertNotEmpty($result->getToken());
+
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+            ),
+            $result->getDto()
+        );
+    }
+
+    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
     {
         $permission = new Permission(
             null,
@@ -221,55 +243,183 @@ class AuthenticationServiceTest extends TestCase
         );
     }
 
-    public function testIfANewLoginValidForOneDayWithAnExistantUserButWithAInvalidUsernameFails(): void
+    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
         $wrongUsername = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfANewLoginValidForOneWeekWithAnExistantUserButWithAInvalidUsernameFails(): void
+    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
         $wrongUsername = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfANewLoginValidForOneDayWithAnExistantUserButWithAInvalidPasswordFails(): void
+    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
         $wrongPassword = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
     }
 
-    public function testIfANewLoginValidForOneWeekWithAnExistantUserButWithAInvalidPasswordFails(): void
+    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
         $wrongPassword = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
     }
 
-    public function testIfANewLoginValidForOneDayWithAnUnexistantUserFails(): void
+    public function testIfANewLoginValidForOneDayWithInvalidCredentialsFails(): void
     {
         $username = "test";
         $password = "test";
@@ -278,7 +428,7 @@ class AuthenticationServiceTest extends TestCase
         $this->authenticationService->tryLogin($username, $password, $oneWeek);
     }
 
-    public function testIfANewLoginValidForOneWeekWithAnUnexistantUserFails(): void
+    public function testIfANewLoginValidForOneWeekWithInvalidCredentialsFails(): void
     {
         $username = "test";
         $password = "test";
@@ -287,243 +437,1014 @@ class AuthenticationServiceTest extends TestCase
         $this->authenticationService->tryLogin($username, $password, $oneWeek);
     }
 
-    public function testIfAExistantLoginValidForOneDayWithAnExistantUserSucceds(): void
+    public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsSucceds(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $existingResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existingResult->getState());
         $this->assertNotEmpty($existingResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $existingResult->getDto()
+        );
     }
 
-    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserSucceds(): void
+    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $existingResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existingResult->getState());
         $this->assertNotEmpty($existingResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $existingResult->getDto()
+        );
     }
 
-    public function testIfAExistantLoginValidForOneDayWithAnExistantUserButInvalidUsernameFails(): void
+    public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithInvalidUsernameFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $wrongUsername = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserButInvalidUsernameFails(): void
+    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $wrongUsername = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($wrongUsername, $password, $oneWeek);
     }
 
-    public function testIfAExistantLoginValidForOneDayWithAnExistantUserButInvalidPasswordFails(): void
+    public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $wrongPassword = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
     }
 
-    public function testIfAExistantLoginValidForOneWeekWithAnExistantUserButInvalidPasswordFails(): void
+    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $wrongPassword = "-";
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $wrongPassword, $oneWeek);
     }
 
-    public function testIfAOneDayExistantLoginDoesNotLoginAfterOneDay(): void
+    public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $oneDayInSeconds = 60 * 60 * 24;
+
         $this->cacheClock->toTheFuture($oneDayInSeconds);
         $this->authenticationClock->toTheFuture($oneDayInSeconds);
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $password, $oneWeek);
     }
 
-    public function testIfAOneDayExistantLoginDoesNotLoginAfterOneWeek(): void
+    public function testIfAOneDayExistantLoginByAUserWithPermissionToSectorsDoesNotLoginAfterOneWeek(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $oneWeekInSeconds = 60 * 60 * 24 * 7;
+
         $this->cacheClock->toTheFuture($oneWeekInSeconds);
         $this->authenticationClock->toTheFuture($oneWeekInSeconds);
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
         $this->authenticationService->tryLogin($username, $password, $oneWeek);
     }
 
-    public function testIfAOneWeekExistantLoginDoesLoginAfterOneDay(): void
+    public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesLoginAfterOneDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $oneDayInSeconds = 60 * 60 * 24;
+
         $this->cacheClock->toTheFuture($oneDayInSeconds);
         $this->authenticationClock->toTheFuture($oneDayInSeconds);
+
         $existantResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::Existing, $existantResult->getState());
         $this->assertNotEmpty($existantResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $existantResult->getDto()
+        );
     }
 
-    public function testIfAOneWeekExistantLoginDoesNotLoginAfterOneWeek(): void
+    public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeek(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $newResult = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $newResult->getState());
         $this->assertNotEmpty($newResult->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $newResult->getDto()
+        );
+
         $oneWeekInSeconds = 60 * 60 * 24 * 7;
+
         $this->cacheClock->toTheFuture($oneWeekInSeconds);
         $this->authenticationClock->toTheFuture($oneWeekInSeconds);
+
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
+
         $this->authenticationService->tryLogin($username, $password, $oneWeek);
     }
 
-    public function testIfAEmittedTokenValidForOneDayIsStillValidInThatDay(): void
+    public function testIfAEmittedTokenValidForOneDayToAUserWithPermissionsToSectorsIsStillValidInThatDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
         $this->authenticationService->validateLogin($token);
     }
 
-    public function testIfAEmittedTokenValidForOneDayTurnsInvalidAfterOneDay(): void
+    public function testIfAEmittedTokenValidForOneDayToAUserWithPermissionsToSectorsTurnsInvalidAfterOneDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
         $oneDayInSeconds = 60 * 60 * 24;
+
         $this->cacheClock->toTheFuture($oneDayInSeconds);
         $this->authenticationClock->toTheFuture($oneDayInSeconds);
+
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
+
         $this->authenticationService->validateLogin($token);
     }
 
-    public function testIfAEmittedTokenValidForOneWeekIsStillValidInThatDay(): void
+    public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsIsStillValidInThatDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
+
         $this->authenticationService->validateLogin($token);
     }
 
-    public function testIfAEmittedTokenValidForOneWeekIsStillValidAfterOneDay(): void
+    public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsIsStillValidAfterOneDay(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
         $oneDayInSeconds = 60 * 60 * 24;
+
         $this->cacheClock->toTheFuture($oneDayInSeconds);
         $this->authenticationClock->toTheFuture($oneDayInSeconds);
+
         $this->authenticationService->validateLogin($token);
     }
 
-    public function testIfAEmittedTokenValidForOneWeekTurnsInvalidAfterOneWeek(): void
+    public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsTurnsInvalidAfterOneWeek(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = true;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
         $oneWeekInSeconds = 60 * 60 * 24 * 7;
+
         $this->cacheClock->toTheFuture($oneWeekInSeconds);
         $this->authenticationClock->toTheFuture($oneWeekInSeconds);
+
         $this->expectException(AuthenticationServiceUnauthorizedException::class);
+
         $this->authenticationService->validateLogin($token);
     }
 
@@ -534,17 +1455,66 @@ class AuthenticationServiceTest extends TestCase
         $this->authenticationService->validateLogin($token);
     }
 
-    public function testIfALogoffSuccedsWithAValidToken(): void
+    public function testIfALogoffSuccedsWithAValidTokenInformedByAUserWithPermissionsToSectors(): void
     {
+        $permission = new Permission(
+            null,
+            "permission 1",
+            true
+        );
+
+        $insertedPermission = $this->permissionRepository->insert($permission);
+
+        $sector = new Sector(
+            null,
+            "sector 1",
+            true
+        );
+
+        $insertedSector = $this->sectorRepository->insert($sector);
+
         $username = "test";
         $password = "test";
         $isActive = true;
-        $this->userService->insert($username, $password, $isActive);
+        $insertedUser = $this->userService->insert($username, $password, $isActive);
+
+        $this->userPermissionRepository->insert(
+            new UserPermission(
+                null,
+                $insertedUser->getId(),
+                $insertedPermission->getId()
+            )
+        );
+        $this->sectorPermissionRepository->insert(
+            new SectorPermission(
+                null,
+                $insertedSector->getId(),
+                $insertedPermission->getId()
+            )
+        );
+
         $oneWeek = false;
+
         $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
+
         $this->assertEquals(AuthenticationLoginExistanceStatesEnum::New, $result->getState());
         $this->assertNotEmpty($result->getToken());
+        $this->assertEquals(
+            new AuthenticationPayloadValueDTO(
+                $insertedUser->getId(),
+                $insertedUser->getUsername(),
+                [
+                    $insertedPermission->getId()
+                ],
+                [
+                    $insertedSector->getId()
+                ]
+            ),
+            $result->getDto()
+        );
+
         $token = $result->getToken();
+
         $this->authenticationService->tryLogoff($token);
     }
 

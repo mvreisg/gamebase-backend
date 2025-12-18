@@ -12,7 +12,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Mvreisg\\GamebaseBackend\\": "tests/"
+            "Mvreisg\\GamebaseBackend\\Tests\\": "tests/"
         }
     },
     "authors": [

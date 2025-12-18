@@ -4,11 +4,10 @@ use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use GD75\DoubleQuoteFixer\DoubleQuoteFixer;
 
-$finder = (new Finder())
-    ->in(__DIR__);
+$finder = Finder::create()->in(__DIR__);
+$config = new Config();
 
-return (new Config())
-    ->setCacheFile(__DIR__."/.php-cs-fixer.cache")
+return $config
     ->registerCustomFixers([
         new DoubleQuoteFixer()
     ])
