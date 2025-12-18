@@ -20,19 +20,19 @@ class HttpAuthenticationRoutes
 
             $routes = [
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Post
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'auth',
+                            "auth",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'login',
+                            "login",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -45,19 +45,19 @@ class HttpAuthenticationRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'auth',
+                            "auth",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'validate',
+                            "validate",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -70,19 +70,19 @@ class HttpAuthenticationRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Delete
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'auth',
+                            "auth",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'logoff',
+                            "logoff",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

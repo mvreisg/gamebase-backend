@@ -42,7 +42,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     game (
                         name, 
                         is_active
@@ -50,7 +50,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 VALUES (
                     :name, 
                     :isActive
-                );'
+                );"
             );
 
             if ($insertStatement === false) {
@@ -58,8 +58,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":isActive" => $isActive
             ]);
 
             if ($wasInsertExecutionASuccess === false) {
@@ -71,12 +71,12 @@ class MariaDBGameRepository implements GameRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     game 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($selectStatement === false) {
@@ -84,7 +84,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasSelectExecutionASuccess = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
 
             if ($wasSelectExecutionASuccess === false) {
@@ -100,13 +100,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $this->pdo->commit();
 
             return new Game(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 ),
             );
         } catch (
@@ -137,13 +137,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     game 
                 SET 
                     name = :name, 
                     is_active = :isActive 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -151,9 +151,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
-                ':name' => $name,
-                ':id' => $id,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":id" => $id,
+                ":isActive" => $isActive
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
@@ -182,22 +182,22 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $intIsActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     game
                 SET
                     is_active = :isActive
                 WHERE
                     id = :id
                 AND
-                    is_active <> :isActive;'
+                    is_active <> :isActive;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':isActive' => $intIsActive,
-                ':id' => $id
+                ":isActive" => $intIsActive,
+                ":id" => $id
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -220,12 +220,12 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     game 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -233,7 +233,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
@@ -249,13 +249,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $game = new Game(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
 
@@ -276,10 +276,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    game;'
+                    game;"
             );
 
             if ($statement === false) {
@@ -301,13 +301,13 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $games = [];
             foreach ($fetchResult as $row) {
                 $game = new Game(
-                    $row['id'],
-                    $row['name'],
+                    $row["id"],
+                    $row["name"],
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
                 $games[] = $game;
@@ -343,7 +343,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -351,7 +351,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -374,21 +374,21 @@ class MariaDBGameRepository implements GameRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     game 
                 WHERE 
-                    name = :name;'
+                    name = :name;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':name' => $name
+                ":name" => $name
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -396,7 +396,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedNameException(

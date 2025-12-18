@@ -36,23 +36,23 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $username = $request->getParsedBodyPartOrDieTrying('username');
-            $password = $request->getParsedBodyPartOrDieTrying('password');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $username = $request->getParsedBodyPartOrDieTrying("username");
+            $password = $request->getParsedBodyPartOrDieTrying("password");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $user = $this->userService->insert($username, $password, $isActive);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $user->getId(),
-                        'username' => $user->getUsername(),
-                        'password' => $user->getPassword(),
-                        'isActive' => $user->getIsActive()
+                    "data" => [
+                        "id" => $user->getId(),
+                        "username" => $user->getUsername(),
+                        "password" => $user->getPassword(),
+                        "isActive" => $user->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -80,20 +80,20 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $username = $request->getParsedBodyPartOrDieTrying('username');
-            $password = $request->getParsedBodyPartOrDieTrying('password');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $username = $request->getParsedBodyPartOrDieTrying("username");
+            $password = $request->getParsedBodyPartOrDieTrying("password");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->userService->update($id, $username, $password, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -126,18 +126,18 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->userService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -155,33 +155,33 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $user = $this->userService->findById($id);
 
             $data = [
-                'id' => $user->getId(),
-                'username' => $user->getUsername(),
-                'isActive' => $user->getIsActive()
+                "id" => $user->getId(),
+                "username" => $user->getUsername(),
+                "isActive" => $user->getIsActive()
             ];
 
-            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
             if ($showPasswordQuery) {
                 if (
                     $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
                     $showPasswordQuery->getValue() === true
                 ) {
-                    $data['password'] = $user->getPassword();
+                    $data["password"] = $user->getPassword();
                 }
             }
 
             $response
                 ->setBody([
-                    'data' => $data
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -199,33 +199,33 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $username = $request->getParamOrDieTrying('username');
+            $username = $request->getParamOrDieTrying("username");
 
             $user = $this->userService->findByUsername($username);
 
             $data = [
-                'id' => $user->getId(),
-                'username' => $user->getUsername(),
-                'isActive' => $user->getIsActive()
+                "id" => $user->getId(),
+                "username" => $user->getUsername(),
+                "isActive" => $user->getIsActive()
             ];
 
-            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
             if ($showPasswordQuery) {
                 if (
                     $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
                     $showPasswordQuery->getValue() === true
                 ) {
-                    $data['password'] = $user->getPassword();
+                    $data["password"] = $user->getPassword();
                 }
             }
 
             $response
                 ->setBody([
-                    'data' => $data
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -248,7 +248,7 @@ class HttpUserController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -261,7 +261,7 @@ class HttpUserController
                 );
             }
 
-            $showPasswordQuery = $request->getQueryOrDieTrying('showPassword');
+            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
             $showPassword = false;
             if ($showPasswordQuery) {
                 if (
@@ -275,13 +275,13 @@ class HttpUserController
             $data = [];
             foreach ($users as $user) {
                 $value = [
-                    'id' => $user->getId(),
-                    'username' => $user->getUsername(),
-                    'isActive' => $user->getIsActive()
+                    "id" => $user->getId(),
+                    "username" => $user->getUsername(),
+                    "isActive" => $user->getIsActive()
                 ];
 
                 if ($showPassword) {
-                    $value['password'] = $user->getPassword();
+                    $value["password"] = $user->getPassword();
                 }
 
                 $data[] = $value;
@@ -289,8 +289,8 @@ class HttpUserController
 
             $response
                 ->setBody([
-                    'number' => $numberOfUsersFound,
-                    'data' => $data
+                    "number" => $numberOfUsersFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

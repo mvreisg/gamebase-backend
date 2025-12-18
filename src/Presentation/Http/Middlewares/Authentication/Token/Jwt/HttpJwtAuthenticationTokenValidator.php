@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationValidationResultValueObject;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
 

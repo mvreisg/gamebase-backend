@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
@@ -25,7 +24,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfPlatformInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -36,7 +35,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfTenPlatformsInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
@@ -49,7 +48,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfInsertionOfTwoPlatformsWithTheSameNameFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->expectException(MockDuplicatedEntryException::class);
@@ -60,7 +59,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfPlatformInsertionFailsWithEmptyName(): void
     {
-        $name = '';
+        $name = "";
         $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
@@ -70,7 +69,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfUpdateSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -84,7 +83,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfUpdateSuccedsWithTenPlatformsInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platforms = [];
@@ -101,7 +100,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfUpdatingAPlatformWithAExistantNameSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -115,7 +114,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfUpdatingAPlatformWithAUnexistantIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->platformService->insert($name, $isActive);
@@ -129,12 +128,12 @@ class PlatformServiceTest extends TestCase
 
     public function testIfUpdatingAPlatformWithAEmptyNameFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
 
-        $name = '';
+        $name = "";
         $id = $platform->getId();
 
         $this->expectException(EntityInvalidValueException::class);
@@ -144,7 +143,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfSettingAsActiveSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = false;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -159,7 +158,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithSameValueFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -173,7 +172,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->platformService->insert($name, $isActive);
@@ -187,7 +186,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platform = $this->platformService->insert($name, $isActive);
@@ -202,7 +201,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfFindByIdSuccedsWithTenPlatforms(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $platforms = [];
@@ -229,7 +228,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithOnePlatformInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->platformService->insert($name, $isActive);
@@ -241,7 +240,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithTenPlatformsInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {

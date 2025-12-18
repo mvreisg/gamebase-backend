@@ -55,7 +55,7 @@ class GamePlatform
     {
         if ($this->id <= 0) {
             throw new GamePlatformInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -64,7 +64,7 @@ class GamePlatform
     {
         if ($this->platformId <= 0) {
             throw new GamePlatformInvalidPlatformIdException(
-                'The platform id must be greater than zero!'
+                "The platform id must be greater than zero!"
             );
         }
     }
@@ -73,7 +73,7 @@ class GamePlatform
     {
         if ($this->gameId <= 0) {
             throw new GamePlatformInvalidGameIdException(
-                'The game id must be greater than zero!'
+                "The game id must be greater than zero!"
             );
         }
     }

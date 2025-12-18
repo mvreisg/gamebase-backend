@@ -27,7 +27,7 @@ class HttpControllerHandler
         ) {
             $response
                 ->setBody([
-                    'message' => $e->getMessage()
+                    "message" => $e->getMessage()
                 ])
                 ->setStatusBadRequest()
                 ->sendJson();
@@ -37,7 +37,7 @@ class HttpControllerHandler
         ) {
             $response
                 ->setBody([
-                    'message' => $e->getMessage()
+                    "message" => $e->getMessage()
                 ])
                 ->setStatusUnauthorized()
                 ->sendJson();
@@ -47,7 +47,7 @@ class HttpControllerHandler
         ) {
             $response
                 ->setBody([
-                    'message' => $e->getMessage()
+                    "message" => $e->getMessage()
                 ])
                 ->setStatusForbidden()
                 ->sendJson();
@@ -57,7 +57,7 @@ class HttpControllerHandler
         ) {
             $response
                 ->setBody([
-                    'message' => $e->getMessage()
+                    "message" => $e->getMessage()
                 ])
                 ->setStatusNotFound()
                 ->sendJson();
@@ -68,7 +68,7 @@ class HttpControllerHandler
         ) {
             $response
                 ->setBody([
-                    'message' => $e->getMessage()
+                    "message" => $e->getMessage()
                 ])
                 ->setStatusInternalServerError()
                 ->sendJson();

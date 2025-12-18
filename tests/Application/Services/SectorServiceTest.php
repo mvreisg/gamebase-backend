@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
@@ -25,7 +24,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfASingleInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
@@ -36,7 +35,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfASingleInsertionWithInvalidNameFails(): void
     {
-        $name = '';
+        $name = "";
         $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
@@ -46,7 +45,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfDuplicatedInsertionsFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->expectException(MockDuplicatedEntryException::class);
@@ -57,7 +56,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfTenInsertionsSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
@@ -70,12 +69,12 @@ class SectorServiceTest extends TestCase
 
     public function testIfUpdateSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
 
-        $name = 'teste';
+        $name = "teste";
         $id = $sector->getId();
 
         $hasChanged = $this->sectorService->update($id, $name, $isActive);
@@ -85,7 +84,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfUpdateSuccedsWithSameValues(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
@@ -99,12 +98,12 @@ class SectorServiceTest extends TestCase
 
     public function testIfUpdateWithInvalidNameFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
 
-        $name = '';
+        $name = "";
         $id = $sector->getId();
 
         $this->expectException(EntityInvalidValueException::class);
@@ -114,7 +113,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfSetIsActiveSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
@@ -128,7 +127,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfSetIsActiveDoesNotChangeRepositoryState(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
@@ -141,7 +140,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $sector = $this->sectorService->insert($name, $isActive);
@@ -156,7 +155,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfFindByIdWithInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->sectorService->insert($name, $isActive);
@@ -176,7 +175,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfFindAllReturnsFilled(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->sectorService->insert($name, $isActive);

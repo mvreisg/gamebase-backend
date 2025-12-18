@@ -25,13 +25,13 @@ class HttpGameGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -49,19 +49,19 @@ class HttpGameGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -79,19 +79,19 @@ class HttpGameGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -109,19 +109,19 @@ class HttpGameGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -139,13 +139,13 @@ class HttpGameGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

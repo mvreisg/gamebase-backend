@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions;
 
 class AuthenticationException extends \Exception
 {
-    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
+    public function __construct(string $message = "", int $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct(
             $message,

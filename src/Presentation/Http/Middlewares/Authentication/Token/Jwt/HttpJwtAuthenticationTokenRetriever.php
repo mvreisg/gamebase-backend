@@ -12,10 +12,10 @@ class HttpJwtAuthenticationTokenRetriever
     {
         try {
             $bearer = trim($header);
-            $exploded = explode(' ', $bearer);
+            $exploded = explode(" ", $bearer);
             if (isset($exploded[1]) === false) {
                 throw new HttpUnauthorizedException(
-                    'Authentication token not informed!'
+                    "Authentication token not informed!"
                 );
             }
             $token = $exploded[1];

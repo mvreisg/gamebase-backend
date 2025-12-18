@@ -12,14 +12,14 @@ class DotenvEnvironment
     public static function load(): void
     {
         try {
-            $dotenv = Dotenv::createMutable(PROJECT_ROOT, '.env');
+            $dotenv = Dotenv::createMutable(PROJECT_ROOT, ".env");
             $dotenv->load();
             $dotenv->required(["ENVIRONMENT", "MACHINE"])->required();
 
             $environment = $_SERVER["ENVIRONMENT"];
             $machine = $_SERVER["MACHINE"];
 
-            $dotenv = Dotenv::createMutable(PROJECT_ROOT, '.env.' . $environment . '.' . $machine);
+            $dotenv = Dotenv::createMutable(PROJECT_ROOT, ".env." . $environment . "." . $machine);
             $dotenv->load();
         } catch (\Throwable $e) {
             throw new DotenvEnvironmentException(

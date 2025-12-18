@@ -33,7 +33,7 @@ class HttpRoute
         return $this;
     }
 
-    public function setSeparator(string $separator = '/'): HttpRoute
+    public function setSeparator(string $separator = "/"): HttpRoute
     {
         $this->separator = $separator;
         return $this;

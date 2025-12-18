@@ -35,24 +35,24 @@ class HttpGameGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
-            $genreId = $request->getParsedBodyPartOrDieTrying('genreId');
+            $gameId = $request->getParsedBodyPartOrDieTrying("gameId");
+            $genreId = $request->getParsedBodyPartOrDieTrying("genreId");
 
             $gameGenre = $this->gameGenreService->insert($gameId, $genreId);
 
             $data = [
-                'id' => $gameGenre->getId(),
-                'gameId' => $gameGenre->getGameId(),
-                'genreId' => $gameGenre->getGenreId()
+                "id" => $gameGenre->getId(),
+                "gameId" => $gameGenre->getGameId(),
+                "genreId" => $gameGenre->getGenreId()
             ];
 
             $response
                 ->setBody([
-                    'data' => $data
+                    "data" => $data
                 ])
                 ->setStatusCreated()
                 ->sendJson();
@@ -83,18 +83,18 @@ class HttpGameGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $gameId = $request->getParsedBodyPartOrDieTrying('gameId');
-            $genreId = $request->getParsedBodyPartOrDieTrying('genreId');
+            $id = $request->getParamOrDieTrying("id");
+            $gameId = $request->getParsedBodyPartOrDieTrying("gameId");
+            $genreId = $request->getParsedBodyPartOrDieTrying("genreId");
 
             $wasUpdated = $this->gameGenreService->update($id, $gameId, $genreId);
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -127,16 +127,16 @@ class HttpGameGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $wasDeleted = $this->gameGenreService->delete($id);
             $response
                 ->setBody([
-                    'wasDeleted' => $wasDeleted
+                    "wasDeleted" => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -159,11 +159,11 @@ class HttpGameGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $gameGenre = $this->gameGenreService->findById($id);
 
@@ -175,10 +175,10 @@ class HttpGameGenreController
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $gameGenre->getId(),
-                        'gameId' => $gameGenre->getGameId(),
-                        'genreId' => $gameGenre->getGenreId()
+                    "data" => [
+                        "id" => $gameGenre->getId(),
+                        "gameId" => $gameGenre->getGameId(),
+                        "genreId" => $gameGenre->getGenreId()
                     ]
                 ])
                 ->setStatusOk()
@@ -204,7 +204,7 @@ class HttpGameGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -213,23 +213,23 @@ class HttpGameGenreController
             $numberOfGameGenres = count($gameGenres);
             if ($numberOfGameGenres === 0) {
                 throw new HttpNotFoundException(
-                    'No game genres found!'
+                    "No game genres found!"
                 );
             }
 
             $data = [];
             foreach ($gameGenres as $gameGenre) {
                 $data[] = [
-                    'id' => $gameGenre->getId(),
-                    'gameId' => $gameGenre->getGameId(),
-                    'genreId' => $gameGenre->getGenreId()
+                    "id" => $gameGenre->getId(),
+                    "gameId" => $gameGenre->getGameId(),
+                    "genreId" => $gameGenre->getGenreId()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfGameGenres,
-                    'data' => $data
+                    "number" => $numberOfGameGenres,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

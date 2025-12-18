@@ -8,7 +8,7 @@ class SectorPermissionServiceUnexistantSectorPermissionException extends \Except
 {
     public const EXCEPTION_CODE = 0;
 
-    public function __construct(string $message = '', ?\Throwable $previous = null)
+    public function __construct(string $message = "", ?\Throwable $previous = null)
     {
         parent::__construct(
             $message,

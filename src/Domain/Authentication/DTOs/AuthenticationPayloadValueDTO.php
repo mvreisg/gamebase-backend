@@ -14,8 +14,8 @@ class AuthenticationPayloadValueDTO
     public function __construct(
         int $userId,
         string $username,
-        array $permissions,
-        array $sectors
+        array $permissions = [],
+        array $sectors = []
     ) {
         $this->userId = $userId;
         $this->username = $username;

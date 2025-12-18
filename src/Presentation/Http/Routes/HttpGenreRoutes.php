@@ -25,7 +25,7 @@ class HttpGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -43,13 +43,13 @@ class HttpGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -67,13 +67,13 @@ class HttpGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -91,13 +91,13 @@ class HttpGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -115,7 +115,7 @@ class HttpGenreRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'genre',
+                            "genre",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

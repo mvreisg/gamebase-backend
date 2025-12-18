@@ -55,7 +55,7 @@ class UserPermission
     {
         if ($this->id <= 0) {
             throw new UserPermissionInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -64,7 +64,7 @@ class UserPermission
     {
         if ($this->userId <= 0) {
             throw new UserPermissionInvalidUserIdException(
-                'The user id must be greater than zero!'
+                "The user id must be greater than zero!"
             );
         }
     }
@@ -73,7 +73,7 @@ class UserPermission
     {
         if ($this->permissionId <= 0) {
             throw new UserPermissionInvalidPermissionIdException(
-                'The permission id must be greater than zero!'
+                "The permission id must be greater than zero!"
             );
         }
     }

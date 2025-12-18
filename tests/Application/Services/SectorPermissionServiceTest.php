@@ -44,10 +44,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfInsertionSucceds(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -59,10 +59,10 @@ class SectorPermissionServiceTest extends TestCase
     public function testIfTenInsertionsSucceds(): void
     {
         for ($i = 1; $i <= 10; $i++) {
-            $user = $this->sectorService->insert('test' . $i, true);
+            $user = $this->sectorService->insert("test" . $i, true);
             $userId = $user->getId();
 
-            $permission = $this->permissionService->insert('test' . $i, true);
+            $permission = $this->permissionService->insert("test" . $i, true);
             $permissionId = $permission->getId();
 
             $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -76,7 +76,7 @@ class SectorPermissionServiceTest extends TestCase
     {
         $userId = -1;
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->expectException(EntityInvalidValueException::class);
@@ -88,7 +88,7 @@ class SectorPermissionServiceTest extends TestCase
     {
         $userId = 999;
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->expectException(MockUnexistantRegisterException::class);
@@ -98,7 +98,7 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfInsertionWithInvalidPermissionIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
         $permissionId = -1;
@@ -113,8 +113,8 @@ class SectorPermissionServiceTest extends TestCase
         $users = [];
         $permissions = [];
         for ($i = 1; $i <= 2; $i++) {
-            $users[] = $this->sectorService->insert('test' . $i, true);
-            $permissions[] = $this->permissionService->insert('test' . $i, true);
+            $users[] = $this->sectorService->insert("test" . $i, true);
+            $permissions[] = $this->permissionService->insert("test" . $i, true);
         }
 
         $usersIterator = new ArrayIterator($users);
@@ -140,10 +140,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfUpdateFailsWithSameValues(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -157,10 +157,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfUpdateWithInvalidIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->sectorPermissionService->insert($userId, $permissionId);
@@ -174,10 +174,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfUpdateWithInvalidUserIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -192,10 +192,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfUpdateWithInvalidPermissionIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -210,10 +210,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfDeletionSucceds(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -236,10 +236,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfDeletionWithInvalidIdSucceds(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->sectorPermissionService->insert($userId, $permissionId);
@@ -253,10 +253,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $userPermission = $this->sectorPermissionService->insert($userId, $permissionId);
@@ -272,10 +272,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfFindByIdWithInvalidIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->sectorPermissionService->insert($userId, $permissionId);
@@ -289,10 +289,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfFindByIdWithUnexistantIdFails(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->sectorPermissionService->insert($userId, $permissionId);
@@ -306,10 +306,10 @@ class SectorPermissionServiceTest extends TestCase
 
     public function testIfFindAllSucceds(): void
     {
-        $user = $this->sectorService->insert('test', true);
+        $user = $this->sectorService->insert("test", true);
         $userId = $user->getId();
 
-        $permission = $this->permissionService->insert('test', true);
+        $permission = $this->permissionService->insert("test", true);
         $permissionId = $permission->getId();
 
         $this->sectorPermissionService->insert($userId, $permissionId);

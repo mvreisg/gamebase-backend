@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services\Authentication;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceEncryptionException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationLoginResultValueObject;
@@ -18,7 +16,6 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\AuthenticationInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\DTOs\AuthenticationPayloadValueDTO;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\AuthenticationException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Interfaces\AuthenticationClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Authentication\ValueObjects\AuthenticationPayloadValueValueObject;
 use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Cache\Exceptions\CacheException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;

@@ -15,7 +15,7 @@ class User
     private ?string $password;
     private bool $isActive;
 
-    public function __construct(?int $id = null, ?string $username = '', ?string $password = '', bool $isActive = false)
+    public function __construct(?int $id = null, ?string $username = "", ?string $password = "", bool $isActive = false)
     {
         $this->id = $id;
         $this->username = $username;
@@ -67,7 +67,7 @@ class User
     {
         if ($this->getId() <= 0) {
             throw new UserInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -76,16 +76,16 @@ class User
     {
         $originalUsername = trim($this->getUsername());
 
-        if ($originalUsername === '') {
+        if ($originalUsername === "") {
             throw new UserInvalidUsernameException(
-                'The username is empty!'
+                "The username is empty!"
             );
         }
 
-        $isInvalid = preg_match('/[^a-zA-Z0-9]/', $originalUsername);
+        $isInvalid = preg_match("/[^a-zA-Z0-9]/", $originalUsername);
         if ($isInvalid) {
             throw new UserInvalidUsernameException(
-                'The username is invalid!'
+                "The username is invalid!"
             );
         }
 
@@ -96,16 +96,16 @@ class User
     {
         $originalPassword = trim($this->getPassword());
 
-        if ($originalPassword === '') {
+        if ($originalPassword === "") {
             throw new UserInvalidPasswordException(
-                'The password is empty!'
+                "The password is empty!"
             );
         }
 
-        $isInvalid = preg_match('/[^a-zA-Z0-9]/', $originalPassword);
+        $isInvalid = preg_match("/[^a-zA-Z0-9]/", $originalPassword);
         if ($isInvalid) {
             throw new UserInvalidPasswordException(
-                'The password is invalid!'
+                "The password is invalid!"
             );
         }
 

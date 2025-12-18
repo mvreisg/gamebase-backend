@@ -6,8 +6,6 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceEncryptionException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
@@ -33,9 +31,9 @@ class HttpAuthenticationController
         try {
             $request->parseBodyFromJsonString();
 
-            $username = $request->getParsedBodyPartOrDieTrying('username');
-            $password = $request->getParsedBodyPartOrDieTrying('password');
-            $oneWeek = $request->getParsedBodyPartOrDieTrying('oneWeek');
+            $username = $request->getParsedBodyPartOrDieTrying("username");
+            $password = $request->getParsedBodyPartOrDieTrying("password");
+            $oneWeek = $request->getParsedBodyPartOrDieTrying("oneWeek");
 
             $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
             $state = $result->getState();
@@ -46,9 +44,9 @@ class HttpAuthenticationController
                     $timeToExpireInSeconds = $oneWeek ? $oneDayInSeconds * 7 : $oneDayInSeconds;
                     $response
                         ->setBody([
-                            'secondsToExpire' => $timeToExpireInSeconds,
-                            'token' => $token,
-                            'loginInfo' => $result->getDto()
+                            "secondsToExpire" => $timeToExpireInSeconds,
+                            "token" => $token,
+                            "loginInfo" => $result->getDto()
                         ])
                         ->setStatusCreated()
                         ->sendJson();
@@ -57,8 +55,8 @@ class HttpAuthenticationController
                     $token = $result->getToken();
                     $response
                         ->setBody([
-                            'token' => $token,
-                            'loginInfo' => $result->getDto()
+                            "token" => $token,
+                            "loginInfo" => $result->getDto()
                         ])
                         ->setStatusOk()
                         ->sendJson();
@@ -87,13 +85,13 @@ class HttpAuthenticationController
     {
         try {
             $result = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
             $response
                 ->setStatusOk()
                 ->setBody([
-                    'loginInfo' => $result->getDto()
+                    "loginInfo" => $result->getDto()
                 ])
                 ->sendJson();
         } catch (AuthenticationServiceUnauthorizedException $e) {
@@ -110,11 +108,11 @@ class HttpAuthenticationController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
             $token = HttpJwtAuthenticationTokenRetriever::retrieve(
-                $request->getHeaderOrDieTrying('Authorization')
+                $request->getHeaderOrDieTrying("Authorization")
             );
             $this->authenticationService->tryLogoff($token);
             $response->setStatusOk();

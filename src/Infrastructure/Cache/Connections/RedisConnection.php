@@ -14,9 +14,9 @@ class RedisConnection
     {
         try {
             return new Client([
-                'scheme' => DotenvEnvironment::get('REDIS_SCHEME'),
-                'host' => DotenvEnvironment::get('REDIS_HOST'),
-                'port' => DotenvEnvironment::get('REDIS_PORT'),
+                "scheme" => DotenvEnvironment::get("REDIS_SCHEME"),
+                "host" => DotenvEnvironment::get("REDIS_HOST"),
+                "port" => DotenvEnvironment::get("REDIS_PORT"),
             ]);
         } catch (\Throwable $e) {
             throw new RedisConnectionException(

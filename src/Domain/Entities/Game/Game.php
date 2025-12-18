@@ -13,7 +13,7 @@ class Game
     private ?string $name;
     private bool $isActive;
 
-    public function __construct(?int $id = null, ?string $name = '', bool $isActive = false)
+    public function __construct(?int $id = null, ?string $name = "", bool $isActive = false)
     {
         $this->id = $id;
         $this->name = $name;
@@ -54,7 +54,7 @@ class Game
     {
         if ($this->getId() <= 0) {
             throw new GameInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -63,16 +63,16 @@ class Game
     {
         $originalName = trim($this->getName());
 
-        if ($originalName === '') {
+        if ($originalName === "") {
             throw new GameInvalidNameException(
-                'The name is empty!'
+                "The name is empty!"
             );
         }
 
-        $isInvalid = preg_match('/[^a-zA-Z0-9]/', $originalName);
+        $isInvalid = preg_match("/[^a-zA-Z0-9]/", $originalName);
         if ($isInvalid) {
             throw new GameInvalidNameException(
-                'The name is invalid!'
+                "The name is invalid!"
             );
         }
 

@@ -35,22 +35,22 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $gameId = $gameGenre->getGameId();
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO game_genre (
+                "INSERT INTO game_genre (
                     genre_id, 
                     game_id
                 ) 
                 VALUES (
                     :genreId, 
                     :gameId
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':genreId' => $genreId,
-                ':gameId' => $gameId
+                ":genreId" => $genreId,
+                ":gameId" => $gameId
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -61,19 +61,19 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     game_genre 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -87,9 +87,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $this->pdo->commit();
 
             return new GameGenre(
-                $fetchResult['id'],
-                $fetchResult['genre_id'],
-                $fetchResult['game_id']
+                $fetchResult["id"],
+                $fetchResult["genre_id"],
+                $fetchResult["game_id"]
             );
         } catch (
             MariaDBTransactionCreationFailureException |
@@ -113,22 +113,22 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $genreId = $gameGenre->getGenreId();
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     game_genre 
                 SET 
                     genre_id = :genreId, 
                     game_id = :gameId 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
-                ':id' => $id,
-                ':gameId' => $gameId,
-                ':genreId' => $genreId
+                ":id" => $id,
+                ":gameId" => $gameId,
+                ":genreId" => $genreId
             ]);
             if ($wasTheStatementExecutionSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -151,10 +151,10 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'DELETE FROM
+                "DELETE FROM
                     game_genre
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -163,7 +163,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             $id = $gameGenre->getId();
 
             $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -186,19 +186,19 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     game_genre 
                 WHERE 
-                    id = :id'
+                    id = :id"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -212,9 +212,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             }
 
             return new GameGenre(
-                $fetchResult['id'],
-                $fetchResult['genre_id'],
-                $fetchResult['game_id']
+                $fetchResult["id"],
+                $fetchResult["genre_id"],
+                $fetchResult["game_id"]
             );
         } catch (
             MariaDBStatementCreationFailureException |
@@ -232,10 +232,10 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    game_genre'
+                    game_genre"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -255,9 +255,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             foreach ($fetchResult as $row) {
                 $gameGenres[] = new GameGenre(
-                    $row['id'],
-                    $row['genre_id'],
-                    $row['game_id']
+                    $row["id"],
+                    $row["genre_id"],
+                    $row["game_id"]
                 );
             }
 
@@ -291,7 +291,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -299,7 +299,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {

@@ -34,21 +34,21 @@ class HttpPlatformController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $platform = $this->platformService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $platform->getId(),
-                        'name' => $platform->getName(),
-                        'isActive' => $platform->getIsActive()
+                    "data" => [
+                        "id" => $platform->getId(),
+                        "name" => $platform->getName(),
+                        "isActive" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -72,19 +72,19 @@ class HttpPlatformController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->platformService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -116,18 +116,18 @@ class HttpPlatformController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->platformService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -150,20 +150,20 @@ class HttpPlatformController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $platform = $this->platformService->findById($id);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $platform->getId(),
-                        'name' => $platform->getName(),
-                        'isActive' => $platform->getIsActive()
+                    "data" => [
+                        "id" => $platform->getId(),
+                        "name" => $platform->getName(),
+                        "isActive" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -187,7 +187,7 @@ class HttpPlatformController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -203,16 +203,16 @@ class HttpPlatformController
             $data = [];
             foreach ($platforms as $platform) {
                 $data[] = [
-                    'id' => $platform->getId(),
-                    'name' => $platform->getName(),
-                    'isActive' => $platform->getIsActive()
+                    "id" => $platform->getId(),
+                    "name" => $platform->getName(),
+                    "isActive" => $platform->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfPlatformsFound,
-                    'data' => $data
+                    "number" => $numberOfPlatformsFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

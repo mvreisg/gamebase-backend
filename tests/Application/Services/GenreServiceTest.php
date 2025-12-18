@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
@@ -25,7 +24,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfGenreInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
@@ -36,7 +35,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfTenGenreInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
@@ -50,7 +49,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(MockDuplicatedEntryException::class);
 
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->genreService->insert($name, $isActive);
@@ -59,7 +58,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfGenreInsertionFailsWithEmptyName(): void
     {
-        $name = '';
+        $name = "";
         $isActive = true;
 
         $this->expectException(EntityInvalidValueException::class);
@@ -69,12 +68,12 @@ class GenreServiceTest extends TestCase
 
     public function testIfUpdateSuccedsWithOneGenreInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
 
-        $name = 'test2';
+        $name = "test2";
         $isActive = false;
         $id = $genre->getId();
 
@@ -85,7 +84,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfUpdateSuccedsWithTenGenresInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genres = [];
@@ -103,7 +102,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfUpdatingAGenreWithAExistantNameSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
@@ -117,7 +116,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfUpdatingAGenreWithInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->genreService->insert($name, $isActive);
@@ -131,13 +130,13 @@ class GenreServiceTest extends TestCase
 
     public function testIfUpdatingAGenreWithAEmptyNameFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
 
         $id = $genre->getId();
-        $name = '';
+        $name = "";
 
         $this->expectException(EntityInvalidValueException::class);
 
@@ -146,7 +145,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfSettingAsActiveSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
@@ -161,7 +160,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithSameValueFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
@@ -175,7 +174,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfSettingIsActiveWitInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->genreService->insert($name, $isActive);
@@ -189,7 +188,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genre = $this->genreService->insert($name, $isActive);
@@ -204,7 +203,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfFindByIdSuccedsWithTenGenres(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $genres = [];
@@ -231,7 +230,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithOneGenreInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->genreService->insert($name, $isActive);
@@ -243,7 +242,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithTenGenresInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {

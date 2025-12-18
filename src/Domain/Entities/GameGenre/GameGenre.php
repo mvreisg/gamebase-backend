@@ -55,7 +55,7 @@ class GameGenre
     {
         if ($this->id <= 0) {
             throw new GameGenreInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -64,7 +64,7 @@ class GameGenre
     {
         if ($this->gameId <= 0) {
             throw new GameGenreInvalidGameIdException(
-                'The game id must be greater than zero!'
+                "The game id must be greater than zero!"
             );
         }
     }
@@ -73,7 +73,7 @@ class GameGenre
     {
         if ($this->genreId <= 0) {
             throw new GameGenreInvalidGenreIdException(
-                'The genre id must be greater than zero!'
+                "The genre id must be greater than zero!"
             );
         }
     }

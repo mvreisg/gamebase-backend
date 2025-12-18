@@ -55,7 +55,7 @@ class SectorPermission
     {
         if ($this->id <= 0) {
             throw new SectorPermissionInvalidIdException(
-                'The id must be greater than zero!'
+                "The id must be greater than zero!"
             );
         }
     }
@@ -64,7 +64,7 @@ class SectorPermission
     {
         if ($this->sectorId <= 0) {
             throw new SectorPermissionInvalidSectorIdException(
-                'The sector id must be greater than zero!'
+                "The sector id must be greater than zero!"
             );
         }
     }
@@ -73,7 +73,7 @@ class SectorPermission
     {
         if ($this->permissionId <= 0) {
             throw new SectorPermissionInvalidPermissionIdException(
-                'The permission id must be greater than zero!'
+                "The permission id must be greater than zero!"
             );
         }
     }

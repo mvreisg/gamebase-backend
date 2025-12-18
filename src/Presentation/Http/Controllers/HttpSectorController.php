@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceDuplicatedNameException;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceInvalidIdException;
@@ -13,16 +12,10 @@ use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorService
 use Mvreisg\GamebaseBackend\Application\Services\Sector\SectorService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJwtAuthenticationTokenRetriever;
 
 class HttpSectorController
 {
@@ -41,21 +34,21 @@ class HttpSectorController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $sector = $this->sectorService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $sector->getId(),
-                        'name' => $sector->getName(),
-                        'isActive' => $sector->getIsActive()
+                    "data" => [
+                        "id" => $sector->getId(),
+                        "name" => $sector->getName(),
+                        "isActive" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -79,19 +72,19 @@ class HttpSectorController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->sectorService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -123,18 +116,18 @@ class HttpSectorController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->sectorService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -157,20 +150,20 @@ class HttpSectorController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $sector = $this->sectorService->findById($id);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $sector->getId(),
-                        'name' => $sector->getName(),
-                        'isActive' => $sector->getIsActive()
+                    "data" => [
+                        "id" => $sector->getId(),
+                        "name" => $sector->getName(),
+                        "isActive" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -194,7 +187,7 @@ class HttpSectorController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -210,16 +203,16 @@ class HttpSectorController
             $data = [];
             foreach ($sectors as $sector) {
                 $data[] = [
-                    'id' => $sector->getId(),
-                    'name' => $sector->getName(),
-                    'isActive' => $sector->getIsActive()
+                    "id" => $sector->getId(),
+                    "name" => $sector->getName(),
+                    "isActive" => $sector->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfSectorsFound,
-                    'data' => $data
+                    "number" => $numberOfSectorsFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

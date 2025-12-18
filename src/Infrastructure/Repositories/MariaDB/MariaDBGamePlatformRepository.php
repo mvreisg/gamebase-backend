@@ -35,22 +35,22 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $gameId = $gamePlatform->getGameId();
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO game_platform (
+                "INSERT INTO game_platform (
                     platform_id, 
                     game_id
                 ) 
                 VALUES (
                     :platformId, 
                     :gameId
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertStatementExecutionSuccessful = $insertStatement->execute([
-                ':platformId' => $platformId,
-                ':gameId' => $gameId
+                ":platformId" => $platformId,
+                ":gameId" => $gameId
             ]);
             if ($wasTheInsertStatementExecutionSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -61,19 +61,19 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     game_platform 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -87,9 +87,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $this->pdo->commit();
 
             return new GamePlatform(
-                $fetchResult['id'],
-                $fetchResult['platform_id'],
-                $fetchResult['game_id']
+                $fetchResult["id"],
+                $fetchResult["platform_id"],
+                $fetchResult["game_id"]
             );
         } catch (
             MariaDBTransactionCreationFailureException |
@@ -113,22 +113,22 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $gameId = $gamePlatform->getGameId();
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     game_platform 
                 SET 
                     platform_id = :platformId,
                     game_id = :gameId
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':platformId' => $platformId,
-                ':gameId' => $gameId,
-                ':id' => $id
+                ":platformId" => $platformId,
+                ":gameId" => $gameId,
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -153,17 +153,17 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $id = $gamePlatform->getId();
 
             $statement = $this->pdo->prepare(
-                'DELETE FROM
+                "DELETE FROM
                     game_platform
                 WHERE
-                    id = :id'
+                    id = :id"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
-                'id' => $id,
+                "id" => $id,
             ]);
             if ($wasTheStatementExecutionSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -186,19 +186,19 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     *
                 FROM
                     game_platform
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -212,9 +212,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             return new GamePlatform(
-                $fetchResult['id'],
-                $fetchResult['platform_id'],
-                $fetchResult['game_id']
+                $fetchResult["id"],
+                $fetchResult["platform_id"],
+                $fetchResult["game_id"]
             );
         } catch (
             MariaDBStatementCreationFailureException |
@@ -232,10 +232,10 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    game_platform;'
+                    game_platform;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -255,9 +255,9 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
             foreach ($result as $row) {
                 $gamePlatform = new GamePlatform(
-                    $row['id'],
-                    $row['platform_id'],
-                    $row['game_id']
+                    $row["id"],
+                    $row["platform_id"],
+                    $row["game_id"]
                 );
 
                 $gamePlatforms[] = $gamePlatform;
@@ -293,7 +293,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -301,7 +301,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {

@@ -25,13 +25,13 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'permission',
+                            "permission",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -49,19 +49,19 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'permission',
+                            "permission",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -79,19 +79,19 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'permission',
+                            "permission",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -109,19 +109,19 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'permission',
+                            "permission",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -139,13 +139,13 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'permission',
+                            "permission",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

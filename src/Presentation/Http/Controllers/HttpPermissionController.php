@@ -34,21 +34,21 @@ class HttpPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $permission = $this->permissionService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $permission->getId(),
-                        'name' => $permission->getName(),
-                        'isActive' => $permission->getIsActive()
+                    "data" => [
+                        "id" => $permission->getId(),
+                        "name" => $permission->getName(),
+                        "isActive" => $permission->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -72,19 +72,19 @@ class HttpPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->permissionService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -116,18 +116,18 @@ class HttpPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->permissionService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -150,20 +150,20 @@ class HttpPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $permission = $this->permissionService->findById($id);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $permission->getId(),
-                        'name' => $permission->getName(),
-                        'isActive' => $permission->getIsActive()
+                    "data" => [
+                        "id" => $permission->getId(),
+                        "name" => $permission->getName(),
+                        "isActive" => $permission->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -186,7 +186,7 @@ class HttpPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -202,16 +202,16 @@ class HttpPermissionController
             $data = [];
             foreach ($permissions as $permission) {
                 $data[] = [
-                    'id' => $permission->getId(),
-                    'name' => $permission->getName(),
-                    'isActive' => $permission->getIsActive()
+                    "id" => $permission->getId(),
+                    "name" => $permission->getName(),
+                    "isActive" => $permission->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfPermissionsFound,
-                    'data' => $data
+                    "number" => $numberOfPermissionsFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

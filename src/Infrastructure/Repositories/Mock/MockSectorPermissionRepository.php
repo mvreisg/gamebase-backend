@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 

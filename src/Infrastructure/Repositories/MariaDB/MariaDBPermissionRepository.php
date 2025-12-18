@@ -42,7 +42,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     permission 
                 (
                     name,
@@ -51,15 +51,15 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 VALUES (
                     :name,
                     :isActive
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertSuccessful = $insertStatement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":isActive" => $isActive
             ]);
             if ($wasTheInsertSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -70,19 +70,19 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     *
                 FROM
                     permission
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectSuccessful = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -96,13 +96,13 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $this->pdo->commit();
 
             return new Permission(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -133,22 +133,22 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     permission
                 SET
                     name = :name,
                     is_active = :isActive
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessful = $statement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive,
-                ':id' => $id
+                ":name" => $name,
+                ":isActive" => $isActive,
+                ":id" => $id
             ]);
             if ($wasTheUpdateSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -176,20 +176,20 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $intIsActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     permission
                 SET
                     is_active = :isActive
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $intIsActive
+                ":id" => $id,
+                ":isActive" => $intIsActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -212,19 +212,19 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM
                     permission
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheFetchSuccessful = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheFetchSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -238,13 +238,13 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             }
 
             return new Permission(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -262,10 +262,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     *
                 FROM
-                    permission;'
+                    permission;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -284,13 +284,13 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $permissions = [];
             foreach ($fetchResult as $row) {
                 $permissions[] = new Permission(
-                    $row['id'],
-                    $row['name'],
+                    $row["id"],
+                    $row["name"],
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
             }
@@ -325,7 +325,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -333,7 +333,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -356,21 +356,21 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     permission 
                 WHERE 
-                    name = :name;'
+                    name = :name;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutedSuccessfully = $statement->execute([
-                ':name' => $name
+                ":name" => $name
             ]);
             if ($wasTheStatementExecutedSuccessfully === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -378,7 +378,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedNameException(

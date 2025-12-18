@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidIdException;
 use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidPermissionIdException;
@@ -15,15 +14,9 @@ use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserP
 use Mvreisg\GamebaseBackend\Application\Services\UserPermission\UserPermissionService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJwtAuthenticationTokenRetriever;
 
 class HttpUserPermissionController
 {
@@ -42,21 +35,21 @@ class HttpUserPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $userId = $request->getParsedBodyPartOrDieTrying('userId');
-            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
+            $userId = $request->getParsedBodyPartOrDieTrying("userId");
+            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
 
             $userPermission = $this->userPermissionService->insert($userId, $permissionId);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $userPermission->getId(),
-                        'userId' => $userPermission->getUserId(),
-                        'permissionId' => $userPermission->getPermissionId()
+                    "data" => [
+                        "id" => $userPermission->getId(),
+                        "userId" => $userPermission->getUserId(),
+                        "permissionId" => $userPermission->getPermissionId()
                     ]
                 ])
                 ->setStatusCreated()
@@ -89,18 +82,18 @@ class HttpUserPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $userId = $request->getParsedBodyPartOrDieTrying('userId');
-            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
+            $id = $request->getParamOrDieTrying("id");
+            $userId = $request->getParsedBodyPartOrDieTrying("userId");
+            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
 
             $wasUpdated = $this->userPermissionService->update($id, $userId, $permissionId);
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -133,16 +126,16 @@ class HttpUserPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $wasDeleted = $this->userPermissionService->delete($id);
             $response
                 ->setBody([
-                    'wasDeleted' => $wasDeleted
+                    "wasDeleted" => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -165,11 +158,11 @@ class HttpUserPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $userPermission = $this->userPermissionService->findById($id);
 
@@ -181,10 +174,10 @@ class HttpUserPermissionController
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $userPermission->getId(),
-                        'userId' => $userPermission->getUserId(),
-                        'permissionId' => $userPermission->getPermissionId()
+                    "data" => [
+                        "id" => $userPermission->getId(),
+                        "userId" => $userPermission->getUserId(),
+                        "permissionId" => $userPermission->getPermissionId()
                     ]
                 ])
                 ->setStatusOk()
@@ -210,7 +203,7 @@ class HttpUserPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -219,23 +212,23 @@ class HttpUserPermissionController
             $numberOfUserPermissions = count($userPermissions);
             if ($numberOfUserPermissions === 0) {
                 throw new HttpNotFoundException(
-                    'No user permissions found!'
+                    "No user permissions found!"
                 );
             }
 
             $data = [];
             foreach ($userPermissions as $userPermission) {
                 $data[] = [
-                    'id' => $userPermission->getId(),
-                    'userId' => $userPermission->getUserId(),
-                    'permissionId' => $userPermission->getPermissionId()
+                    "id" => $userPermission->getId(),
+                    "userId" => $userPermission->getUserId(),
+                    "permissionId" => $userPermission->getPermissionId()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfUserPermissions,
-                    'data' => $data
+                    "number" => $numberOfUserPermissions,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();
