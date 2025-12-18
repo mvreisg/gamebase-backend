@@ -8,7 +8,7 @@ $finder = (new Finder())
     ->in(__DIR__);
 
 return (new Config())
-    ->setCacheFile(__DIR__.'/.php-cs-fixer.cache')
+    ->setCacheFile(__DIR__."/.php-cs-fixer.cache")
     ->registerCustomFixers([
         new DoubleQuoteFixer()
     ])
