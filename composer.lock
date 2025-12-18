@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea1c612a4b650c0c2a5c67ef34fc554a",
+    "content-hash": "b1f4bca366bbb7f27520902525a01db6",
     "packages": [
         {
             "name": "cakephp/chronos",
@@ -2568,6 +2568,45 @@
                 }
             ],
             "time": "2025-10-24T12:05:10+00:00"
+        },
+        {
+            "name": "gd-75/php-cs-fixer-enforce-double-quotes",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gd-75/php-cs-fixer-enforce-double-quotes.git",
+                "reference": "ceca7ff8006caede6ef09cc5d9958a1d9f5b2472"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gd-75/php-cs-fixer-enforce-double-quotes/zipball/ceca7ff8006caede6ef09cc5d9958a1d9f5b2472",
+                "reference": "ceca7ff8006caede6ef09cc5d9958a1d9f5b2472",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "php-cs-fixer/phpunit-constraint-isidenticalstring": "^1.2",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GD75\\DoubleQuoteFixer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A rule for PHP CS Fixer to enforce double quotes.",
+            "support": {
+                "issues": "https://github.com/gd-75/php-cs-fixer-enforce-double-quotes/issues",
+                "source": "https://github.com/gd-75/php-cs-fixer-enforce-double-quotes/tree/1.1.0"
+            },
+            "time": "2022-07-12T06:00:30+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -5589,7 +5628,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": "8.3.6"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

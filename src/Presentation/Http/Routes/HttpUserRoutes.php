@@ -25,7 +25,7 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -43,13 +43,13 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -67,13 +67,13 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -91,19 +91,19 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -121,19 +121,19 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'username',
+                            "username",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'username',
+                            "username",
                             HttpRouteParameterTypesEnum::Text
                         )
                     )
@@ -151,7 +151,7 @@ class HttpUserRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'user',
+                            "user",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

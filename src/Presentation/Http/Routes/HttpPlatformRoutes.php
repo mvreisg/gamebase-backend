@@ -25,7 +25,7 @@ class HttpPlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'platform',
+                            "platform",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -43,13 +43,13 @@ class HttpPlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'platform',
+                            "platform",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -67,13 +67,13 @@ class HttpPlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'platform',
+                            "platform",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -91,13 +91,13 @@ class HttpPlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'platform',
+                            "platform",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -115,7 +115,7 @@ class HttpPlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'platform',
+                            "platform",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

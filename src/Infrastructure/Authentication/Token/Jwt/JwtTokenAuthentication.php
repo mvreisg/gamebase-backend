@@ -28,27 +28,27 @@ class JwtTokenAuthentication implements AuthenticationInterface
         try {
             switch ($time) {
                 case AuthenticationTimesEnum::OneDay:
-                    $time = '+1 day';
+                    $time = "+1 day";
                     break;
                 case AuthenticationTimesEnum::OneWeek:
-                    $time = '+1 week';
+                    $time = "+1 week";
                     break;
                 default:
                     throw new JwtTokenAuthenticationException(
                         "JWT token authentication encode error: Invalid time: $time."
                     );
             }
-            $secretKey = DotenvEnvironment::get('JWT_SECRET');
+            $secretKey = DotenvEnvironment::get("JWT_SECRET");
             $issuedAt = $clock->now();
             $expireAt = $issuedAt->modify($time)->getTimestamp();
 
             $payload = [
-                'iat' => $issuedAt->getTimestamp(),
-                'exp' => $expireAt,
-                'sub' => $dto
+                "iat" => $issuedAt->getTimestamp(),
+                "exp" => $expireAt,
+                "sub" => $dto
             ];
 
-            $token = JWT::encode($payload, $secretKey, 'HS256');
+            $token = JWT::encode($payload, $secretKey, "HS256");
 
             return $token;
         } catch (DotenvEnvironmentException $e) {
@@ -63,46 +63,47 @@ class JwtTokenAuthentication implements AuthenticationInterface
     public function decode(string $token, AuthenticationClockInterface $clock): AuthenticationPayloadValueObject
     {
         try {
-            $secretKey = DotenvEnvironment::get('JWT_SECRET');
-            $payload = JWT::decode($token, new Key($secretKey, 'HS256'));
+            $secretKey = DotenvEnvironment::get("JWT_SECRET");
+            $payload = JWT::decode($token, new Key($secretKey, "HS256"));
             $dto = new AuthenticationPayloadValueDTO(
+                $payload->sub->userId,
                 $payload->sub->username,
                 $payload->sub->permissions,
                 $payload->sub->sectors
             );
             return new AuthenticationPayloadValueObject(
-                \DateTimeImmutable::createFromFormat('U', (string)$payload->iat),
-                \DateTimeImmutable::createFromFormat('U', (string)$payload->exp),
+                \DateTimeImmutable::createFromFormat("U", (string)$payload->iat),
+                \DateTimeImmutable::createFromFormat("U", (string)$payload->exp),
                 $dto
             );
         } catch (\InvalidArgumentException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Invalid argument.',
+                "JWT token authentication decode error: Invalid argument.",
                 $e,
             );
         } catch (\DomainException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Domain error.',
+                "JWT token authentication decode error: Domain error.",
                 $e,
             );
         } catch (\UnexpectedValueException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Unexpected value.',
+                "JWT token authentication decode error: Unexpected value.",
                 $e,
             );
         } catch (SignatureInvalidException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Invalid signature.',
+                "JWT token authentication decode error: Invalid signature.",
                 $e,
             );
         } catch (BeforeValidException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Before valid.',
+                "JWT token authentication decode error: Before valid.",
                 $e,
             );
         } catch (ExpiredException $e) {
             throw new JwtTokenAuthenticationException(
-                'JWT token authentication decode error: Expired token.',
+                "JWT token authentication decode error: Expired token.",
                 $e,
             );
         } catch (\Throwable $e) {

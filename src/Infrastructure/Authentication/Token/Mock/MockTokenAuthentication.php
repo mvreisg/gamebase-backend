@@ -9,7 +9,6 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\DTOs\AuthenticationPayloadValu
 use Mvreisg\GamebaseBackend\Domain\Authentication\Enums\AuthenticationTimesEnum;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Interfaces\AuthenticationClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\ValueObjects\AuthenticationPayloadValueObject;
-use Mvreisg\GamebaseBackend\Domain\Authentication\ValueObjects\AuthenticationPayloadValueValueObject;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Exceptions\MockTokenAuthenticationException;
 
 class MockTokenAuthentication implements AuthenticationInterface
@@ -79,13 +78,14 @@ class MockTokenAuthentication implements AuthenticationInterface
                 );
             }
             $dto = new AuthenticationPayloadValueDTO(
+                $payload->userId,
                 $payload->username,
                 $payload->permissions,
                 $payload->sectors
             );
             return new AuthenticationPayloadValueObject(
-                \DateTimeImmutable::createFromFormat('U', (string)$emittedAt),
-                \DateTimeImmutable::createFromFormat('U', (string)($emittedAt + $seconds)),
+                \DateTimeImmutable::createFromFormat("U", (string)$emittedAt),
+                \DateTimeImmutable::createFromFormat("U", (string)($emittedAt + $seconds)),
                 $dto
             );
         } catch (MockTokenAuthenticationException $e) {

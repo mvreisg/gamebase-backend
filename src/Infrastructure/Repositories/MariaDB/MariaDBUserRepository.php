@@ -43,7 +43,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     user (
                         username, 
                         password,
@@ -53,7 +53,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
                     :username, 
                     :password, 
                     :isActive
-                );'
+                );"
             );
 
             if ($insertStatement === false) {
@@ -61,9 +61,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
-                ':username' => $username,
-                ':password' => $password,
-                ':isActive' => $isActive
+                ":username" => $username,
+                ":password" => $password,
+                ":isActive" => $isActive
             ]);
 
             if ($wasInsertExecutionASuccess === false) {
@@ -75,12 +75,12 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($selectStatement === false) {
@@ -88,7 +88,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasSelectExecutionASuccess = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
 
             if ($wasSelectExecutionASuccess === false) {
@@ -104,14 +104,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $this->pdo->commit();
 
             return new User(
-                $fetchResult['id'],
-                $fetchResult['username'],
-                $fetchResult['password'],
+                $fetchResult["id"],
+                $fetchResult["username"],
+                $fetchResult["password"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -143,14 +143,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     user 
                 SET 
                     username = :username, 
                     password = :password, 
                     is_active = :isActive 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -158,10 +158,10 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
-                ':username' => $username,
-                ':password' => $password,
-                ':isActive' => $isActive,
-                ':id' => $id
+                ":username" => $username,
+                ":password" => $password,
+                ":isActive" => $isActive,
+                ":id" => $id
             ]);
 
             if ($wasStatementExecutionSuccessful === false) {
@@ -192,22 +192,22 @@ class MariaDBUserRepository implements UserRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     user
                 SET
                     is_active = :isActive
                 WHERE
                     id = :id
                 AND
-                    is_active <> :isActive;'
+                    is_active <> :isActive;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':isActive' => $intIsActive,
-                ':id' => $id
+                ":isActive" => $intIsActive,
+                ":id" => $id
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -230,19 +230,19 @@ class MariaDBUserRepository implements UserRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -256,14 +256,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             return new User(
-                $fetchResult['id'],
-                $fetchResult['username'],
-                $fetchResult['password'],
+                $fetchResult["id"],
+                $fetchResult["username"],
+                $fetchResult["password"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -282,19 +282,19 @@ class MariaDBUserRepository implements UserRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user 
                 WHERE 
-                    username = :username;'
+                    username = :username;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':username' => $username
+                ":username" => $username
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -308,14 +308,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             return new User(
-                $fetchResult['id'],
-                $fetchResult['username'],
-                $fetchResult['password'],
+                $fetchResult["id"],
+                $fetchResult["username"],
+                $fetchResult["password"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -333,10 +333,10 @@ class MariaDBUserRepository implements UserRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    user;'
+                    user;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -355,14 +355,14 @@ class MariaDBUserRepository implements UserRepositoryInterface
             $users = [];
             foreach ($fetchResult as $row) {
                 $users[] = new User(
-                    $row['id'],
-                    $row['username'],
-                    $row['password'],
+                    $row["id"],
+                    $row["username"],
+                    $row["password"],
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
             }
@@ -398,7 +398,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -406,7 +406,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -429,21 +429,21 @@ class MariaDBUserRepository implements UserRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     user 
                 WHERE 
-                    username = :username;'
+                    username = :username;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':username' => $username
+                ":username" => $username
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -451,7 +451,7 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedUsernameException(

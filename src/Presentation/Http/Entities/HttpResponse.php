@@ -87,7 +87,7 @@ class HttpResponse
             switch ($contentType) {
                 default:
                     throw new HttpInternalServerError(
-                        'Untreated Content-Type: ' . $contentType->value
+                        "Untreated Content-Type: " . $contentType->value
                     );
                 case HttpContentTypesEnum::Text:
                     header(HttpContentTypesEnum::Text->value);

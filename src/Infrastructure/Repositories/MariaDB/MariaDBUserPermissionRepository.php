@@ -35,22 +35,22 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $permissionId = $userPermission->getPermissionId();
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO user_permission (
+                "INSERT INTO user_permission (
                     user_id, 
                     permission_id
                 ) 
                 VALUES (
                     :userId, 
                     :permissionId
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':userId' => $userId,
-                ':permissionId' => $permissionId
+                ":userId" => $userId,
+                ":permissionId" => $permissionId
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -61,19 +61,19 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user_permission 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -87,9 +87,9 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $this->pdo->commit();
 
             return new UserPermission(
-                $fetchResult['id'],
-                $fetchResult['user_id'],
-                $fetchResult['permission_id']
+                $fetchResult["id"],
+                $fetchResult["user_id"],
+                $fetchResult["permission_id"]
             );
         } catch (
             MariaDBTransactionCreationFailureException |
@@ -113,22 +113,22 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $permissionId = $userPermission->getPermissionId();
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     user_permission 
                 SET 
                     user_id = :userId, 
                     permission_id = :permissionId 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
-                ':id' => $id,
-                ':userId' => $userId,
-                ':permissionId' => $permissionId
+                ":id" => $id,
+                ":userId" => $userId,
+                ":permissionId" => $permissionId
             ]);
             if ($wasTheStatementExecutionSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -151,10 +151,10 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
     {
         try {
             $statement = $this->pdo->prepare(
-                'DELETE FROM
+                "DELETE FROM
                     user_permission
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -163,7 +163,7 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $id = $userPermission->getId();
 
             $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -186,19 +186,19 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user_permission 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -212,9 +212,9 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             }
 
             return new UserPermission(
-                $fetchResult['id'],
-                $fetchResult['user_id'],
-                $fetchResult['permission_id']
+                $fetchResult["id"],
+                $fetchResult["user_id"],
+                $fetchResult["permission_id"]
             );
         } catch (
             MariaDBStatementCreationFailureException |
@@ -232,19 +232,19 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     user_permission
                 WHERE
-                    user_id = :userId;'
+                    user_id = :userId;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':userId' => $userId
+                ":userId" => $userId
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -258,9 +258,9 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $userPermissions = [];
             foreach ($fetchResult as $row) {
                 $userPermission = new UserPermission(
-                    $row['id'],
-                    $row['user_id'],
-                    $row['permission_id']
+                    $row["id"],
+                    $row["user_id"],
+                    $row["permission_id"]
                 );
 
                 $userPermissions[] = $userPermission;
@@ -282,10 +282,10 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    user_permission;'
+                    user_permission;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -304,9 +304,9 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             $userPermissions = [];
             foreach ($fetchResult as $row) {
                 $userPermission = new UserPermission(
-                    $row['id'],
-                    $row['user_id'],
-                    $row['permission_id']
+                    $row["id"],
+                    $row["user_id"],
+                    $row["permission_id"]
                 );
 
                 $userPermissions[] = $userPermission;
@@ -342,7 +342,7 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -350,7 +350,7 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {

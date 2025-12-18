@@ -1,14 +1,19 @@
 <?php
 
-$finder = (new PhpCsFixer\Finder())
-    ->in(__DIR__);
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+use GD75\DoubleQuoteFixer\DoubleQuoteFixer;
 
-return (new PhpCsFixer\Config())
-    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
-    ->setCacheFile(__DIR__.'/.php-cs-fixer.cache')
+$finder = Finder::create()->in(__DIR__);
+$config = new Config();
+
+return $config
+    ->registerCustomFixers([
+        new DoubleQuoteFixer()
+    ])
     ->setRules([
-        '@PSR12' => true,
-        // TODO check if this option will break the code
-        //'single_quote' => false,
+        "@PSR12" => true,
+        "no_unused_imports" => true,
+        "GD75/double_quote_fixer" => true,
     ])
     ->setFinder($finder);

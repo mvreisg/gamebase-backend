@@ -34,21 +34,21 @@ class HttpGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $genre = $this->genreService->insert($name, $isActive);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $genre->getId(),
-                        'name' => $genre->getName(),
-                        'isActive' => $genre->getIsActive()
+                    "data" => [
+                        "id" => $genre->getId(),
+                        "name" => $genre->getName(),
+                        "isActive" => $genre->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -72,19 +72,19 @@ class HttpGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->genreService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -116,18 +116,18 @@ class HttpGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->genreService->setIsActive($id, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -150,20 +150,20 @@ class HttpGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $genre = $this->genreService->findById($id);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $genre->getId(),
-                        'name' => $genre->getName(),
-                        'isActive' => $genre->getIsActive()
+                    "data" => [
+                        "id" => $genre->getId(),
+                        "name" => $genre->getName(),
+                        "isActive" => $genre->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -187,7 +187,7 @@ class HttpGenreController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -202,16 +202,16 @@ class HttpGenreController
 
             foreach ($genres as $genre) {
                 $data[] = [
-                    'id' => $genre->getId(),
-                    'name' => $genre->getName(),
-                    'isActive' => $genre->getIsActive()
+                    "id" => $genre->getId(),
+                    "name" => $genre->getName(),
+                    "isActive" => $genre->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfGenresFound,
-                    'data' => $data
+                    "number" => $numberOfGenresFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

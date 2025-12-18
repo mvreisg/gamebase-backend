@@ -42,7 +42,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     sector 
                 (
                     name,
@@ -51,7 +51,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 VALUES (
                     :name,
                     :isActive
-                );'
+                );"
             );
 
             if ($insertStatement === false) {
@@ -59,8 +59,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $wasTheInsertSuccessful = $insertStatement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":isActive" => $isActive
             ]);
 
             if ($wasTheInsertSuccessful === false) {
@@ -72,12 +72,12 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     *
                 FROM
                     sector
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($selectStatement === false) {
@@ -85,7 +85,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $wasTheSelectSuccessful = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
 
             if ($wasTheSelectSuccessful === false) {
@@ -101,13 +101,13 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $this->pdo->commit();
 
             return new Sector(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -138,13 +138,13 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     sector
                 SET
                     name = :name,
                     is_active = :isActive
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -152,9 +152,9 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $wasTheUpdateSuccessful = $statement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive,
-                ':id' => $id
+                ":name" => $name,
+                ":isActive" => $isActive,
+                ":id" => $id
             ]);
 
             if ($wasTheUpdateSuccessful === false) {
@@ -183,22 +183,22 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     sector
                 SET
                     is_active = :isActive
                 WHERE
                     id = :id
                 AND
-                    is_active <> :isActive;'
+                    is_active <> :isActive;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $isActive
+                ":id" => $id,
+                ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -221,12 +221,12 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM
                     sector
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -234,7 +234,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $wasTheFetchSuccessful = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
 
             if ($wasTheFetchSuccessful === false) {
@@ -250,13 +250,13 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             return new Sector(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -275,10 +275,10 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     *
                 FROM
-                    sector;'
+                    sector;"
             );
 
             if ($statement === false) {
@@ -299,13 +299,13 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $sectors = [];
             foreach ($fetchResult as $row) {
                 $sector = new Sector(
-                    $row['id'],
-                    $row['name'],
+                    $row["id"],
+                    $row["name"],
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
 
@@ -342,7 +342,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -350,7 +350,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -373,21 +373,21 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     sector 
                 WHERE 
-                    name = :name;'
+                    name = :name;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':name' => $name
+                ":name" => $name
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -395,7 +395,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedNameException(

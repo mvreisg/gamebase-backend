@@ -23,16 +23,16 @@ class HttpRouter
     public function __construct()
     {
         $this->headers = [
-            'Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT, OPTIONS',
-            'Access-Control-Allow-Headers: Content-Type, Authorization',
-            'Access-Control-Allow-Credentials: true',
+            "Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT, OPTIONS",
+            "Access-Control-Allow-Headers: Content-Type, Authorization",
+            "Access-Control-Allow-Credentials: true",
         ];
 
-        $separator = DotenvEnvironment::get('API_CONSUMERS_ADDRESSES_SEPARATOR');
-        $origins = DotenvEnvironment::getArray('API_CONSUMERS_ADDRESSES', $separator);
+        $separator = DotenvEnvironment::get("API_CONSUMERS_ADDRESSES_SEPARATOR");
+        $origins = DotenvEnvironment::getArray("API_CONSUMERS_ADDRESSES", $separator);
 
         foreach ($origins as $origin) {
-            $this->headers[] = 'Access-Control-Allow-Origin: ' . $origin;
+            $this->headers[] = "Access-Control-Allow-Origin: " . $origin;
         }
     }
 
@@ -57,26 +57,26 @@ class HttpRouter
                 header($header);
             }
 
-            $path = $_SERVER['REQUEST_URI'];
+            $path = $_SERVER["REQUEST_URI"];
 
-            $method = $_SERVER['REQUEST_METHOD'];
+            $method = $_SERVER["REQUEST_METHOD"];
             switch ($method) {
-                case 'POST':
+                case "POST":
                     $method = HttpMethodTypesEnum::Post;
                     break;
-                case 'GET':
+                case "GET":
                     $method = HttpMethodTypesEnum::Get;
                     break;
-                case 'PATCH':
+                case "PATCH":
                     $method = HttpMethodTypesEnum::Patch;
                     break;
-                case 'DELETE':
+                case "DELETE":
                     $method = HttpMethodTypesEnum::Delete;
                     break;
-                case 'PUT':
+                case "PUT":
                     $method = HttpMethodTypesEnum::Put;
                     break;
-                case 'OPTIONS':
+                case "OPTIONS":
                     $method = HttpMethodTypesEnum::Options;
                     break;
                 default:
@@ -85,7 +85,7 @@ class HttpRouter
                     );
             }
 
-            $explodedPath = explode('?', $path);
+            $explodedPath = explode("?", $path);
 
             $routePart = $explodedPath[0];
 
@@ -95,7 +95,7 @@ class HttpRouter
                 $queryPart = $explodedPath[1];
             }
 
-            $body = file_get_contents('php://input');
+            $body = file_get_contents("php://input");
             $headers = getallheaders();
 
             if ($method === HttpMethodTypesEnum::Options) {
@@ -103,7 +103,7 @@ class HttpRouter
                 return;
             }
 
-            $tokenizedRoute = explode('/', $routePart);
+            $tokenizedRoute = explode("/", $routePart);
             array_shift($tokenizedRoute);
             $tokenizedRouteCount = count($tokenizedRoute);
 
@@ -141,7 +141,7 @@ class HttpRouter
                         case HttpRouteParameterTypesEnum::Integer:
                             $isMatchingValue =
                                 filter_var($routePartValue, FILTER_VALIDATE_INT) ||
-                                $routePartValue === '0';
+                                $routePartValue === "0";
                             if ($isMatchingValue) {
                                 $routePartValue = intval($routePartValue);
                             }
@@ -184,9 +184,9 @@ class HttpRouter
 
                 $queries = [];
                 if ($containsQueryParameters) {
-                    $queriesMap = explode('&', $queryPart);
+                    $queriesMap = explode("&", $queryPart);
                     $queriesMap = array_map(
-                        fn ($item) => explode('=', $item),
+                        fn ($item) => explode("=", $item),
                         $queriesMap
                     );
                     foreach ($queriesMap as $key => $value) {
@@ -237,7 +237,7 @@ class HttpRouter
             }
 
             header(HttpStatusCodeTypesEnum::NotFound->value);
-            print('Route not found!');
+            print("Route not found!");
         } catch (\Throwable $e) {
             throw $e;
         }

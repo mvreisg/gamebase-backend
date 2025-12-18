@@ -15,7 +15,7 @@ class DefuseEncryption implements EncryptionInterface
     public function encrypt(string $text): string
     {
         try {
-            $asciiKey = DotenvEnvironment::get('DEFUSE_PHP_ENCRYPTION_KEY');
+            $asciiKey = DotenvEnvironment::get("DEFUSE_PHP_ENCRYPTION_KEY");
             $key = Key::loadFromAsciiSafeString($asciiKey);
             $encrypted = Crypto::encrypt($text, $key);
             return $encrypted;
@@ -30,7 +30,7 @@ class DefuseEncryption implements EncryptionInterface
     public function decrypt(string $secret): string
     {
         try {
-            $asciiKey = DotenvEnvironment::get('DEFUSE_PHP_ENCRYPTION_KEY');
+            $asciiKey = DotenvEnvironment::get("DEFUSE_PHP_ENCRYPTION_KEY");
             $key = Key::loadFromAsciiSafeString($asciiKey);
             $text = Crypto::decrypt($secret, $key);
             return $text;

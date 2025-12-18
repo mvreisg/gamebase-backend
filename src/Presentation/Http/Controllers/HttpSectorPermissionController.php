@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Authentication\AuthenticationException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidIdException;
 use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidPermissionIdException;
@@ -15,15 +14,9 @@ use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\Sec
 use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\SectorPermissionService;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInvalidParameterException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUndefinedValueException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpJwtAuthenticationTokenRetriever;
 
 class HttpSectorPermissionController
 {
@@ -42,21 +35,21 @@ class HttpSectorPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $sectorId = $request->getParsedBodyPartOrDieTrying('sectorId');
-            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
+            $sectorId = $request->getParsedBodyPartOrDieTrying("sectorId");
+            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
 
             $sectorPermission = $this->sectorPermissionService->insert($sectorId, $permissionId);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $sectorPermission->getId(),
-                        'sectorId' => $sectorPermission->getSectorId(),
-                        'permissionId' => $sectorPermission->getPermissionId()
+                    "data" => [
+                        "id" => $sectorPermission->getId(),
+                        "sectorId" => $sectorPermission->getSectorId(),
+                        "permissionId" => $sectorPermission->getPermissionId()
                     ]
                 ])
                 ->setStatusCreated()
@@ -88,18 +81,18 @@ class HttpSectorPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $sectorId = $request->getParsedBodyPartOrDieTrying('sectorId');
-            $permissionId = $request->getParsedBodyPartOrDieTrying('permissionId');
+            $id = $request->getParamOrDieTrying("id");
+            $sectorId = $request->getParsedBodyPartOrDieTrying("sectorId");
+            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
 
             $wasUpdated = $this->sectorPermissionService->update($id, $sectorId, $permissionId);
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -132,16 +125,16 @@ class HttpSectorPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $wasDeleted = $this->sectorPermissionService->delete($id);
             $response
                 ->setBody([
-                    'wasDeleted' => $wasDeleted
+                    "wasDeleted" => $wasDeleted
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -164,11 +157,11 @@ class HttpSectorPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $sectorPermission = $this->sectorPermissionService->findById($id);
 
@@ -180,10 +173,10 @@ class HttpSectorPermissionController
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $sectorPermission->getId(),
-                        'sectorId' => $sectorPermission->getSectorId(),
-                        'permissionId' => $sectorPermission->getPermissionId()
+                    "data" => [
+                        "id" => $sectorPermission->getId(),
+                        "sectorId" => $sectorPermission->getSectorId(),
+                        "permissionId" => $sectorPermission->getPermissionId()
                     ]
                 ])
                 ->setStatusOk()
@@ -209,7 +202,7 @@ class HttpSectorPermissionController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -218,23 +211,23 @@ class HttpSectorPermissionController
             $numberOfSectorPermissions = count($sectorPermissions);
             if ($numberOfSectorPermissions === 0) {
                 throw new HttpNotFoundException(
-                    'No sector permissions found!'
+                    "No sector permissions found!"
                 );
             }
 
             $data = [];
             foreach ($sectorPermissions as $sectorPermission) {
                 $data[] = [
-                    'id' => $sectorPermission->getId(),
-                    'sectorId' => $sectorPermission->getSectorId(),
-                    'permissionId' => $sectorPermission->getPermissionId()
+                    "id" => $sectorPermission->getId(),
+                    "sectorId" => $sectorPermission->getSectorId(),
+                    "permissionId" => $sectorPermission->getPermissionId()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfSectorPermissions,
-                    'data' => $data
+                    "number" => $numberOfSectorPermissions,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

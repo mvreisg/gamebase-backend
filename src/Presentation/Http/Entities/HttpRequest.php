@@ -26,7 +26,7 @@ class HttpRequest
         HttpRoute $route,
         array $queries = [],
         array $params = [],
-        string $body = '',
+        string $body = "",
         array $headers = [],
     ) {
         $this->method = $method;

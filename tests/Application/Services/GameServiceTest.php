@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services;
 
-use Mvreisg\GamebaseBackend\Application\Exceptions\Repositories\RepositoryException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game\Game;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityInvalidValueException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Exceptions\Repositories\RepositoryDuplicatedEntryException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockGameRepository;
 use PHPUnit\Framework\TestCase;
@@ -26,7 +24,7 @@ class GameServiceTest extends TestCase
 
     public function testIfGameInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -36,7 +34,7 @@ class GameServiceTest extends TestCase
 
     public function testIfTenGameInsertionSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         for ($i = 1; $i <= 10; $i++) {
@@ -47,7 +45,7 @@ class GameServiceTest extends TestCase
 
     public function testIfInsertionOfTwoGamesWithTheSameNameFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->expectException(RepositoryDuplicatedEntryException::class);
@@ -60,19 +58,19 @@ class GameServiceTest extends TestCase
     {
         $this->expectException(EntityInvalidValueException::class);
 
-        $name = '';
+        $name = "";
         $isActive = true;
         $this->gameService->insert($name, $isActive);
     }
 
     public function testIfUpdateSucceds(): void
     {
-        $name = 'test1';
+        $name = "test1";
         $isActive = true;
         $game = $this->gameService->insert($name, $isActive);
 
         $id = $game->getId();
-        $name = 'test2';
+        $name = "test2";
         $hasUpdated = $this->gameService->update($id, $name, $isActive);
 
         $this->assertTrue($hasUpdated);
@@ -80,7 +78,7 @@ class GameServiceTest extends TestCase
 
     public function testIfUpdatingAGameWithAExistantNameSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -94,7 +92,7 @@ class GameServiceTest extends TestCase
 
     public function testIfUpdateSuccedsWithTenGamesInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $games = [];
@@ -111,7 +109,7 @@ class GameServiceTest extends TestCase
 
     public function testIfUpdatingAGameWithAInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->gameService->insert($name, $isActive);
@@ -125,8 +123,8 @@ class GameServiceTest extends TestCase
 
     public function testIfUpdatingAGameWithAEmptyNameFails(): void
     {
-        $name = 'test';
-        $emptyName = '';
+        $name = "test";
+        $emptyName = "";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -140,7 +138,7 @@ class GameServiceTest extends TestCase
 
     public function testIfSettingAsActiveSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -155,7 +153,7 @@ class GameServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithSameValueDoesNotReallyChangesSomething(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -169,7 +167,7 @@ class GameServiceTest extends TestCase
 
     public function testIfSettingIsActiveWithInvalidIdFails(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->gameService->insert($name, $isActive);
@@ -183,7 +181,7 @@ class GameServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $game = $this->gameService->insert($name, $isActive);
@@ -198,7 +196,7 @@ class GameServiceTest extends TestCase
 
     public function testIfFindByIdSuccedsWithTenPlatforms(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $games = [];
@@ -222,7 +220,7 @@ class GameServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithOneGameInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $this->gameService->insert($name, $isActive);
@@ -234,7 +232,7 @@ class GameServiceTest extends TestCase
 
     public function testIfFindAllSuccedsWithTenGamesInTheRepository(): void
     {
-        $name = 'test';
+        $name = "test";
         $isActive = true;
 
         $games = [];

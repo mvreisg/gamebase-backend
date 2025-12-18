@@ -42,7 +42,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     genre (
                         name,
                         is_active
@@ -51,7 +51,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     (
                         :name,
                         :isActive
-                    );'
+                    );"
             );
 
             if ($insertStatement === false) {
@@ -59,8 +59,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":isActive" => $isActive
             ]);
 
             if ($wasInsertStatementExecutedSuccessfully === false) {
@@ -72,12 +72,12 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     genre 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($selectStatement === false) {
@@ -85,7 +85,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
 
             if ($wasSelectStatementSuccessfullyExecuted === false) {
@@ -101,13 +101,13 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $this->pdo->commit();
 
             return new Genre(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -138,13 +138,13 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     genre 
                 SET 
                     name = :name, 
                     is_active = :isActive 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -152,9 +152,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':name' => $name,
-                ':id' => $id,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":id" => $id,
+                ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -182,22 +182,22 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $intIsActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     genre
                 SET
                     is_active = :isActive
                 WHERE
                     id = :id
                 AND
-                    is_active <> :isActive;'
+                    is_active <> :isActive;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $intIsActive
+                ":id" => $id,
+                ":isActive" => $intIsActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -220,12 +220,12 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     genre 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
 
             if ($statement === false) {
@@ -233,7 +233,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
 
             if ($wasTheStatementSuccessfullyExecuted === false) {
@@ -248,13 +248,13 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             return new Genre(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -273,10 +273,10 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    genre;'
+                    genre;"
             );
 
             if ($statement === false) {
@@ -299,13 +299,13 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             foreach ($fetchResult as $row) {
                 $genres[] = new Genre(
-                    $row['id'],
-                    $row['name'],
+                    $row["id"],
+                    $row["name"],
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
             }
@@ -340,7 +340,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -348,7 +348,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -371,21 +371,21 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     genre 
                 WHERE 
-                    name = :name;'
+                    name = :name;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutedSuccessfully = $statement->execute([
-                ':name' => $name
+                ":name" => $name
             ]);
             if ($wasTheStatementExecutedSuccessfully === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -393,7 +393,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedNameException(

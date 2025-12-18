@@ -42,7 +42,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             );
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO 
+                "INSERT INTO 
                     platform (
                         name,
                         is_active
@@ -50,15 +50,15 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 VALUES (
                     :name,
                     :isActive
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':name' => $name,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":isActive" => $isActive
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -69,19 +69,19 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     platform 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -95,13 +95,13 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $this->pdo->commit();
 
             return new Platform(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -132,22 +132,22 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             );
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     platform 
                 SET 
                     name = :name, 
                     is_active = :isActive 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':name' => $name,
-                ':id' => $id,
-                ':isActive' => $isActive
+                ":name" => $name,
+                ":id" => $id,
+                ":isActive" => $isActive
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -175,22 +175,22 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             $isActive = intval($isActive);
 
             $statement = $this->pdo->prepare(
-                'UPDATE
+                "UPDATE
                     platform
                 SET
                     is_active = :isActive
                 WHERE
                     id = :id
                 AND
-                    is_active <> :isActive;'
+                    is_active <> :isActive;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ':id' => $id,
-                ':isActive' => $isActive
+                ":id" => $id,
+                ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -213,19 +213,19 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     platform 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -240,13 +240,13 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             return new Platform(
-                $fetchResult['id'],
-                $fetchResult['name'],
+                $fetchResult["id"],
+                $fetchResult["name"],
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
-                    $fetchResult['is_active']
+                    $fetchResult["is_active"]
                 )
             );
         } catch (
@@ -265,10 +265,10 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    platform;'
+                    platform;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -288,13 +288,13 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             foreach ($fetchResult as $row) {
                 $platform = new Platform(
-                    $row['id'],
-                    $row['name'],
+                    $row["id"],
+                    $row["name"],
                     /* MariaDB stores bool as int values so a casting
                      * here is needed.
                      */
                     boolval(
-                        $row['is_active']
+                        $row["is_active"]
                     )
                 );
 
@@ -331,7 +331,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -339,7 +339,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
@@ -362,21 +362,21 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     COUNT(*)
                     AS
                     number_of_names
                 FROM 
                     platform 
                 WHERE 
-                    name = :name;'
+                    name = :name;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':name' => $name
+                ":name" => $name
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -384,7 +384,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult['number_of_names']
+                $fetchResult["number_of_names"]
             );
             if ($numberOfNames > 0) {
                 throw new MariaDBDuplicatedNameException(

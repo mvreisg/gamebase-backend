@@ -14,7 +14,6 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInternalServerError;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
@@ -35,24 +34,24 @@ class HttpGameController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $game = $this->gameService->insert($name, $isActive);
 
             $data = [
-                'id' => $game->getId(),
-                'name' => $game->getName(),
-                'isActive' => $game->getIsActive()
+                "id" => $game->getId(),
+                "name" => $game->getName(),
+                "isActive" => $game->getIsActive()
             ];
 
             $response
                 ->setBody([
-                    'data' => $data
+                    "data" => $data
                 ])
                 ->setStatusCreated()
                 ->sendJson();
@@ -75,19 +74,19 @@ class HttpGameController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $name = $request->getParsedBodyPartOrDieTrying('name');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $name = $request->getParsedBodyPartOrDieTrying("name");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->gameService->update($id, $name, $isActive);
 
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -119,17 +118,17 @@ class HttpGameController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
-            $isActive = $request->getParsedBodyPartOrDieTrying('isActive');
+            $id = $request->getParamOrDieTrying("id");
+            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
 
             $wasUpdated = $this->gameService->setIsActive($id, $isActive);
             $response
                 ->setBody([
-                    'hasChanged' => $wasUpdated
+                    "hasChanged" => $wasUpdated
                 ])
                 ->setStatusOk()
                 ->sendJson();
@@ -152,20 +151,20 @@ class HttpGameController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying('id');
+            $id = $request->getParamOrDieTrying("id");
 
             $game = $this->gameService->findById($id);
 
             $response
                 ->setBody([
-                    'data' => [
-                        'id' => $game->getId(),
-                        'name' => $game->getName(),
-                        'isActive' => $game->getIsActive()
+                    "data" => [
+                        "id" => $game->getId(),
+                        "name" => $game->getName(),
+                        "isActive" => $game->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -189,7 +188,7 @@ class HttpGameController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
@@ -204,16 +203,16 @@ class HttpGameController
 
             foreach ($games as $game) {
                 $data[] = [
-                    'id' => $game->getId(),
-                    'name' => $game->getName(),
-                    'isActive' => $game->getIsActive()
+                    "id" => $game->getId(),
+                    "name" => $game->getName(),
+                    "isActive" => $game->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    'number' => $numberOfGamesFound,
-                    'data' => $data
+                    "number" => $numberOfGamesFound,
+                    "data" => $data
                 ])
                 ->setStatusOk()
                 ->sendJson();

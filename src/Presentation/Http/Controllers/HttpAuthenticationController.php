@@ -6,8 +6,6 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceCacheException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceEncryptionException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
@@ -33,20 +31,22 @@ class HttpAuthenticationController
         try {
             $request->parseBodyFromJsonString();
 
-            $username = $request->getParsedBodyPartOrDieTrying('username');
-            $password = $request->getParsedBodyPartOrDieTrying('password');
-            $oneWeek = $request->getParsedBodyPartOrDieTrying('oneWeek');
+            $username = $request->getParsedBodyPartOrDieTrying("username");
+            $password = $request->getParsedBodyPartOrDieTrying("password");
+            $oneWeek = $request->getParsedBodyPartOrDieTrying("oneWeek");
 
             $result = $this->authenticationService->tryLogin($username, $password, $oneWeek);
             $state = $result->getState();
             switch ($state) {
                 case AuthenticationLoginExistanceStatesEnum::New:
                     $token = $result->getToken();
-                    $timeText = $oneWeek ? '1 week' : '1 day';
+                    $oneDayInSeconds = 60 * 60 * 24;
+                    $timeToExpireInSeconds = $oneWeek ? $oneDayInSeconds * 7 : $oneDayInSeconds;
                     $response
                         ->setBody([
-                            'daysToExpire' => $oneWeek ? 7 : 1,
-                            'token' => $token
+                            "secondsToExpire" => $timeToExpireInSeconds,
+                            "token" => $token,
+                            "loginInfo" => $result->getDto()
                         ])
                         ->setStatusCreated()
                         ->sendJson();
@@ -55,7 +55,8 @@ class HttpAuthenticationController
                     $token = $result->getToken();
                     $response
                         ->setBody([
-                            'token' => $token
+                            "token" => $token,
+                            "loginInfo" => $result->getDto()
                         ])
                         ->setStatusOk()
                         ->sendJson();
@@ -83,11 +84,16 @@ class HttpAuthenticationController
     public function handleValidation(HttpRequest $request, HttpResponse $response): void
     {
         try {
-            HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+            $result = HttpJwtAuthenticationTokenValidator::validate(
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
-            $response->setStatusOk();
+            $response
+                ->setStatusOk()
+                ->setBody([
+                    "loginInfo" => $result->getDto()
+                ])
+                ->sendJson();
         } catch (AuthenticationServiceUnauthorizedException $e) {
             throw new HttpUnauthorizedException(
                 "Unauthorized: {$e->getMessage()}",
@@ -102,11 +108,11 @@ class HttpAuthenticationController
     {
         try {
             HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying('Authorization'),
+                $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
             $token = HttpJwtAuthenticationTokenRetriever::retrieve(
-                $request->getHeaderOrDieTrying('Authorization')
+                $request->getHeaderOrDieTrying("Authorization")
             );
             $this->authenticationService->tryLogoff($token);
             $response->setStatusOk();

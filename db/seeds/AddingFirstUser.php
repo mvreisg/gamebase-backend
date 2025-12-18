@@ -12,20 +12,20 @@ class AddingFirstUser extends AbstractSeed
     {
         $data = [
             [
-                'username' => DotenvEnvironment::get(
-                    'REPOSITORY_ROOT_USERNAME'
+                "username" => DotenvEnvironment::get(
+                    "REPOSITORY_ROOT_USERNAME"
                 ),
-                'password' => (new DefuseEncryption())
+                "password" => (new DefuseEncryption())
                     ->encrypt(
                         DotenvEnvironment::get(
-                            'REPOSITORY_ROOT_PASSWORD'
+                            "REPOSITORY_ROOT_PASSWORD"
                         )
                     ),
-                'is_active' => 1
+                "is_active" => 1
             ]
         ];
 
-        $user = $this->table('user');
+        $user = $this->table("user");
         $user
             ->insert($data)
             ->saveData();

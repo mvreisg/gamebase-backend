@@ -14,15 +14,15 @@ class MariaDBConnection
     {
         try {
             $dsn =
-                DotenvEnvironment::get('REPOSITORY_ADAPTER') .
+                DotenvEnvironment::get("REPOSITORY_ADAPTER") .
                 ":host=" .
-                DotenvEnvironment::get('REPOSITORY_HOST') .
+                DotenvEnvironment::get("REPOSITORY_HOST") .
                 ";dbname=" .
-                DotenvEnvironment::get('REPOSITORY_DATABASE');
+                DotenvEnvironment::get("REPOSITORY_DATABASE");
 
-            $username = DotenvEnvironment::get('REPOSITORY_USERNAME');
+            $username = DotenvEnvironment::get("REPOSITORY_USERNAME");
 
-            $password = DotenvEnvironment::get('REPOSITORY_PASSWORD');
+            $password = DotenvEnvironment::get("REPOSITORY_PASSWORD");
 
             return new PDO(
                 $dsn,
@@ -45,13 +45,13 @@ class MariaDBConnection
     {
         try {
             $dsn =
-                DotenvEnvironment::get('REPOSITORY_ADAPTER') .
+                DotenvEnvironment::get("REPOSITORY_ADAPTER") .
                 ":host=" .
-                DotenvEnvironment::get('REPOSITORY_HOST');
+                DotenvEnvironment::get("REPOSITORY_HOST");
 
-            $username = DotenvEnvironment::get('REPOSITORY_USERNAME');
+            $username = DotenvEnvironment::get("REPOSITORY_USERNAME");
 
-            $password = DotenvEnvironment::get('REPOSITORY_PASSWORD');
+            $password = DotenvEnvironment::get("REPOSITORY_PASSWORD");
 
             return new PDO(
                 $dsn,

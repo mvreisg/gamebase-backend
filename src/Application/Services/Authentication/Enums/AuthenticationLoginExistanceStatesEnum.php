@@ -6,6 +6,6 @@ namespace Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums;
 
 enum AuthenticationLoginExistanceStatesEnum: string
 {
-    case New = 'New';
-    case Existing = 'Existing';
+    case New = "New";
+    case Existing = "Existing";
 }

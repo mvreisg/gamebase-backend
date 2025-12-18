@@ -20,13 +20,13 @@ class HttpGameRoutes
 
             $routes = [
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Post
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
@@ -39,19 +39,19 @@ class HttpGameRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Put
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -64,19 +64,19 @@ class HttpGameRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Patch
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -89,19 +89,19 @@ class HttpGameRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'id',
+                            "id",
                             HttpRouteParameterTypesEnum::Integer
                         )
                     )
@@ -114,13 +114,13 @@ class HttpGameRoutes
                             )
                     ),
                 HttpRouteFactory::make()
-                    ->setSeparator('/')
+                    ->setSeparator("/")
                     ->setMethod(
                         HttpMethodTypesEnum::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
-                            'game',
+                            "game",
                             HttpRouteParameterTypesEnum::Route
                         )
                     )

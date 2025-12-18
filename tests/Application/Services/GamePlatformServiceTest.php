@@ -40,10 +40,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfInsertSucceds(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
@@ -55,10 +55,10 @@ class GamePlatformServiceTest extends TestCase
     public function testIfTenInsertionsSucceds(): void
     {
         for ($i = 1; $i <= 10; $i++) {
-            $platform = $this->platformService->insert('test' . $i, true);
+            $platform = $this->platformService->insert("test" . $i, true);
             $platformId = $platform->getId();
 
-            $game = $this->gameService->insert('test' . $i, true);
+            $game = $this->gameService->insert("test" . $i, true);
             $gameId = $game->getId();
 
             $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
@@ -72,7 +72,7 @@ class GamePlatformServiceTest extends TestCase
     {
         $platformId = -1;
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->expectException(EntityInvalidValueException::class);
@@ -82,7 +82,7 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfInsertWithInvalidGameIdFails(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
         $gameId = -1;
@@ -97,8 +97,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -131,8 +131,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -165,8 +165,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -199,8 +199,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -232,8 +232,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -265,8 +265,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -298,8 +298,8 @@ class GamePlatformServiceTest extends TestCase
         $platforms = [];
         $games = [];
         for ($i = 1; $i <= 2; $i++) {
-            $platforms[] = $this->platformService->insert('test' . $i, true);
-            $games[] = $this->gameService->insert('test' . $i, true);
+            $platforms[] = $this->platformService->insert("test" . $i, true);
+            $games[] = $this->gameService->insert("test" . $i, true);
         }
 
         $platformsIterator = new ArrayIterator($platforms);
@@ -328,10 +328,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfDeleteSucceds(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
@@ -344,10 +344,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfDeleteWithInvalidIdFails(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
@@ -360,10 +360,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfDeleteWithUnexistantIdFails(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
@@ -376,10 +376,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfFindByIdSucceds(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $gamePlatform = $this->gamePlatformService->insert($platformId, $gameId);
@@ -394,10 +394,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfFindByIdWithInvalidIdFails(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
@@ -410,10 +410,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfFindByIdWithUnexistantIdFails(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);
@@ -426,10 +426,10 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfFindAllSucceds(): void
     {
-        $platform = $this->platformService->insert('test', true);
+        $platform = $this->platformService->insert("test", true);
         $platformId = $platform->getId();
 
-        $game = $this->gameService->insert('test', true);
+        $game = $this->gameService->insert("test", true);
         $gameId = $game->getId();
 
         $this->gamePlatformService->insert($platformId, $gameId);

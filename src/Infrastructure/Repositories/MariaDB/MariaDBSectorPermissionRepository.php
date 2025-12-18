@@ -35,22 +35,22 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $permissionId = $sectorPermission->getPermissionId();
 
             $insertStatement = $this->pdo->prepare(
-                'INSERT INTO sector_permission (
+                "INSERT INTO sector_permission (
                     sector_id, 
                     permission_id
                 ) 
                 VALUES (
                     :sectorId, 
                     :permissionId
-                );'
+                );"
             );
             if ($insertStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
-                ':sectorId' => $sectorId,
-                ':permissionId' => $permissionId
+                ":sectorId" => $sectorId,
+                ":permissionId" => $permissionId
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -61,19 +61,19 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             );
 
             $selectStatement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     sector_permission 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($selectStatement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
-                ':id' => $lastInsertedId
+                ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -87,9 +87,9 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $this->pdo->commit();
 
             return new SectorPermission(
-                $fetchResult['id'],
-                $fetchResult['sector_id'],
-                $fetchResult['permission_id']
+                $fetchResult["id"],
+                $fetchResult["sector_id"],
+                $fetchResult["permission_id"]
             );
         } catch (
             MariaDBTransactionCreationFailureException |
@@ -113,22 +113,22 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $permissionId = $sectorPermission->getPermissionId();
 
             $statement = $this->pdo->prepare(
-                'UPDATE 
+                "UPDATE 
                     sector_permission 
                 SET 
                     sector_id = :sectorId, 
                     permission_id = :permissionId 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
-                ':id' => $id,
-                ':sectorId' => $sectorId,
-                ':permissionId' => $permissionId
+                ":id" => $id,
+                ":sectorId" => $sectorId,
+                ":permissionId" => $permissionId
             ]);
             if ($wasTheStatementExecutionSuccessful === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -151,10 +151,10 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
     {
         try {
             $statement = $this->pdo->prepare(
-                'DELETE FROM
+                "DELETE FROM
                     sector_permission
                 WHERE
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -163,7 +163,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $id = $sectorPermission->getId();
 
             $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -186,19 +186,19 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     sector_permission 
                 WHERE 
-                    id = :id;'
+                    id = :id;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -212,9 +212,9 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             }
 
             return new SectorPermission(
-                $fetchResult['id'],
-                $fetchResult['sector_id'],
-                $fetchResult['permission_id']
+                $fetchResult["id"],
+                $fetchResult["sector_id"],
+                $fetchResult["permission_id"]
             );
         } catch (
             MariaDBStatementCreationFailureException |
@@ -232,19 +232,19 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
                     sector_permission
                 WHERE
-                    permission_id = :permissionId;'
+                    permission_id = :permissionId;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ':permissionId' => $permissionId
+                ":permissionId" => $permissionId
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -258,9 +258,9 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $sectorPermissions = [];
             foreach ($fetchResult as $row) {
                 $sectorPermission = new SectorPermission(
-                    $row['id'],
-                    $row['sector_id'],
-                    $row['permission_id']
+                    $row["id"],
+                    $row["sector_id"],
+                    $row["permission_id"]
                 );
 
                 $sectorPermissions[] = $sectorPermission;
@@ -282,10 +282,10 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
     {
         try {
             $statement = $this->pdo->prepare(
-                'SELECT 
+                "SELECT 
                     * 
                 FROM 
-                    sector_permission;'
+                    sector_permission;"
             );
             if ($statement === false) {
                 throw new MariaDBStatementCreationFailureException();
@@ -304,9 +304,9 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             $sectorPermissions = [];
             foreach ($fetchResult as $row) {
                 $sectorPermission = new SectorPermission(
-                    $row['id'],
-                    $row['sector_id'],
-                    $row['permission_id']
+                    $row["id"],
+                    $row["sector_id"],
+                    $row["permission_id"]
                 );
 
                 $sectorPermissions[] = $sectorPermission;
@@ -342,7 +342,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ':id' => $id
+                ":id" => $id
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
                 throw new MariaDBStatementExecutionFailureException();
@@ -350,7 +350,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult['number']
+                $fetchResult["number"]
             );
 
             if ($numberOfIds === 0) {
