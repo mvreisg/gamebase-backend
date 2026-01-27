@@ -4,266 +4,221 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authentication;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Enums\AuthenticationLoginExistanceStatesEnum;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnexistantUserException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationLoginResultValueObject;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationValidationResultValueObject;
-use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Enums\AuthenticationTimesEnum;
-use Mvreisg\GamebaseBackend\Domain\Authentication\AuthenticationInterface;
-use Mvreisg\GamebaseBackend\Domain\Authentication\DTOs\AuthenticationPayloadValueDTO;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\AuthenticationException;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Interfaces\AuthenticationClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Cache\CacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Cache\Exceptions\CacheException;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission\Permission;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Sector;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\Exceptions\UserInvalidPasswordException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\Exceptions\UserInvalidUsernameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginResult;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Validation\AuthenticationValidationResult;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Encoded\EncodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 
 class AuthenticationService
 {
     private UserRepositoryInterface $userRepository;
+    private TokenCacheInterface $tokenCache;
+    private EncryptionInterface $encrypter;
+    private AuthenticationTokenEncoder $authenticationTokenEncoder;
+    private AuthenticationTokenDecoder $authenticationTokenDecoder;
     private PermissionRepositoryInterface $permissionRepository;
     private SectorRepositoryInterface $sectorRepository;
-    private UserPermissionRepositoryInterface $userPermissionRepository;
     private SectorPermissionRepositoryInterface $sectorPermissionRepository;
-    private EncryptionInterface $encrypter;
-    private CacheInterface $userCache;
-    private AuthenticationInterface $authenticator;
-    private AuthenticationClockInterface $authenticationClock;
+    private UserPermissionRepositoryInterface $userPermissionRepository;
+    private EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator;
 
     public function __construct(
         UserRepositoryInterface $userRepository,
+        TokenCacheInterface $tokenCache,
+        EncryptionInterface $encrypter,
+        AuthenticationTokenEncoder $authenticationTokenEncoder,
+        AuthenticationTokenDecoder $authenticationTokenDecoder,
         PermissionRepositoryInterface $permissionRepository,
         SectorRepositoryInterface $sectorRepository,
-        UserPermissionRepositoryInterface $userPermissionRepository,
         SectorPermissionRepositoryInterface $sectorPermissionRepository,
-        EncryptionInterface $encrypter,
-        CacheInterface $userCache,
-        AuthenticationInterface $authenticator,
-        AuthenticationClockInterface $authenticationClock
+        UserPermissionRepositoryInterface $userPermissionRepository,
+        EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator
     ) {
         $this->userRepository = $userRepository;
+        $this->tokenCache = $tokenCache;
+        $this->encrypter = $encrypter;
+        $this->authenticationTokenEncoder = $authenticationTokenEncoder;
+        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
         $this->permissionRepository = $permissionRepository;
         $this->sectorRepository = $sectorRepository;
-        $this->userPermissionRepository = $userPermissionRepository;
         $this->sectorPermissionRepository = $sectorPermissionRepository;
-        $this->encrypter = $encrypter;
-        $this->userCache = $userCache;
-        $this->authenticator = $authenticator;
-        $this->authenticationClock = $authenticationClock;
+        $this->userPermissionRepository = $userPermissionRepository;
+        $this->encodedAuthenticationTokenValidator = $encodedAuthenticationTokenValidator;
     }
 
-    public function tryLogin(string $username, string $password, bool $oneWeek): AuthenticationLoginResultValueObject
+    public function tryLogin(AuthenticationLoginInfo $info): AuthenticationLoginResult
     {
         try {
-            $requestUser = new User(
-                null,
-                $username,
-                $password
+            $fetchedUser = $this->userRepository->findByUsername(
+                Username::make($info->getUsernameValue())
             );
 
-            $requestUser->validateUsername();
-            $requestUser->validatePassword();
+            $fetchedAndEncodedPassword = $fetchedUser->getPasswordValue();
+            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
 
-            $requestUsername = $requestUser->getUsername();
-            $requestPassword = $requestUser->getPassword();
+            $doTheTwoPasswordsMatchesEqually = strcmp(
+                $info->getPasswordValue(),
+                $decodedPassword
+            ) === 0;
 
-            $fetchedUser = $this->userRepository->findByUsername($requestUsername);
-
-            $fetchedAndEncodedPassWord = $fetchedUser->getPassword();
-            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassWord);
-
-            $doTheTwoPassWordsMatchesEqually = strcmp($requestPassword, $decodedPassword) === 0;
-
-            if ($doTheTwoPassWordsMatchesEqually === false) {
-                throw new AuthenticationServiceUnauthorizedException(
-                    "Insert the correct password for $requestUsername",
+            if ($doTheTwoPasswordsMatchesEqually === false) {
+                throw new \DomainException(
+                    "Invalid credentials!",
                 );
             }
 
-            $exists = $this->userCache->exists($requestUsername);
+            $exists = $this->tokenCache->exists(
+                Username::make($fetchedUser->getUsernameValue())
+            );
+
             if ($exists) {
-                $token = $this->userCache->get($requestUsername);
-                $result = $this->validateLogin($token);
-                return new AuthenticationLoginResultValueObject(
-                    AuthenticationLoginExistanceStatesEnum::Existing,
+                $token = $this->tokenCache->get(
+                    Username::make($fetchedUser->getUsernameValue())
+                );
+                $result = $this->validateToken($token);
+                return new AuthenticationLoginResult(
+                    AuthenticationLoginStates::Existing,
                     $token,
-                    $result->getDto()
+                    new AuthenticationData(
+                        $result->getUserId(),
+                        $result->getUsername(),
+                        $result->getPermissionCollection(),
+                        $result->getSectorCollection()
+                    )
                 );
             }
 
-            $dto = $this->getLoginInformationDto($fetchedUser);
-
-            $authenticationTime = $oneWeek ? AuthenticationTimesEnum::OneWeek : AuthenticationTimesEnum::OneDay;
-
-            $token = $this->authenticator->encode(
-                $dto,
-                $authenticationTime,
-                $this->authenticationClock
+            $permissions = new PermissionCollection(null);
+            $userPermissions = $this->userPermissionRepository->findAllByUserId(
+                Id::make($fetchedUser->getIdValue())
             );
-
-            $this->userCache->set($requestUsername, $token);
-            $this->userCache->expire($requestUsername, $authenticationTime);
-
-            return new AuthenticationLoginResultValueObject(
-                AuthenticationLoginExistanceStatesEnum::New,
-                $token,
-                $dto
-            );
-        } catch (
-            AuthenticationException |
-            UserInvalidUsernameException |
-            UserInvalidPasswordException |
-            EncryptionException |
-            CacheException
-            $e
-        ) {
-            throw new AuthenticationServiceUnauthorizedException(
-                "Authentication service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new AuthenticationServiceUnexistantUserException(
-                "Authentication service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    public function validateLogin(string $token): AuthenticationValidationResultValueObject
-    {
-        try {
-            $decoded = $this->authenticator->decode(
-                $token,
-                $this->authenticationClock
-            );
-
-            $cachedToken = $this->userCache->get($decoded->getDto()->username);
-
-            $existantDecoded = $this->authenticator->decode(
-                $cachedToken,
-                $this->authenticationClock
-            );
-
-            $isValid =
-                (
-                    $existantDecoded->getEmittedAt()->getTimestamp()
-                    ===
-                    $decoded->getEmittedAt()->getTimestamp()
-                )
-                &&
-                (
-                    $existantDecoded->getDto()->userId
-                    ===
-                    $decoded->getDto()->userId
-                )
-                &&
-                (
-                    strcmp($token, $cachedToken) === 0
+            foreach ($userPermissions->fetchAll() as $userPermission) {
+                $fetchedPermission = $this->permissionRepository->findById(
+                    Id::make($userPermission->getPermissionIdValue())
                 );
-
-            if ($isValid === false) {
-                throw new AuthenticationServiceUnauthorizedException(
-                    "Authentication service error: The provided token is not valid."
-                );
+                $permissions->add($fetchedPermission);
             }
-
-            $hasExpired =
-                $this->authenticationClock->now()->getTimestamp() >=
-                $decoded->getExpiresAt()->getTimestamp();
-
-            if ($hasExpired) {
-                throw new AuthenticationServiceUnauthorizedException(
-                    "Authentication service error: The token expired."
+            $sectors = new SectorCollection(null);
+            foreach ($permissions->fetchAll() as $permission) {
+                $sectorPermissions = $this->sectorPermissionRepository->findAllByPermissionId(
+                    Id::make($permission->getIdValue())
                 );
-            }
-
-            $user = $this->userRepository->findById($existantDecoded->getDto()->userId);
-
-            return new AuthenticationValidationResultValueObject(
-                $this->getLoginInformationDto($user)
-            );
-        } catch (AuthenticationServiceUnauthorizedException $e) {
-            throw $e;
-        } catch (
-            AuthenticationException |
-            CacheException
-            $e
-        ) {
-            throw new AuthenticationServiceUnauthorizedException(
-                "Authentication service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    public function tryLogoff(string $token): void
-    {
-        try {
-            $decoded = $this->authenticator->decode(
-                $token,
-                $this->authenticationClock
-            );
-
-            $this->userCache->delete(
-                $decoded->getDto()->username
-            );
-        } catch (AuthenticationServiceUnauthorizedException $e) {
-            throw $e;
-        } catch (
-            AuthenticationException |
-            CacheException
-            $e
-        ) {
-            throw new AuthenticationServiceUnauthorizedException(
-                "Authentication service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    private function getLoginInformationDto(User $user): AuthenticationPayloadValueDTO
-    {
-        try {
-            $permissions = [];
-            $userPermissions = $this->userPermissionRepository->findAllByUserId($user->getId());
-            $allSectorPermissions = [];
-            foreach ($userPermissions as $userPermission) {
-                $permissions[] = $this->permissionRepository->findById($userPermission->getPermissionId());
-                $allSectorPermissions[] = $this->sectorPermissionRepository->findAllByPermissionId(
-                    $userPermission->getPermissionId()
-                );
-            }
-
-            $sectors = [];
-            foreach ($allSectorPermissions as $sectorPermissions) {
-                foreach ($sectorPermissions as $sectorPermission) {
-                    $sectors[] = $this->sectorRepository->findById($sectorPermission->getSectorId());
+                foreach ($sectorPermissions->fetchAll() as $sectorPermission) {
+                    $fetchedSector = $this->sectorRepository->findById(
+                        Id::make($sectorPermission->getSectorIdValue())
+                    );
+                    $exists = $sectors->exists(Id::make($fetchedSector->getIdValue()));
+                    if ($exists === false) {
+                        $sectors->add($fetchedSector);
+                    }
                 }
             }
 
-            return new AuthenticationPayloadValueDTO(
-                $user->getId(),
-                $user->getUsername(),
-                array_map(fn (Permission $p) => $p->getId(), $permissions),
-                array_map(fn (Sector $s) => $s->getId(), $sectors)
+            $authenticationData = new AuthenticationData(
+                Id::make($fetchedUser->getIdValue()),
+                Username::make($fetchedUser->getUsernameValue()),
+                $permissions,
+                $sectors
+            );
+
+            $interval = new \DateInterval("P0D");
+            $oneWeekLogin = $info->getOneWeekLogin();
+            if ($oneWeekLogin === true) {
+                $interval->d = 7;
+            } else {
+                $interval->d = 1;
+            }
+
+            $token = $this->authenticationTokenEncoder->encode(
+                $authenticationData,
+                $interval
+            );
+
+            $this->tokenCache->set(
+                Username::make($fetchedUser->getUsernameValue()),
+                $token
+            );
+
+            $this->tokenCache->expire(
+                Username::make($fetchedUser->getUsernameValue()),
+                $interval
+            );
+
+            return new AuthenticationLoginResult(
+                AuthenticationLoginStates::New,
+                $token,
+                $authenticationData
+            );
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function tryLogoff(EncodedAuthenticationToken $token): void
+    {
+        try {
+            $result = $this->validateToken($token);
+
+            $this->tokenCache->delete(
+                $result->getUsername()
+            );
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function validateToken(EncodedAuthenticationToken $token): AuthenticationValidationResult
+    {
+        try {
+            $decodedToken = $this->authenticationTokenDecoder->decode($token);
+
+            $this->userRepository->checkIfExists(
+                $decodedToken->getUserId()
+            );
+
+            $cachedToken = $this->tokenCache->get(
+                $decodedToken->getUsername()
+            );
+
+            $isTheTokenTheSame = strcmp(
+                $token->getToken(),
+                $cachedToken->getToken()
+            ) === 0;
+
+            if ($isTheTokenTheSame === false) {
+                throw new \DomainException(
+                    "Invalid token!"
+                );
+            }
+
+            $this->encodedAuthenticationTokenValidator->validate($token);
+
+            $authenticationData = new AuthenticationData(
+                $decodedToken->getUserId(),
+                $decodedToken->getUsername(),
+                $decodedToken->getUserPermissions(),
+                $decodedToken->getUserSectors()
+            );
+
+            return new AuthenticationValidationResult(
+                $authenticationData,
+                $token
             );
         } catch (\Throwable $e) {
             throw $e;

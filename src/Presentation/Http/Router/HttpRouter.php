@@ -5,34 +5,52 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Router;
 
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpHeader;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpQuery;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoute;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodes;
 
 class HttpRouter
 {
+    /**
+     * @var string[]
+     */
+    private static array $DEFAULT_HEADERS = [
+        "Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT, OPTIONS",
+        "Access-Control-Allow-Headers: Content-Type, Authorization",
+        "Access-Control-Allow-Credentials: true"
+    ];
+
+    /**
+     * @var HttpHeader[]
+     */
     private array $headers;
-    private array $routes = [];
+
+    /**
+     * @var HttpRoute[]
+     */
+    private array $routes;
 
     public function __construct()
     {
-        $this->headers = [
-            "Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, PUT, OPTIONS",
-            "Access-Control-Allow-Headers: Content-Type, Authorization",
-            "Access-Control-Allow-Credentials: true",
-        ];
+        $this->routes = [];
+        $this->headers = [];
+
+        foreach (self::$DEFAULT_HEADERS as $header) {
+            $this->headers[] = new HttpHeader($header);
+        }
 
         $separator = DotenvEnvironment::get("API_CONSUMERS_ADDRESSES_SEPARATOR");
         $origins = DotenvEnvironment::getArray("API_CONSUMERS_ADDRESSES", $separator);
 
-        foreach ($origins as $origin) {
-            $this->headers[] = "Access-Control-Allow-Origin: " . $origin;
+        if (count($origins) > 0) {
+            foreach ($origins as $origin) {
+                $this->headers[] = new HttpHeader(null, "Access-Control-Allow-Origin", $origin);
+            }
         }
     }
 
@@ -50,11 +68,61 @@ class HttpRouter
         return $this;
     }
 
+    /**
+     * @param HttpHeader[] $headers
+     */
+    private function send(HttpStatusCodes $statusCode, ?string $message, ?array $headers): void
+    {
+        if (isset($headers)) {
+            foreach ($headers as $header) {
+                header($header->getFull());
+            }
+        }
+        header($statusCode->value);
+        if (isset($message)) {
+            print($message);
+        }
+    }
+
+    private function sendRaw(HttpStatusCodes $statusCode, ?string $message, ?array $headers): void
+    {
+        if (isset($headers)) {
+            foreach ($headers as $header) {
+                header($header->getFull());
+            }
+        }
+        header($statusCode->value);
+        if (isset($message)) {
+            header("Content-Type: application/json; charset=utf-8");
+            print(
+                json_encode([
+                    "message" => $message
+                ])
+            );
+        }
+    }
+
+    private function rightRouteButWrongValue(string $route, string $expected, mixed $value)
+    {
+        $message = "";
+        if ($value !== "0" && empty($value)) {
+            $message = "Expected ($expected) value on route: $route, nothing received!";
+        } else {
+            $message = "Expected ($expected) value on route: $route, received ($value).";
+        }
+        $this->sendRaw(
+            HttpStatusCodes::BadRequest,
+            $message,
+            null
+        );
+        return;
+    }
+
     public function run(): void
     {
         try {
             foreach ($this->headers as $header) {
-                header($header);
+                header($header->getFull());
             }
 
             $path = $_SERVER["REQUEST_URI"];
@@ -62,27 +130,30 @@ class HttpRouter
             $method = $_SERVER["REQUEST_METHOD"];
             switch ($method) {
                 case "POST":
-                    $method = HttpMethodTypesEnum::Post;
+                    $method = HttpMethods::Post;
                     break;
                 case "GET":
-                    $method = HttpMethodTypesEnum::Get;
+                    $method = HttpMethods::Get;
                     break;
                 case "PATCH":
-                    $method = HttpMethodTypesEnum::Patch;
+                    $method = HttpMethods::Patch;
                     break;
                 case "DELETE":
-                    $method = HttpMethodTypesEnum::Delete;
+                    $method = HttpMethods::Delete;
                     break;
                 case "PUT":
-                    $method = HttpMethodTypesEnum::Put;
+                    $method = HttpMethods::Put;
                     break;
                 case "OPTIONS":
-                    $method = HttpMethodTypesEnum::Options;
+                    $method = HttpMethods::Options;
                     break;
                 default:
-                    throw new HttpBadRequestException(
-                        "Unsupported HTTP method: $method"
+                    $this->sendRaw(
+                        HttpStatusCodes::InternalServerError,
+                        "Unsupported HTTP method: $method",
+                        null
                     );
+                    return;
             }
 
             $explodedPath = explode("?", $path);
@@ -96,10 +167,13 @@ class HttpRouter
             }
 
             $body = file_get_contents("php://input");
-            $headers = getallheaders();
 
-            if ($method === HttpMethodTypesEnum::Options) {
-                header(HttpStatusCodeTypesEnum::NoContent->value);
+            foreach (getallheaders() as $key => $value) {
+                $this->headers[] = new HttpHeader(null, $key, $value);
+            }
+
+            if ($method === HttpMethods::Options) {
+                header(HttpStatusCodes::NoContent->value);
                 return;
             }
 
@@ -126,19 +200,32 @@ class HttpRouter
                     $routePart = $route->getPathPart($i);
                     $routePartName = $routePart->getName();
                     $routePartType = $routePart->getType();
-                    $routePartValue = $tokenizedRoute[$i];
+                    $routePartValue = trim(urldecode($tokenizedRoute[$i]));
                     switch ($routePartType) {
-                        case HttpRouteParameterTypesEnum::Route:
-                            $isRoutePart = $isThisRoute = $routePartValue === $routePartName;
+                        case HttpRouteParameterTypes::Route:
+                            $isRoutePart = true;
+                            $isThisRoute = $routePartValue === $routePartName;
                             break;
-                        case HttpRouteParameterTypesEnum::Text:
+                        case HttpRouteParameterTypes::Text:
                             $isMatchingValue =
                                 is_string($routePartValue) &&
                                 $routePartValue !== "true" &&
-                                $routePartValue !== "false";
+                                $routePartValue !== "false" &&
+                                $routePartValue !== "0" &&
+                                filter_var($routePartValue, FILTER_VALIDATE_INT) === false &&
+                                filter_var($routePartValue, FILTER_VALIDATE_FLOAT) === false &&
+                                filter_var($routePartValue, FILTER_VALIDATE_BOOL) === false;
                             $isThisRoute = $isMatchingValue;
+                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
+                                $this->rightRouteButWrongValue(
+                                    $route->getFullRouteName(),
+                                    "string",
+                                    $routePartValue
+                                );
+                                return;
+                            }
                             break;
-                        case HttpRouteParameterTypesEnum::Integer:
+                        case HttpRouteParameterTypes::Integer:
                             $isMatchingValue =
                                 filter_var($routePartValue, FILTER_VALIDATE_INT) ||
                                 $routePartValue === "0";
@@ -146,25 +233,52 @@ class HttpRouter
                                 $routePartValue = intval($routePartValue);
                             }
                             $isThisRoute = $isMatchingValue;
+                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
+                                $this->rightRouteButWrongValue(
+                                    $route->getFullRouteName(),
+                                    "integer",
+                                    $routePartValue
+                                );
+                                return;
+                            }
                             break;
-                        case HttpRouteParameterTypesEnum::Decimal:
+                        case HttpRouteParameterTypes::Decimal:
                             $isMatchingValue = filter_var($routePartValue, FILTER_VALIDATE_FLOAT);
                             if ($isMatchingValue) {
                                 $routePartValue = floatval($routePartValue);
                             }
                             $isThisRoute = $isMatchingValue;
+                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
+                                $this->rightRouteButWrongValue(
+                                    $route->getFullRouteName(),
+                                    "decimal",
+                                    $routePartValue
+                                );
+                                return;
+                            }
                             break;
-                        case HttpRouteParameterTypesEnum::Boolean:
+                        case HttpRouteParameterTypes::Boolean:
                             $isMatchingValue = filter_var($routePartValue, FILTER_VALIDATE_BOOL);
                             if ($isMatchingValue) {
                                 $routePartValue = boolval($routePartValue);
                             }
                             $isThisRoute = $isMatchingValue;
+                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
+                                $this->rightRouteButWrongValue(
+                                    $route->getFullRouteName(),
+                                    "boolean",
+                                    $routePartValue
+                                );
+                                return;
+                            }
                             break;
                         default:
-                            throw new HttpBadRequestException(
-                                "Untreated route type: $routePartType"
+                            $this->sendRaw(
+                                HttpStatusCodes::InternalServerError,
+                                "Untreated route type: $routePartType",
+                                null
                             );
+                            return;
                     }
 
                     if ($isThisRoute === false) {
@@ -196,7 +310,7 @@ class HttpRouter
                         if ($isBoolean) {
                             $check = $check === "true" ? true : false;
                             $queries[$index] = new HttpQuery(
-                                HttpRouteQueryTypesEnum::Boolean,
+                                HttpRouteQueryTypes::Boolean,
                                 $check
                             );
                             continue;
@@ -206,7 +320,7 @@ class HttpRouter
                         if ($isInteger) {
                             $check = intval($check);
                             $queries[$index] = new HttpQuery(
-                                HttpRouteQueryTypesEnum::Integer,
+                                HttpRouteQueryTypes::Integer,
                                 $check
                             );
                             continue;
@@ -216,28 +330,42 @@ class HttpRouter
                         if ($isFloat) {
                             $check = floatval($check);
                             $queries[$index] = new HttpQuery(
-                                HttpRouteQueryTypesEnum::Float,
+                                HttpRouteQueryTypes::Float,
                                 $check
                             );
                             continue;
                         }
 
                         $queries[$index] = new HttpQuery(
-                            HttpRouteQueryTypesEnum::String,
+                            HttpRouteQueryTypes::String,
                             $check
                         );
                     }
                 }
 
-                $request = new HttpRequest($method, $route, $queries, $params, $body, $headers);
-                $response = new HttpResponse();
+                $request = new HttpRequest(
+                    $method,
+                    $route,
+                    $queries,
+                    $params,
+                    $body,
+                    $this->headers
+                );
                 $callback = $route->getCallback();
-                $callback($request, $response);
+                $response = $callback($request);
+                $this->send(
+                    $response->getStatusCode(),
+                    $response->hasReadableBody() ? $response->parseBody() : null,
+                    $response->getHeaders()
+                );
                 return;
             }
 
-            header(HttpStatusCodeTypesEnum::NotFound->value);
-            print("Route not found!");
+            $this->sendRaw(
+                HttpStatusCodes::NotFound,
+                "Route not found!",
+                null
+            );
         } catch (\Throwable $e) {
             throw $e;
         }

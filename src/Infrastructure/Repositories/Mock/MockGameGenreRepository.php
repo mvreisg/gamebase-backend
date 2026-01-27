@@ -4,122 +4,110 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGameGenreRepository implements GameGenreRepositoryInterface
 {
-    private array $data;
-    private int $idIndex;
+    private GameGenreCollection $collection;
+    private Id $id;
 
     public function __construct()
     {
-        $this->data = [];
-        $this->idIndex = 0;
+        $this->collection = new GameGenreCollection();
+        $this->id = Id::make(0);
     }
 
     public function insert(GameGenre $gameGenre): GameGenre
     {
-        try {
-            $this->idIndex++;
-            $gameGenre->setId($this->idIndex);
-            $this->data[] = $gameGenre;
-            return new GameGenre(
-                $gameGenre->getId(),
-                $gameGenre->getGameId(),
-                $gameGenre->getGenreId()
-            );
-        } catch (\Throwable $e) {
-            throw $e;
-        }
+        $this->id->increment(1);
+        $newGameGenre = new GameGenre(
+            Id::make($this->id->getValue()),
+            Id::make($gameGenre->getGameIdValue()),
+            Id::make($gameGenre->getGenreIdValue())
+        );
+        $this->collection->add(
+            $newGameGenre
+        );
+        return $newGameGenre;
     }
 
     public function update(GameGenre $gameGenre): bool
     {
-        try {
-            $index = -1;
-            foreach ($this->data as $key => $value) {
-                if ($value->getId() === $gameGenre->getId()) {
-                    $index = $key;
-                    break;
-                }
-            }
+        $foundGameGenre = $this->collection->findById(
+            Id::make($gameGenre->getIdValue())
+        );
 
-            if ($index < 0) {
-                return false;
-            }
-
-            $foundGameGenre = $this->data[$index];
-
-            $hasDifferentGameId =
-                $foundGameGenre->getGameId() !== $gameGenre->getGameId();
-
-            $hasDifferentGenreId =
-                $foundGameGenre->getGenreId() !== $gameGenre->getGenreId();
-
-            $isDifferent = $hasDifferentGameId || $hasDifferentGenreId;
-
-            if ($isDifferent === false) {
-                return false;
-            }
-
-            $this->data[$index] = new GameGenre(
-                $gameGenre->getId(),
-                $gameGenre->getGameId(),
-                $gameGenre->getGenreId()
+        if ($foundGameGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$gameGenre->getIdValue()}"
             );
-
-            return true;
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    public function delete(GameGenre $gameGenre): bool
-    {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $gameGenre->getId()) {
-                $index = $key;
-                break;
-            }
         }
 
-        if ($index < 0) {
+        $hasDifferentGameId =
+            $foundGameGenre->getGameIdValue() !== $gameGenre->getGameIdValue();
+
+        $hasDifferentGenreId =
+            $foundGameGenre->getGenreIdValue() !== $gameGenre->getGenreIdValue();
+
+        $isDifferent = $hasDifferentGameId || $hasDifferentGenreId;
+
+        if ($isDifferent === false) {
             return false;
         }
 
-        unset($this->data[$index]);
+        $this->collection->replace(
+            Id::make($gameGenre->getIdValue()),
+            new GameGenre(
+                Id::make($gameGenre->getIdValue()),
+                Id::make($gameGenre->getGameIdValue()),
+                Id::make($gameGenre->getGenreIdValue())
+            )
+        );
+
         return true;
     }
 
-    public function findById(int $id): GameGenre
+    public function delete(Id $id): bool
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return $value;
-            }
-        }
-        throw new MockUnexistantRegisterException(
-            "Unexistant game genre with id $id"
+        return $this->collection->remove(
+            $id
         );
     }
 
-    public function findAll(): array
+    public function findById(Id $id): GameGenre
     {
-        return $this->data;
+        $foundGameGenre = $this->collection->findById(
+            $id
+        );
+
+        if ($foundGameGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
+        }
+
+        return $foundGameGenre;
     }
 
-    public function checkIfExists(int $id): void
+    public function findAll(): GameGenreCollection
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return;
-            }
-        }
-        throw new MockUnexistantRegisterException(
-            "Unexistant game genre with id $id"
+        return $this->collection;
+    }
+
+    public function checkIfExists(Id $id): void
+    {
+        $foundGameGenre = $this->collection->findById(
+            $id
         );
+
+        if ($foundGameGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
+        }
     }
 }

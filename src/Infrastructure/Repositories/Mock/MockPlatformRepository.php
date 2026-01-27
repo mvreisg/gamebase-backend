@@ -4,51 +4,51 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform\Platform;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Data\Platform;
+use Mvreisg\GamebaseBackend\Domain\Data\PlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockPlatformRepository implements PlatformRepositoryInterface
 {
-    private array $data;
-    private int $idIndex;
+    private PlatformCollection $collection;
+    private Id $id;
 
     public function __construct()
     {
-        $this->data = [];
-        $this->idIndex = 0;
+        $this->collection = new PlatformCollection();
+        $this->id = new Id(0);
     }
 
     public function insert(Platform $platform): Platform
     {
-        $this->idIndex++;
-        $platform->setId($this->idIndex);
-        $this->data[] = $platform;
-        return new Platform(
-            $platform->getId(),
-            $platform->getName(),
+        $this->id->increment(1);
+        $platform = new Platform(
+            new Id($this->id->getValue()),
+            new Name($platform->getNameValue()),
             $platform->getIsActive()
         );
+        $this->collection->add($platform);
+        return $platform;
     }
 
     public function update(Platform $platform): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $platform->getId()) {
-                $index = $key;
-            }
-        }
+        $foundPlatform = $this->collection->findById(
+            Id::make($platform->getIdValue())
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundPlatform === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$platform->getIdValue()}"
+            );
         }
-
-        $foundPlatform = $this->data[$index];
 
         $hasDifferentNames =
-            $foundPlatform->getName() !== $platform->getName();
+            $foundPlatform->getNameValue() !== $platform->getNameValue();
 
         $hasDifferentIsActive =
             $foundPlatform->getIsActive() !== $platform->getIsActive();
@@ -59,79 +59,87 @@ class MockPlatformRepository implements PlatformRepositoryInterface
             return false;
         }
 
-        $this->data[$index] = new Platform(
-            $platform->getId(),
-            $platform->getName(),
-            $platform->getIsActive()
+        $this->collection->replace(
+            Id::make($platform->getIdValue()),
+            new Platform(
+                Id::make($platform->getIdValue()),
+                Name::make($platform->getNameValue()),
+                $platform->getIsActive()
+            )
         );
-
         return true;
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $index = $key;
-            }
+        $foundPlatform = $this->collection->findById(
+            $id
+        );
+
+        if ($foundPlatform === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
 
-        if ($index < 0) {
-            return false;
-        }
-
-        $foundPermission = $this->data[$index];
-
-        $wasUpdated = $foundPermission->getIsActive() !== $isActive;
+        $wasUpdated = $foundPlatform->getIsActive() !== $isActive;
 
         if ($wasUpdated === false) {
             return false;
         }
-
-        $this->data[$index]->setIsActive($isActive);
-
+        $this->collection->replace(
+            $id,
+            new Platform(
+                Id::make($foundPlatform->getIdValue()),
+                Name::make($foundPlatform->getNameValue()),
+                $isActive
+            )
+        );
         return true;
     }
 
-    public function findById(int $id): Platform
+    public function findById(Id $id): Platform
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return $value;
-            }
+        $foundPlatform = $this->collection->findById(
+            $id
+        );
+
+        if ($foundPlatform === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant platform with id $id"
+
+        return $foundPlatform;
+    }
+
+    public function findAll(): PlatformCollection
+    {
+        return $this->collection;
+    }
+
+    public function checkIfExists(Id $id): void
+    {
+        $foundPlatform = $this->collection->findById(
+            $id
         );
-    }
 
-    public function findAll(): array
-    {
-        return $this->data;
-    }
-
-    public function checkIfExists(int $id): void
-    {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return;
-            }
+        if ($foundPlatform === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant platform with id $id"
-        );
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
-        $array = array_filter(
-            $this->data,
-            fn (Platform $platform) => strcmp($platform->getName(), $name) === 0
+        $foundPlatforms = $this->collection->findByName(
+            $name
         );
-        if (count($array) > 0) {
-            throw new MockDuplicatedNameException(
-                "Duplicated platform name: $name"
+
+        if ($foundPlatforms->count() > 1) {
+            throw new MockDuplicatedRegisterException(
+                "name: {$name->getValue()}"
             );
         }
     }

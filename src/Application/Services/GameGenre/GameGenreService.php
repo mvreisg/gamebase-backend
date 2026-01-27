@@ -4,22 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\GameGenre;
 
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGameIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGenreIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameGenreException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGenreException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\Exceptions\GameGenreInvalidGameIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\Exceptions\GameGenreInvalidGenreIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\Exceptions\GameGenreInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
 
 class GameGenreService
 {
@@ -37,231 +27,79 @@ class GameGenreService
         $this->genreRepository = $genreRepository;
     }
 
-    public function insert(int $gameId, int $genreId): GameGenre
+    public function insert(GameGenre $gameGenre): GameGenre
     {
         try {
-            $gameGenre = new GameGenre(
-                null,
-                $gameId,
-                $genreId
+            $this->gameRepository->checkIfExists(
+                Id::make($gameGenre->getGameIdValue())
             );
 
-            $gameGenre->validateGameId();
-            $gameGenre->validateGenreId();
-
-            try {
-                $validatedGameId = $gameGenre->getGameId();
-
-                $this->gameRepository->checkIfExists($validatedGameId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new GameGenreServiceUnexistantGameException(
-                    "Game genre service error: Game repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedGenreId = $gameGenre->getGenreId();
-
-                $this->genreRepository->checkIfExists($validatedGenreId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new GameGenreServiceUnexistantGenreException(
-                    "Game genre service error: Genre repository: {$e->getMessage()}",
-                    $e
-                );
-            }
+            $this->genreRepository->checkIfExists(
+                Id::make($gameGenre->getGenreIdValue())
+            );
 
             $insertedGameGenre = $this->gameGenreRepository->insert($gameGenre);
 
             return $insertedGameGenre;
-        } catch (
-            GameGenreServiceUnexistantGameException |
-            GameGenreServiceUnexistantGenreException
-            $e
-        ) {
-            throw $e;
-        } catch (GameGenreInvalidGameIdException $e) {
-            throw new GameGenreServiceInvalidGameIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (GameGenreInvalidGenreIdException $e) {
-            throw new GameGenreServiceInvalidGenreIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, int $gameId, int $genreId): bool
+    public function update(GameGenre $gameGenre): bool
     {
         try {
-            $gameGenre = new GameGenre(
-                $id,
-                $gameId,
-                $genreId
+            $this->gameGenreRepository->checkIfExists(
+                Id::make($gameGenre->getIdValue())
             );
 
-            $gameGenre->validateId();
-            $gameGenre->validateGameId();
-            $gameGenre->validateGenreId();
+            $this->gameRepository->checkIfExists(
+                Id::make($gameGenre->getGameIdValue())
+            );
 
-            $validatedId = $gameGenre->getId();
-
-            $this->gameGenreRepository->checkIfExists($validatedId);
-
-            try {
-                $validatedGameId = $gameGenre->getGameId();
-
-                $this->gameRepository->checkIfExists($validatedGameId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new GameGenreServiceUnexistantGameException(
-                    "Game genre service error: Game repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedGenreId = $gameGenre->getGenreId();
-
-                $this->genreRepository->checkIfExists($validatedGenreId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new GameGenreServiceUnexistantGenreException(
-                    "Game genre service error: Genre repository: {$e->getMessage()}",
-                    $e
-                );
-            }
+            $this->genreRepository->checkIfExists(
+                Id::make($gameGenre->getGenreIdValue())
+            );
 
             $wasUpdated = $this->gameGenreRepository->update($gameGenre);
 
             return $wasUpdated;
-        } catch (
-            GameGenreServiceUnexistantGameException |
-            GameGenreServiceUnexistantGenreException
-            $e
-        ) {
-            throw $e;
-        } catch (GameGenreInvalidIdException $e) {
-            throw new GameGenreServiceInvalidIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (GameGenreInvalidGameIdException $e) {
-            throw new GameGenreServiceInvalidGameIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (GameGenreInvalidGenreIdException $e) {
-            throw new GameGenreServiceInvalidGenreIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GameGenreServiceUnexistantGameGenreException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(Id $id): bool
     {
         try {
-            $gameGenre = new GameGenre(
-                $id
-            );
+            $this->gameGenreRepository->checkIfExists($id);
 
-            $gameGenre->validateId();
-
-            $validatedId = $gameGenre->getId();
-
-            $this->gameGenreRepository->checkIfExists($validatedId);
-
-            $wasDeleted = $this->gameGenreRepository->delete($gameGenre);
+            $wasDeleted = $this->gameGenreRepository->delete($id);
 
             return $wasDeleted;
-        } catch (GameGenreInvalidIdException $e) {
-            throw new GameGenreServiceInvalidIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GameGenreServiceUnexistantGameGenreException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): GameGenre
+    public function findById(Id $id): GameGenre
     {
         try {
-            $gameGenre = new GameGenre(
-                $id
-            );
-
-            $gameGenre->validateId();
-
-            $validatedId = $gameGenre->getId();
-
             $fetchedGameGenre = $this->gameGenreRepository->findById(
-                $validatedId
+                $id
             );
 
             return $fetchedGameGenre;
-        } catch (GameGenreInvalidIdException $e) {
-            throw new GameGenreServiceInvalidIdException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GameGenreServiceUnexistantGameGenreException(
-                "Game genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): GameGenreCollection
     {
         try {
             return $this->gameGenreRepository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

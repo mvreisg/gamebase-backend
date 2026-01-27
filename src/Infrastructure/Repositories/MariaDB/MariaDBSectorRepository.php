@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Sector;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBTransactionCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
-use PDO;
-use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Sector;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
 class MariaDBSectorRepository implements SectorRepositoryInterface
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -29,10 +30,10 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new MariaDBTransactionCreationFailureException();
+                throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $name = $sector->getName();
+            $name = $sector->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -53,18 +54,16 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     :isActive
                 );"
             );
-
             if ($insertStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheInsertSuccessful = $insertStatement->execute([
                 ":name" => $name,
                 ":isActive" => $isActive
             ]);
-
             if ($wasTheInsertSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $lastInsertedId = intval(
@@ -79,30 +78,27 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 WHERE
                     id = :id;"
             );
-
             if ($selectStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheSelectSuccessful = $selectStatement->execute([
                 ":id" => $lastInsertedId
             ]);
-
             if ($wasTheSelectSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $selectStatement->fetch();
-
             if ($fetchResult === false) {
-                throw new MariaDBFetchFailureException();
+                throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
             $this->pdo->commit();
 
             return new Sector(
-                $fetchResult["id"],
-                $fetchResult["name"],
+                Id::make($fetchResult["id"]),
+                new Name($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -110,15 +106,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBTransactionCreationFailureException |
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBFetchFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -127,8 +115,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     public function update(Sector $sector): bool
     {
         try {
-            $id = $sector->getId();
-            $name = $sector->getName();
+            $id = $sector->getIdValue();
+            $name = $sector->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -146,9 +134,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 WHERE
                     id = :id;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessful = $statement->execute([
@@ -156,27 +143,22 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 ":isActive" => $isActive,
                 ":id" => $id
             ]);
-
             if ($wasTheUpdateSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
+            $idValue = $id->getValue();
+
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
@@ -193,33 +175,29 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     is_active <> :isActive;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ":id" => $id,
+                ":id" => $idValue,
                 ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Sector
+    public function findById(Id $id): Sector
     {
         try {
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
@@ -230,28 +208,27 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheFetchSuccessful = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
 
             if ($wasTheFetchSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
-
             if ($fetchResult === false) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
 
             return new Sector(
-                $fetchResult["id"],
-                $fetchResult["name"],
+                Id::make($fetchResult["id"]),
+                new Name($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -259,19 +236,12 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBUnexistantRegisterException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): SectorCollection
     {
         try {
             $statement = $this->pdo->prepare(
@@ -282,133 +252,124 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheSelectSuccessful = $statement->execute();
             if ($wasTheSelectSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetchAll();
 
             if ($fetchResult === false) {
-                return [];
+                return new SectorCollection();
             }
 
-            $sectors = [];
+            $sectors = new SectorCollection();
             foreach ($fetchResult as $row) {
-                $sector = new Sector(
-                    $row["id"],
-                    $row["name"],
-                    /* MariaDB stores bool as int values so a casting
-                     * here is needed.
-                     */
-                    boolval(
-                        $row["is_active"]
+                $sectors->add(
+                    new Sector(
+                        $row["id"],
+                        $row["name"],
+                        /* MariaDB stores bool as int values so a casting
+                        * here is needed.
+                        */
+                        boolval(
+                            $row["is_active"]
+                        )
                     )
                 );
-
-                $sectors[] = $sector;
             }
-
             return $sectors;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkIfExists(int $id): void
+    public function checkIfExists(Id $id): void
     {
         try {
+            $idValue = $id->getValue();
+            $alias = "number_of_ids";
+
             $statement = $this->pdo->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
-                    number
+                    $alias
                 FROM
                     sector
                 WHERE
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult["number"]
+                $fetchResult[
+                    $alias
+                ]
             );
 
             if ($numberOfIds === 0) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
         try {
+            $nameValue = $name->getValue();
+            $alias = "number_of_names";
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     COUNT(*)
                     AS
-                    number_of_names
+                    $alias
                 FROM 
                     sector 
                 WHERE 
                     name = :name;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":name" => $name
+                ":name" => $nameValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult["number_of_names"]
+                $fetchResult[
+                    $alias
+                ]
             );
             if ($numberOfNames > 0) {
-                throw new MariaDBDuplicatedNameException(
-                    "Duplicated name: $name"
+                throw new MariaDBRepositoryDuplicatedRegisterException(
+                    $nameValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBDuplicatedNameException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

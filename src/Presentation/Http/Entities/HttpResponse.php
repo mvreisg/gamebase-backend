@@ -4,19 +4,48 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodeTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpInternalServerError;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodes;
 
 class HttpResponse
 {
+    /**
+     * @var HttpHeader[]
+     */
     private array $headers;
     private array $body;
+    private ?HttpStatusCodes $statusCode;
 
-    public function __construct(array $headers = [], array $body = [])
-    {
+    public function __construct(
+        array $headers = [],
+        array $body = []
+    ) {
         $this->headers = $headers;
         $this->body = $body;
+        $this->statusCode = null;
+    }
+
+    public static function make(): self
+    {
+        return new self();
+    }
+
+    public function getStatusCode(): ?HttpStatusCodes
+    {
+        return $this->statusCode;
+    }
+
+    /**
+     * @return HttpHeader[]
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function hasReadableBody(): bool
+    {
+        return $this->body !== [];
     }
 
     public function setBody(array $data): HttpResponse
@@ -25,111 +54,102 @@ class HttpResponse
         return $this;
     }
 
-    public function addHeader(string $header): HttpResponse
+    public function addHeader(HttpHeader $header): HttpResponse
     {
         $this->headers[] = $header;
         return $this;
     }
 
-    public function setStatus(HttpStatusCodeTypesEnum $statusCodeType): HttpResponse
+    private function setStatus(HttpStatusCodes $statusCode): HttpResponse
     {
-        header($statusCodeType->value);
+        $this->statusCode = $statusCode;
         return $this;
     }
 
     public function setStatusOk(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::Ok);
+        return $this->setStatus(HttpStatusCodes::Ok);
     }
 
     public function setStatusCreated(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::Created);
+        return $this->setStatus(HttpStatusCodes::Created);
     }
 
     public function setStatusNoContent(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::NoContent);
+        return $this->setStatus(HttpStatusCodes::NoContent);
     }
 
     public function setStatusBadRequest(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::BadRequest);
+        return $this->setStatus(HttpStatusCodes::BadRequest);
     }
 
     public function setStatusUnauthorized(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::Unauthorized);
+        return $this->setStatus(HttpStatusCodes::Unauthorized);
     }
 
     public function setStatusForbidden(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::Forbidden);
+        return $this->setStatus(HttpStatusCodes::Forbidden);
     }
 
     public function setStatusNotFound(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::NotFound);
+        return $this->setStatus(HttpStatusCodes::NotFound);
     }
 
     public function setStatusInternalServerError(): HttpResponse
     {
-        return $this->setStatus(HttpStatusCodeTypesEnum::InternalServerError);
+        return $this->setStatus(HttpStatusCodes::InternalServerError);
     }
 
-    public function send(HttpContentTypesEnum $contentType): void
+    private function setContentType(HttpContentTypes $contentType): void
     {
-        try {
-            foreach ($this->headers as $header) {
-                header($header);
-            }
-
-            switch ($contentType) {
-                default:
-                    throw new HttpInternalServerError(
-                        "Untreated Content-Type: " . $contentType->value
-                    );
-                case HttpContentTypesEnum::Text:
-                    header(HttpContentTypesEnum::Text->value);
-
-                    print(
-                        $this->body
-                    );
-
-                    break;
-                case HttpContentTypesEnum::Json:
-                    header(HttpContentTypesEnum::Json->value);
-
-                    $json = json_encode(
-                        $this->body
-                    );
-
-                    if ($json === false) {
-                        throw new HttpInternalServerError(
-                            "JSON Parse Error."
-                        );
-                    }
-
-                    print($json);
-
-                    break;
-            }
-        } catch (\Throwable $e) {
-            throw $e;
+        switch ($contentType) {
+            default:
+                throw new \InvalidArgumentException(
+                    "Untreated Content-Type: {$contentType->value}"
+                );
+            case HttpContentTypes::Text:
+                $this->headers[] = new HttpHeader(HttpContentTypes::Text->value);
+                break;
+            case HttpContentTypes::Json:
+                $this->headers[] = new HttpHeader(HttpContentTypes::Json->value);
+                break;
         }
     }
 
-    public function sendText(): void
+    public function setContentTypeAsText(): void
     {
-        $this->send(
-            HttpContentTypesEnum::Text
+        $this->setContentType(
+            HttpContentTypes::Text
         );
     }
 
-    public function sendJson(): void
+    public function setContentTypeAsJson(): void
     {
-        $this->send(
-            HttpContentTypesEnum::Json
+        $this->setContentType(
+            HttpContentTypes::Json
+        );
+    }
+
+    public function parseBody(): string
+    {
+        $type = "";
+        foreach ($this->headers as $header) {
+            if ($header->getKey() === "Content-Type") {
+                $type = $header->getValue();
+            }
+        }
+        if (str_contains($type, "application/json")) {
+            return json_encode($this->body);
+        }
+
+        throw new \InvalidArgumentException(
+            "Unknown header type: {$type}"
         );
     }
 }

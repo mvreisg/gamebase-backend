@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpGamePlatformControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
@@ -21,18 +21,18 @@ class HttpGamePlatformRoutes
             $routes = [
                 HttpRouteFactory::make()
                     ->setMethod(
-                        HttpMethodTypesEnum::Post
+                        HttpMethods::Post
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "platform",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->setCallback(
@@ -45,24 +45,24 @@ class HttpGamePlatformRoutes
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
-                        HttpMethodTypesEnum::Put
+                        HttpMethods::Put
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "platform",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
@@ -75,24 +75,24 @@ class HttpGamePlatformRoutes
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
-                        HttpMethodTypesEnum::Delete
+                        HttpMethods::Delete
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "platform",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
@@ -105,24 +105,24 @@ class HttpGamePlatformRoutes
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
-                        HttpMethodTypesEnum::Get
+                        HttpMethods::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "platform",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
@@ -135,18 +135,18 @@ class HttpGamePlatformRoutes
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
-                        HttpMethodTypesEnum::Get
+                        HttpMethods::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "platform",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->setCallback(

@@ -4,58 +4,56 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\User\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedUsernameException;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Password;
+use Mvreisg\GamebaseBackend\Domain\Data\User;
+use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockUserRepository implements UserRepositoryInterface
 {
-    /**
-     * @var User[]
-     */
-    private array $data;
-    private int $idIndex;
+    private UserCollection $collection;
+    private Id $id;
 
     public function __construct()
     {
-        $this->data = [];
-        $this->idIndex = 0;
+        $this->collection = new UserCollection();
+        $this->id = new Id(0);
     }
 
     public function insert(User $user): User
     {
-        $this->idIndex++;
-        $user->setId($this->idIndex);
-        $this->data[] = $user;
-        return new User(
-            $user->getId(),
-            $user->getUsername(),
-            $user->getPassword(),
+        $this->id->increment(1);
+        $newUser = new User(
+            Id::make($user->getIdValue()),
+            Username::make($user->getUsernameValue()),
+            Password::make($user->getPasswordValue()),
             $user->getIsActive()
         );
+        $this->collection->add($newUser);
+        return $newUser;
     }
 
     public function update(User $user): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $user->getId()) {
-                $index = $key;
-            }
-        }
+        $foundUser = $this->collection->findById(
+            Id::make($user->getIdValue())
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundUser === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$user->getIdValue()}"
+            );
         }
-
-        $foundUser = $this->data[$index];
 
         $hasDifferentUsernames =
-            $foundUser->getUsername() !== $user->getUsername();
+            $foundUser->getUsernameValue() !== $user->getUsernameValue();
 
         $hasDifferentPasswords =
-            $foundUser->getPassword() !== $user->getPassword();
+            $foundUser->getPasswordValue() !== $user->getPasswordValue();
 
         $hasDifferentIsActive =
             $foundUser->getIsActive() !== $user->getIsActive();
@@ -69,30 +67,29 @@ class MockUserRepository implements UserRepositoryInterface
             return false;
         }
 
-        $this->data[$index] = new User(
-            $user->getId(),
-            $user->getUsername(),
-            $user->getPassword(),
-            $user->getIsActive()
+        $this->collection->replace(
+            Id::make($user->getIdValue()),
+            new User(
+                Id::make($user->getIdValue()),
+                Username::make($user->getUsernameValue()),
+                Password::make($user->getPasswordValue()),
+                $user->getIsActive()
+            )
         );
-
         return true;
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $index = $key;
-            }
-        }
+        $foundUser = $this->collection->findById(
+            $id
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundUser === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-
-        $foundUser = $this->data[$index];
 
         $wasUpdated = $foundUser->getIsActive() !== $isActive;
 
@@ -100,61 +97,75 @@ class MockUserRepository implements UserRepositoryInterface
             return false;
         }
 
-        $this->data[$index]->setIsActive($isActive);
-
+        $this->collection->replace(
+            $id,
+            new User(
+                Id::make($foundUser->getIdValue()),
+                Username::make($foundUser->getUsernameValue()),
+                Password::make($foundUser->getPasswordValue()),
+                $isActive
+            )
+        );
         return true;
     }
 
-    public function findById(int $id): User
+    public function findById(Id $id): User
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return $value;
-            }
+        $foundUser = $this->collection->findById(
+            $id
+        );
+
+        if ($foundUser === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant user with id $id"
-        );
+
+        return $foundUser;
     }
 
-    public function findByUsername(string $username): User
+    public function findByUsername(Username $username): User
     {
-        foreach ($this->data as $key => $value) {
-            if (strcmp($value->getUsername(), $username) === 0) {
-                return $value;
-            }
+        $foundUser = $this->collection->findByUsername(
+            $username
+        );
+
+        if ($foundUser === null) {
+            throw new MockUnexistantRegisterException(
+                "username: {$username->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant username: $username"
+
+        return $foundUser;
+    }
+
+    public function findAll(): UserCollection
+    {
+        return $this->collection;
+    }
+
+    public function checkIfExists(Id $id): void
+    {
+        $foundUser = $this->collection->findById(
+            $id
         );
-    }
 
-    public function findAll(): array
-    {
-        return $this->data;
-    }
-
-    public function checkIfExists(int $id): void
-    {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return;
-            }
+        if ($foundUser === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant user with id $id"
-        );
     }
 
-    public function checkDuplicatedUsernames(string $name): void
+    public function checkDuplicatedUsernames(Username $username): void
     {
-        $array = array_filter(
-            $this->data,
-            fn (User $user) => strcmp($user->getUsername(), $name) === 0
+        $foundUsers = $this->collection->findAllByUsername(
+            $username
         );
-        if (count($array) > 0) {
-            throw new MockDuplicatedUsernameException(
-                "Duplicated username: $name"
+
+        if ($foundUsers->count() > 1) {
+            throw new MockDuplicatedRegisterException(
+                "username: {$username->getValue()}"
             );
         }
     }

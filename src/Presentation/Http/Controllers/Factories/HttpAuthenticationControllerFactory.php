@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Entities\JwtTokenAuthenticationClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\RedisConnection;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Decoded\JwtDecodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtAuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Connection\RedisConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Token\RedisTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Connections\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Connections\MariaDBRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
@@ -23,7 +26,7 @@ class HttpAuthenticationControllerFactory
     public static function make(): HttpAuthenticationController
     {
         try {
-            $repositoryConnection = MariaDBConnection::get();
+            $repositoryConnection = MariaDBRepositoryConnection::get();
 
             $userRepository = new MariaDBUserRepository(
                 $repositoryConnection
@@ -49,26 +52,40 @@ class HttpAuthenticationControllerFactory
 
             $cacheConnection = RedisConnection::get();
 
-            $userCache = new RedisUserCache(
+            $tokenCache = new RedisTokenCache(
                 $cacheConnection
             );
 
-            $authenticationClock = new JwtTokenAuthenticationClock();
+            $jwtAuthenticationTokenClock = new JwtAuthenticationTokenClock();
 
-            $authenticator = new JwtTokenAuthentication(
-                $authenticationClock
+            $authenticationTokenEncoder = new JwtAuthenticationTokenEncoder(
+                $jwtAuthenticationTokenClock
+            );
+
+            $authenticationTokenDecoder = new JwtAuthenticationTokenDecoder(
+                $jwtAuthenticationTokenClock
+            );
+
+            $decodedAuthenticationTokenValidator = new JwtDecodedAuthenticationTokenValidator(
+                $jwtAuthenticationTokenClock
+            );
+
+            $encodedAuthenticationTokenValidator = new JwtEncodedAuthenticationTokenValidator(
+                $authenticationTokenDecoder,
+                $decodedAuthenticationTokenValidator
             );
 
             $service = new AuthenticationService(
                 $userRepository,
+                $tokenCache,
+                $encrypter,
+                $authenticationTokenEncoder,
+                $authenticationTokenDecoder,
                 $permissionRepository,
                 $sectorRepository,
-                $userPermissionRepository,
                 $sectorPermissionRepository,
-                $encrypter,
-                $userCache,
-                $authenticator,
-                $authenticationClock
+                $userPermissionRepository,
+                $encodedAuthenticationTokenValidator
             );
 
             $controller = new HttpAuthenticationController(

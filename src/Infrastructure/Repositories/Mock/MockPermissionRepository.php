@@ -4,54 +4,51 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission\Permission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Data\Permission;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockPermissionRepository implements PermissionRepositoryInterface
 {
-    /**
-     * @var Permission[]
-     */
-    private array $data;
-    private int $idIndex;
+    private PermissionCollection $collection;
+    private Id $id;
 
     public function __construct()
     {
-        $this->data = [];
-        $this->idIndex = 0;
+        $this->collection = new PermissionCollection(null);
+        $this->id = new Id(0);
     }
 
     public function insert(Permission $permission): Permission
     {
-        $this->idIndex++;
-        $permission->setId($this->idIndex);
-        $this->data[] = $permission;
-        return new Permission(
-            $permission->getId(),
-            $permission->getName(),
+        $this->id->increment(1);
+        $permission = new Permission(
+            new Id($this->id->getValue()),
+            new Name($permission->getNameValue()),
             $permission->getIsActive()
         );
+        $this->collection->add($permission);
+        return $permission;
     }
 
     public function update(Permission $permission): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $permission->getId()) {
-                $index = $key;
-            }
-        }
+        $foundPermission = $this->collection->findById(
+            Id::make($permission->getIdValue())
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundPermission === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$permission->getIdValue()}"
+            );
         }
-
-        $foundPermission = $this->data[$index];
 
         $hasDifferentNames =
-            $foundPermission->getName() !== $permission->getName();
+            $foundPermission->getNameValue() !== $permission->getNameValue();
 
         $hasDifferentIsActive =
             $foundPermission->getIsActive() !== $permission->getIsActive();
@@ -62,79 +59,87 @@ class MockPermissionRepository implements PermissionRepositoryInterface
             return false;
         }
 
-        $this->data[$index] = new Permission(
-            $permission->getId(),
-            $permission->getName(),
-            $permission->getIsActive()
+        $this->collection->replace(
+            Id::make($permission->getIdValue()),
+            new Permission(
+                Id::make($permission->getIdValue()),
+                Name::make($permission->getNameValue()),
+                $permission->getIsActive()
+            )
         );
-
         return true;
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $index = $key;
-            }
-        }
+        $foundPermission = $this->collection->findById(
+            $id
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundPermission === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-
-        $foundPermission = $this->data[$index];
 
         $wasUpdated = $foundPermission->getIsActive() !== $isActive;
 
         if ($wasUpdated === false) {
             return false;
         }
-
-        $this->data[$index]->setIsActive($isActive);
-
+        $this->collection->replace(
+            $id,
+            new Permission(
+                Id::make($foundPermission->getIdValue()),
+                Name::make($foundPermission->getNameValue()),
+                $isActive
+            )
+        );
         return true;
     }
 
-    public function findById(int $id): Permission
+    public function findById(Id $id): Permission
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return $value;
-            }
+        $foundPermission = $this->collection->findById(
+            $id
+        );
+
+        if ($foundPermission === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant repository with id $id"
+
+        return $foundPermission;
+    }
+
+    public function findAll(): PermissionCollection
+    {
+        return $this->collection;
+    }
+
+    public function checkIfExists(Id $id): void
+    {
+        $foundPermission = $this->collection->findById(
+            $id
         );
-    }
 
-    public function findAll(): array
-    {
-        return $this->data;
-    }
-
-    public function checkIfExists(int $id): void
-    {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return;
-            }
+        if ($foundPermission === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant permission with id $id"
-        );
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
-        $array = array_filter(
-            $this->data,
-            fn (Permission $permission) => strcmp($permission->getName(), $name) === 0
+        $foundPermissions = $this->collection->findByName(
+            $name
         );
-        if (count($array) > 0) {
-            throw new MockDuplicatedNameException(
-                "Duplicated permission name: $name"
+
+        if ($foundPermissions->count() > 1) {
+            throw new MockDuplicatedRegisterException(
+                "name: {$name->getValue()}"
             );
         }
     }

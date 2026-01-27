@@ -23,6 +23,7 @@ try {
         ->addRoutes(
             HttpGameRoutes::get()
         )
+        /*
         ->addRoutes(
             HttpGameGenreRoutes::get()
         )
@@ -47,10 +48,12 @@ try {
         ->addRoutes(
             HttpUserPermissionRoutes::get()
         )
+        */
         ->addRoutes(
             HttpUserRoutes::get()
         )
         ->run();
 } catch (\Throwable $e) {
-    print("app.php says: Message: {$e->getMessage()} - Code: {$e->getCode()}");
+    //print_r("Message: {$e->getMessage()} - Code: {$e->getCode()} - File: {$e->getFile()} - Line: {$e->getLine()}");
+    print_r($e);
 }

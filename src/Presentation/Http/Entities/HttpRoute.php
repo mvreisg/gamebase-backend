@@ -4,30 +4,51 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 
 class HttpRoute
 {
-    private HttpMethodTypesEnum $method;
+    private HttpMethods $method;
     private string $separator;
     /**
      * @var HttpRoutePart[] $pathParts
      */
     private array $pathParts;
     private int $pathPartIndex;
+    /**
+     * @var callable(HttpRequest): HttpResponse $callback
+     */
     private $callback;
 
-    public function __construct()
+    public function __construct(string $separator = "/")
     {
         $this->pathPartIndex = 0;
+        $this->separator = $separator;
     }
 
-    public function getMethod(): HttpMethodTypesEnum
+    public function getFullRouteName(): string
+    {
+        return implode(
+            $this->getSeparator(),
+            array_map(
+                function ($item) {
+                    if ($item->getType() !== HttpRouteParameterTypes::Route) {
+                        return "({$item->getName()})";
+                    }
+                    return $item->getName();
+                },
+                $this->pathParts
+            )
+        );
+    }
+
+    public function getMethod(): HttpMethods
     {
         return $this->method;
     }
 
-    public function setMethod(HttpMethodTypesEnum $method): HttpRoute
+    public function setMethod(HttpMethods $method): HttpRoute
     {
         $this->method = $method;
         return $this;
@@ -76,11 +97,17 @@ class HttpRoute
         );
     }
 
+    /**
+     * @return callable(HttpRequest): HttpResponse $callback
+     */
     public function getCallback(): callable
     {
         return $this->callback;
     }
 
+    /**
+     * @param callable(HttpRequest): HttpResponse $callback
+     */
     public function setCallback(callable $callback): HttpRoute
     {
         $this->callback = $callback;

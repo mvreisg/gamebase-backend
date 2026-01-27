@@ -6,12 +6,15 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Entities\JwtTokenAuthenticationClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\JwtTokenAuthentication;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Connections\RedisConnection;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\RedisUserCache;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtAuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Decoded\JwtDecodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Connection\RedisConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Token\RedisTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Connections\MariaDBConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Connections\MariaDBRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
@@ -24,17 +27,10 @@ class HttpUserControllerFactory
     public static function make(): HttpUserController
     {
         try {
-            $repositoryConnection = MariaDBConnection::get();
+            $repositoryConnection = MariaDBRepositoryConnection::get();
 
             $userRepository = new MariaDBUserRepository(
                 $repositoryConnection
-            );
-
-            $encrypter = new DefuseEncryption();
-
-            $userService = new UserService(
-                $userRepository,
-                $encrypter
             );
 
             $permissionRepository = new MariaDBPermissionRepository(
@@ -57,31 +53,50 @@ class HttpUserControllerFactory
 
             $cacheConnection = RedisConnection::get();
 
-            $userCache = new RedisUserCache(
+            $tokenCache = new RedisTokenCache(
                 $cacheConnection
             );
 
-            $authenticationClock = new JwtTokenAuthenticationClock();
+            $jwtAuthenticationTokenClock = new JwtAuthenticationTokenClock();
 
-            $authenticator = new JwtTokenAuthentication(
-                $authenticationClock
+            $authenticationTokenEncoder = new JwtAuthenticationTokenEncoder(
+                $jwtAuthenticationTokenClock
             );
 
-            $authService = new AuthenticationService(
+            $authenticationTokenDecoder = new JwtAuthenticationTokenDecoder(
+                $jwtAuthenticationTokenClock
+            );
+
+            $decodedAuthenticationTokenValidator = new JwtDecodedAuthenticationTokenValidator(
+                $jwtAuthenticationTokenClock
+            );
+
+            $encodedAuthenticationTokenValidator = new JwtEncodedAuthenticationTokenValidator(
+                $authenticationTokenDecoder,
+                $decodedAuthenticationTokenValidator
+            );
+
+            $authenticationService = new AuthenticationService(
                 $userRepository,
+                $tokenCache,
+                $encrypter,
+                $authenticationTokenEncoder,
+                $authenticationTokenDecoder,
                 $permissionRepository,
                 $sectorRepository,
-                $userPermissionRepository,
                 $sectorPermissionRepository,
-                $encrypter,
-                $userCache,
-                $authenticator,
-                $authenticationClock
+                $userPermissionRepository,
+                $encodedAuthenticationTokenValidator
+            );
+
+            $userService = new UserService(
+                $userRepository,
+                $encrypter
             );
 
             $controller = new HttpUserController(
                 $userService,
-                $authService
+                $authenticationService
             );
 
             return $controller;

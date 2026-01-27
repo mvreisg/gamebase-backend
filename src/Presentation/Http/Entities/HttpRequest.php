@@ -4,42 +4,57 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 
 class HttpRequest
 {
-    private HttpMethodTypesEnum $method;
+    private HttpMethods $method;
     private HttpRoute $route;
     /**
      * @var HttpQuery[] $queries
      */
     private array $queries;
     private array $params;
-    private string $body;
+    /**
+     * @var HttpHeader[] $headers
+     */
     private array $headers;
-    private array $parsedBody;
-    private bool $isBodyParsed;
+    private array $body;
 
     public function __construct(
-        HttpMethodTypesEnum $method,
+        HttpMethods $method,
         HttpRoute $route,
         array $queries = [],
         array $params = [],
-        string $body = "",
+        string $stream = "",
         array $headers = [],
     ) {
         $this->method = $method;
         $this->route = $route;
         $this->queries = $queries;
         $this->params = $params;
-        $this->body = $body;
         $this->headers = $headers;
-        $this->parsedBody = [];
-        $this->isBodyParsed = false;
+        $this->body = $this->parseBody($stream) ?? [];
     }
 
-    public function getMethod(): HttpMethodTypesEnum
+    public function parseBody(string $stream): mixed
+    {
+        $type = "";
+        foreach ($this->headers as $header) {
+            if ($header->getKey() === "Content-Type") {
+                $type = $header->getValue();
+            }
+        }
+        if (str_contains($type, "application/json")) {
+            return json_decode($stream, true);
+        }
+
+        throw new \InvalidArgumentException(
+            "Unknown header type: {$type}"
+        );
+    }
+
+    public function getMethod(): HttpMethods
     {
         return $this->method;
     }
@@ -49,30 +64,23 @@ class HttpRequest
         return $this->route;
     }
 
-    public function getHeaderOrDieTrying(string $key): string
+    public function getHeaderOrDieTrying(string $key): ?HttpHeader
     {
-        $exists = isset($this->headers[$key]);
-        if ($exists === false) {
-            throw new HttpBadRequestException(
-                "$key header not informed!"
-            );
+        foreach ($this->headers as $header) {
+            if ($header->getKey() === $key) {
+                return $header;
+            }
         }
-        return $this->headers[$key];
+        return null;
     }
 
     public function getParamOrDieTrying(string $key): mixed
     {
-        try {
-            $exists = isset($this->params[$key]);
-            if ($exists === false) {
-                throw new HttpBadRequestException(
-                    "$key parameter not informed!"
-                );
-            }
-            return $this->params[$key];
-        } catch (\Throwable $e) {
-            throw $e;
+        $exists = isset($this->params[$key]);
+        if ($exists === false) {
+            return null;
         }
+        return $this->params[$key];
     }
 
     public function getQueryOrDieTrying(string $key): ?HttpQuery
@@ -88,35 +96,12 @@ class HttpRequest
         }
     }
 
-    public function getParsedBodyPartOrDieTrying(string $key): mixed
+    public function getBodyOrDieTrying(string $key): mixed
     {
-        $this->parseBodyFromJsonString();
-        $exists = isset($this->parsedBody[$key]);
+        $exists = isset($this->body[$key]);
         if ($exists === false) {
-            throw new HttpBadRequestException(
-                "$key field not informed!"
-            );
+            return null;
         }
-        return $this->parsedBody[$key];
-    }
-
-    public function parseBodyFromJsonString(): void
-    {
-        try {
-            if ($this->isBodyParsed) {
-                return;
-            }
-            $isAssociative = true;
-            $result = json_decode($this->body, $isAssociative);
-            if ($result == false) {
-                throw new HttpBadRequestException(
-                    "Malformed JSON!"
-                );
-            }
-            $this->parsedBody = $result;
-            $this->isBodyParsed = true;
-        } catch (\Throwable $e) {
-            throw $e;
-        }
+        return $this->body[$key];
     }
 }

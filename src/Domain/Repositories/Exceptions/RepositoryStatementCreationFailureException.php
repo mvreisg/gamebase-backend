@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions;
 
-abstract class RepositoryStatementCreationFailureException extends \Exception
+class RepositoryStatementCreationFailureException extends \DomainException
 {
-    public function __construct(string $message = "", int $code = 0, ?\Throwable $previous = null)
+    public function __construct()
     {
         parent::__construct(
-            $message,
-            $code,
-            $previous
+            "The statement could not be created."
         );
     }
 }

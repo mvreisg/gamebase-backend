@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethodTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypesEnum;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpGameControllerFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
 
 class HttpGameRoutes
 {
@@ -22,115 +21,90 @@ class HttpGameRoutes
                 HttpRouteFactory::make()
                     ->setSeparator("/")
                     ->setMethod(
-                        HttpMethodTypesEnum::Post
+                        HttpMethods::Post
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->insert(...)
-                            )
+                        fn ($request) => $controller->insert($request)
                     ),
                 HttpRouteFactory::make()
                     ->setSeparator("/")
                     ->setMethod(
-                        HttpMethodTypesEnum::Put
+                        HttpMethods::Put
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->update(...)
-                            )
+                        fn ($request) => $controller->update($request)
                     ),
                 HttpRouteFactory::make()
                     ->setSeparator("/")
                     ->setMethod(
-                        HttpMethodTypesEnum::Patch
+                        HttpMethods::Patch
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->setIsActive(...)
-                            )
+                        fn ($request) => $controller->setIsActive($request)
                     ),
                 HttpRouteFactory::make()
                     ->setSeparator("/")
                     ->setMethod(
-                        HttpMethodTypesEnum::Get
+                        HttpMethods::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "id",
-                            HttpRouteParameterTypesEnum::Integer
+                            HttpRouteParameterTypes::Integer
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->findById(...)
-                            )
+                        fn ($request) => $controller->findById($request)
                     ),
                 HttpRouteFactory::make()
                     ->setSeparator("/")
                     ->setMethod(
-                        HttpMethodTypesEnum::Get
+                        HttpMethods::Get
                     )
                     ->appendPathPart(
                         HttpRoutePartFactory::make(
                             "game",
-                            HttpRouteParameterTypesEnum::Route
+                            HttpRouteParameterTypes::Route
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->findAll(...)
-                            )
+                        fn ($request) => $controller->findAll($request)
                     )
             ];
 

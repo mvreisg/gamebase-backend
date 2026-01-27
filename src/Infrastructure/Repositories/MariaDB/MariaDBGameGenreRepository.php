@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBTransactionCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
-use PDO;
-use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
 class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -28,11 +28,11 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new MariaDBTransactionCreationFailureException();
+                throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $genreId = $gameGenre->getGenreId();
-            $gameId = $gameGenre->getGameId();
+            $genreId = $gameGenre->getGenreIdValue();
+            $gameId = $gameGenre->getGameIdValue();
 
             $insertStatement = $this->pdo->prepare(
                 "INSERT INTO game_genre (
@@ -45,7 +45,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 );"
             );
             if ($insertStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
@@ -53,7 +53,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ":gameId" => $gameId
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $lastInsertedId = intval(
@@ -69,37 +69,29 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id;"
             );
             if ($selectStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $selectStatement->fetch();
             if ($fetchResult === false) {
-                throw new MariaDBFetchFailureException();
+                throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
             $this->pdo->commit();
 
             return new GameGenre(
-                $fetchResult["id"],
-                $fetchResult["genre_id"],
-                $fetchResult["game_id"]
+                Id::make($fetchResult["id"]),
+                Id::make($fetchResult["genre_id"]),
+                Id::make($fetchResult["game_id"])
             );
-        } catch (
-            MariaDBTransactionCreationFailureException |
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBFetchFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -108,9 +100,9 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     public function update(GameGenre $gameGenre): bool
     {
         try {
-            $id = $gameGenre->getId();
-            $gameId = $gameGenre->getGameId();
-            $genreId = $gameGenre->getGenreId();
+            $id = $gameGenre->getIdValue();
+            $gameId = $gameGenre->getGameIdValue();
+            $genreId = $gameGenre->getGenreIdValue();
 
             $statement = $this->pdo->prepare(
                 "UPDATE 
@@ -122,7 +114,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
@@ -131,25 +123,21 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 ":genreId" => $genreId
             ]);
             if ($wasTheStatementExecutionSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(GameGenre $gameGenre): bool
+    public function delete(Id $id): bool
     {
         try {
+            $idValue = $id->getValue();
+            
             $statement = $this->pdo->prepare(
                 "DELETE FROM
                     game_genre
@@ -157,34 +145,28 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
-            $id = $gameGenre->getId();
-
             $wasTheDeleteStatementSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheDeleteStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): GameGenre
+    public function findById(Id $id): GameGenre
     {
         try {
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
@@ -194,41 +176,34 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     id = :id"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
 
             return new GameGenre(
-                $fetchResult["id"],
-                $fetchResult["genre_id"],
-                $fetchResult["game_id"]
+                Id::make($fetchResult["id"]),
+                Id::make($fetchResult["genre_id"]),
+                Id::make($fetchResult["game_id"])
             );
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBUnexistantRegisterException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): GameGenreCollection
     {
         try {
             $statement = $this->pdo->prepare(
@@ -238,82 +213,76 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                     game_genre"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return [];
+                return new GameGenreCollection();
             }
 
-            $gameGenres = [];
-
+            $gameGenres = new GameGenreCollection();
             foreach ($fetchResult as $row) {
-                $gameGenres[] = new GameGenre(
-                    $row["id"],
-                    $row["genre_id"],
-                    $row["game_id"]
+                $gameGenres->add(
+                    new GameGenre(
+                        Id::make($row["id"]),
+                        Id::make($row["genre_id"]),
+                        Id::make($row["game_id"])
+                    )
                 );
             }
 
             return $gameGenres;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkIfExists(int $id): void
+    public function checkIfExists(Id $id): void
     {
         try {
+            $alias = "number_of_ids";
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
-                    number
+                    $alias
                 FROM
                     game_genre
                 WHERE
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult["number"]
+                $fetchResult[
+                    $alias
+                ]
             );
 
             if ($numberOfIds === 0) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

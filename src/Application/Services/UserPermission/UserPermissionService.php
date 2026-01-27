@@ -4,22 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\UserPermission;
 
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidUserIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantPermissionException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantUserException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantUserPermissionException;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission\Exceptions\UserPermissionInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission\Exceptions\UserPermissionInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission\Exceptions\UserPermissionInvalidUserIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserPermission\UserPermission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\UserPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\UserPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 
 class UserPermissionService
 {
@@ -37,231 +27,79 @@ class UserPermissionService
         $this->userPermissionRepository = $userPermissionRepository;
     }
 
-    public function insert(int $userId, int $permissionId): UserPermission
+    public function insert(UserPermission $new): UserPermission
     {
         try {
-            $userPermission = new UserPermission(
-                null,
-                $userId,
-                $permissionId
+            $this->userRepository->checkIfExists(
+                Id::make($new->getUserIdValue())
             );
 
-            $userPermission->validateUserId();
-            $userPermission->validatePermissionId();
+            $this->permissionRepository->checkIfExists(
+                Id::make($new->getPermissionIdValue())
+            );
 
-            try {
-                $validatedUserId = $userPermission->getUserId();
-
-                $this->userRepository->checkIfExists($validatedUserId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new UserPermissionServiceUnexistantUserException(
-                    "User permission service error: User repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedPermissionId = $userPermission->getPermissionId();
-
-                $this->permissionRepository->checkIfExists($validatedPermissionId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new UserPermissionServiceUnexistantPermissionException(
-                    "User permission service error: Permission repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            $insertedUserPermission = $this->userPermissionRepository->insert($userPermission);
+            $insertedUserPermission = $this->userPermissionRepository->insert($new);
 
             return $insertedUserPermission;
-        } catch (
-            UserPermissionServiceUnexistantUserException |
-            UserPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw $e;
-        } catch (UserPermissionInvalidUserIdException $e) {
-            throw new UserPermissionServiceInvalidUserIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserPermissionInvalidPermissionIdException $e) {
-            throw new UserPermissionServiceInvalidPermissionIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, int $userId, int $permissionId): bool
+    public function update(UserPermission $existant): bool
     {
         try {
-            $userPermission = new UserPermission(
-                $id,
-                $userId,
-                $permissionId
+            $this->userPermissionRepository->checkIfExists(
+                Id::make($existant->getIdValue())
             );
 
-            $userPermission->validateId();
-            $userPermission->validateUserId();
-            $userPermission->validatePermissionId();
+            $this->userRepository->checkIfExists(
+                Id::make($existant->getUserIdValue())
+            );
 
-            $validatedId = $userPermission->getId();
+            $this->permissionRepository->checkIfExists(
+                Id::make($existant->getPermissionIdValue())
+            );
 
-            $this->userPermissionRepository->checkIfExists($validatedId);
-
-            try {
-                $validatedUserId = $userPermission->getUserId();
-
-                $this->userRepository->checkIfExists($validatedUserId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new UserPermissionServiceUnexistantUserException(
-                    "User permission service error: User repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedPermissionId = $userPermission->getPermissionId();
-
-                $this->permissionRepository->checkIfExists($validatedPermissionId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new UserPermissionServiceUnexistantPermissionException(
-                    "User permission service error: Permission repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            $wasUpdated = $this->userPermissionRepository->update($userPermission);
+            $wasUpdated = $this->userPermissionRepository->update($existant);
 
             return $wasUpdated;
-        } catch (
-            UserPermissionServiceUnexistantUserException |
-            UserPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw $e;
-        } catch (UserPermissionInvalidIdException $e) {
-            throw new UserPermissionServiceInvalidIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserPermissionInvalidUserIdException $e) {
-            throw new UserPermissionServiceInvalidUserIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserPermissionInvalidPermissionIdException $e) {
-            throw new UserPermissionServiceInvalidPermissionIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserPermissionServiceUnexistantUserPermissionException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(Id $id): bool
     {
         try {
-            $userPermission = new UserPermission(
-                $id
-            );
+            $this->userPermissionRepository->checkIfExists($id);
 
-            $userPermission->validateId();
-
-            $validatedId = $userPermission->getId();
-
-            $this->userPermissionRepository->checkIfExists($validatedId);
-
-            $wasDeleted = $this->userPermissionRepository->delete($userPermission);
+            $wasDeleted = $this->userPermissionRepository->delete($id);
 
             return $wasDeleted;
-        } catch (UserPermissionInvalidIdException $e) {
-            throw new UserPermissionServiceInvalidIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserPermissionServiceUnexistantUserPermissionException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): UserPermission
+    public function findById(Id $id): UserPermission
     {
         try {
-            $userPermission = new UserPermission(
-                $id
-            );
-
-            $userPermission->validateId();
-
-            $validatedId = $userPermission->getId();
-
             $fetchedUserPermission = $this->userPermissionRepository->findById(
-                $validatedId
+                $id
             );
 
             return $fetchedUserPermission;
-        } catch (UserPermissionInvalidIdException $e) {
-            throw new UserPermissionServiceInvalidIdException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserPermissionServiceUnexistantUserPermissionException(
-                "User permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): UserPermissionCollection
     {
         try {
             return $this->userPermissionRepository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
