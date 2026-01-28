@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGameIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidGenreIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGameGenreException;
-use Mvreisg\GamebaseBackend\Application\Services\GameGenre\Exceptions\GameGenreServiceUnexistantGenreException;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenre\GameGenreService;
+use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGameGenreController
@@ -31,23 +25,31 @@ class HttpGameGenreController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $gameId = $request->getParsedBodyPartOrDieTrying("gameId");
-            $genreId = $request->getParsedBodyPartOrDieTrying("genreId");
+            $gameId = $request->getBodyOrDieTrying("game_id");
+            $genreId = $request->getBodyOrDieTrying("genre_id");
 
-            $gameGenre = $this->gameGenreService->insert($gameId, $genreId);
+            $gameGenre = $this->gameGenreService->insert(
+                new GameGenre(
+                    null,
+                    Id::make($gameId),
+                    Id::make($genreId)
+                )
+            );
 
             $data = [
-                "id" => $gameGenre->getId(),
-                "gameId" => $gameGenre->getGameId(),
-                "genreId" => $gameGenre->getGenreId()
+                "id" => $gameGenre->getIdValue(),
+                "game_id" => $gameGenre->getGameIdValue(),
+                "genre_id" => $gameGenre->getGenreIdValue()
             ];
 
             $response
@@ -55,77 +57,52 @@ class HttpGameGenreController
                     "data" => $data
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (
-            GameGenreServiceUnexistantGameException |
-            GameGenreServiceUnexistantGenreException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            GameGenreServiceInvalidGameIdException |
-            GameGenreServiceInvalidGenreIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $gameId = $request->getParsedBodyPartOrDieTrying("gameId");
-            $genreId = $request->getParsedBodyPartOrDieTrying("genreId");
+            $gameId = $request->getBodyOrDieTrying("game_id");
+            $genreId = $request->getBodyOrDieTrying("genre_id");
 
-            $wasUpdated = $this->gameGenreService->update($id, $gameId, $genreId);
+            $wasUpdated = $this->gameGenreService->update(
+                new GameGenre(
+                    Id::make($id),
+                    Id::make($gameId),
+                    Id::make($genreId)
+                )
+            );
+
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (
-            GameGenreServiceInvalidIdException |
-            GameGenreServiceInvalidGameIdException |
-            GameGenreServiceInvalidGenreIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            GameGenreServiceUnexistantGameException |
-            GameGenreServiceUnexistantGenreException |
-            GameGenreServiceUnexistantGameGenreException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(HttpRequest $request, HttpResponse $response): void
+    public function delete(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -133,31 +110,27 @@ class HttpGameGenreController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $wasDeleted = $this->gameGenreService->delete($id);
+            $wasDeleted = $this->gameGenreService->delete(
+                Id::make($id)
+            );
+
             $response
                 ->setBody([
-                    "wasDeleted" => $wasDeleted
+                    "was_deleted" => $wasDeleted
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (GameGenreServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (GameGenreServiceUnexistantGameGenreException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -165,44 +138,31 @@ class HttpGameGenreController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $gameGenre = $this->gameGenreService->findById($id);
-
-            if ($gameGenre === null) {
-                throw new HttpNotFoundException(
-                    "Game genre with the id $id not found!"
-                );
-            }
+            $gameGenre = $this->gameGenreService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $gameGenre->getId(),
-                        "gameId" => $gameGenre->getGameId(),
-                        "genreId" => $gameGenre->getGenreId()
+                        "id" => $gameGenre->getIdValue(),
+                        "game_id" => $gameGenre->getGameIdValue(),
+                        "genre_id" => $gameGenre->getGenreIdValue()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
-        } catch (GameGenreServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (GameGenreServiceUnexistantGameGenreException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -210,31 +170,33 @@ class HttpGameGenreController
 
             $gameGenres = $this->gameGenreService->findAll();
 
-            $numberOfGameGenres = count($gameGenres);
-            if ($numberOfGameGenres === 0) {
-                throw new HttpNotFoundException(
-                    "No game genres found!"
-                );
+            if ($gameGenres->isEmpty()) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusOk()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($gameGenres as $gameGenre) {
+            foreach ($gameGenres->fetchAll() as $gameGenre) {
                 $data[] = [
-                    "id" => $gameGenre->getId(),
-                    "gameId" => $gameGenre->getGameId(),
-                    "genreId" => $gameGenre->getGenreId()
+                    "id" => $gameGenre->getIdValue(),
+                    "game_id" => $gameGenre->getGameIdValue(),
+                    "genre_id" => $gameGenre->getGenreIdValue()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfGameGenres,
+                    "number_found" => $gameGenres->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

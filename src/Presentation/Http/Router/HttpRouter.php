@@ -102,22 +102,6 @@ class HttpRouter
         }
     }
 
-    private function rightRouteButWrongValue(string $route, string $expected, mixed $value)
-    {
-        $message = "";
-        if ($value !== "0" && empty($value)) {
-            $message = "Expected ($expected) value on route: $route, nothing received!";
-        } else {
-            $message = "Expected ($expected) value on route: $route, received ($value).";
-        }
-        $this->sendRaw(
-            HttpStatusCodes::BadRequest,
-            $message,
-            null
-        );
-        return;
-    }
-
     public function run(): void
     {
         try {
@@ -181,118 +165,110 @@ class HttpRouter
             array_shift($tokenizedRoute);
             $tokenizedRouteCount = count($tokenizedRoute);
 
-            $filteredRoutes = array_filter(
-                $this->routes,
-                fn (HttpRoute $item) =>
-                    $item->getMethod() === $method &&
-                    $item->getPathPartsCount() === $tokenizedRouteCount
-            );
+            $params = [];
+            $queries = [];
 
             /**
-             * @var HttpRoute $route
+             * @var HttpRoute
              */
-            foreach ($filteredRoutes as $route) {
-                $routePartsCount = $route->getPathPartsCount();
-                $isThisRoute = true;
+            $passedRoute = null;
+            foreach ($this->routes as $candidateRoute) {
+                if ($candidateRoute->getMethod() !== $method) {
+                    continue;
+                }
+                $numberOfRouteParts = count(
+                    array_filter(
+                        $candidateRoute->getRoutePartTypes(),
+                        function (HttpRouteParameterTypes $routePartType) {
+                            return $routePartType === HttpRouteParameterTypes::Route;
+                        }
+                    )
+                );
+                $parameterCount = 0;
+                $isTheCorrectRoute = true;
+                $routePartsCount = $candidateRoute->getPathPartsCount();
+                if ($routePartsCount !== $tokenizedRouteCount) {
+                    continue;
+                }
                 for ($i = 0; $i < $routePartsCount; $i++) {
-                    $params = [];
-                    $isRoutePart = false;
-                    $routePart = $route->getPathPart($i);
-                    $routePartName = $routePart->getName();
-                    $routePartType = $routePart->getType();
-                    $routePartValue = trim(urldecode($tokenizedRoute[$i]));
-                    switch ($routePartType) {
-                        case HttpRouteParameterTypes::Route:
-                            $isRoutePart = true;
-                            $isThisRoute = $routePartValue === $routePartName;
+                    $routePartType = $candidateRoute->getPathPart($i)->getType();
+                    $routePartName = $candidateRoute->getPathPart($i)->getName();
+                    if ($routePartType === HttpRouteParameterTypes::Route) {
+                        if ($candidateRoute->getPathPart($i)->getName() !== $tokenizedRoute[$i]) {
+                            $isTheCorrectRoute = false;
                             break;
-                        case HttpRouteParameterTypes::Text:
-                            $isMatchingValue =
-                                is_string($routePartValue) &&
-                                $routePartValue !== "true" &&
-                                $routePartValue !== "false" &&
-                                $routePartValue !== "0" &&
-                                filter_var($routePartValue, FILTER_VALIDATE_INT) === false &&
-                                filter_var($routePartValue, FILTER_VALIDATE_FLOAT) === false &&
-                                filter_var($routePartValue, FILTER_VALIDATE_BOOL) === false;
-                            $isThisRoute = $isMatchingValue;
-                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
-                                $this->rightRouteButWrongValue(
-                                    $route->getFullRouteName(),
-                                    "string",
-                                    $routePartValue
+                        }
+                    } else {
+                        $parameter = trim(urldecode($tokenizedRoute[$i]));
+                        $isTheCorrectParameter = true;
+                        switch ($routePartType) {
+                            case HttpRouteParameterTypes::Route:
+                                throw new \DomainException(
+                                    "Unexpected value: $routePartType"
+                                );
+                            case HttpRouteParameterTypes::Text:
+                                $isMatchingValue =
+                                    is_string($parameter) &&
+                                    $parameter !== "true" &&
+                                    $parameter !== "false" &&
+                                    $parameter !== "0" &&
+                                    filter_var($parameter, FILTER_VALIDATE_INT) === false &&
+                                    filter_var($parameter, FILTER_VALIDATE_FLOAT) === false &&
+                                    filter_var($parameter, FILTER_VALIDATE_BOOL) === false;
+                                if ($isMatchingValue === false) {
+                                    $isTheCorrectParameter = false;
+                                }
+                                break;
+                            case HttpRouteParameterTypes::Integer:
+                                $isMatchingValue =
+                                    filter_var($parameter, FILTER_VALIDATE_INT) ||
+                                    $parameter === "0";
+                                if ($isMatchingValue) {
+                                    $parameter = intval($parameter);
+                                } else {
+                                    $isTheCorrectParameter = false;
+                                }
+                                break;
+                            case HttpRouteParameterTypes::Decimal:
+                                $isMatchingValue = filter_var($parameter, FILTER_VALIDATE_FLOAT);
+                                if ($isMatchingValue) {
+                                    $parameter = floatval($parameter);
+                                } else {
+                                    $isTheCorrectParameter = false;
+                                }
+                                break;
+                            case HttpRouteParameterTypes::Boolean:
+                                $isMatchingValue = filter_var($parameter, FILTER_VALIDATE_BOOL);
+                                if ($isMatchingValue) {
+                                    $parameter = boolval($parameter);
+                                } else {
+                                    $isTheCorrectParameter = false;
+                                }
+                                break;
+                            default:
+                                $this->sendRaw(
+                                    HttpStatusCodes::InternalServerError,
+                                    "Untreated route type: $routePartType",
+                                    null
                                 );
                                 return;
-                            }
+                        }
+                        if ($isTheCorrectParameter === false) {
+                            $params = [];
                             break;
-                        case HttpRouteParameterTypes::Integer:
-                            $isMatchingValue =
-                                filter_var($routePartValue, FILTER_VALIDATE_INT) ||
-                                $routePartValue === "0";
-                            if ($isMatchingValue) {
-                                $routePartValue = intval($routePartValue);
-                            }
-                            $isThisRoute = $isMatchingValue;
-                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
-                                $this->rightRouteButWrongValue(
-                                    $route->getFullRouteName(),
-                                    "integer",
-                                    $routePartValue
-                                );
-                                return;
-                            }
-                            break;
-                        case HttpRouteParameterTypes::Decimal:
-                            $isMatchingValue = filter_var($routePartValue, FILTER_VALIDATE_FLOAT);
-                            if ($isMatchingValue) {
-                                $routePartValue = floatval($routePartValue);
-                            }
-                            $isThisRoute = $isMatchingValue;
-                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
-                                $this->rightRouteButWrongValue(
-                                    $route->getFullRouteName(),
-                                    "decimal",
-                                    $routePartValue
-                                );
-                                return;
-                            }
-                            break;
-                        case HttpRouteParameterTypes::Boolean:
-                            $isMatchingValue = filter_var($routePartValue, FILTER_VALIDATE_BOOL);
-                            if ($isMatchingValue) {
-                                $routePartValue = boolval($routePartValue);
-                            }
-                            $isThisRoute = $isMatchingValue;
-                            if (($i + 1) >= $routePartsCount && $isMatchingValue === false) {
-                                $this->rightRouteButWrongValue(
-                                    $route->getFullRouteName(),
-                                    "boolean",
-                                    $routePartValue
-                                );
-                                return;
-                            }
-                            break;
-                        default:
-                            $this->sendRaw(
-                                HttpStatusCodes::InternalServerError,
-                                "Untreated route type: $routePartType",
-                                null
-                            );
-                            return;
+                        }
+                        $params[$routePartName] = $parameter;
+                        $parameterCount++;
                     }
-
-                    if ($isThisRoute === false) {
-                        break;
-                    }
-
-                    if ($isRoutePart) {
-                        continue;
-                    }
-
-                    $params[$routePartName] = $routePartValue;
                 }
 
-                if ($isThisRoute === false) {
+                if ($tokenizedRouteCount - $parameterCount !== $numberOfRouteParts) {
+                    $isTheCorrectRoute = false;
+                    $params = [];
+                    continue;
+                }
+
+                if ($isTheCorrectRoute === false) {
                     continue;
                 }
 
@@ -343,28 +319,33 @@ class HttpRouter
                     }
                 }
 
-                $request = new HttpRequest(
-                    $method,
-                    $route,
-                    $queries,
-                    $params,
-                    $body,
-                    $this->headers
-                );
-                $callback = $route->getCallback();
-                $response = $callback($request);
-                $this->send(
-                    $response->getStatusCode(),
-                    $response->hasReadableBody() ? $response->parseBody() : null,
-                    $response->getHeaders()
+                $passedRoute = $candidateRoute;
+                break;
+            }
+
+            if ($passedRoute === null) {
+                $this->sendRaw(
+                    HttpStatusCodes::NotFound,
+                    "Route not found!",
+                    null
                 );
                 return;
             }
 
-            $this->sendRaw(
-                HttpStatusCodes::NotFound,
-                "Route not found!",
-                null
+            $request = new HttpRequest(
+                $method,
+                $passedRoute,
+                $queries,
+                $params,
+                $body,
+                $this->headers
+            );
+            $callback = $passedRoute->getCallback();
+            $response = $callback($request);
+            $this->send(
+                $response->getStatusCode(),
+                $response->hasReadableBody() ? $response->parseBody() : null,
+                $response->getHeaders()
             );
         } catch (\Throwable $e) {
             throw $e;

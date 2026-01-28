@@ -65,6 +65,21 @@ class HttpRequest
         return $this->route;
     }
 
+    public function getParamsCount(): int
+    {
+        return count($this->params);
+    }
+
+    public function getParamValueAt(int $index): mixed
+    {
+        return $this->params[$index];
+    }
+
+    public function getParamNameAt(int $index): string
+    {
+        return $this->getRoute()->getPathPart($index)->getName();
+    }
+
     public function getHeaderOrDieTrying(string $key): ?HttpHeader
     {
         foreach ($this->headers as $header) {

@@ -33,13 +33,23 @@ class HttpRoute
             $this->getSeparator(),
             array_map(
                 function ($item) {
-                    if ($item->getType() !== HttpRouteParameterTypes::Route) {
-                        return "({$item->getName()})";
-                    }
                     return $item->getName();
                 },
                 $this->pathParts
             )
+        );
+    }
+
+    /**
+     * @var HttpRouteParameterTypes[]
+     */
+    public function getRoutePartTypes(): array
+    {
+        return array_map(
+            function ($item) {
+                return $item->getType();
+            },
+            $this->pathParts
         );
     }
 

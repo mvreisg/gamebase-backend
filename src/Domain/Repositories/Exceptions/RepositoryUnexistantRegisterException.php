@@ -9,7 +9,7 @@ class RepositoryUnexistantRegisterException extends \DomainException
     public function __construct(mixed $value)
     {
         parent::__construct(
-            "Unexistant register with the id $value."
+            "Unexistant register with following value: $value."
         );
     }
 }

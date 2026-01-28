@@ -23,10 +23,9 @@ try {
         ->addRoutes(
             HttpGameRoutes::get()
         )
-        /*
         ->addRoutes(
             HttpGameGenreRoutes::get()
-        )
+        )/*
         ->addRoutes(
             HttpGamePlatformRoutes::get()
         )
