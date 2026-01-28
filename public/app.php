@@ -33,10 +33,10 @@ try {
         */
         ->addRoutes(
             HttpGenreRoutes::get()
-        )/*
+        )
         ->addRoutes(
             HttpPermissionRoutes::get()
-        )*/
+        )
         ->addRoutes(
             HttpPlatformRoutes::get()
         )/*

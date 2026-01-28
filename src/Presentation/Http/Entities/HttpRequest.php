@@ -39,6 +39,9 @@ class HttpRequest
 
     public function parseBody(string $stream): mixed
     {
+        if ($stream === "") {
+            return null;
+        }
         $type = "";
         foreach ($this->headers as $header) {
             if ($header->getKey() === "Content-Type") {
@@ -49,9 +52,7 @@ class HttpRequest
             return json_decode($stream, true);
         }
 
-        throw new \InvalidArgumentException(
-            "Unknown header type: {$type}"
-        );
+        return null;
     }
 
     public function getMethod(): HttpMethods

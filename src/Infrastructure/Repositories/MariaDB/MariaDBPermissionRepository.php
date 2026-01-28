@@ -257,10 +257,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return new PermissionCollection();
+                return new PermissionCollection(null);
             }
 
-            $permissions = new PermissionCollection();
+            $permissions = new PermissionCollection(null);
             foreach ($fetchResult as $row) {
                 $permissions->add(
                     new Permission(

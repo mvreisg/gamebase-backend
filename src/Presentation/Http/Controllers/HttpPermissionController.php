@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceUnexistantPermissionException;
 use Mvreisg\GamebaseBackend\Application\Services\Permission\PermissionService;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Permission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpPermissionController
@@ -30,125 +26,112 @@ class HttpPermissionController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $permission = $this->permissionService->insert($name, $isActive);
+            $permission = $this->permissionService->insert(
+                new Permission(
+                    null,
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $permission->getId(),
-                        "name" => $permission->getName(),
+                        "id" => $permission->getIdValue(),
+                        "name" => $permission->getNameValue(),
                         "isActive" => $permission->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (PermissionServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (PermissionServiceInvalidNameException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->permissionService->update($id, $name, $isActive);
+            $wasUpdated = $this->permissionService->update(
+                new Permission(
+                    Id::make($id),
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PermissionServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            PermissionServiceInvalidIdException |
-            PermissionServiceInvalidNameException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PermissionServiceUnexistantPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response): void
+    public function setIsActive(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->permissionService->setIsActive($id, $isActive);
+            $wasUpdated = $this->permissionService->setIsActive(
+                Id::make($id),
+                $isActive
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PermissionServiceUnexistantPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -156,35 +139,31 @@ class HttpPermissionController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $permission = $this->permissionService->findById($id);
+            $permission = $this->permissionService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $permission->getId(),
-                        "name" => $permission->getName(),
+                        "id" => $permission->getIdValue(),
+                        "name" => $permission->getNameValue(),
                         "isActive" => $permission->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PermissionServiceUnexistantPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -192,31 +171,33 @@ class HttpPermissionController
 
             $permissions = $this->permissionService->findAll();
 
-            $numberOfPermissionsFound = count($permissions);
-            if ($numberOfPermissionsFound === 0) {
-                throw new HttpNotFoundException(
-                    "Nothing found!"
-                );
+            if ($permissions->count() === 0) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusNoContent()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($permissions as $permission) {
+            foreach ($permissions->fetchAll() as $permission) {
                 $data[] = [
-                    "id" => $permission->getId(),
-                    "name" => $permission->getName(),
+                    "id" => $permission->getIdValue(),
+                    "name" => $permission->getNameValue(),
                     "isActive" => $permission->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfPermissionsFound,
+                    "number_found" => $permissions->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
