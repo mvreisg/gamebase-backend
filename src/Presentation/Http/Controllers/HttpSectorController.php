@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceUnexistantSectorException;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\SectorService;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Sector;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpSectorController
@@ -30,125 +26,112 @@ class HttpSectorController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $sector = $this->sectorService->insert($name, $isActive);
+            $sector = $this->sectorService->insert(
+                new Sector(
+                    null,
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sector->getId(),
-                        "name" => $sector->getName(),
+                        "id" => $sector->getIdValue(),
+                        "name" => $sector->getNameValue(),
                         "isActive" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (SectorServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorServiceInvalidNameException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->sectorService->update($id, $name, $isActive);
+            $wasUpdated = $this->sectorService->update(
+                new Sector(
+                    Id::make($id),
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (SectorServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            SectorServiceInvalidIdException |
-            SectorServiceInvalidNameException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorServiceUnexistantSectorException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response): void
+    public function setIsActive(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->sectorService->setIsActive($id, $isActive);
+            $wasUpdated = $this->sectorService->setIsActive(
+                Id::make($id),
+                $isActive
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (SectorServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorServiceUnexistantSectorException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -156,36 +139,31 @@ class HttpSectorController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $sector = $this->sectorService->findById($id);
+            $sector = $this->sectorService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sector->getId(),
-                        "name" => $sector->getName(),
+                        "id" => $sector->getIdValue(),
+                        "name" => $sector->getNameValue(),
                         "isActive" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (SectorServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorServiceUnexistantSectorException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -193,31 +171,33 @@ class HttpSectorController
 
             $sectors = $this->sectorService->findAll();
 
-            $numberOfSectorsFound = count($sectors);
-            if ($numberOfSectorsFound === 0) {
-                throw new HttpNotFoundException(
-                    "Nothing found!"
-                );
+            if ($sectors->count() === 0) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusNoContent()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($sectors as $sector) {
+            foreach ($sectors->fetchAll() as $sector) {
                 $data[] = [
-                    "id" => $sector->getId(),
-                    "name" => $sector->getName(),
+                    "id" => $sector->getIdValue(),
+                    "name" => $sector->getNameValue(),
                     "isActive" => $sector->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfSectorsFound,
+                    "number_found" => $sectors->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

@@ -39,6 +39,9 @@ class SectorCollection
         return false;
     }
 
+    /**
+     * @return Sector[]
+     */
     public function fetchAll(): array
     {
         return $this->values;

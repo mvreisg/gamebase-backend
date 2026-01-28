@@ -263,15 +263,15 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $fetchResult = $statement->fetchAll();
 
             if ($fetchResult === false) {
-                return new SectorCollection();
+                return new SectorCollection(null);
             }
 
-            $sectors = new SectorCollection();
+            $sectors = new SectorCollection(null);
             foreach ($fetchResult as $row) {
                 $sectors->add(
                     new Sector(
-                        $row["id"],
-                        $row["name"],
+                        Id::make($row["id"]),
+                        Name::make($row["name"]),
                         /* MariaDB stores bool as int values so a casting
                         * here is needed.
                         */
