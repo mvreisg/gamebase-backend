@@ -9,7 +9,6 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpGenreControllerFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Controllers\HttpControllerHandler;
 
 class HttpGenreRoutes
 {
@@ -30,12 +29,7 @@ class HttpGenreRoutes
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->insert(...)
-                            )
+                        fn ($request) => $controller->insert($request)
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
@@ -54,12 +48,7 @@ class HttpGenreRoutes
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->update(...)
-                            )
+                        fn ($request) => $controller->update($request)
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
@@ -78,12 +67,7 @@ class HttpGenreRoutes
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->setIsActive(...)
-                            )
+                        fn ($request) => $controller->setIsActive($request)
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
@@ -102,12 +86,7 @@ class HttpGenreRoutes
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->findById(...)
-                            )
+                        fn ($request) => $controller->findById($request)
                     ),
                 HttpRouteFactory::make()
                     ->setMethod(
@@ -120,12 +99,7 @@ class HttpGenreRoutes
                         )
                     )
                     ->setCallback(
-                        fn ($request, $response)
-                            => HttpControllerHandler::use(
-                                $request,
-                                $response,
-                                $controller->findAll(...)
-                            )
+                        fn ($request) => $controller->findAll($request)
                     )
             ];
 

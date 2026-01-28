@@ -30,9 +30,10 @@ try {
         ->addRoutes(
             HttpGamePlatformRoutes::get()
         )
+        */
         ->addRoutes(
             HttpGenreRoutes::get()
-        )
+        )/*
         ->addRoutes(
             HttpPermissionRoutes::get()
         )

@@ -25,6 +25,9 @@ class GenreCollection
         return true;
     }
 
+    /**
+     * @return Genre[]
+     */
     public function fetchAll(): array
     {
         return $this->values;
