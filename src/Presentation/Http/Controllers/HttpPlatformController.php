@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceUnexistantPlatformException;
 use Mvreisg\GamebaseBackend\Application\Services\Platform\PlatformService;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Platform;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpPlatformController
@@ -30,125 +26,112 @@ class HttpPlatformController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $platform = $this->platformService->insert($name, $isActive);
+            $platform = $this->platformService->insert(
+                new Platform(
+                    null,
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $platform->getId(),
-                        "name" => $platform->getName(),
+                        "id" => $platform->getIdValue(),
+                        "name" => $platform->getNameValue(),
                         "isActive" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (PlatformServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (PlatformServiceInvalidNameException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $name = $request->getParsedBodyPartOrDieTrying("name");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $name = $request->getBodyOrDieTrying("name");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->platformService->update($id, $name, $isActive);
+            $wasUpdated = $this->platformService->update(
+                new Platform(
+                    Id::make($id),
+                    Name::make($name),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PlatformServiceDuplicatedNameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            PlatformServiceInvalidIdException |
-            PlatformServiceInvalidNameException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PlatformServiceUnexistantPlatformException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response): void
+    public function setIsActive(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->platformService->setIsActive($id, $isActive);
+            $wasUpdated = $this->platformService->setIsActive(
+                Id::make($id),
+                $isActive
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PlatformServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PlatformServiceUnexistantPlatformException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -156,36 +139,31 @@ class HttpPlatformController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $platform = $this->platformService->findById($id);
+            $platform = $this->platformService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $platform->getId(),
-                        "name" => $platform->getName(),
+                        "id" => $platform->getIdValue(),
+                        "name" => $platform->getNameValue(),
                         "isActive" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (PlatformServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (PlatformServiceUnexistantPlatformException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -193,31 +171,33 @@ class HttpPlatformController
 
             $platforms = $this->platformService->findAll();
 
-            $numberOfPlatformsFound = count($platforms);
-            if ($numberOfPlatformsFound === 0) {
-                throw new HttpNotFoundException(
-                    "Nothing found!"
-                );
+            if ($platforms->count() === 0) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusNoContent()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($platforms as $platform) {
+            foreach ($platforms->fetchAll() as $platform) {
                 $data[] = [
-                    "id" => $platform->getId(),
-                    "name" => $platform->getName(),
+                    "id" => $platform->getIdValue(),
+                    "name" => $platform->getNameValue(),
                     "isActive" => $platform->getIsActive()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfPlatformsFound,
+                    "number_found" => $platforms->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

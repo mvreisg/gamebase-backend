@@ -10,7 +10,7 @@ class Platform
     private ?Name $name;
     private bool $isActive;
 
-    public function __construct(?Id $id = 0, ?Name $name = "", bool $isActive = false)
+    public function __construct(?Id $id = null, ?Name $name = null, bool $isActive = false)
     {
         $this->id = $id;
         $this->name = $name;

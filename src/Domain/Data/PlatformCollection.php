@@ -25,6 +25,9 @@ class PlatformCollection
         return true;
     }
 
+    /**
+     * @return Platform[]
+     */
     public function fetchAll(): array
     {
         return $this->values;

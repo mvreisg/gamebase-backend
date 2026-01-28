@@ -36,10 +36,10 @@ try {
         )/*
         ->addRoutes(
             HttpPermissionRoutes::get()
-        )
+        )*/
         ->addRoutes(
             HttpPlatformRoutes::get()
-        )
+        )/*
         ->addRoutes(
             HttpSectorPermissionRoutes::get()
         )
