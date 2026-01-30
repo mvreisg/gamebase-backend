@@ -25,11 +25,10 @@ try {
         )
         ->addRoutes(
             HttpGameGenreRoutes::get()
-        )/*
+        )
         ->addRoutes(
             HttpGamePlatformRoutes::get()
         )
-        */
         ->addRoutes(
             HttpGenreRoutes::get()
         )

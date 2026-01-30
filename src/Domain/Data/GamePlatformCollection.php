@@ -25,6 +25,9 @@ class GamePlatformCollection
         return true;
     }
 
+    /**
+     * @return GamePlatform[]
+     */
     public function fetchAll(): array
     {
         return $this->values;
@@ -63,6 +66,11 @@ class GamePlatformCollection
 
     public function isEmpty(): bool
     {
-        return count($this->values) === 0;
+        return $this->count() === 0;
+    }
+
+    public function count(): int
+    {
+        return count($this->values);
     }
 }
