@@ -1,20 +1,54 @@
 # Gamebase-Backend
 
-A simple RESTful PHP backend for game database.
+RESTful backend for managing a game database, built with modern PHP practices and DDD-inspired structure.
 
-Using [PHP 8.3.6](https://www.php.net/) as the main language and [Nginx](https://nginx.org/) as the HTTP server.
+Designed as a study and portfolio project focusing on:
 
-Uses [Composer](https://getcomposer.org/) as the project package manager.
+- Clean architecture
+- Security (JWT + encryption)
+- Containerized development
+- Scalable environment configuration
 
-Follows the PSR-4 and PSR-12 patterns from [PHP-FIG](https://www.php-fig.org/psr/).
+## Features
 
-Uses <s>Sodium</s> [Defuse PHP Encryption](https://github.com/defuse/php-encryption) as encrypter.</s>
+- REST API
+- JWT Authentication
+- Redis caching
+- Database migrations with Phinx
+- Encryption using Defuse PHP Encryption
+- Docker-first development
+- PSR-4 and PSR-12 compliant
+- Unit testing with PHPUnit
 
-Uses [JWT](https://jwt.io/) for authentication and [Redis](https://redis.io/) for cache.
+## Tech Stack
 
-Has [Docker](https://www.docker.com/) support.
+- PHP 8.3
+- Nginx
+- MariaDB
+- Redis
+- Docker
+- Composer
+- PHPUnit
+- Phinx
 
-## Running with Docker
+## Project Architecture
+
+The project loosely follows DDD principles:
+
+- Domain
+- Application
+- Infrastructure
+- Presentation
+
+## Project Status
+
+Active development.
+
+## License
+
+GPL-3.0 license.
+
+## Running the project
 
 ### Setup
 
