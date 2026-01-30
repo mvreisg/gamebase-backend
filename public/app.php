@@ -37,10 +37,10 @@ try {
         )
         ->addRoutes(
             HttpPlatformRoutes::get()
-        )/*
+        )
         ->addRoutes(
             HttpSectorPermissionRoutes::get()
-        )*/
+        )
         ->addRoutes(
             HttpSectorRoutes::get()
         )
