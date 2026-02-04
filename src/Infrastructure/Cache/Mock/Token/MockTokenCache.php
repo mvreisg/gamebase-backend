@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\User\Clock\MockUserCacheClock;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\Clock\MockTokenCacheClock;
 
 class MockTokenCache implements TokenCacheInterface
 {
     private array $data;
     private array $expirationArray;
-    private MockUserCacheClock $clock;
+    private MockTokenCacheClock $clock;
 
-    public function __construct(MockUserCacheClock $clock)
+    public function __construct(MockTokenCacheClock $clock)
     {
         $this->data = [];
         $this->expirationArray = [];
@@ -36,7 +36,7 @@ class MockTokenCache implements TokenCacheInterface
                     "Mock get error: Unexistant username $username",
                 );
             }
-            $expiresIn = $this->expirationArray[$username];
+            $expiresIn = $this->expirationArray[$username->getValue()];
             $expired = $this->clock->now()->getTimestamp() >= $expiresIn;
             if ($expired) {
                 $this->delete($username);
@@ -59,7 +59,7 @@ class MockTokenCache implements TokenCacheInterface
                     "Mock expire error: Unexistant username $username",
                 );
             }
-            $this->expirationArray[$username] = $this->clock->now()->add($time)->getTimestamp();
+            $this->expirationArray[$username->getValue()] = $this->clock->now()->add($time)->getTimestamp();
         } catch (\Throwable $e) {
             throw $e;
         }

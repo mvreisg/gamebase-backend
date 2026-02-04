@@ -41,7 +41,6 @@ class HttpPlatformController
 
             $platform = $this->platformService->insert(
                 new Platform(
-                    null,
                     Name::make($name),
                     $isActive
                 )
@@ -52,7 +51,7 @@ class HttpPlatformController
                     "data" => [
                         "id" => $platform->getIdValue(),
                         "name" => $platform->getNameValue(),
-                        "isActive" => $platform->getIsActive()
+                        "is_active" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -77,12 +76,14 @@ class HttpPlatformController
             $name = $request->getBodyOrDieTrying("name");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $platform = new Platform(
+                Name::make($name),
+                $isActive
+            );
+            $platform->setId(Id::make($id));
+
             $wasUpdated = $this->platformService->update(
-                new Platform(
-                    Id::make($id),
-                    Name::make($name),
-                    $isActive
-                )
+                $platform
             );
 
             $response
@@ -148,7 +149,7 @@ class HttpPlatformController
                     "data" => [
                         "id" => $platform->getIdValue(),
                         "name" => $platform->getNameValue(),
-                        "isActive" => $platform->getIsActive()
+                        "is_active" => $platform->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -186,7 +187,7 @@ class HttpPlatformController
                 $data[] = [
                     "id" => $platform->getIdValue(),
                     "name" => $platform->getNameValue(),
-                    "isActive" => $platform->getIsActive()
+                    "is_active" => $platform->getIsActive()
                 ];
             }
 

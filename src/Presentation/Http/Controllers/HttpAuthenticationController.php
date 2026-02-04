@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
-use Mvreisg\GamebaseBackend\Domain\Data\Password;
+use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
@@ -35,7 +35,7 @@ class HttpAuthenticationController
             $result = $this->authenticationService->tryLogin(
                 new AuthenticationLoginInfo(
                     Username::make($username),
-                    Password::make($password),
+                    DecodedPassword::make($password),
                     $oneWeekLogin
                 )
             );
@@ -105,7 +105,9 @@ class HttpAuthenticationController
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
-            $this->authenticationService->tryLogoff($result->getToken());
+            $this->authenticationService->tryLogoff(
+                $result->getToken()
+            );
             $response
                 ->setStatusOk();
             return $response;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Services\Factories\Authentication;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtAuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
@@ -12,8 +13,6 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\De
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Connection\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Token\RedisTokenCache;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Connections\MariaDBRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBSectorRepository;
@@ -22,10 +21,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepos
 
 class HttpAuthenticationServiceFactory
 {
-    public static function make(): AuthenticationService
+    public static function make(\PDO $repositoryConnection, EncryptionInterface $encrypter): AuthenticationService
     {
-        $repositoryConnection = MariaDBRepositoryConnection::get();
-
         $userRepository = new MariaDBUserRepository(
             $repositoryConnection
         );
@@ -45,8 +42,6 @@ class HttpAuthenticationServiceFactory
         $sectorPermissionRepository = new MariaDBSectorPermissionRepository(
             $repositoryConnection
         );
-
-        $encrypter = new DefuseEncryption();
 
         $cacheConnection = RedisConnection::get();
 

@@ -86,11 +86,12 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $this->pdo->commit();
 
-            return new GamePlatform(
-                Id::make($fetchResult["id"]),
-                Id::make($fetchResult["platform_id"]),
-                Id::make($fetchResult["game_id"])
+            $return = new GamePlatform(
+                Id::make($fetchResult["game_id"]),
+                Id::make($fetchResult["platform_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -193,11 +194,12 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 );
             }
 
-            return new GamePlatform(
-                Id::make($fetchResult["id"]),
-                Id::make($fetchResult["platform_id"]),
-                Id::make($fetchResult["game_id"])
+            $return = new GamePlatform(
+                Id::make($fetchResult["game_id"]),
+                Id::make($fetchResult["platform_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -228,13 +230,12 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $gamePlatforms = new GamePlatformCollection();
             foreach ($result as $row) {
-                $gamePlatforms->add(
-                    new GamePlatform(
-                        Id::make($row["id"]),
-                        Id::make($row["platform_id"]),
-                        Id::make($row["game_id"])
-                    )
+                $value = new GamePlatform(
+                    Id::make($row["game_id"]),
+                    Id::make($row["platform_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $gamePlatforms->add($value);
             }
             return $gamePlatforms;
         } catch (\Throwable $e) {

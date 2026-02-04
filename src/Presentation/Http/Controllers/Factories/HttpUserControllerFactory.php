@@ -24,7 +24,10 @@ class HttpUserControllerFactory
 
             $encrypter = new DefuseEncryption();
 
-            $authenticationService = HttpAuthenticationServiceFactory::make();
+            $authenticationService = HttpAuthenticationServiceFactory::make(
+                $repositoryConnection,
+                $encrypter
+            );
 
             $userService = new UserService(
                 $userRepository,

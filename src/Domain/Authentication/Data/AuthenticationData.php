@@ -32,7 +32,7 @@ class AuthenticationData
     {
         return new self(
             Id::make($data->userId),
-            new Username($data->username),
+            Username::make($data->username),
             new PermissionCollection($data->permissions),
             new SectorCollection($data->sectors)
         );

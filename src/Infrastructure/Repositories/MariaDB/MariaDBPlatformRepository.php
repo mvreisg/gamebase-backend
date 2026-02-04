@@ -95,9 +95,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $this->pdo->commit();
 
-            return new Platform(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Platform(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -105,6 +104,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -223,9 +224,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 );
             }
 
-            return new Platform(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Platform(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -233,6 +233,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -263,18 +265,17 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
 
             $platforms = new PlatformCollection();
             foreach ($fetchResult as $row) {
-                $platforms->add(
-                    new Platform(
-                        Id::make($row["id"]),
-                        new Name($row["name"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
+                $value = new Platform(
+                    Name::make($row["name"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
                     )
                 );
+                $value->setId(Id::make($row["id"]));
+                $platforms->add($value);
             }
             return $platforms;
         } catch (\Throwable $e) {

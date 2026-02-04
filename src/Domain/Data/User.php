@@ -7,16 +7,21 @@ namespace Mvreisg\GamebaseBackend\Domain\Data;
 class User
 {
     private ?Id $id;
-    private ?Username $username;
-    private ?Password $password;
+    private Username $username;
+    private Password $password;
     private bool $isActive;
 
-    public function __construct(?Id $id = null, ?Username $username = null, ?Password $password = null, bool $isActive = false)
+    public function __construct(Username $username, Password $password, bool $isActive)
     {
-        $this->id = $id;
+        $this->id = null;
         $this->username = $username;
         $this->password = $password;
         $this->isActive = $isActive;
+    }
+
+    public function setId(Id $id): void
+    {
+        $this->id = $id;
     }
 
     public function getIdValue(): int
@@ -47,16 +52,6 @@ class User
             );
         }
         return $this->password->getValue();
-    }
-
-    public function alterPasswordValue(string $value): void
-    {
-        if ($this->password === null) {
-            throw new \InvalidArgumentException(
-                "Password is null."
-            );
-        }
-        $this->password->alterValue($value);
     }
 
     public function getIsActive(): bool

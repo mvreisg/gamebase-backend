@@ -20,19 +20,21 @@ class MockPlatformRepository implements PlatformRepositoryInterface
     public function __construct()
     {
         $this->collection = new PlatformCollection();
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(Platform $platform): Platform
+    public function insert(Platform $parameter): Platform
     {
-        $this->id->increment(1);
-        $platform = new Platform(
-            new Id($this->id->getValue()),
-            new Name($platform->getNameValue()),
-            $platform->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($platform);
-        return $platform;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Platform $platform): bool
@@ -59,13 +61,15 @@ class MockPlatformRepository implements PlatformRepositoryInterface
             return false;
         }
 
+        $new = new Platform(
+            Name::make($platform->getNameValue()),
+            $platform->getIsActive()
+        );
+        $new->setId(Id::make($platform->getIdValue()));
+
         $this->collection->replace(
             Id::make($platform->getIdValue()),
-            new Platform(
-                Id::make($platform->getIdValue()),
-                Name::make($platform->getNameValue()),
-                $platform->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -87,13 +91,16 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         if ($wasUpdated === false) {
             return false;
         }
+
+        $new = new Platform(
+            Name::make($foundPlatform->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundPlatform->getIdValue()));
+
         $this->collection->replace(
-            $id,
-            new Platform(
-                Id::make($foundPlatform->getIdValue()),
-                Name::make($foundPlatform->getNameValue()),
-                $isActive
-            )
+            Id::make($foundPlatform->getIdValue()),
+            $new
         );
         return true;
     }

@@ -41,7 +41,6 @@ class HttpGenreController
 
             $genre = $this->genreService->insert(
                 new Genre(
-                    null,
                     Name::make($name),
                     $isActive
                 )
@@ -52,7 +51,7 @@ class HttpGenreController
                     "data" => [
                         "id" => $genre->getIdValue(),
                         "name" => $genre->getNameValue(),
-                        "isActive" => $genre->getIsActive()
+                        "is_active" => $genre->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -77,12 +76,14 @@ class HttpGenreController
             $name = $request->getBodyOrDieTrying("name");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $genre = new Genre(
+                Name::make($name),
+                $isActive
+            );
+            $genre->setId(Id::make($id));
+
             $wasUpdated = $this->genreService->update(
-                new Genre(
-                    Id::make($id),
-                    Name::make($name),
-                    $isActive
-                )
+                $genre
             );
 
             $response
@@ -148,7 +149,7 @@ class HttpGenreController
                     "data" => [
                         "id" => $genre->getIdValue(),
                         "name" => $genre->getNameValue(),
-                        "isActive" => $genre->getIsActive()
+                        "is_active" => $genre->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -185,7 +186,7 @@ class HttpGenreController
                 $data[] = [
                     "id" => $genre->getIdValue(),
                     "name" => $genre->getNameValue(),
-                    "isActive" => $genre->getIsActive()
+                    "is_active" => $genre->getIsActive()
                 ];
             }
 

@@ -40,7 +40,6 @@ class HttpSectorPermissionController
 
             $sectorPermission = $this->sectorPermissionService->insert(
                 new SectorPermission(
-                    null,
                     Id::make($sectorId),
                     Id::make($permissionId)
                 )
@@ -76,12 +75,14 @@ class HttpSectorPermissionController
             $sectorId = $request->getBodyOrDieTrying("sector_id");
             $permissionId = $request->getBodyOrDieTrying("permission_id");
 
+            $sectorPermission = new SectorPermission(
+                Id::make($sectorId),
+                Id::make($permissionId)
+            );
+            $sectorPermission->setId(Id::make($id));
+
             $wasUpdated = $this->sectorPermissionService->update(
-                new SectorPermission(
-                    Id::make($id),
-                    Id::make($sectorId),
-                    Id::make($permissionId)
-                )
+                $sectorPermission
             );
 
             $response

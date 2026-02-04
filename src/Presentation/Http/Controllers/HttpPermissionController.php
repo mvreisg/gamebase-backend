@@ -41,7 +41,6 @@ class HttpPermissionController
 
             $permission = $this->permissionService->insert(
                 new Permission(
-                    null,
                     Name::make($name),
                     $isActive
                 )
@@ -77,12 +76,14 @@ class HttpPermissionController
             $name = $request->getBodyOrDieTrying("name");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $permission = new Permission(
+                Name::make($name),
+                $isActive
+            );
+            $permission->setId(Id::make($id));
+
             $wasUpdated = $this->permissionService->update(
-                new Permission(
-                    Id::make($id),
-                    Name::make($name),
-                    $isActive
-                )
+                $permission
             );
 
             $response
@@ -148,7 +149,7 @@ class HttpPermissionController
                     "data" => [
                         "id" => $permission->getIdValue(),
                         "name" => $permission->getNameValue(),
-                        "isActive" => $permission->getIsActive()
+                        "is_active" => $permission->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -186,7 +187,7 @@ class HttpPermissionController
                 $data[] = [
                     "id" => $permission->getIdValue(),
                     "name" => $permission->getNameValue(),
-                    "isActive" => $permission->getIsActive()
+                    "is_active" => $permission->getIsActive()
                 ];
             }
 

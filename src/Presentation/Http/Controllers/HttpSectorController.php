@@ -41,7 +41,6 @@ class HttpSectorController
 
             $sector = $this->sectorService->insert(
                 new Sector(
-                    null,
                     Name::make($name),
                     $isActive
                 )
@@ -52,7 +51,7 @@ class HttpSectorController
                     "data" => [
                         "id" => $sector->getIdValue(),
                         "name" => $sector->getNameValue(),
-                        "isActive" => $sector->getIsActive()
+                        "is_active" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
@@ -77,12 +76,14 @@ class HttpSectorController
             $name = $request->getBodyOrDieTrying("name");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $sector = new Sector(
+                Name::make($name),
+                $isActive
+            );
+            $sector->setId(Id::make($id));
+
             $wasUpdated = $this->sectorService->update(
-                new Sector(
-                    Id::make($id),
-                    Name::make($name),
-                    $isActive
-                )
+                $sector
             );
 
             $response
@@ -148,7 +149,7 @@ class HttpSectorController
                     "data" => [
                         "id" => $sector->getIdValue(),
                         "name" => $sector->getNameValue(),
-                        "isActive" => $sector->getIsActive()
+                        "is_active" => $sector->getIsActive()
                     ]
                 ])
                 ->setStatusOk()
@@ -186,7 +187,7 @@ class HttpSectorController
                 $data[] = [
                     "id" => $sector->getIdValue(),
                     "name" => $sector->getNameValue(),
-                    "isActive" => $sector->getIsActive()
+                    "is_active" => $sector->getIsActive()
                 ];
             }
 

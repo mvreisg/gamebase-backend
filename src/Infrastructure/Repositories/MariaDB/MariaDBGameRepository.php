@@ -95,9 +95,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $this->pdo->commit();
 
-            return new Game(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Game(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -105,6 +104,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -224,16 +225,17 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 );
             }
 
-            return new Game(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Game(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
                     $fetchResult["is_active"]
-                )
+                ),
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -264,18 +266,17 @@ class MariaDBGameRepository implements GameRepositoryInterface
 
             $games = new GameCollection();
             foreach ($fetchResult as $row) {
-                $games->add(
-                    new Game(
-                        Id::make($row["id"]),
-                        new Name($row["name"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
-                    )
+                $value = new Game(
+                    Name::make($row["name"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
+                    ),
                 );
+                $value->setId(Id::make($row["id"]));
+                $games->add($value);
             }
             return $games;
         } catch (\Throwable $e) {

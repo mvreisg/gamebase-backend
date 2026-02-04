@@ -40,7 +40,6 @@ class HttpGamePlatformController
 
             $gamePlatform = $this->gamePlatformService->insert(
                 new GamePlatform(
-                    null,
                     Id::make($platformId),
                     Id::make($gameId)
                 )
@@ -78,12 +77,14 @@ class HttpGamePlatformController
             $gameId = $request->getBodyOrDieTrying("game_id");
             $platformId = $request->getBodyOrDieTrying("platform_id");
 
+            $gamePlatform = new GamePlatform(
+                Id::make($platformId),
+                Id::make($gameId)
+            );
+            $gamePlatform->setId(Id::make($id));
+
             $wasUpdated = $this->gamePlatformService->update(
-                new GamePlatform(
-                    Id::make($id),
-                    Id::make($platformId),
-                    Id::make($gameId)
-                )
+                $gamePlatform
             );
             $response
                 ->setBody([

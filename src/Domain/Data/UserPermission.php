@@ -10,11 +10,16 @@ class UserPermission
     private Id $userId;
     private Id $permissionId;
 
-    public function __construct(?Id $id = null, Id $userId, Id $permissionId)
+    public function __construct(Id $userId, Id $permissionId)
     {
-        $this->id = $id;
+        $this->id = null;
         $this->userId = $userId;
         $this->permissionId = $permissionId;
+    }
+
+    public function setId(Id $id): void
+    {
+        $this->id = $id;
     }
 
     public function getIdValue(): int

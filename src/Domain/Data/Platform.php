@@ -7,14 +7,19 @@ namespace Mvreisg\GamebaseBackend\Domain\Data;
 class Platform
 {
     private ?Id $id;
-    private ?Name $name;
+    private Name $name;
     private bool $isActive;
 
-    public function __construct(?Id $id = null, ?Name $name = null, bool $isActive = false)
+    public function __construct(Name $name, bool $isActive)
     {
-        $this->id = $id;
+        $this->id = null;
         $this->name = $name;
         $this->isActive = $isActive;
+    }
+
+    public function setId(Id $id): void
+    {
+        $this->id = $id;
     }
 
     public function getIdValue(): int

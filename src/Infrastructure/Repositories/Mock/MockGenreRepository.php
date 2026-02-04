@@ -20,19 +20,21 @@ class MockGenreRepository implements GenreRepositoryInterface
     public function __construct()
     {
         $this->collection = new GenreCollection();
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(Genre $genre): Genre
+    public function insert(Genre $parameter): Genre
     {
-        $this->id->increment(1);
-        $genre = new Genre(
-            new Id($this->id->getValue()),
-            new Name($genre->getNameValue()),
-            $genre->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($genre);
-        return $genre;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Genre $genre): bool
@@ -59,13 +61,15 @@ class MockGenreRepository implements GenreRepositoryInterface
             return false;
         }
 
+        $new = new Genre(
+            Name::make($genre->getNameValue()),
+            $genre->getIsActive()
+        );
+        $new->setId(Id::make($genre->getIdValue()));
+
         $this->collection->replace(
             Id::make($genre->getIdValue()),
-            new Genre(
-                Id::make($genre->getIdValue()),
-                Name::make($genre->getNameValue()),
-                $genre->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -87,13 +91,16 @@ class MockGenreRepository implements GenreRepositoryInterface
         if ($wasUpdated === false) {
             return false;
         }
+
+        $new = new Genre(
+            Name::make($foundGenre->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundGenre->getIdValue()));
+
         $this->collection->replace(
-            $id,
-            new Genre(
-                Id::make($foundGenre->getIdValue()),
-                Name::make($foundGenre->getNameValue()),
-                $isActive
-            )
+            Id::make($foundGenre->getIdValue()),
+            $new
         );
         return true;
     }

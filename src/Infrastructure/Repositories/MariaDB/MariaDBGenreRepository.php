@@ -96,9 +96,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $this->pdo->commit();
 
-            return new Genre(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Genre(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -106,6 +105,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -225,9 +226,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 );
             }
 
-            return new Genre(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Genre(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -235,6 +235,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -265,18 +267,17 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
 
             $genres = new GenreCollection();
             foreach ($fetchResult as $row) {
-                $genres->add(
-                    new Genre(
-                        Id::make($row["id"]),
-                        new Name($row["name"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
+                $value = new Genre(
+                    Name::make($row["name"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
                     )
                 );
+                $value->setId(Id::make($row["id"]));
+                $genres->add($value);
             }
             return $genres;
         } catch (\Throwable $e) {

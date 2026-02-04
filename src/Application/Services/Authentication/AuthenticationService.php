@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authentication;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceInvalidCredentialsException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginResult;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
@@ -78,9 +79,7 @@ class AuthenticationService
             ) === 0;
 
             if ($doTheTwoPasswordsMatchesEqually === false) {
-                throw new \DomainException(
-                    "Invalid credentials!",
-                );
+                throw new AuthenticationServiceInvalidCredentialsException();
             }
 
             $exists = $this->tokenCache->exists(

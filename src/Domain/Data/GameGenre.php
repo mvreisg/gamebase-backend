@@ -10,11 +10,16 @@ class GameGenre
     private Id $gameId;
     private Id $genreId;
 
-    public function __construct(?Id $id = null, Id $gameId, Id $genreId)
+    public function __construct(Id $gameId, Id $genreId)
     {
-        $this->id = $id;
+        $this->id = null;
         $this->gameId = $gameId;
         $this->genreId = $genreId;
+    }
+
+    public function setId(Id $id): void
+    {
+        $this->id = $id;
     }
 
     public function getIdValue(): int

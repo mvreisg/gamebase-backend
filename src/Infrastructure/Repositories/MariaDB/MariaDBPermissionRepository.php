@@ -96,9 +96,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $this->pdo->commit();
 
-            return new Permission(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Permission(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -106,6 +105,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -222,9 +223,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 );
             }
 
-            return new Permission(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Permission(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -232,6 +232,8 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -262,18 +264,17 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $permissions = new PermissionCollection(null);
             foreach ($fetchResult as $row) {
-                $permissions->add(
-                    new Permission(
-                        Id::make($row["id"]),
-                        new Name($row["name"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
+                $value = new Permission(
+                    Name::make($row["name"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
                     )
                 );
+                $value->setId(Id::make($row["id"]));
+                $permissions->add($value);
             }
 
             return $permissions;

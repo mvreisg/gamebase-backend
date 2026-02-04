@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\User\Clock;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\Clock;
 
 use Mvreisg\GamebaseBackend\Domain\Interfaces\Clock;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
-class MockUserCacheClock implements Clock
+class MockTokenCacheClock implements Clock
 {
     private \DateTimeImmutable $now;
 

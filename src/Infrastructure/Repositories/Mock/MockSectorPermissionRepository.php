@@ -18,19 +18,21 @@ class MockSectorPermissionRepository implements SectorPermissionRepositoryInterf
     public function __construct()
     {
         $this->collection = new SectorPermissionCollection();
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(SectorPermission $sectorPermission): SectorPermission
+    public function insert(SectorPermission $parameter): SectorPermission
     {
-        $this->id->increment(1);
-        $newSectorPermission = new SectorPermission(
-            Id::make($sectorPermission->getIdValue()),
-            Id::make($sectorPermission->getSectorIdValue()),
-            Id::make($sectorPermission->getPermissionIdValue())
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($newSectorPermission);
-        return $newSectorPermission;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(SectorPermission $sectorPermission): bool
@@ -57,13 +59,15 @@ class MockSectorPermissionRepository implements SectorPermissionRepositoryInterf
             return false;
         }
 
+        $new = new SectorPermission(
+            Id::make($sectorPermission->getSectorIdValue()),
+            Id::make($sectorPermission->getPermissionIdValue())
+        );
+        $new->setId(Id::make($sectorPermission->getIdValue()));
+
         $this->collection->replace(
             Id::make($sectorPermission->getIdValue()),
-            new SectorPermission(
-                Id::make($sectorPermission->getIdValue()),
-                Id::make($sectorPermission->getSectorIdValue()),
-                Id::make($sectorPermission->getPermissionIdValue())
-            )
+            $new
         );
         return true;
     }

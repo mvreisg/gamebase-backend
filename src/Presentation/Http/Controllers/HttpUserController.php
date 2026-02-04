@@ -6,8 +6,8 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
+use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Password;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
@@ -44,9 +44,8 @@ class HttpUserController
 
             $user = $this->userService->insert(
                 new User(
-                    null,
                     Username::make($username),
-                    Password::make($password),
+                    DecodedPassword::make($password),
                     $isActive
                 )
             );
@@ -83,13 +82,15 @@ class HttpUserController
             $password = $request->getBodyOrDieTrying("password");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $user = new User(
+                Username::make($username),
+                DecodedPassword::make($password),
+                $isActive
+            );
+            $user->setId(Id::make($id));
+
             $wasUpdated = $this->userService->update(
-                new User(
-                    Id::make($id),
-                    Username::make($username),
-                    Password::make($password),
-                    $isActive
-                )
+                $user
             );
 
             $response
@@ -153,11 +154,11 @@ class HttpUserController
             $data = [
                 "id" => $user->getIdValue(),
                 "username" => $user->getUsernameValue(),
-                "isActive" => $user->getIsActive()
+                "is_active" => $user->getIsActive()
             ];
 
             $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
-            if ($showPasswordQuery) {
+            if (isset($showPasswordQuery)) {
                 if (
                     $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true
@@ -197,11 +198,11 @@ class HttpUserController
             $data = [
                 "id" => $user->getIdValue(),
                 "username" => $user->getUsernameValue(),
-                "isActive" => $user->getIsActive()
+                "is_active" => $user->getIsActive()
             ];
 
             $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
-            if ($showPasswordQuery) {
+            if (isset($showPasswordQuery)) {
                 if (
                     $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true
@@ -246,7 +247,7 @@ class HttpUserController
 
             $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
             $showPassword = false;
-            if ($showPasswordQuery) {
+            if (isset($showPasswordQuery)) {
                 if (
                     $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true

@@ -40,7 +40,6 @@ class HttpUserPermissionController
 
             $userPermission = $this->userPermissionService->insert(
                 new UserPermission(
-                    null,
                     Id::make($userId),
                     Id::make($permissionId)
                 )
@@ -77,12 +76,14 @@ class HttpUserPermissionController
             $userId = $request->getBodyOrDieTrying("user_id");
             $permissionId = $request->getBodyOrDieTrying("permission_id");
 
+            $userPermission = new UserPermission(
+                Id::make($userId),
+                Id::make($permissionId)
+            );
+            $userPermission->setId(Id::make($id));
+
             $wasUpdated = $this->userPermissionService->update(
-                new UserPermission(
-                    Id::make($id),
-                    Id::make($userId),
-                    Id::make($permissionId)
-                )
+                $userPermission
             );
 
             $response

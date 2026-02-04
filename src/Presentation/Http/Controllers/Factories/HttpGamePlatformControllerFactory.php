@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\GamePlatformService;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Connections\MariaDBRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGamePlatformRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBGameRepository;
@@ -37,7 +38,12 @@ class HttpGamePlatformControllerFactory
                 $gamePlatformRepository
             );
 
-            $authenticationService = HttpAuthenticationServiceFactory::make();
+            $encrypter = new DefuseEncryption();
+
+            $authenticationService = HttpAuthenticationServiceFactory::make(
+                $repositoryConnection,
+                $encrypter
+            );
 
             $controller = new HttpGamePlatformController(
                 $gamePlatformService,

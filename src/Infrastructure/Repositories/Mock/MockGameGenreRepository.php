@@ -18,21 +18,21 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
     public function __construct()
     {
         $this->collection = new GameGenreCollection();
-        $this->id = Id::make(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(GameGenre $gameGenre): GameGenre
+    public function insert(GameGenre $parameter): GameGenre
     {
-        $this->id->increment(1);
-        $newGameGenre = new GameGenre(
-            Id::make($this->id->getValue()),
-            Id::make($gameGenre->getGameIdValue()),
-            Id::make($gameGenre->getGenreIdValue())
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
         $this->collection->add(
-            $newGameGenre
+            $parameter
         );
-        return $newGameGenre;
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(GameGenre $gameGenre): bool
@@ -59,13 +59,15 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
             return false;
         }
 
+        $new = new GameGenre(
+            Id::make($gameGenre->getGameIdValue()),
+            Id::make($gameGenre->getGenreIdValue())
+        );
+        $new->setId(Id::make($gameGenre->getIdValue()));
+
         $this->collection->replace(
             Id::make($gameGenre->getIdValue()),
-            new GameGenre(
-                Id::make($gameGenre->getIdValue()),
-                Id::make($gameGenre->getGameIdValue()),
-                Id::make($gameGenre->getGenreIdValue())
-            )
+            $new
         );
 
         return true;

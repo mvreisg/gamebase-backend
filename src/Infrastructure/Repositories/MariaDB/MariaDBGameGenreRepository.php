@@ -86,11 +86,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $this->pdo->commit();
 
-            return new GameGenre(
-                Id::make($fetchResult["id"]),
-                Id::make($fetchResult["genre_id"]),
-                Id::make($fetchResult["game_id"])
+            $return = new GameGenre(
+                Id::make($fetchResult["game_id"]),
+                Id::make($fetchResult["genre_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -137,7 +138,7 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
     {
         try {
             $idValue = $id->getValue();
-            
+
             $statement = $this->pdo->prepare(
                 "DELETE FROM
                     game_genre
@@ -193,11 +194,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
                 );
             }
 
-            return new GameGenre(
-                Id::make($fetchResult["id"]),
-                Id::make($fetchResult["genre_id"]),
-                Id::make($fetchResult["game_id"])
+            $return = new GameGenre(
+                Id::make($fetchResult["game_id"]),
+                Id::make($fetchResult["genre_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -228,13 +230,12 @@ class MariaDBGameGenreRepository implements GameGenreRepositoryInterface
 
             $gameGenres = new GameGenreCollection();
             foreach ($fetchResult as $row) {
-                $gameGenres->add(
-                    new GameGenre(
-                        Id::make($row["id"]),
-                        Id::make($row["genre_id"]),
-                        Id::make($row["game_id"])
-                    )
+                $value = new GameGenre(
+                    Id::make($row["game_id"]),
+                    Id::make($row["genre_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $gameGenres->add($value);
             }
 
             return $gameGenres;

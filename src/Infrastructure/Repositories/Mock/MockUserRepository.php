@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
+use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Password;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
@@ -21,20 +21,23 @@ class MockUserRepository implements UserRepositoryInterface
     public function __construct()
     {
         $this->collection = new UserCollection();
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(User $user): User
+    public function insert(User $parameter): User
     {
-        $this->id->increment(1);
-        $newUser = new User(
-            Id::make($user->getIdValue()),
-            Username::make($user->getUsernameValue()),
-            Password::make($user->getPasswordValue()),
-            $user->getIsActive()
+        $new = new User(
+            Username::make($parameter->getUsernameValue()),
+            EncodedPassword::make($parameter->getPasswordValue()),
+            $parameter->getIsActive()
         );
-        $this->collection->add($newUser);
-        return $newUser;
+        $new->setId(
+            Id::make(
+                $this->id->getValue()
+            )
+        );
+        $this->id->increment(1);
+        return $new;
     }
 
     public function update(User $user): bool
@@ -67,14 +70,20 @@ class MockUserRepository implements UserRepositoryInterface
             return false;
         }
 
+        $new = new User(
+            Username::make($user->getUsernameValue()),
+            EncodedPassword::make($user->getPasswordValue()),
+            $user->getIsActive()
+        );
+        $new->setId(
+            Id::make(
+                $this->id->getValue()
+            )
+        );
+
         $this->collection->replace(
             Id::make($user->getIdValue()),
-            new User(
-                Id::make($user->getIdValue()),
-                Username::make($user->getUsernameValue()),
-                Password::make($user->getPasswordValue()),
-                $user->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -97,14 +106,20 @@ class MockUserRepository implements UserRepositoryInterface
             return false;
         }
 
-        $this->collection->replace(
-            $id,
-            new User(
-                Id::make($foundUser->getIdValue()),
-                Username::make($foundUser->getUsernameValue()),
-                Password::make($foundUser->getPasswordValue()),
-                $isActive
+        $new = new User(
+            Username::make($foundUser->getUsernameValue()),
+            EncodedPassword::make($foundUser->getPasswordValue()),
+            $isActive
+        );
+        $new->setId(
+            Id::make(
+                $this->id->getValue()
             )
+        );
+
+        $this->collection->replace(
+            Id::make($foundUser->getIdValue()),
+            $new
         );
         return true;
     }

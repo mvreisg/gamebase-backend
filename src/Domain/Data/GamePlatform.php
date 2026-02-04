@@ -10,11 +10,16 @@ class GamePlatform
     private Id $platformId;
     private Id $gameId;
 
-    public function __construct(?Id $id = null, Id $platformId, Id $gameId)
+    public function __construct(Id $gameId, Id $platformId)
+    {
+        $this->id = null;
+        $this->gameId = $gameId;
+        $this->platformId = $platformId;
+    }
+
+    public function setId(Id $id): void
     {
         $this->id = $id;
-        $this->platformId = $platformId;
-        $this->gameId = $gameId;
     }
 
     public function getIdValue(): int

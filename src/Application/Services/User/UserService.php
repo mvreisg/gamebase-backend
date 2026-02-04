@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\User;
 
+use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
@@ -24,18 +25,24 @@ class UserService
         $this->encrypter = $encrypter;
     }
 
-    public function insert(User $newUser): User
+    public function insert(User $new): User
     {
         try {
             $this->repository->checkDuplicatedUsernames(
-                Username::make($newUser->getUsernameValue())
+                Username::make($new->getUsernameValue())
             );
 
             $encodedPassword = $this->encrypter->encrypt(
-                $newUser->getPasswordValue()
+                $new->getPasswordValue()
             );
-            $newUser->alterPasswordValue($encodedPassword);
-            $insertedUser = $this->repository->insert($newUser);
+
+            $insertedUser = $this->repository->insert(
+                new User(
+                    Username::make($new->getUsernameValue()),
+                    EncodedPassword::make($encodedPassword),
+                    $new->getIsActive()
+                )
+            );
 
             return $insertedUser;
         } catch (\Throwable $e) {
@@ -43,21 +50,26 @@ class UserService
         }
     }
 
-    public function update(User $existantUser): bool
+    public function update(User $existant): bool
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($existantUser->getIdValue())
+                Id::make($existant->getIdValue())
             );
 
             $this->repository->checkDuplicatedUsernames(
-                Username::make($existantUser->getUsernameValue())
+                Username::make($existant->getUsernameValue())
             );
 
-            $validatedPassword = $existantUser->getPasswordValue();
+            $validatedPassword = $existant->getPasswordValue();
             $encodedPassword = $this->encrypter->encrypt($validatedPassword);
-            $existantUser->alterPasswordValue($encodedPassword);
-            $wasUpdated = $this->repository->update($existantUser);
+            $wasUpdated = $this->repository->update(
+                new User(
+                    Username::make($existant->getUsernameValue()),
+                    EncodedPassword::make($encodedPassword),
+                    $existant->getIsActive()
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {

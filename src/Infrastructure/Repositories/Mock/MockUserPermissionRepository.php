@@ -18,21 +18,21 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
     public function __construct()
     {
         $this->collection = new UserPermissionCollection();
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(UserPermission $userPermission): UserPermission
+    public function insert(UserPermission $parameter): UserPermission
     {
-        $this->id->increment(1);
-        $newUserPermission = new UserPermission(
-            Id::make($userPermission->getIdValue()),
-            Id::make($userPermission->getUserIdValue()),
-            Id::make($userPermission->getPermissionIdValue())
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
         $this->collection->add(
-            $newUserPermission
+            $parameter
         );
-        return $newUserPermission;
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(UserPermission $userPermission): bool
@@ -59,13 +59,15 @@ class MockUserPermissionRepository implements UserPermissionRepositoryInterface
             return false;
         }
 
+        $new = new UserPermission(
+            Id::make($userPermission->getUserIdValue()),
+            Id::make($userPermission->getPermissionIdValue())
+        );
+        $new->setId(Id::make($userPermission->getIdValue()));
+
         $this->collection->replace(
             Id::make($userPermission->getIdValue()),
-            new UserPermission(
-                Id::make($userPermission->getIdValue()),
-                Id::make($userPermission->getUserIdValue()),
-                Id::make($userPermission->getPermissionIdValue())
-            )
+            $new
         );
         return true;
     }

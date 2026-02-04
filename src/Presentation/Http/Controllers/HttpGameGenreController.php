@@ -40,7 +40,6 @@ class HttpGameGenreController
 
             $gameGenre = $this->gameGenreService->insert(
                 new GameGenre(
-                    null,
                     Id::make($gameId),
                     Id::make($genreId)
                 )
@@ -78,12 +77,14 @@ class HttpGameGenreController
             $gameId = $request->getBodyOrDieTrying("game_id");
             $genreId = $request->getBodyOrDieTrying("genre_id");
 
+            $gameGenre = new GameGenre(
+                Id::make($gameId),
+                Id::make($genreId)
+            );
+            $gameGenre->setId(Id::make($id));
+
             $wasUpdated = $this->gameGenreService->update(
-                new GameGenre(
-                    Id::make($id),
-                    Id::make($gameId),
-                    Id::make($genreId)
-                )
+                $gameGenre
             );
 
             $response

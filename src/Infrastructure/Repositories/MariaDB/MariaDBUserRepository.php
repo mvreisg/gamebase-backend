@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
+use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Password;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
@@ -100,10 +100,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $this->pdo->commit();
 
-            return new User(
-                Id::make($fetchResult["id"]),
-                new Username($fetchResult["username"]),
-                new Password($fetchResult["password"]),
+            $return = new User(
+                Username::make($fetchResult["username"]),
+                EncodedPassword::make($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -111,6 +110,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -236,10 +237,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            return new User(
-                Id::make($fetchResult["id"]),
-                new Username($fetchResult["username"]),
-                new Password($fetchResult["password"]),
+            $return = new User(
+                Username::make($fetchResult["username"]),
+                EncodedPassword::make($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -247,6 +247,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -283,10 +285,9 @@ class MariaDBUserRepository implements UserRepositoryInterface
                 );
             }
 
-            return new User(
-                Id::make($fetchResult["id"]),
-                new Username($fetchResult["username"]),
-                new Password($fetchResult["password"]),
+            $return = new User(
+                Username::make($fetchResult["username"]),
+                EncodedPassword::make($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -294,6 +295,8 @@ class MariaDBUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -324,18 +327,19 @@ class MariaDBUserRepository implements UserRepositoryInterface
 
             $users = new UserCollection();
             foreach ($fetchResult as $row) {
-                $users->add(
-                    new User(
-                        Id::make($row["id"]),
-                        new Username($row["username"]),
-                        new Password($row["password"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
+                $user = new User(
+                    Username::make($row["username"]),
+                    EncodedPassword::make($row["password"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
                     )
+                );
+                $user->setId(Id::make($row["id"]));
+                $users->add(
+                    $user
                 );
             }
             return $users;

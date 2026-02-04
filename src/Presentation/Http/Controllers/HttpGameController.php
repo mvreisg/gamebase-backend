@@ -41,7 +41,6 @@ class HttpGameController
 
             $game = $this->gameService->insert(
                 new Game(
-                    null,
                     Name::make($name),
                     $isActive
                 )
@@ -79,12 +78,14 @@ class HttpGameController
             $name = $request->getBodyOrDieTrying("name");
             $isActive = $request->getBodyOrDieTrying("is_active");
 
+            $game = new Game(
+                Name::make($name),
+                $isActive
+            );
+            $game->setId(Id::make($id));
+
             $wasUpdated = $this->gameService->update(
-                new Game(
-                    Id::make($id),
-                    Name::make($name),
-                    $isActive
-                )
+                $game
             );
 
             $response
@@ -187,7 +188,7 @@ class HttpGameController
                 $data[] = [
                     "id" => $game->getIdValue(),
                     "name" => $game->getNameValue(),
-                    "isActive" => $game->getIsActive()
+                    "is_active" => $game->getIsActive()
                 ];
             }
 

@@ -86,11 +86,12 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $this->pdo->commit();
 
-            return new SectorPermission(
-                Id::make($fetchResult["id"]),
+            $return = new SectorPermission(
                 Id::make($fetchResult["sector_id"]),
                 Id::make($fetchResult["permission_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -193,11 +194,12 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                 );
             }
 
-            return new SectorPermission(
-                Id::make($fetchResult["id"]),
+            $return = new SectorPermission(
                 Id::make($fetchResult["sector_id"]),
                 Id::make($fetchResult["permission_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -234,13 +236,12 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $sectorPermissions = new SectorPermissionCollection();
             foreach ($fetchResult as $row) {
-                $sectorPermissions->add(
-                    new SectorPermission(
-                        Id::make($row["id"]),
-                        Id::make($row["sector_id"]),
-                        Id::make($row["permission_id"])
-                    )
+                $value = new SectorPermission(
+                    Id::make($row["sector_id"]),
+                    Id::make($row["permission_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $sectorPermissions->add($value);
             }
             return $sectorPermissions;
         } catch (\Throwable $e) {
@@ -273,13 +274,12 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $sectorPermissions = new SectorPermissionCollection();
             foreach ($fetchResult as $row) {
-                $sectorPermissions->add(
-                    new SectorPermission(
-                        Id::make($row["id"]),
-                        Id::make($row["sector_id"]),
-                        Id::make($row["permission_id"])
-                    )
+                $value = new SectorPermission(
+                    Id::make($row["sector_id"]),
+                    Id::make($row["permission_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $sectorPermissions->add($value);
             }
             return $sectorPermissions;
         } catch (\Throwable $e) {

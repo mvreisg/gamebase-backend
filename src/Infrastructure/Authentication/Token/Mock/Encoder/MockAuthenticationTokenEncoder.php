@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Encoder;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Data\Encode\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authenticator\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Clock\MockAuthenticationTokenClock;
 
 class MockAuthenticationTokenEncoder implements AuthenticationTokenEncoder
 {
-    private JwtAuthenticationTokenClock $clock;
+    private MockAuthenticationTokenClock $clock;
 
-    public function __construct(JwtAuthenticationTokenClock $clock)
+    public function __construct(MockAuthenticationTokenClock $clock)
     {
         $this->clock = $clock;
     }

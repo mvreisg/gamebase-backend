@@ -20,19 +20,21 @@ class MockPermissionRepository implements PermissionRepositoryInterface
     public function __construct()
     {
         $this->collection = new PermissionCollection(null);
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(Permission $permission): Permission
+    public function insert(Permission $parameter): Permission
     {
-        $this->id->increment(1);
-        $permission = new Permission(
-            new Id($this->id->getValue()),
-            new Name($permission->getNameValue()),
-            $permission->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($permission);
-        return $permission;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Permission $permission): bool
@@ -59,13 +61,15 @@ class MockPermissionRepository implements PermissionRepositoryInterface
             return false;
         }
 
+        $new = new Permission(
+            Name::make($permission->getNameValue()),
+            $permission->getIsActive()
+        );
+        $new->setId(Id::make($permission->getIdValue()));
+
         $this->collection->replace(
             Id::make($permission->getIdValue()),
-            new Permission(
-                Id::make($permission->getIdValue()),
-                Name::make($permission->getNameValue()),
-                $permission->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -87,13 +91,16 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         if ($wasUpdated === false) {
             return false;
         }
+
+        $new = new Permission(
+            Name::make($foundPermission->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundPermission->getIdValue()));
+
         $this->collection->replace(
-            $id,
-            new Permission(
-                Id::make($foundPermission->getIdValue()),
-                Name::make($foundPermission->getNameValue()),
-                $isActive
-            )
+            Id::make($foundPermission->getIdValue()),
+            $new
         );
         return true;
     }

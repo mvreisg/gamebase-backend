@@ -20,19 +20,21 @@ class MockGameRepository implements GameRepositoryInterface
     public function __construct()
     {
         $this->collection = new GameCollection();
-        $this->id = Id::make(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(Game $game): Game
+    public function insert(Game $parameter): Game
     {
-        $this->id->increment(1);
-        $newGame = new Game(
-            Id::make($this->id->getValue()),
-            new Name($game->getNameValue()),
-            $game->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($newGame);
-        return $newGame;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Game $game): bool
@@ -59,13 +61,15 @@ class MockGameRepository implements GameRepositoryInterface
             return false;
         }
 
+        $new = new Game(
+            Name::make($game->getNameValue()),
+            $game->getIsActive()
+        );
+        $new->setId(Id::make($game->getIdValue()));
+
         $this->collection->replace(
             Id::make($game->getIdValue()),
-            new Game(
-                Id::make($game->getIdValue()),
-                Name::make($game->getNameValue()),
-                $game->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -88,13 +92,15 @@ class MockGameRepository implements GameRepositoryInterface
             return false;
         }
 
+        $new = new Game(
+            Name::make($foundGame->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundGame->getIdValue()));
+
         $this->collection->replace(
-            $id,
-            new Game(
-                Id::make($foundGame->getIdValue()),
-                Name::make($foundGame->getNameValue()),
-                $isActive
-            )
+            Id::make($foundGame->getIdValue()),
+            $new
         );
         return true;
     }

@@ -18,19 +18,21 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
     public function __construct()
     {
         $this->collection = new GamePlatformCollection();
-        $this->id = Id::make(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(GamePlatform $gamePlatform): GamePlatform
+    public function insert(GamePlatform $parameter): GamePlatform
     {
-        $this->id->increment(1);
-        $newGamePlatform = new GamePlatform(
-            Id::make($this->id->getValue()),
-            Id::make($gamePlatform->getPlatformIdValue()),
-            Id::make($gamePlatform->getGameIdValue())
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($newGamePlatform);
-        return $newGamePlatform;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(GamePlatform $gamePlatform): bool
@@ -57,13 +59,15 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
             return false;
         }
 
+        $new = new GamePlatform(
+            Id::make($gamePlatform->getPlatformIdValue()),
+            Id::make($gamePlatform->getGameIdValue())
+        );
+        $new->setId(Id::make($gamePlatform->getIdValue()));
+
         $this->collection->replace(
             Id::make($gamePlatform->getIdValue()),
-            new GamePlatform(
-                Id::make($gamePlatform->getIdValue()),
-                Id::make($gamePlatform->getPlatformIdValue()),
-                Id::make($gamePlatform->getGameIdValue())
-            )
+            $new
         );
         return true;
     }

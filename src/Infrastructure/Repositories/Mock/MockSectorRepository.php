@@ -20,19 +20,21 @@ class MockSectorRepository implements SectorRepositoryInterface
     public function __construct()
     {
         $this->collection = new SectorCollection(null);
-        $this->id = new Id(0);
+        $this->id = Id::make(1);
     }
 
-    public function insert(Sector $sector): Sector
+    public function insert(Sector $parameter): Sector
     {
-        $this->id->increment(1);
-        $sector = new Sector(
-            new Id($this->id->getValue()),
-            new Name($sector->getNameValue()),
-            $sector->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
-        $this->collection->add($sector);
-        return $sector;
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Sector $sector): bool
@@ -59,13 +61,15 @@ class MockSectorRepository implements SectorRepositoryInterface
             return false;
         }
 
+        $new = new Sector(
+            Name::make($sector->getNameValue()),
+            $sector->getIsActive()
+        );
+        $new->setId(Id::make($sector->getIdValue()));
+
         $this->collection->replace(
             Id::make($sector->getIdValue()),
-            new Sector(
-                Id::make($sector->getIdValue()),
-                Name::make($sector->getNameValue()),
-                $sector->getIsActive()
-            )
+            $new
         );
         return true;
     }
@@ -87,13 +91,16 @@ class MockSectorRepository implements SectorRepositoryInterface
         if ($wasUpdated === false) {
             return false;
         }
+
+        $new = new Sector(
+            Name::make($foundSector->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundSector->getIdValue()));
+
         $this->collection->replace(
-            $id,
-            new Sector(
-                Id::make($foundSector->getIdValue()),
-                Name::make($foundSector->getNameValue()),
-                $isActive
-            )
+            Id::make($foundSector->getIdValue()),
+            $new
         );
         return true;
     }

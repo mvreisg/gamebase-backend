@@ -86,11 +86,12 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
 
             $this->pdo->commit();
 
-            return new UserPermission(
-                Id::make($fetchResult["id"]),
+            $return = new UserPermission(
                 Id::make($fetchResult["user_id"]),
                 Id::make($fetchResult["permission_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -193,11 +194,12 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
                 );
             }
 
-            return new UserPermission(
-                Id::make($fetchResult["id"]),
+            $return = new UserPermission(
                 Id::make($fetchResult["user_id"]),
                 Id::make($fetchResult["permission_id"])
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -234,13 +236,12 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
 
             $userPermissions = new UserPermissionCollection();
             foreach ($fetchResult as $row) {
-                $userPermissions->add(
-                    new UserPermission(
-                        Id::make($row["id"]),
-                        Id::make($row["user_id"]),
-                        Id::make($row["permission_id"])
-                    )
+                $value = new UserPermission(
+                    Id::make($row["user_id"]),
+                    Id::make($row["permission_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $userPermissions->add($value);
             }
             return $userPermissions;
         } catch (\Throwable $e) {
@@ -273,13 +274,12 @@ class MariaDBUserPermissionRepository implements UserPermissionRepositoryInterfa
 
             $userPermissions = new UserPermissionCollection();
             foreach ($fetchResult as $row) {
-                $userPermissions->add(
-                    new UserPermission(
-                        Id::make($row["id"]),
-                        Id::make($row["user_id"]),
-                        Id::make($row["permission_id"])
-                    )
+                $value = new UserPermission(
+                    Id::make($row["user_id"]),
+                    Id::make($row["permission_id"])
                 );
+                $value->setId(Id::make($row["id"]));
+                $userPermissions->add($value);
             }
             return $userPermissions;
         } catch (\Throwable $e) {

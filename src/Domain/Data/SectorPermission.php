@@ -10,11 +10,16 @@ class SectorPermission
     private Id $sectorId;
     private Id $permissionId;
 
-    public function __construct(?Id $id = null, Id $sectorId, Id $permissionId)
+    public function __construct(Id $sectorId, Id $permissionId)
     {
-        $this->id = $id;
+        $this->id = null;
         $this->sectorId = $sectorId;
         $this->permissionId = $permissionId;
+    }
+
+    public function setId(Id $id): void
+    {
+        $this->id = $id;
     }
 
     public function getIdValue(): int

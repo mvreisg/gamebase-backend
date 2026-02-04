@@ -96,9 +96,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
 
             $this->pdo->commit();
 
-            return new Sector(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Sector(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -106,6 +105,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -226,9 +227,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 );
             }
 
-            return new Sector(
-                Id::make($fetchResult["id"]),
-                new Name($fetchResult["name"]),
+            $return = new Sector(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -236,6 +236,8 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -268,18 +270,17 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
 
             $sectors = new SectorCollection(null);
             foreach ($fetchResult as $row) {
-                $sectors->add(
-                    new Sector(
-                        Id::make($row["id"]),
-                        Name::make($row["name"]),
-                        /* MariaDB stores bool as int values so a casting
-                        * here is needed.
-                        */
-                        boolval(
-                            $row["is_active"]
-                        )
+                $value = new Sector(
+                    Name::make($row["name"]),
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $row["is_active"]
                     )
                 );
+                $value->setId(Id::make($row["id"]));
+                $sectors->add($value);
             }
             return $sectors;
         } catch (\Throwable $e) {
