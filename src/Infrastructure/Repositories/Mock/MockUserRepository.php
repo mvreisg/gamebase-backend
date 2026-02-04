@@ -36,6 +36,7 @@ class MockUserRepository implements UserRepositoryInterface
                 $this->id->getValue()
             )
         );
+        $this->collection->add($new);
         $this->id->increment(1);
         return $new;
     }
