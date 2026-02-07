@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Permission;
 
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Permission\Exceptions\PermissionServiceUnexistantPermissionException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission\Exceptions\PermissionInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission\Exceptions\PermissionInvalidNameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission\Permission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Permission;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 
 class PermissionService
 {
@@ -26,181 +19,72 @@ class PermissionService
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Permission
+    public function insert(Permission $permission): Permission
     {
         try {
-            $permission = new Permission(
-                null,
-                $name,
-                $isActive
+            $this->repository->checkDuplicatedNames(
+                Name::make($permission->getNameValue())
             );
-
-            $permission->validateName();
-
-            $validatedName = $permission->getName();
-
-            $this->repository->checkDuplicatedNames($validatedName);
 
             $insertedPermission = $this->repository->insert($permission);
 
             return $insertedPermission;
-        } catch (PermissionInvalidNameException $e) {
-            throw new PermissionServiceInvalidNameException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new PermissionServiceDuplicatedNameException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, string $name, bool $isActive): bool
+    public function update(Permission $permission): bool
     {
         try {
-            $permission = new Permission(
-                $id,
-                $name,
-                $isActive
+            $this->repository->checkIfExists(
+                Id::make($permission->getIdValue())
             );
 
-            $permission->validateId();
-
-            $validatedId = $permission->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $permission->validateName();
-
-            $validatedName = $permission->getName();
-            $this->repository->checkDuplicatedNames($validatedName);
+            $this->repository->checkDuplicatedNames(
+                Name::make($permission->getNameValue())
+            );
 
             $wasUpdated = $this->repository->update($permission);
+
             return $wasUpdated;
-        } catch (PermissionInvalidIdException $e) {
-            throw new PermissionServiceInvalidIdException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (PermissionInvalidNameException $e) {
-            throw new PermissionServiceInvalidNameException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new PermissionServiceDuplicatedNameException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PermissionServiceUnexistantPermissionException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
-            $permission = new Permission(
+            $this->repository->checkIfExists($id);
+
+            $wasUpdated = $this->repository->setIsActive(
                 $id,
-                null,
                 $isActive
             );
 
-            $permission->validateId();
-
-            $validatedId = $permission->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $validatedIsActive = $permission->getIsActive();
-
-            $wasUpdated = $this->repository->setIsActive(
-                $validatedId,
-                $validatedIsActive
-            );
-
             return $wasUpdated;
-        } catch (PermissionInvalidIdException $e) {
-            throw new PermissionServiceInvalidIdException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PermissionServiceUnexistantPermissionException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Permission
+    public function findById(Id $id): Permission
     {
         try {
-            $permission = new Permission(
-                $id
-            );
-
-            $permission->validateId();
-
-            $validatedId = $permission->getId();
-
-            $fetchedPermission = $this->repository->findById($validatedId);
+            $fetchedPermission = $this->repository->findById($id);
 
             return $fetchedPermission;
-        } catch (PermissionInvalidIdException $e) {
-            throw new PermissionServiceInvalidIdException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PermissionServiceUnexistantPermissionException(
-                "Permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): PermissionCollection
     {
         try {
             return $this->repository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

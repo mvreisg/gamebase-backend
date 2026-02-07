@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidSectorIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantPermissionException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorPermissionException;
 use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\SectorPermissionService;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpSectorPermissionController
@@ -31,99 +25,83 @@ class HttpSectorPermissionController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $sectorId = $request->getParsedBodyPartOrDieTrying("sectorId");
-            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
+            $sectorId = $request->getBodyOrDieTrying("sector_id");
+            $permissionId = $request->getBodyOrDieTrying("permission_id");
 
-            $sectorPermission = $this->sectorPermissionService->insert($sectorId, $permissionId);
+            $sectorPermission = $this->sectorPermissionService->insert(
+                new SectorPermission(
+                    Id::make($sectorId),
+                    Id::make($permissionId)
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sectorPermission->getId(),
-                        "sectorId" => $sectorPermission->getSectorId(),
-                        "permissionId" => $sectorPermission->getPermissionId()
+                        "id" => $sectorPermission->getIdValue(),
+                        "sector_id" => $sectorPermission->getSectorIdValue(),
+                        "permission_id" => $sectorPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (
-            SectorPermissionServiceUnexistantSectorException |
-            SectorPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            SectorPermissionServiceInvalidSectorIdException |
-            SectorPermissionServiceInvalidPermissionIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $sectorId = $request->getParsedBodyPartOrDieTrying("sectorId");
-            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
+            $sectorId = $request->getBodyOrDieTrying("sector_id");
+            $permissionId = $request->getBodyOrDieTrying("permission_id");
 
-            $wasUpdated = $this->sectorPermissionService->update($id, $sectorId, $permissionId);
+            $sectorPermission = new SectorPermission(
+                Id::make($sectorId),
+                Id::make($permissionId)
+            );
+            $sectorPermission->setId(Id::make($id));
+
+            $wasUpdated = $this->sectorPermissionService->update(
+                $sectorPermission
+            );
+
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (
-            SectorPermissionServiceInvalidIdException |
-            SectorPermissionServiceInvalidSectorIdException |
-            SectorPermissionServiceInvalidPermissionIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            SectorPermissionServiceUnexistantSectorException |
-            SectorPermissionServiceUnexistantPermissionException |
-            SectorPermissionServiceUnexistantSectorPermissionException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(HttpRequest $request, HttpResponse $response): void
+    public function delete(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -131,31 +109,27 @@ class HttpSectorPermissionController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $wasDeleted = $this->sectorPermissionService->delete($id);
+            $wasDeleted = $this->sectorPermissionService->delete(
+                Id::make($id)
+            );
+
             $response
                 ->setBody([
-                    "wasDeleted" => $wasDeleted
+                    "was_deleted" => $wasDeleted
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (SectorPermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorPermissionServiceUnexistantSectorPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -163,44 +137,31 @@ class HttpSectorPermissionController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $sectorPermission = $this->sectorPermissionService->findById($id);
-
-            if ($sectorPermission === null) {
-                throw new HttpNotFoundException(
-                    "Sector permission with the id $id not found!"
-                );
-            }
+            $sectorPermission = $this->sectorPermissionService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sectorPermission->getId(),
-                        "sectorId" => $sectorPermission->getSectorId(),
-                        "permissionId" => $sectorPermission->getPermissionId()
+                        "id" => $sectorPermission->getIdValue(),
+                        "sector_id" => $sectorPermission->getSectorIdValue(),
+                        "permission_id" => $sectorPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
-        } catch (SectorPermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorPermissionServiceUnexistantSectorPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -208,31 +169,33 @@ class HttpSectorPermissionController
 
             $sectorPermissions = $this->sectorPermissionService->findAll();
 
-            $numberOfSectorPermissions = count($sectorPermissions);
-            if ($numberOfSectorPermissions === 0) {
-                throw new HttpNotFoundException(
-                    "No sector permissions found!"
-                );
+            if ($sectorPermissions->isEmpty()) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusOk()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($sectorPermissions as $sectorPermission) {
+            foreach ($sectorPermissions->fetchAll() as $sectorPermission) {
                 $data[] = [
-                    "id" => $sectorPermission->getId(),
-                    "sectorId" => $sectorPermission->getSectorId(),
-                    "permissionId" => $sectorPermission->getPermissionId()
+                    "id" => $sectorPermission->getIdValue(),
+                    "sector_id" => $sectorPermission->getSectorIdValue(),
+                    "permission_id" => $sectorPermission->getPermissionIdValue()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfSectorPermissions,
+                    "number_found" => $sectorPermissions->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

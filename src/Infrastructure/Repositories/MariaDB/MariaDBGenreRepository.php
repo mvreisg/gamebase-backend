@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use PDO;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre\Genre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBTransactionCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
-use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Data\Genre;
+use Mvreisg\GamebaseBackend\Domain\Data\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
 class MariaDBGenreRepository implements GenreRepositoryInterface
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -29,10 +30,10 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new MariaDBTransactionCreationFailureException();
+                throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $name = $genre->getName();
+            $name = $genre->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -53,18 +54,16 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                         :isActive
                     );"
             );
-
             if ($insertStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasInsertStatementExecutedSuccessfully = $insertStatement->execute([
                 ":name" => $name,
                 ":isActive" => $isActive
             ]);
-
             if ($wasInsertStatementExecutedSuccessfully === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $lastInsertedId = intval(
@@ -79,30 +78,26 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 WHERE 
                     id = :id;"
             );
-
             if ($selectStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ":id" => $lastInsertedId
             ]);
-
             if ($wasSelectStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $selectStatement->fetch();
-
             if ($fetchResult === false) {
-                throw new MariaDBFetchFailureException();
+                throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
             $this->pdo->commit();
 
-            return new Genre(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Genre(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -110,15 +105,9 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBTransactionCreationFailureException |
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBFetchFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -127,8 +116,8 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function update(Genre $genre): bool
     {
         try {
-            $id = $genre->getId();
-            $name = $genre->getName();
+            $id = $genre->getIdValue();
+            $name = $genre->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -148,7 +137,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             );
 
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
@@ -157,25 +146,21 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
+            $idValue = $id->getValue();
+
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
@@ -192,33 +177,29 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     is_active <> :isActive;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ":id" => $id,
+                ":id" => $idValue,
                 ":isActive" => $intIsActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Genre
+    public function findById(Id $id): Genre
     {
         try {
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
@@ -227,29 +208,26 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 WHERE 
                     id = :id;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
-
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id"
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
 
-            return new Genre(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Genre(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -257,19 +235,14 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBUnexistantRegisterException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): GenreCollection
     {
         try {
             $statement = $this->pdo->prepare(
@@ -278,29 +251,24 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 FROM 
                     genre;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
-
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetchAll();
-
             if ($fetchResult === false) {
-                return [];
+                return new GenreCollection();
             }
 
-            $genres = [];
-
+            $genres = new GenreCollection();
             foreach ($fetchResult as $row) {
-                $genres[] = new Genre(
-                    $row["id"],
-                    $row["name"],
+                $value = new Genre(
+                    Name::make($row["name"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -308,106 +276,97 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                         $row["is_active"]
                     )
                 );
+                $value->setId(Id::make($row["id"]));
+                $genres->add($value);
             }
-
             return $genres;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkIfExists(int $id): void
+    public function checkIfExists(Id $id): void
     {
         try {
+            $idValue = $id->getValue();
+
+            $alias = "number_of_ids";
             $statement = $this->pdo->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
-                    number
+                    $alias
                 FROM
                     genre
                 WHERE
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult["number"]
+                $fetchResult[
+                    $alias
+                ]
             );
-
             if ($numberOfIds === 0) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
         try {
+            $nameValue = $name->getValue();
+
+            $alias = "number_of_names";
             $statement = $this->pdo->prepare(
                 "SELECT 
                     COUNT(*)
                     AS
-                    number_of_names
+                    $alias
                 FROM 
                     genre 
                 WHERE 
                     name = :name;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementExecutedSuccessfully = $statement->execute([
-                ":name" => $name
+                ":name" => $nameValue
             ]);
             if ($wasTheStatementExecutedSuccessfully === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult["number_of_names"]
+                $fetchResult[
+                    $alias
+                ]
             );
             if ($numberOfNames > 0) {
-                throw new MariaDBDuplicatedNameException(
-                    "Duplicated name: $name"
+                throw new MariaDBRepositoryDuplicatedRegisterException(
+                    $nameValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBDuplicatedNameException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

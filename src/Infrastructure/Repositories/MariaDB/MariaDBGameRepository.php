@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use PDO;
-use Mvreisg\GamebaseBackend\Domain\Entities\Game\Game;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBTransactionCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
-use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Data\Game;
+use Mvreisg\GamebaseBackend\Domain\Data\GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
 class MariaDBGameRepository implements GameRepositoryInterface
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -29,10 +30,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
-                throw new MariaDBTransactionCreationFailureException();
+                throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $name = $game->getName();
+            $name = $game->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -52,18 +53,16 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     :isActive
                 );"
             );
-
             if ($insertStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasInsertExecutionASuccess = $insertStatement->execute([
                 ":name" => $name,
                 ":isActive" => $isActive
             ]);
-
             if ($wasInsertExecutionASuccess === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $lastInsertedId = intval(
@@ -78,30 +77,26 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 WHERE 
                     id = :id;"
             );
-
             if ($selectStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasSelectExecutionASuccess = $selectStatement->execute([
                 ":id" => $lastInsertedId
             ]);
-
             if ($wasSelectExecutionASuccess === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $selectStatement->fetch();
-
             if ($fetchResult === false) {
-                throw new MariaDBFetchFailureException();
+                throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
             $this->pdo->commit();
 
-            return new Game(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Game(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -109,15 +104,9 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
-        } catch (
-            MariaDBTransactionCreationFailureException |
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBFetchFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -126,8 +115,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function update(Game $game): bool
     {
         try {
-            $id = $game->getId();
-            $name = $game->getName();
+            $id = $game->getIdValue();
+            $name = $game->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -145,9 +134,8 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 WHERE 
                     id = :id;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasStatementExecutionSuccessful = $statement->execute([
@@ -155,27 +143,22 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 ":id" => $id,
                 ":isActive" => $isActive
             ]);
-
             if ($wasStatementExecutionSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
+            $idValue = $id->getValue();
+
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
@@ -192,33 +175,29 @@ class MariaDBGameRepository implements GameRepositoryInterface
                     is_active <> :isActive;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
                 ":isActive" => $intIsActive,
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Game
+    public function findById(Id $id): Game
     {
         try {
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
@@ -227,52 +206,42 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 WHERE 
                     id = :id;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
-
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
 
             if ($fetchResult === false) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
 
-            $game = new Game(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Game(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
                 boolval(
                     $fetchResult["is_active"]
-                )
+                ),
             );
-
-            return $game;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBUnexistantRegisterException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): GameCollection
     {
         try {
             $statement = $this->pdo->prepare(
@@ -281,135 +250,123 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 FROM 
                     game;"
             );
-
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementExecutionSuccessful = $statement->execute();
-
             if ($wasTheStatementExecutionSuccessful === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetchAll();
-
             if ($fetchResult === false) {
-                return [];
+                return new GameCollection();
             }
 
-            $games = [];
+            $games = new GameCollection();
             foreach ($fetchResult as $row) {
-                $game = new Game(
-                    $row["id"],
-                    $row["name"],
+                $value = new Game(
+                    Name::make($row["name"]),
                     /* MariaDB stores bool as int values so a casting
-                     * here is needed.
-                     */
+                    * here is needed.
+                    */
                     boolval(
                         $row["is_active"]
-                    )
+                    ),
                 );
-                $games[] = $game;
+                $value->setId(Id::make($row["id"]));
+                $games->add($value);
             }
-
             return $games;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkIfExists(int $id): void
+    public function checkIfExists(Id $id): void
     {
         try {
+            $idValue = $id->getValue();
+
+            $alias = "number_of_ids";
             $statement = $this->pdo->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
-                    number
+                    $alias
                 FROM
                     game
                 WHERE
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult["number"]
+                $fetchResult[
+                    $alias
+                ]
             );
 
             if ($numberOfIds === 0) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
         try {
+            $nameValue = $name->getValue();
+
+            $alias = "number_of_names";
             $statement = $this->pdo->prepare(
                 "SELECT 
                     COUNT(*)
                     AS
-                    number_of_names
+                    $alias
                 FROM 
                     game 
                 WHERE 
                     name = :name;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":name" => $name
+                ":name" => $nameValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult["number_of_names"]
+                $fetchResult[
+                    $alias
+                ]
             );
             if ($numberOfNames > 0) {
-                throw new MariaDBDuplicatedNameException(
-                    "Duplicated name: $name"
+                throw new MariaDBRepositoryDuplicatedRegisterException(
+                    $nameValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBDuplicatedNameException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

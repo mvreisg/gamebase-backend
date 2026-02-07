@@ -4,22 +4,13 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\User;
 
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceDuplicatedUsernameException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidPasswordException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidUsernameException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceUnexistantUserException;
-use Mvreisg\GamebaseBackend\Domain\Encryption\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\Exceptions\UserInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\Exceptions\UserInvalidPasswordException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\Exceptions\UserInvalidUsernameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\User\User;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedUsernameException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\User;
+use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 
 class UserService
 {
@@ -34,238 +25,101 @@ class UserService
         $this->encrypter = $encrypter;
     }
 
-    public function insert(string $username, string $password, bool $isActive): User
+    public function insert(User $new): User
     {
         try {
-            $user = new User(
-                null,
-                $username,
-                $password,
-                $isActive
+            $this->repository->checkDuplicatedUsernames(
+                Username::make($new->getUsernameValue())
             );
 
-            $user->validateUsername();
-            $user->validatePassword();
+            $encodedPassword = $this->encrypter->encrypt(
+                $new->getPasswordValue()
+            );
 
-            $validatedUserName = $user->getUsername();
-            $validatedPassword = $user->getPassword();
-
-            $this->repository->checkDuplicatedUsernames($validatedUserName);
-
-            $encodedPassword = $this->encrypter->encrypt($validatedPassword);
-            $user->setPassword($encodedPassword);
-            $insertedUser = $this->repository->insert($user);
+            $insertedUser = $this->repository->insert(
+                new User(
+                    Username::make($new->getUsernameValue()),
+                    EncodedPassword::make($encodedPassword),
+                    $new->getIsActive()
+                )
+            );
 
             return $insertedUser;
-        } catch (UserInvalidUsernameException $e) {
-            throw new UserServiceInvalidUsernameException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserInvalidPasswordException $e) {
-            throw new UserServiceInvalidPasswordException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedUsernameException $e) {
-            throw new UserServiceDuplicatedUsernameException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            EncryptionException |
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, string $username, string $password, bool $isActive): bool
+    public function update(User $existant): bool
     {
         try {
-            $user = new User(
-                $id,
-                $username,
-                $password,
-                $isActive
+            $this->repository->checkIfExists(
+                Id::make($existant->getIdValue())
             );
 
-            $user->validateId();
+            $this->repository->checkDuplicatedUsernames(
+                Username::make($existant->getUsernameValue())
+            );
 
-            $validatedId = $user->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $user->validateUsername();
-            $user->validatePassword();
-
-            $validatedUserName = $user->getUsername();
-            $this->repository->checkDuplicatedUsernames($validatedUserName);
-
-            $validatedPassword = $user->getPassword();
+            $validatedPassword = $existant->getPasswordValue();
             $encodedPassword = $this->encrypter->encrypt($validatedPassword);
-            $user->setPassword($encodedPassword);
-            $wasUpdated = $this->repository->update($user);
+            $wasUpdated = $this->repository->update(
+                new User(
+                    Username::make($existant->getUsernameValue()),
+                    EncodedPassword::make($encodedPassword),
+                    $existant->getIsActive()
+                )
+            );
 
             return $wasUpdated;
-        } catch (UserInvalidIdException $e) {
-            throw new UserServiceInvalidIdException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserInvalidUsernameException $e) {
-            throw new UserServiceInvalidUsernameException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserInvalidPasswordException $e) {
-            throw new UserServiceInvalidPasswordException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedUsernameException $e) {
-            throw new UserServiceDuplicatedUsernameException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserServiceUnexistantUserException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            EncryptionException |
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
-            $user = new User(
+            $this->repository->checkIfExists($id);
+
+            $wasUpdated = $this->repository->setIsActive(
                 $id,
-                null,
-                null,
                 $isActive
             );
 
-            $user->validateId();
-
-            $validatedId = $user->getId();
-
-            $this->repository->checkIfExists($validatedId);
-
-            $validatedIsActive = $user->getIsActive();
-
-            $wasUpdated = $this->repository->setIsActive($validatedId, $validatedIsActive);
-
             return $wasUpdated;
-        } catch (UserInvalidIdException $e) {
-            throw new UserServiceInvalidIdException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserServiceUnexistantUserException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): User
+    public function findById(Id $id): User
     {
         try {
-            $user = new User(
-                $id
-            );
-
-            $user->validateId();
-
-            $validatedId = $user->getId();
-
-            $fetchedUser = $this->repository->findById($validatedId);
+            $fetchedUser = $this->repository->findById($id);
 
             return $fetchedUser;
-        } catch (UserInvalidIdException $e) {
-            throw new UserServiceInvalidIdException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserServiceUnexistantUserException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findByUsername(string $username): ?User
+    public function findByUsername(Username $username): ?User
     {
         try {
-            $user = new User(
-                null,
-                $username
-            );
-
-            $user->validateUsername();
-
-            $validatedUserName = $user->getUsername();
-
-            $fetchedUser = $this->repository->findByUsername($validatedUserName);
+            $fetchedUser = $this->repository->findByUsername($username);
 
             return $fetchedUser;
-        } catch (UserInvalidUsernameException $e) {
-            throw new UserServiceInvalidUsernameException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new UserServiceUnexistantUserException(
-                "User service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): UserCollection
     {
         try {
             return $this->repository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

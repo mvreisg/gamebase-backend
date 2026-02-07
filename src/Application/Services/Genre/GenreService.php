@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Genre;
 
-use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Genre\Exceptions\GenreServiceUnexistantGenreException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre\Exceptions\GenreInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre\Exceptions\GenreInvalidNameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre\Genre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Genre;
+use Mvreisg\GamebaseBackend\Domain\Data\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
 
 class GenreService
 {
@@ -26,187 +19,74 @@ class GenreService
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Genre
+    public function insert(Genre $genre): Genre
     {
         try {
-            $genre = new Genre(
-                null,
-                $name,
-                $isActive
+            $this->repository->checkDuplicatedNames(
+                Name::make($genre->getNameValue())
             );
-
-            $genre->validateName();
-
-            $validatedName = $genre->getName();
-
-            $this->repository->checkDuplicatedNames($validatedName);
 
             $insertedGenre = $this->repository->insert($genre);
 
             return $insertedGenre;
-        } catch (GenreInvalidNameException $e) {
-            throw new GenreServiceInvalidNameException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new GenreServiceDuplicatedNameException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, string $name, bool $isActive): bool
+    public function update(Genre $genre): bool
     {
         try {
-            $genre = new Genre(
-                $id,
-                $name,
-                $isActive
+            $this->repository->checkIfExists(
+                Id::make($genre->getIdValue())
             );
 
-            $genre->validateId();
-
-            $validatedId = $genre->getId();
-
-            $this->repository->checkIfExists($validatedId);
-
-            $genre->validateName();
-
-            $validatedName = $genre->getName();
-
-            $this->repository->checkDuplicatedNames($validatedName);
+            $this->repository->checkDuplicatedNames(
+                Name::make($genre->getNameValue())
+            );
 
             $wasUpdated = $this->repository->update($genre);
 
             return $wasUpdated;
-        } catch (GenreInvalidIdException $e) {
-            throw new GenreServiceInvalidIdException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (GenreInvalidNameException $e) {
-            throw new GenreServiceInvalidNameException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new GenreServiceDuplicatedNameException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GenreServiceUnexistantGenreException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
-            $genre = new Genre(
+            $this->repository->checkIfExists($id);
+
+            $wasUpdated = $this->repository->setIsActive(
                 $id,
-                null,
                 $isActive
             );
 
-            $genre->validateId();
-
-            $validatedId = $genre->getId();
-
-            $this->repository->checkIfExists($validatedId);
-
-            $validatedIsActive = $genre->getIsActive();
-
-            $wasUpdated = $this->repository->setIsActive(
-                $validatedId,
-                $validatedIsActive
-            );
-
             return $wasUpdated;
-        } catch (GenreInvalidIdException $e) {
-            throw new GenreServiceInvalidIdException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GenreServiceUnexistantGenreException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Genre
+    public function findById(Id $id): Genre
     {
         try {
-            $genre = new Genre(
+            $fetchedGenreEntity = $this->repository->findById(
                 $id
             );
 
-            $genre->validateId();
-
-            $validatedId = $genre->getId();
-
-            $fetchedGenreEntity = $this->repository->findById(
-                $validatedId
-            );
-
             return $fetchedGenreEntity;
-        } catch (GenreInvalidIdException $e) {
-            throw new GenreServiceInvalidIdException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new GenreServiceUnexistantGenreException(
-                "Genre service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): GenreCollection
     {
         try {
             return $this->repository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

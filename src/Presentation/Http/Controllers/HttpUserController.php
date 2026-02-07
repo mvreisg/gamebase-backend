@@ -5,18 +5,14 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceDuplicatedUsernameException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidPasswordException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceInvalidUsernameException;
-use Mvreisg\GamebaseBackend\Application\Services\User\Exceptions\UserServiceUnexistantUserException;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
+use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\User;
+use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypesEnum;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpUserController
@@ -32,128 +28,118 @@ class HttpUserController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $username = $request->getParsedBodyPartOrDieTrying("username");
-            $password = $request->getParsedBodyPartOrDieTrying("password");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $username = $request->getBodyOrDieTrying("username");
+            $password = $request->getBodyOrDieTrying("password");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $user = $this->userService->insert($username, $password, $isActive);
+            $user = $this->userService->insert(
+                new User(
+                    Username::make($username),
+                    DecodedPassword::make($password),
+                    $isActive
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $user->getId(),
-                        "username" => $user->getUsername(),
-                        "password" => $user->getPassword(),
+                        "id" => $user->getIdValue(),
+                        "username" => $user->getUsernameValue(),
+                        "password" => $user->getPasswordValue(),
                         "isActive" => $user->getIsActive()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (UserServiceDuplicatedUsernameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            UserServiceInvalidUsernameException |
-            UserServiceInvalidPasswordException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $username = $request->getParsedBodyPartOrDieTrying("username");
-            $password = $request->getParsedBodyPartOrDieTrying("password");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $username = $request->getBodyOrDieTrying("username");
+            $password = $request->getBodyOrDieTrying("password");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->userService->update($id, $username, $password, $isActive);
+            $user = new User(
+                Username::make($username),
+                DecodedPassword::make($password),
+                $isActive
+            );
+            $user->setId(Id::make($id));
+
+            $wasUpdated = $this->userService->update(
+                $user
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (UserServiceDuplicatedUsernameException $e) {
-            throw new HttpForbiddenException(
-                "Forbidden: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            UserServiceInvalidIdException |
-            UserServiceInvalidUsernameException |
-            UserServiceInvalidPasswordException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserServiceUnexistantUserException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request, HttpResponse $response): void
+    public function setIsActive(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getParsedBodyPartOrDieTrying("isActive");
+            $isActive = $request->getBodyOrDieTrying("is_active");
 
-            $wasUpdated = $this->userService->setIsActive($id, $isActive);
+            $wasUpdated = $this->userService->setIsActive(
+                Id::make($id),
+                $isActive
+            );
 
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (UserServiceUnexistantUserException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -161,21 +147,23 @@ class HttpUserController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $user = $this->userService->findById($id);
+            $user = $this->userService->findById(
+                Id::make($id)
+            );
 
             $data = [
-                "id" => $user->getId(),
-                "username" => $user->getUsername(),
-                "isActive" => $user->getIsActive()
+                "id" => $user->getIdValue(),
+                "username" => $user->getUsernameValue(),
+                "is_active" => $user->getIsActive()
             ];
 
-            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
-            if ($showPasswordQuery) {
+            $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
+            if (isset($showPasswordQuery)) {
                 if (
-                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true
                 ) {
-                    $data["password"] = $user->getPassword();
+                    $data["password"] = $user->getPasswordValue();
                 }
             }
 
@@ -184,20 +172,18 @@ class HttpUserController
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (UserServiceUnexistantUserException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findByUsername(HttpRequest $request, HttpResponse $response): void
+    public function findByUsername(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -205,21 +191,23 @@ class HttpUserController
 
             $username = $request->getParamOrDieTrying("username");
 
-            $user = $this->userService->findByUsername($username);
+            $user = $this->userService->findByUsername(
+                Username::make($username)
+            );
 
             $data = [
-                "id" => $user->getId(),
-                "username" => $user->getUsername(),
-                "isActive" => $user->getIsActive()
+                "id" => $user->getIdValue(),
+                "username" => $user->getUsernameValue(),
+                "is_active" => $user->getIsActive()
             ];
 
-            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
-            if ($showPasswordQuery) {
+            $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
+            if (isset($showPasswordQuery)) {
                 if (
-                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true
                 ) {
-                    $data["password"] = $user->getPassword();
+                    $data["password"] = $user->getPasswordValue();
                 }
             }
 
@@ -228,25 +216,18 @@ class HttpUserController
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (UserServiceUnexistantUserException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserServiceInvalidUsernameException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -254,18 +235,21 @@ class HttpUserController
 
             $users = $this->userService->findAll();
 
-            $numberOfUsersFound = count($users);
-            if ($numberOfUsersFound === 0) {
-                throw new HttpNotFoundException(
-                    "Nothing found!"
-                );
+            if ($users->count() === 0) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusNoContent()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
-            $showPasswordQuery = $request->getQueryOrDieTrying("showPassword");
+            $showPasswordQuery = $request->getQueryOrDieTrying("show_password");
             $showPassword = false;
-            if ($showPasswordQuery) {
+            if (isset($showPasswordQuery)) {
                 if (
-                    $showPasswordQuery->getType() === HttpRouteQueryTypesEnum::Boolean &&
+                    $showPasswordQuery->getType() === HttpRouteQueryTypes::Boolean &&
                     $showPasswordQuery->getValue() === true
                 ) {
                     $showPassword = true;
@@ -273,15 +257,15 @@ class HttpUserController
             }
 
             $data = [];
-            foreach ($users as $user) {
+            foreach ($users->fetchAll() as $user) {
                 $value = [
-                    "id" => $user->getId(),
-                    "username" => $user->getUsername(),
+                    "id" => $user->getIdValue(),
+                    "username" => $user->getUsernameValue(),
                     "isActive" => $user->getIsActive()
                 ];
 
                 if ($showPassword) {
-                    $value["password"] = $user->getPassword();
+                    $value["password"] = $user->getPasswordValue();
                 }
 
                 $data[] = $value;
@@ -289,13 +273,12 @@ class HttpUserController
 
             $response
                 ->setBody([
-                    "number" => $numberOfUsersFound,
+                    "number_found" => $users->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

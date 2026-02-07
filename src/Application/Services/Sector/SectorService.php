@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Sector;
 
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Sector\Exceptions\SectorServiceUnexistantSectorException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Exceptions\SectorInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Exceptions\SectorInvalidNameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector\Sector;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Sector;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 
 class SectorService
 {
@@ -26,181 +19,72 @@ class SectorService
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Sector
+    public function insert(Sector $sector): Sector
     {
         try {
-            $sector = new Sector(
-                null,
-                $name,
-                $isActive
+            $this->repository->checkDuplicatedNames(
+                Name::make($sector->getNameValue())
             );
-
-            $sector->validateName();
-
-            $validatedName = $sector->getName();
-
-            $this->repository->checkDuplicatedNames($validatedName);
 
             $insertedSector = $this->repository->insert($sector);
 
             return $insertedSector;
-        } catch (SectorInvalidNameException $e) {
-            throw new SectorServiceInvalidNameException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new SectorServiceDuplicatedNameException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, string $name, bool $isActive): bool
+    public function update(Sector $sector): bool
     {
         try {
-            $sector = new Sector(
-                $id,
-                $name,
-                $isActive
+            $this->repository->checkIfExists(
+                Id::make($sector->getIdValue())
             );
 
-            $sector->validateId();
-
-            $validatedId = $sector->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $sector->validateName();
-
-            $validatedName = $sector->getName();
-            $this->repository->checkDuplicatedNames($validatedName);
+            $this->repository->checkDuplicatedNames(
+                Name::make($sector->getNameValue())
+            );
 
             $wasUpdated = $this->repository->update($sector);
+
             return $wasUpdated;
-        } catch (SectorInvalidIdException $e) {
-            throw new SectorServiceInvalidIdException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorInvalidNameException $e) {
-            throw new SectorServiceInvalidNameException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new SectorServiceDuplicatedNameException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorServiceUnexistantSectorException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
-            $sector = new Sector(
+            $this->repository->checkIfExists($id);
+
+            $wasUpdated = $this->repository->setIsActive(
                 $id,
-                null,
                 $isActive
             );
 
-            $sector->validateId();
-
-            $validatedId = $sector->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $validatedIsActive = $sector->getIsActive();
-
-            $wasUpdated = $this->repository->setIsActive(
-                $validatedId,
-                $validatedIsActive
-            );
-
             return $wasUpdated;
-        } catch (SectorInvalidIdException $e) {
-            throw new SectorServiceInvalidIdException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorServiceUnexistantSectorException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Sector
+    public function findById(Id $id): Sector
     {
         try {
-            $sector = new Sector(
-                $id
-            );
-
-            $sector->validateId();
-
-            $validatedId = $sector->getId();
-
-            $fetchedSector = $this->repository->findById($validatedId);
+            $fetchedSector = $this->repository->findById($id);
 
             return $fetchedSector;
-        } catch (SectorInvalidIdException $e) {
-            throw new SectorServiceInvalidIdException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorServiceUnexistantSectorException(
-                "Sector service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): SectorCollection
     {
         try {
             return $this->repository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

@@ -8,14 +8,10 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantR
 
 class MockUnexistantRegisterException extends RepositoryUnexistantRegisterException
 {
-    public const EXCEPTION_CODE = 0;
-
-    public function __construct(string $message = "", ?\Throwable $previous = null)
+    public function __construct(mixed $value)
     {
         parent::__construct(
-            $message,
-            self::EXCEPTION_CODE,
-            $previous
+            $value
         );
     }
 }

@@ -5,32 +5,22 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceUnauthorizedException;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\ValueObjects\AuthenticationValidationResultValueObject;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpForbiddenException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpUnauthorizedException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Validation\AuthenticationValidationResult;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpHeader;
 
 class HttpJwtAuthenticationTokenValidator
 {
     public static function validate(
-        string $header,
+        HttpHeader $header,
         AuthenticationService $authenticationService
-    ): AuthenticationValidationResultValueObject {
-        try {
-            $token = HttpJwtAuthenticationTokenRetriever::retrieve($header);
-            return $authenticationService->validateLogin($token);
-        } catch (AuthenticationServiceUnauthorizedException $e) {
-            throw new HttpUnauthorizedException(
-                "Unauthorized: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            HttpUnauthorizedException |
-            HttpForbiddenException |
-            \Throwable
-            $e
-        ) {
-            throw $e;
-        }
+    ): AuthenticationValidationResult {
+        $pieces = explode(" ", $header->getValue());
+        $tokenAsString = trim($pieces[1]);
+        return $authenticationService->validateToken(
+            new EncodedAuthenticationToken(
+                $tokenAsString
+            )
+        );
     }
 }

@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceInvalidUserIdException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantPermissionException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantUserException;
-use Mvreisg\GamebaseBackend\Application\Services\UserPermission\Exceptions\UserPermissionServiceUnexistantUserPermissionException;
 use Mvreisg\GamebaseBackend\Application\Services\UserPermission\UserPermissionService;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\UserPermission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpBadRequestException;
-use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpNotFoundException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpUserPermissionController
@@ -31,100 +25,84 @@ class HttpUserPermissionController
         $this->authenticationService = $authenticationService;
     }
 
-    public function insert(HttpRequest $request, HttpResponse $response): void
+    public function insert(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
-            $userId = $request->getParsedBodyPartOrDieTrying("userId");
-            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
+            $userId = $request->getBodyOrDieTrying("user_id");
+            $permissionId = $request->getBodyOrDieTrying("permission_id");
 
-            $userPermission = $this->userPermissionService->insert($userId, $permissionId);
+            $userPermission = $this->userPermissionService->insert(
+                new UserPermission(
+                    Id::make($userId),
+                    Id::make($permissionId)
+                )
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $userPermission->getId(),
-                        "userId" => $userPermission->getUserId(),
-                        "permissionId" => $userPermission->getPermissionId()
+                        "id" => $userPermission->getIdValue(),
+                        "user_id" => $userPermission->getUserIdValue(),
+                        "permission_id" => $userPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusCreated()
-                ->sendJson();
-        } catch (
-            UserPermissionServiceUnexistantUserException |
-            UserPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            UserPermissionServiceInvalidUserIdException |
-            UserPermissionServiceInvalidPermissionIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
 
-    public function update(HttpRequest $request, HttpResponse $response): void
+    public function update(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
             $id = $request->getParamOrDieTrying("id");
-            $userId = $request->getParsedBodyPartOrDieTrying("userId");
-            $permissionId = $request->getParsedBodyPartOrDieTrying("permissionId");
+            $userId = $request->getBodyOrDieTrying("user_id");
+            $permissionId = $request->getBodyOrDieTrying("permission_id");
 
-            $wasUpdated = $this->userPermissionService->update($id, $userId, $permissionId);
+            $userPermission = new UserPermission(
+                Id::make($userId),
+                Id::make($permissionId)
+            );
+            $userPermission->setId(Id::make($id));
+
+            $wasUpdated = $this->userPermissionService->update(
+                $userPermission
+            );
+
             $response
                 ->setBody([
-                    "hasChanged" => $wasUpdated
+                    "was_updated" => $wasUpdated
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (
-            UserPermissionServiceInvalidIdException |
-            UserPermissionServiceInvalidUserIdException |
-            UserPermissionServiceInvalidPermissionIdException
-            $e
-        ) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            UserPermissionServiceUnexistantUserException |
-            UserPermissionServiceUnexistantPermissionException |
-            UserPermissionServiceUnexistantUserPermissionException
-            $e
-        ) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(HttpRequest $request, HttpResponse $response): void
+    public function delete(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -132,31 +110,27 @@ class HttpUserPermissionController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $wasDeleted = $this->userPermissionService->delete($id);
+            $wasDeleted = $this->userPermissionService->delete(
+                Id::make($id)
+            );
+
             $response
                 ->setBody([
-                    "wasDeleted" => $wasDeleted
+                    "was_deleted" => $wasDeleted
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (UserPermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserPermissionServiceUnexistantUserPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request, HttpResponse $response): void
+    public function findById(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -164,44 +138,31 @@ class HttpUserPermissionController
 
             $id = $request->getParamOrDieTrying("id");
 
-            $userPermission = $this->userPermissionService->findById($id);
-
-            if ($userPermission === null) {
-                throw new HttpNotFoundException(
-                    "User permission with the id $id not found!"
-                );
-            }
+            $userPermission = $this->userPermissionService->findById(
+                Id::make($id)
+            );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $userPermission->getId(),
-                        "userId" => $userPermission->getUserId(),
-                        "permissionId" => $userPermission->getPermissionId()
+                        "id" => $userPermission->getIdValue(),
+                        "user_id" => $userPermission->getUserIdValue(),
+                        "permission_id" => $userPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
-        } catch (UserPermissionServiceInvalidIdException $e) {
-            throw new HttpBadRequestException(
-                "Bad request: {$e->getMessage()}",
-                $e
-            );
-        } catch (UserPermissionServiceUnexistantUserPermissionException $e) {
-            throw new HttpNotFoundException(
-                "Not found: {$e->getMessage()}",
-                $e
-            );
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request, HttpResponse $response): void
+    public function findAll(HttpRequest $request): HttpResponse
     {
         try {
+            $response = HttpResponse::make();
+
             HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
@@ -209,31 +170,33 @@ class HttpUserPermissionController
 
             $userPermissions = $this->userPermissionService->findAll();
 
-            $numberOfUserPermissions = count($userPermissions);
-            if ($numberOfUserPermissions === 0) {
-                throw new HttpNotFoundException(
-                    "No user permissions found!"
-                );
+            if ($userPermissions->isEmpty()) {
+                $response
+                    ->setBody([
+                        "message" => "Nothing found!"
+                    ])
+                    ->setStatusOk()
+                    ->setContentTypeAsJson();
+                return $response;
             }
 
             $data = [];
-            foreach ($userPermissions as $userPermission) {
+            foreach ($userPermissions->fetchAll() as $userPermission) {
                 $data[] = [
-                    "id" => $userPermission->getId(),
-                    "userId" => $userPermission->getUserId(),
-                    "permissionId" => $userPermission->getPermissionId()
+                    "id" => $userPermission->getIdValue(),
+                    "user_id" => $userPermission->getUserIdValue(),
+                    "permission_id" => $userPermission->getPermissionIdValue()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number" => $numberOfUserPermissions,
+                    "number_found" => $userPermissions->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()
-                ->sendJson();
-        } catch (HttpNotFoundException $e) {
-            throw $e;
+                ->setContentTypeAsJson();
+            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }

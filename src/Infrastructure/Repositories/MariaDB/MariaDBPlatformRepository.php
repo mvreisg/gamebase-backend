@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
-use PDO;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform\Platform;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBFetchFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBTransactionCreationFailureException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBUnexistantRegisterException;
-use PDOException;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Platform;
+use Mvreisg\GamebaseBackend\Domain\Data\PlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
 class MariaDBPlatformRepository implements PlatformRepositoryInterface
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -29,10 +30,10 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
         try {
             $wasTheTransactionCreationSuccessful = $this->pdo->beginTransaction();
             if ($wasTheTransactionCreationSuccessful === false) {
-                throw new MariaDBTransactionCreationFailureException();
+                throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $name = $platform->getName();
+            $name = $platform->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -53,7 +54,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 );"
             );
             if ($insertStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
@@ -61,7 +62,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ":isActive" => $isActive
             ]);
             if ($wasTheInsertStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $lastInsertedId = intval(
@@ -77,26 +78,25 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     id = :id;"
             );
             if ($selectStatement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheSelectStatementSuccessfullyExecuted = $selectStatement->execute([
                 ":id" => $lastInsertedId
             ]);
             if ($wasTheSelectStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $selectStatement->fetch();
             if ($fetchResult === false) {
-                throw new MariaDBFetchFailureException();
+                throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
             $this->pdo->commit();
 
-            return new Platform(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Platform(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -104,15 +104,9 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBTransactionCreationFailureException |
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBFetchFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -121,8 +115,8 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
     public function update(Platform $platform): bool
     {
         try {
-            $id = $platform->getId();
-            $name = $platform->getName();
+            $id = $platform->getIdValue();
+            $name = $platform->getNameValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -141,7 +135,7 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
@@ -150,25 +144,21 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                 ":isActive" => $isActive
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
+            $idValue = $id->getValue();
+
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
@@ -185,33 +175,29 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     is_active <> :isActive;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheUpdateSuccessfullyExecuted = $statement->execute([
-                ":id" => $id,
+                ":id" => $idValue,
                 ":isActive" => $isActive
             ]);
             if ($wasTheUpdateSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $wasUpdated = $statement->rowCount() > 0;
             return $wasUpdated;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Platform
+    public function findById(Id $id): Platform
     {
         try {
+            $idValue = $id->getValue();
+
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
@@ -221,27 +207,25 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
-
             if ($fetchResult === false) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
 
-            return new Platform(
-                $fetchResult["id"],
-                $fetchResult["name"],
+            $return = new Platform(
+                Name::make($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -249,19 +233,14 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBUnexistantRegisterException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+            $return->setId(Id::make($fetchResult["id"]));
+            return $return;
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): PlatformCollection
     {
         try {
             $statement = $this->pdo->prepare(
@@ -271,133 +250,122 @@ class MariaDBPlatformRepository implements PlatformRepositoryInterface
                     platform;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute();
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return [];
+                return new PlatformCollection();
             }
 
-            $platforms = [];
-
+            $platforms = new PlatformCollection();
             foreach ($fetchResult as $row) {
-                $platform = new Platform(
-                    $row["id"],
-                    $row["name"],
+                $value = new Platform(
+                    Name::make($row["name"]),
                     /* MariaDB stores bool as int values so a casting
-                     * here is needed.
-                     */
+                    * here is needed.
+                    */
                     boolval(
                         $row["is_active"]
                     )
                 );
-
-                $platforms[] = $platform;
+                $value->setId(Id::make($row["id"]));
+                $platforms->add($value);
             }
-
             return $platforms;
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkIfExists(int $id): void
+    public function checkIfExists(Id $id): void
     {
         try {
+            $idValue = $id->getValue();
+
+            $alias = "number_of_ids";
             $statement = $this->pdo->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
-                    number
+                    $alias
                 FROM
                     platform
                 WHERE
                     id = :id;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheCheckSuccessfullyExecuted = $statement->execute([
-                ":id" => $id
+                ":id" => $idValue
             ]);
             if ($wasTheCheckSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfIds = intval(
-                $fetchResult["number"]
+                $fetchResult[
+                    $alias
+                ]
             );
 
             if ($numberOfIds === 0) {
-                throw new MariaDBUnexistantRegisterException(
-                    "Unexistant register with the id $id."
+                throw new MariaDBRepositoryUnexistantRegisterException(
+                    $idValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            PDOException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
         try {
+            $nameValue = $name->getValue();
+
+            $alias = "number_of_names";
             $statement = $this->pdo->prepare(
                 "SELECT 
                     COUNT(*)
                     AS
-                    number_of_names
+                    $alias
                 FROM 
                     platform 
                 WHERE 
                     name = :name;"
             );
             if ($statement === false) {
-                throw new MariaDBStatementCreationFailureException();
+                throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":name" => $name
+                ":name" => $nameValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
-                throw new MariaDBStatementExecutionFailureException();
+                throw new MariaDBRepositoryStatementExecutionFailureException();
             }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
-                $fetchResult["number_of_names"]
+                $fetchResult[
+                    $alias
+                ]
             );
             if ($numberOfNames > 0) {
-                throw new MariaDBDuplicatedNameException(
-                    "Duplicated name: $name"
+                throw new MariaDBRepositoryDuplicatedRegisterException(
+                    $nameValue
                 );
             }
-        } catch (
-            MariaDBStatementCreationFailureException |
-            MariaDBStatementExecutionFailureException |
-            MariaDBDuplicatedNameException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

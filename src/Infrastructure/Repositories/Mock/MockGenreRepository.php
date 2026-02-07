@@ -4,51 +4,53 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre\Genre;
-use Mvreisg\GamebaseBackend\Domain\Repositories\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Data\Genre;
+use Mvreisg\GamebaseBackend\Domain\Data\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGenreRepository implements GenreRepositoryInterface
 {
-    private array $data;
-    private int $idIndex;
+    private GenreCollection $collection;
+    private Id $id;
 
     public function __construct()
     {
-        $this->data = [];
-        $this->idIndex = 0;
+        $this->collection = new GenreCollection();
+        $this->id = Id::make(1);
     }
 
-    public function insert(Genre $genre): Genre
+    public function insert(Genre $parameter): Genre
     {
-        $this->idIndex++;
-        $genre->setId($this->idIndex);
-        $this->data[] = $genre;
-        return new Genre(
-            $genre->getId(),
-            $genre->getName() .
-            $genre->getIsActive()
+        $parameter->setId(
+            Id::make(
+                $this->id->getValue()
+            )
         );
+        $this->collection->add(
+            $parameter
+        );
+        $this->id->increment(1);
+        return $parameter;
     }
 
     public function update(Genre $genre): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $genre->getId()) {
-                $index = $key;
-            }
-        }
+        $foundGenre = $this->collection->findById(
+            Id::make($genre->getIdValue())
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$genre->getIdValue()}"
+            );
         }
-
-        $foundGenre = $this->data[$index];
 
         $hasDifferentNames =
-            $foundGenre->getName() !== $genre->getName();
+            $foundGenre->getNameValue() !== $genre->getNameValue();
 
         $hasDifferentIsActive =
             $foundGenre->getIsActive() !== $genre->getIsActive();
@@ -59,29 +61,30 @@ class MockGenreRepository implements GenreRepositoryInterface
             return false;
         }
 
-        $this->data[$index] = new Genre(
-            $genre->getId(),
-            $genre->getName(),
+        $new = new Genre(
+            Name::make($genre->getNameValue()),
             $genre->getIsActive()
         );
+        $new->setId(Id::make($genre->getIdValue()));
 
+        $this->collection->replace(
+            Id::make($genre->getIdValue()),
+            $new
+        );
         return true;
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
-        $index = -1;
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                $index = $key;
-            }
-        }
+        $foundGenre = $this->collection->findById(
+            $id
+        );
 
-        if ($index < 0) {
-            return false;
+        if ($foundGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-
-        $foundGenre = $this->data[$index];
 
         $wasUpdated = $foundGenre->getIsActive() !== $isActive;
 
@@ -89,49 +92,61 @@ class MockGenreRepository implements GenreRepositoryInterface
             return false;
         }
 
-        $this->data[$index]->setIsActive($isActive);
+        $new = new Genre(
+            Name::make($foundGenre->getNameValue()),
+            $isActive
+        );
+        $new->setId(Id::make($foundGenre->getIdValue()));
 
+        $this->collection->replace(
+            Id::make($foundGenre->getIdValue()),
+            $new
+        );
         return true;
     }
 
-    public function findById(int $id): Genre
+    public function findById(Id $id): Genre
     {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return $value;
-            }
+        $foundGenre = $this->collection->findById(
+            $id
+        );
+
+        if ($foundGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant game with id $id"
+
+        return $foundGenre;
+    }
+
+    public function findAll(): GenreCollection
+    {
+        return $this->collection;
+    }
+
+    public function checkIfExists(Id $id): void
+    {
+        $foundGenre = $this->collection->findById(
+            $id
         );
-    }
 
-    public function findAll(): array
-    {
-        return $this->data;
-    }
-
-    public function checkIfExists(int $id): void
-    {
-        foreach ($this->data as $key => $value) {
-            if ($value->getId() === $id) {
-                return;
-            }
+        if ($foundGenre === null) {
+            throw new MockUnexistantRegisterException(
+                "id: {$id->getValue()}"
+            );
         }
-        throw new MockUnexistantRegisterException(
-            "Unexistant genre with id $id"
-        );
     }
 
-    public function checkDuplicatedNames(string $name): void
+    public function checkDuplicatedNames(Name $name): void
     {
-        $array = array_filter(
-            $this->data,
-            fn (Genre $genre) => strcmp($genre->getName(), $name) === 0
+        $foundGenres = $this->collection->findByName(
+            $name
         );
-        if (count($array) > 0) {
-            throw new MockDuplicatedNameException(
-                $name
+
+        if ($foundGenres->count() > 1) {
+            throw new MockDuplicatedRegisterException(
+                "name: {$name->getValue()}"
             );
         }
     }

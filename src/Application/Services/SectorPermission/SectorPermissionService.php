@@ -4,22 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\SectorPermission;
 
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceInvalidSectorIdException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantPermissionException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorException;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\Exceptions\SectorPermissionServiceUnexistantSectorPermissionException;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\Exceptions\SectorPermissionInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\Exceptions\SectorPermissionInvalidPermissionIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\Exceptions\SectorPermissionInvalidSectorIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorPermission\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 
 class SectorPermissionService
 {
@@ -37,231 +27,79 @@ class SectorPermissionService
         $this->sectorPermissionRepository = $sectorPermissionRepository;
     }
 
-    public function insert(int $sectorId, int $permissionId): SectorPermission
+    public function insert(SectorPermission $new): SectorPermission
     {
         try {
-            $sectorPermission = new SectorPermission(
-                null,
-                $sectorId,
-                $permissionId
+            $this->sectorRepository->checkIfExists(
+                Id::make($new->getSectorIdValue())
             );
 
-            $sectorPermission->validateSectorId();
-            $sectorPermission->validatePermissionId();
+            $this->permissionRepository->checkIfExists(
+                Id::make($new->getPermissionIdValue())
+            );
 
-            try {
-                $validatedSectorId = $sectorPermission->getSectorId();
-
-                $this->sectorRepository->checkIfExists($validatedSectorId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new SectorPermissionServiceUnexistantSectorException(
-                    "Sector permission service error: Sector repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedPermissionId = $sectorPermission->getPermissionId();
-
-                $this->permissionRepository->checkIfExists($validatedPermissionId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new SectorPermissionServiceUnexistantPermissionException(
-                    "Sector permission service error: Permission repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            $insertedSectorPermission = $this->sectorPermissionRepository->insert($sectorPermission);
+            $insertedSectorPermission = $this->sectorPermissionRepository->insert($new);
 
             return $insertedSectorPermission;
-        } catch (
-            SectorPermissionServiceUnexistantSectorException |
-            SectorPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw $e;
-        } catch (SectorPermissionInvalidSectorIdException $e) {
-            throw new SectorPermissionServiceInvalidSectorIdException(
-                "Permission permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorPermissionInvalidPermissionIdException $e) {
-            throw new SectorPermissionServiceInvalidPermissionIdException(
-                "Permission permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, int $sectorId, int $permissionId): bool
+    public function update(SectorPermission $existant): bool
     {
         try {
-            $sectorPermission = new SectorPermission(
-                $id,
-                $sectorId,
-                $permissionId
+            $this->sectorPermissionRepository->checkIfExists(
+                Id::make($existant->getIdValue())
             );
 
-            $sectorPermission->validateId();
-            $sectorPermission->validateSectorId();
-            $sectorPermission->validatePermissionId();
+            $this->sectorRepository->checkIfExists(
+                Id::make($existant->getSectorIdValue())
+            );
 
-            $validatedId = $sectorPermission->getId();
+            $this->permissionRepository->checkIfExists(
+                Id::make($existant->getPermissionIdValue())
+            );
 
-            $this->sectorPermissionRepository->checkIfExists($validatedId);
-
-            try {
-                $validatedSectorId = $sectorPermission->getSectorId();
-
-                $this->sectorRepository->checkIfExists($validatedSectorId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new SectorPermissionServiceUnexistantSectorException(
-                    "Sector permission service error: Sector repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            try {
-                $validatedPermissionId = $sectorPermission->getPermissionId();
-
-                $this->permissionRepository->checkIfExists($validatedPermissionId);
-            } catch (RepositoryUnexistantRegisterException $e) {
-                throw new SectorPermissionServiceUnexistantPermissionException(
-                    "Sector permission service error: Permission repository: {$e->getMessage()}",
-                    $e
-                );
-            }
-
-            $wasUpdated = $this->sectorPermissionRepository->update($sectorPermission);
+            $wasUpdated = $this->sectorPermissionRepository->update($existant);
 
             return $wasUpdated;
-        } catch (
-            SectorPermissionServiceUnexistantSectorException |
-            SectorPermissionServiceUnexistantPermissionException
-            $e
-        ) {
-            throw $e;
-        } catch (SectorPermissionInvalidIdException $e) {
-            throw new SectorPermissionServiceInvalidIdException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorPermissionInvalidSectorIdException $e) {
-            throw new SectorPermissionServiceInvalidSectorIdException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (SectorPermissionInvalidPermissionIdException $e) {
-            throw new SectorPermissionServiceInvalidPermissionIdException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorPermissionServiceUnexistantSectorPermissionException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(Id $id): bool
     {
         try {
-            $sectorPermission = new SectorPermission(
-                $id
-            );
+            $this->sectorPermissionRepository->checkIfExists($id);
 
-            $sectorPermission->validateId();
-
-            $validatedId = $sectorPermission->getId();
-
-            $this->sectorPermissionRepository->checkIfExists($validatedId);
-
-            $wasDeleted = $this->sectorPermissionRepository->delete($sectorPermission);
+            $wasDeleted = $this->sectorPermissionRepository->delete($id);
 
             return $wasDeleted;
-        } catch (SectorPermissionInvalidIdException $e) {
-            throw new SectorPermissionServiceInvalidIdException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorPermissionServiceUnexistantSectorPermissionException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): SectorPermission
+    public function findById(Id $id): SectorPermission
     {
         try {
-            $sectorPermission = new SectorPermission(
-                $id
-            );
-
-            $sectorPermission->validateId();
-
-            $validatedId = $sectorPermission->getId();
-
             $fetchedSectorPermission = $this->sectorPermissionRepository->findById(
-                $validatedId
+                $id
             );
 
             return $fetchedSectorPermission;
-        } catch (SectorPermissionInvalidIdException $e) {
-            throw new SectorPermissionServiceInvalidIdException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new SectorPermissionServiceUnexistantSectorPermissionException(
-                "Sector permission service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): SectorPermissionCollection
     {
         try {
             return $this->sectorPermissionRepository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }

@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Platform;
 
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceInvalidIdException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceInvalidNameException;
-use Mvreisg\GamebaseBackend\Application\Services\Platform\Exceptions\PlatformServiceUnexistantPlatformException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform\Exceptions\PlatformInvalidIdException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform\Exceptions\PlatformInvalidNameException;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform\Platform;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementCreationFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryStatementExecutionFailureException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\Platform;
+use Mvreisg\GamebaseBackend\Domain\Data\PlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
 
 class PlatformService
 {
@@ -26,181 +19,72 @@ class PlatformService
         $this->repository = $repository;
     }
 
-    public function insert(string $name, bool $isActive): Platform
+    public function insert(Platform $platform): Platform
     {
         try {
-            $platform = new Platform(
-                null,
-                $name,
-                $isActive
+            $this->repository->checkDuplicatedNames(
+                Name::make($platform->getNameValue())
             );
-
-            $platform->validateName();
-
-            $validatedName = $platform->getName();
-
-            $this->repository->checkDuplicatedNames($validatedName);
 
             $insertedPlatform = $this->repository->insert($platform);
 
             return $insertedPlatform;
-        } catch (PlatformInvalidNameException $e) {
-            throw new PlatformServiceInvalidNameException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new PlatformServiceDuplicatedNameException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(int $id, string $name, bool $isActive): bool
+    public function update(Platform $platform): bool
     {
         try {
-            $platform = new Platform(
-                $id,
-                $name,
-                $isActive
+            $this->repository->checkIfExists(
+                Id::make($platform->getIdValue())
             );
 
-            $platform->validateId();
-
-            $validatedId = $platform->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $platform->validateName();
-
-            $validatedName = $platform->getName();
-            $this->repository->checkDuplicatedNames($validatedName);
+            $this->repository->checkDuplicatedNames(
+                Name::make($platform->getNameValue())
+            );
 
             $wasUpdated = $this->repository->update($platform);
+
             return $wasUpdated;
-        } catch (PlatformInvalidIdException $e) {
-            throw new PlatformServiceInvalidIdException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (PlatformInvalidNameException $e) {
-            throw new PlatformServiceInvalidNameException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryDuplicatedNameException $e) {
-            throw new PlatformServiceDuplicatedNameException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PlatformServiceUnexistantPlatformException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(int $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive): bool
     {
         try {
-            $platform = new Platform(
+            $this->repository->checkIfExists($id);
+
+            $wasUpdated = $this->repository->setIsActive(
                 $id,
-                null,
                 $isActive
             );
 
-            $platform->validateId();
-
-            $validatedId = $platform->getId();
-            $this->repository->checkIfExists($validatedId);
-
-            $validatedIsActive = $platform->getIsActive();
-
-            $wasUpdated = $this->repository->setIsActive(
-                $validatedId,
-                $validatedIsActive
-            );
-
             return $wasUpdated;
-        } catch (PlatformInvalidIdException $e) {
-            throw new PlatformServiceInvalidIdException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PlatformServiceUnexistantPlatformException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(int $id): Platform
+    public function findById(Id $id): Platform
     {
         try {
-            $platform = new Platform(
-                $id
-            );
-
-            $platform->validateId();
-
-            $validatedId = $platform->getId();
-
-            $fetchedPlatform = $this->repository->findById($validatedId);
+            $fetchedPlatform = $this->repository->findById($id);
 
             return $fetchedPlatform;
-        } catch (PlatformInvalidIdException $e) {
-            throw new PlatformServiceInvalidIdException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (RepositoryUnexistantRegisterException $e) {
-            throw new PlatformServiceUnexistantPlatformException(
-                "Platform service error: {$e->getMessage()}",
-                $e
-            );
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): array
+    public function findAll(): PlatformCollection
     {
         try {
             return $this->repository->findAll();
-        } catch (
-            RepositoryStatementCreationFailureException |
-            RepositoryStatementExecutionFailureException |
-            \Throwable
-            $e
-        ) {
+        } catch (\Throwable $e) {
             throw $e;
         }
     }
