@@ -18,9 +18,4 @@ class JwtAuthenticationTokenClock implements Clock
     {
         return new \DateTimeZone(DotenvEnvironment::get("TIME_ZONE"));
     }
-
-    public function getTimeBasedOnTimestamp(int $timestamp): \DateTimeImmutable
-    {
-        return $this->now()->setTimestamp($timestamp);
-    }
 }

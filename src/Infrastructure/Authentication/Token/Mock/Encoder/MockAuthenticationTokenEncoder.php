@@ -20,7 +20,8 @@ class MockAuthenticationTokenEncoder implements AuthenticationTokenEncoder
 
     public function encode(AuthenticationData $data, \DateInterval $duration): EncodedAuthenticationToken
     {
-        $seconds = $duration->s;
+        $oneDayInSeconds = 60 * 60 * 24;
+        $seconds = $duration->d * $oneDayInSeconds;
         $emittedAt = strval($this->clock->now()->getTimestamp());
         $token = base64_encode(
             join(

@@ -19,13 +19,13 @@ class MockDecodedAuthenticationTokenValidator implements DecodedAuthenticationTo
 
     public function validate(DecodedAuthenticationToken $token): void
     {
-        if ($this->clock->now()->getTimestamp() >= $token->getExpiresAt()) {
+        if ($this->clock->now()->getTimestamp() >= $token->getExpiresAt()->getTimestamp()) {
             throw new \DomainException(
                 "Token expired."
             );
         }
 
-        if ($token->getIssuedAt() > $this->clock->now()->getTimestamp()) {
+        if ($token->getIssuedAt()->getTimestamp() > $this->clock->now()->getTimestamp()) {
             throw new \DomainException(
                 "Token with invalid issue date."
             );

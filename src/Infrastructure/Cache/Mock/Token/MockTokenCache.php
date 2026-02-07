@@ -33,7 +33,7 @@ class MockTokenCache implements TokenCacheInterface
             $exists = $this->exists($username);
             if ($exists === false) {
                 throw new \DomainException(
-                    "Mock get error: Unexistant username $username",
+                    "Mock get error: Unexistant username {$username->getValue()}",
                 );
             }
             $expiresIn = $this->expirationArray[$username->getValue()];
@@ -41,10 +41,10 @@ class MockTokenCache implements TokenCacheInterface
             if ($expired) {
                 $this->delete($username);
                 throw new \DomainException(
-                    "Mock get error: Expired username $username",
+                    "Mock get error: Expired username {$username->getValue()}",
                 );
             }
-            return new EncodedAuthenticationToken($this->data[$username]);
+            return new EncodedAuthenticationToken($this->data[$username->getValue()]);
         } catch (\Throwable $e) {
             throw $e;
         }

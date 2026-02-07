@@ -26,8 +26,8 @@ class MockAuthenticationTokenClock implements Clock
         return new \DateTimeZone(DotenvEnvironment::get("TIME_ZONE"));
     }
 
-    public function getTimeBasedOnTimestamp(int $timestamp): \DateTimeImmutable
+    public function advance(\DateInterval $interval): void
     {
-        return $this->now->setTimestamp($timestamp);
+        $this->now = $this->now->add($interval);
     }
 }

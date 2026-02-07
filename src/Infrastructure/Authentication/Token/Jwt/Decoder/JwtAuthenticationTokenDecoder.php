@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Data\Calendar;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
@@ -28,8 +29,8 @@ class JwtAuthenticationTokenDecoder implements AuthenticationTokenDecoder
         $payload = JWT::decode($token->getToken(), new Key($secretKey, "HS256"));
         $data = AuthenticationData::toObject($payload->sub);
         return new DecodedAuthenticationToken(
-            $this->clock->getTimeBasedOnTimestamp($payload->iat),
-            $this->clock->getTimeBasedOnTimestamp($payload->exp),
+            Calendar::getDateTimeImmutableBasedOnTimestamp($payload->iat),
+            Calendar::getDateTimeImmutableBasedOnTimestamp($payload->exp),
             $data
         );
     }

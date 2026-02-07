@@ -9,6 +9,4 @@ interface Clock
     public function now(): \DateTimeImmutable;
 
     public function getTimezone(): \DateTimeZone;
-
-    public function getTimeBasedOnTimestamp(int $timestamp): \DateTimeImmutable;
 }
