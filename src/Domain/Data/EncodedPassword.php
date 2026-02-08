@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class EncodedPassword extends Password
 {
     public function __construct(string $value)
@@ -21,7 +23,7 @@ class EncodedPassword extends Password
         $trimmedValue = trim($value);
 
         if ($trimmedValue === "") {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The password is empty!"
             );
         }

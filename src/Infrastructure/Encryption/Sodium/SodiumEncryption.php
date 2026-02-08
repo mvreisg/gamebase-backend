@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium;
 
+use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
@@ -25,7 +26,7 @@ class SodiumEncryption implements EncryptionInterface
         $key = sodium_hex2bin($key);
         $opened = base64_decode($secret, true);
         if ($opened === false) {
-            throw new \DomainException(
+            throw new EncryptionException(
                 "The secret is not a valid base64 encoded string."
             );
         }
@@ -33,7 +34,7 @@ class SodiumEncryption implements EncryptionInterface
         $encrypted = substr($opened, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
         $text = sodium_crypto_secretbox_open($encrypted, $nonce, $key);
         if ($text === false) {
-            throw new \DomainException(
+            throw new EncryptionException(
                 "The secret could not be decrypted."
             );
         }

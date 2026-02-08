@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Token;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Predis\Client;
@@ -27,7 +28,9 @@ class RedisTokenCache implements TokenCacheInterface
     {
         $value = $this->redis->get($username->getValue());
         if ($value === null) {
-            throw new \DomainException("value is null");
+            throw new TokenCacheException(
+                "value is null"
+            );
         }
         return new EncodedAuthenticationToken($value);
     }
@@ -50,7 +53,7 @@ class RedisTokenCache implements TokenCacheInterface
         $status = $this->redis->del($username->getValue());
         $status = boolval($status);
         if ($status === false) {
-            throw new \DomainException(
+            throw new TokenCacheException(
                 "Redis delete error: unsuccesful deletion."
             );
         }

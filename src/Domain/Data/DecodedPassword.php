@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class DecodedPassword extends Password
 {
     public function __construct(string $value)
@@ -21,14 +23,14 @@ class DecodedPassword extends Password
         $trimmedValue = trim($value);
 
         if ($trimmedValue === "") {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The password is empty!"
             );
         }
 
         $isInvalid = preg_match("/[^a-zA-Z0-9]/", $trimmedValue);
         if ($isInvalid) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The password is invalid!"
             );
         }

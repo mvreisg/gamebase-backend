@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class GameGenre
 {
     private ?Id $id;
@@ -25,7 +27,7 @@ class GameGenre
     public function getIdValue(): int
     {
         if ($this->id === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The id is null."
             );
         }
@@ -35,7 +37,7 @@ class GameGenre
     public function getGameIdValue(): int
     {
         if ($this->gameId === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The gameId is null."
             );
         }
@@ -45,7 +47,7 @@ class GameGenre
     public function getGenreIdValue(): int
     {
         if ($this->genreId === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The genreId is null."
             );
         }

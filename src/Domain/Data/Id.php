@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class Id
 {
     private int $value;
@@ -27,7 +29,7 @@ class Id
     public function validate(int $value): void
     {
         if ($value <= 0) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The id must be greater than zero!"
             );
         }
@@ -36,7 +38,7 @@ class Id
     public function increment(int $amount)
     {
         if ($amount <= 0) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The amount must be greater than zero!"
             );
         }

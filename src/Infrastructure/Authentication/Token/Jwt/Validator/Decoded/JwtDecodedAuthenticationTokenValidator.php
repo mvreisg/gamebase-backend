@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Valida
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\DecodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\Exceptions\DecodedAuthenticationTokenValidatorException;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
 
 class JwtDecodedAuthenticationTokenValidator implements DecodedAuthenticationTokenValidator
@@ -20,11 +21,11 @@ class JwtDecodedAuthenticationTokenValidator implements DecodedAuthenticationTok
     public function validate(DecodedAuthenticationToken $token): void
     {
         if ($token->getIssuedAt() > $this->clock->now()) {
-            throw new \DomainException("The token issue date is in the future.");
+            throw new DecodedAuthenticationTokenValidatorException("The token issue date is in the future.");
         }
 
         if ($token->getExpiresAt() < $this->clock->now()) {
-            throw new \DomainException("The token has expired.");
+            throw new DecodedAuthenticationTokenValidatorException("The token has expired.");
         }
     }
 }

@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpException;
 
 class HttpRouter
 {
@@ -203,7 +204,7 @@ class HttpRouter
                         $isTheCorrectParameter = true;
                         switch ($routePartType) {
                             case HttpRouteParameterTypes::Route:
-                                throw new \DomainException(
+                                throw new HttpException(
                                     "Unexpected value: $routePartType"
                                 );
                             case HttpRouteParameterTypes::Text:

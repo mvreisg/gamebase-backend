@@ -30,4 +30,9 @@ class MockTokenCacheClock implements Clock
     {
         $this->now = $this->now->add($interval);
     }
+
+    public function rewind(\DateInterval $interval): void
+    {
+        $this->now = $this->now->sub($interval);
+    }
 }
