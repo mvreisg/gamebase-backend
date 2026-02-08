@@ -17,7 +17,7 @@ class MockSectorPermissionRepository implements SectorPermissionRepositoryInterf
 
     public function __construct()
     {
-        $this->collection = new SectorPermissionCollection();
+        $this->collection = new SectorPermissionCollection(null);
         $this->id = Id::make(1);
     }
 

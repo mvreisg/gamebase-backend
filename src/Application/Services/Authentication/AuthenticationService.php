@@ -19,6 +19,7 @@ use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
@@ -99,7 +100,8 @@ class AuthenticationService
                         $result->getUserId(),
                         $result->getUsername(),
                         $result->getPermissionCollection(),
-                        $result->getSectorCollection()
+                        $result->getSectorCollection(),
+                        $result->getSectorPermissionCollection()
                     )
                 );
             }
@@ -115,6 +117,7 @@ class AuthenticationService
                 $permissions->add($fetchedPermission);
             }
             $sectors = new SectorCollection(null);
+            $allSectorPermissions = new SectorPermissionCollection(null);
             foreach ($permissions->fetchAll() as $permission) {
                 $sectorPermissions = $this->sectorPermissionRepository->findAllByPermissionId(
                     Id::make($permission->getIdValue())
@@ -128,13 +131,15 @@ class AuthenticationService
                         $sectors->add($fetchedSector);
                     }
                 }
+                $allSectorPermissions->addAll($sectorPermissions);
             }
 
             $authenticationData = new AuthenticationData(
                 Id::make($fetchedUser->getIdValue()),
                 Username::make($fetchedUser->getUsernameValue()),
                 $permissions,
-                $sectors
+                $sectors,
+                $allSectorPermissions
             );
 
             $interval = new \DateInterval("P0D");
@@ -211,7 +216,8 @@ class AuthenticationService
                 $decodedToken->getUserId(),
                 $decodedToken->getUsername(),
                 $decodedToken->getUserPermissions(),
-                $decodedToken->getUserSectors()
+                $decodedToken->getUserSectors(),
+                $decodedToken->getSectorPermissionCollection()
             );
 
             return new AuthenticationValidationResult(

@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Permission;
 use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Sector;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 
 class AuthenticationData
@@ -18,17 +20,20 @@ class AuthenticationData
     private Username $username;
     private PermissionCollection $permissionCollection;
     private SectorCollection $sectorCollection;
+    private SectorPermissionCollection $sectorPermissionCollection;
 
     public function __construct(
         Id $userId,
         Username $username,
         PermissionCollection $permissionCollection,
-        SectorCollection $sectorCollection
+        SectorCollection $sectorCollection,
+        SectorPermissionCollection $sectorPermissionCollection
     ) {
         $this->userId = $userId;
         $this->username = $username;
         $this->permissionCollection = $permissionCollection;
         $this->sectorCollection = $sectorCollection;
+        $this->sectorPermissionCollection = $sectorPermissionCollection;
     }
 
     public static function toObject(\stdClass $data): self
@@ -51,11 +56,21 @@ class AuthenticationData
             $value->setId(Id::make($sector->id));
             $sectors[] = $value;
         }
+        $sectorPermissions = [];
+        foreach ($data->sectorPermissions as $sectorPermission) {
+            $value = new SectorPermission(
+                Id::make($sectorPermission->sectorId),
+                Id::make($sectorPermission->permissionId)
+            );
+            $value->setId(Id::make($sectorPermission->id));
+            $sectorPermissions[] = $value;
+        }
         return new self(
             Id::make($data->userId),
             Username::make($data->username),
             new PermissionCollection($permissions),
-            new SectorCollection($sectors)
+            new SectorCollection($sectors),
+            new SectorPermissionCollection($sectorPermissions)
         );
     }
 
@@ -79,6 +94,11 @@ class AuthenticationData
         return $this->sectorCollection;
     }
 
+    public function getSectorPermissionCollection(): SectorPermissionCollection
+    {
+        return $this->sectorPermissionCollection;
+    }
+
     public function toArray(): array
     {
         $permissions = [];
@@ -97,11 +117,20 @@ class AuthenticationData
                 "isActive" => $sector->getIsActive(),
             ];
         }
+        $sectorPermissions = [];
+        foreach ($this->sectorPermissionCollection->fetchAll() as $sectorPermission) {
+            $sectorPermissions[] = [
+                "id" => $sectorPermission->getIdValue(),
+                "sectorId" => $sectorPermission->getSectorIdValue(),
+                "permissionId" => $sectorPermission->getPermissionIdValue(),
+            ];
+        }
         return [
             "userId" => $this->userId->getValue(),
             "username" => $this->username->getValue(),
             "permissions" => $permissions,
             "sectors" => $sectors,
+            "sectorPermissions" => $sectorPermissions,
         ];
     }
 }

@@ -11,9 +11,13 @@ class SectorPermissionCollection
      */
     private array $values;
 
-    public function __construct()
+    public function __construct(?array $values)
     {
-        $this->values = [];
+        if (isset($values) === true) {
+            $this->values = $values;
+        } else {
+            $this->values = [];
+        }
     }
 
     public function add(SectorPermission $value): bool
@@ -23,6 +27,13 @@ class SectorPermissionCollection
         }
         $this->values[] = $value;
         return true;
+    }
+
+    public function addAll(SectorPermissionCollection $collection): void
+    {
+        foreach ($collection->fetchAll() as $value) {
+            $this->add($value);
+        }
     }
 
     /**
@@ -45,7 +56,7 @@ class SectorPermissionCollection
 
     public function findAllByPermissionId(Id $permissionId): SectorPermissionCollection
     {
-        $matches = new SectorPermissionCollection();
+        $matches = new SectorPermissionCollection(null);
         foreach ($this->values as $value) {
             if ($value->getPermissionIdValue() === $permissionId->getValue()) {
                 $matches->add($value);

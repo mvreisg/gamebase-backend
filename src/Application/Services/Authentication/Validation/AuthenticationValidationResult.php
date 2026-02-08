@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAut
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 
 class AuthenticationValidationResult
@@ -42,6 +43,11 @@ class AuthenticationValidationResult
     public function getSectorCollection(): SectorCollection
     {
         return $this->data->getSectorCollection();
+    }
+
+    public function getSectorPermissionCollection(): SectorPermissionCollection
+    {
+        return $this->data->getSectorPermissionCollection();
     }
 
     public function toArray(): array
