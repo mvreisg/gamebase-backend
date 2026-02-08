@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\UserPermission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpUserPermissionController
@@ -35,8 +37,8 @@ class HttpUserPermissionController
                 $this->authenticationService
             );
 
-            $userId = $request->getBodyOrDieTrying("user_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $userId = $request->getBodyOrDieTrying("user_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
             $userPermission = $this->userPermissionService->insert(
                 new UserPermission(
@@ -72,9 +74,9 @@ class HttpUserPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $userId = $request->getBodyOrDieTrying("user_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $userId = $request->getBodyOrDieTrying("user_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
             $userPermission = new UserPermission(
                 Id::make($userId),
@@ -108,7 +110,7 @@ class HttpUserPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $wasDeleted = $this->userPermissionService->delete(
                 Id::make($id)
@@ -136,7 +138,7 @@ class HttpUserPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $userPermission = $this->userPermissionService->findById(
                 Id::make($id)

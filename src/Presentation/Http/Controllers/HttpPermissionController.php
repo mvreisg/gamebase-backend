@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Permission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpPermissionController
@@ -36,8 +38,8 @@ class HttpPermissionController
                 $this->authenticationService
             );
 
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $permission = $this->permissionService->insert(
                 new Permission(
@@ -72,9 +74,9 @@ class HttpPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $permission = new Permission(
                 Name::make($name),
@@ -108,8 +110,8 @@ class HttpPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $wasUpdated = $this->permissionService->setIsActive(
                 Id::make($id),
@@ -138,7 +140,7 @@ class HttpPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $permission = $this->permissionService->findById(
                 Id::make($id)

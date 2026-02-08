@@ -8,6 +8,11 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 
 class HttpRoutePart
 {
+    public static function make(string $name, HttpRouteParameterTypes $type): HttpRoutePart
+    {
+        return new HttpRoutePart($name, $type);
+    }
+
     private string $name;
 
     private HttpRouteParameterTypes $type;

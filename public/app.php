@@ -1,6 +1,7 @@
 <?php
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Router\Factories\HttpRouterFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Logger\HttpLogger;
+use Mvreisg\GamebaseBackend\Presentation\Http\Router\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpAuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGameGenreRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGamePlatformRoutes;
@@ -16,7 +17,7 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserRoutes;
 try {
     require_once dirname(__DIR__) . "/bootstrap.php";
 
-    HttpRouterFactory::make()
+    HttpRouter::make()
         ->addRoutes(
             HttpAuthenticationRoutes::get()
         )
@@ -52,6 +53,5 @@ try {
         )
         ->run();
 } catch (\Throwable $e) {
-    //print_r("Message: {$e->getMessage()} - Code: {$e->getCode()} - File: {$e->getFile()} - Line: {$e->getLine()}");
-    print_r($e);
+    HttpLogger::logThrowable($e::class, $e->getMessage(), $e->getLine(), $e->getFile());
 }

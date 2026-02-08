@@ -133,4 +133,39 @@ class AuthenticationData
             "sectorPermissions" => $sectorPermissions,
         ];
     }
+
+    public function toSnakeCaseArray(): array
+    {
+        $permissions = [];
+        foreach ($this->permissionCollection->fetchAll() as $permission) {
+            $permissions[] = [
+                "id" => $permission->getIdValue(),
+                "name" => $permission->getNameValue(),
+                "is_active" => $permission->getIsActive(),
+            ];
+        }
+        $sectors = [];
+        foreach ($this->sectorCollection->fetchAll() as $sector) {
+            $sectors[] = [
+                "id" => $sector->getIdValue(),
+                "name" => $sector->getNameValue(),
+                "is_active" => $sector->getIsActive(),
+            ];
+        }
+        $sectorPermissions = [];
+        foreach ($this->sectorPermissionCollection->fetchAll() as $sectorPermission) {
+            $sectorPermissions[] = [
+                "id" => $sectorPermission->getIdValue(),
+                "sector_id" => $sectorPermission->getSectorIdValue(),
+                "permission_id" => $sectorPermission->getPermissionIdValue(),
+            ];
+        }
+        return [
+            "user_id" => $this->userId->getValue(),
+            "username" => $this->username->getValue(),
+            "permissions" => $permissions,
+            "sectors" => $sectors,
+            "sector_permissions" => $sectorPermissions,
+        ];
+    }
 }

@@ -231,10 +231,10 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return new SectorPermissionCollection();
+                return new SectorPermissionCollection(null);
             }
 
-            $sectorPermissions = new SectorPermissionCollection();
+            $sectorPermissions = new SectorPermissionCollection(null);
             foreach ($fetchResult as $row) {
                 $value = new SectorPermission(
                     Id::make($row["sector_id"]),
@@ -269,10 +269,10 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return new SectorPermissionCollection();
+                return new SectorPermissionCollection(null);
             }
 
-            $sectorPermissions = new SectorPermissionCollection();
+            $sectorPermissions = new SectorPermissionCollection(null);
             foreach ($fetchResult as $row) {
                 $value = new SectorPermission(
                     Id::make($row["sector_id"]),

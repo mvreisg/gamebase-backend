@@ -29,7 +29,7 @@ class RedisTokenCache implements TokenCacheInterface
         $value = $this->redis->get($username->getValue());
         if ($value === null) {
             throw new TokenCacheException(
-                "value is null"
+                "Unexistant value."
             );
         }
         return new EncodedAuthenticationToken($value);
@@ -54,7 +54,7 @@ class RedisTokenCache implements TokenCacheInterface
         $status = boolval($status);
         if ($status === false) {
             throw new TokenCacheException(
-                "Redis delete error: unsuccesful deletion."
+                "Unsuccesful deletion."
             );
         }
     }

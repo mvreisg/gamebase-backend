@@ -9,6 +9,11 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 
 class HttpRoute
 {
+    public static function make()
+    {
+        return new HttpRoute();
+    }
+
     private HttpMethods $method;
     private string $separator;
     /**

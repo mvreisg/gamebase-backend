@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpUserControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoute;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoutePart;
 
 class HttpUserRoutes
 {
@@ -18,12 +18,12 @@ class HttpUserRoutes
             $controller = HttpUserControllerFactory::make();
 
             $routes = [
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Post
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )
@@ -31,18 +31,18 @@ class HttpUserRoutes
                     ->setCallback(
                         fn ($request) => $controller->insert($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Put
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -50,18 +50,18 @@ class HttpUserRoutes
                     ->setCallback(
                         fn ($request) => $controller->update($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Patch
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -69,24 +69,24 @@ class HttpUserRoutes
                     ->setCallback(
                         fn ($request) => $controller->setIsActive($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -94,24 +94,24 @@ class HttpUserRoutes
                     ->setCallback(
                         fn ($request) => $controller->findById($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "username",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "username",
                             HttpRouteParameterTypes::Text
                         )
@@ -119,12 +119,12 @@ class HttpUserRoutes
                     ->setCallback(
                         fn ($request) => $controller->findByUsername($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "user",
                             HttpRouteParameterTypes::Route
                         )

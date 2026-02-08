@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGenreController
@@ -36,8 +38,8 @@ class HttpGenreController
                 $this->authenticationService
             );
 
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $genre = $this->genreService->insert(
                 new Genre(
@@ -72,9 +74,9 @@ class HttpGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $genre = new Genre(
                 Name::make($name),
@@ -108,8 +110,8 @@ class HttpGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $wasUpdated = $this->genreService->setIsActive(
                 Id::make($id),
@@ -138,7 +140,7 @@ class HttpGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $genre = $this->genreService->findById(
                 Id::make($id)

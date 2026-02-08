@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpSectorPermissionController
@@ -35,8 +37,8 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $sectorId = $request->getBodyOrDieTrying("sector_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $sectorId = $request->getBodyOrDieTrying("sector_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
             $sectorPermission = $this->sectorPermissionService->insert(
                 new SectorPermission(
@@ -71,9 +73,9 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $sectorId = $request->getBodyOrDieTrying("sector_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $sectorId = $request->getBodyOrDieTrying("sector_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
             $sectorPermission = new SectorPermission(
                 Id::make($sectorId),
@@ -107,7 +109,7 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $wasDeleted = $this->sectorPermissionService->delete(
                 Id::make($id)
@@ -135,7 +137,7 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $sectorPermission = $this->sectorPermissionService->findById(
                 Id::make($id)

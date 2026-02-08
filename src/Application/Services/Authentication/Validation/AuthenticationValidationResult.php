@@ -55,6 +55,11 @@ class AuthenticationValidationResult
         return $this->data->toArray();
     }
 
+    public function toSnakeCaseArray(): array
+    {
+        return $this->data->toSnakeCaseArray();
+    }
+
     public function getToken(): EncodedAuthenticationToken
     {
         return $this->token;

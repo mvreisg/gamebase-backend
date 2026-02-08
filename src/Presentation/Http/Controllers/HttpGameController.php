@@ -11,6 +11,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGameController
@@ -36,8 +38,8 @@ class HttpGameController
                 $this->authenticationService
             );
 
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $game = $this->gameService->insert(
                 new Game(
@@ -74,9 +76,9 @@ class HttpGameController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $name = $request->getBodyOrDieTrying("name");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $game = new Game(
                 Name::make($name),
@@ -110,8 +112,8 @@ class HttpGameController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $wasUpdated = $this->gameService->setIsActive(
                 Id::make($id),
@@ -140,7 +142,7 @@ class HttpGameController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $game = $this->gameService->findById(
                 Id::make($id)

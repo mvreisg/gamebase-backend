@@ -63,12 +63,15 @@ class UserService
 
             $validatedPassword = $existant->getPasswordValue();
             $encodedPassword = $this->encrypter->encrypt($validatedPassword);
+
+            $user = new User(
+                Username::make($existant->getUsernameValue()),
+                EncodedPassword::make($encodedPassword),
+                $existant->getIsActive()
+            );
+            $user->setId(Id::make($existant->getIdValue()));
             $wasUpdated = $this->repository->update(
-                new User(
-                    Username::make($existant->getUsernameValue()),
-                    EncodedPassword::make($encodedPassword),
-                    $existant->getIsActive()
-                )
+                $user
             );
 
             return $wasUpdated;

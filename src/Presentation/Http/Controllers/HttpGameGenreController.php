@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGameGenreController
@@ -35,8 +37,8 @@ class HttpGameGenreController
                 $this->authenticationService
             );
 
-            $gameId = $request->getBodyOrDieTrying("game_id");
-            $genreId = $request->getBodyOrDieTrying("genre_id");
+            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
+            $genreId = $request->getBodyOrDieTrying("genre_id", HttpRequestBodyPartTypes::Int);
 
             $gameGenre = $this->gameGenreService->insert(
                 new GameGenre(
@@ -73,9 +75,9 @@ class HttpGameGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $gameId = $request->getBodyOrDieTrying("game_id");
-            $genreId = $request->getBodyOrDieTrying("genre_id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
+            $genreId = $request->getBodyOrDieTrying("genre_id", HttpRequestBodyPartTypes::Int);
 
             $gameGenre = new GameGenre(
                 Id::make($gameId),
@@ -109,7 +111,7 @@ class HttpGameGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $wasDeleted = $this->gameGenreService->delete(
                 Id::make($id)
@@ -137,7 +139,7 @@ class HttpGameGenreController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $gameGenre = $this->gameGenreService->findById(
                 Id::make($id)

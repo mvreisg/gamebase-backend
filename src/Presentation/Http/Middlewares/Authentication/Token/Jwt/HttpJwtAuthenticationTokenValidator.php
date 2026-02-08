@@ -8,13 +8,19 @@ use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationSe
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Validation\AuthenticationValidationResult;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpHeader;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpException;
 
 class HttpJwtAuthenticationTokenValidator
 {
     public static function validate(
-        HttpHeader $header,
+        ?HttpHeader $header,
         AuthenticationService $authenticationService
     ): AuthenticationValidationResult {
+        if ($header === null) {
+            throw new HttpException(
+                "Missing Authorization header."
+            );
+        }
         $pieces = explode(" ", $header->getValue());
         $tokenAsString = trim($pieces[1]);
         return $authenticationService->validateToken(

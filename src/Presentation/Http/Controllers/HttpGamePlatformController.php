@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpGamePlatformController
@@ -35,8 +37,8 @@ class HttpGamePlatformController
                 $this->authenticationService
             );
 
-            $gameId = $request->getBodyOrDieTrying("game_id");
-            $platformId = $request->getBodyOrDieTrying("platform_id");
+            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
+            $platformId = $request->getBodyOrDieTrying("platform_id", HttpRequestBodyPartTypes::Int);
 
             $gamePlatform = $this->gamePlatformService->insert(
                 new GamePlatform(
@@ -73,9 +75,9 @@ class HttpGamePlatformController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $gameId = $request->getBodyOrDieTrying("game_id");
-            $platformId = $request->getBodyOrDieTrying("platform_id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
+            $platformId = $request->getBodyOrDieTrying("platform_id", HttpRequestBodyPartTypes::Int);
 
             $gamePlatform = new GamePlatform(
                 Id::make($platformId),
@@ -108,7 +110,7 @@ class HttpGamePlatformController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $wasDeleted = $this->gamePlatformService->delete(
                 Id::make($id)
@@ -136,7 +138,7 @@ class HttpGamePlatformController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $gamePlatform = $this->gamePlatformService->findById(
                 Id::make($id)
