@@ -10,20 +10,19 @@ use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
 class UserServiceTest extends TestCase
 {
     private UserService $userService;
-    private EncryptionInterface $encrypter;
+    private EncryptionAdapter $encrypter;
 
     protected function setUp(): void
     {
         $userRepository = new MockUserRepository();
-        $this->encrypter = new DefuseEncryption();
+        $this->encrypter = new EncryptionAdapter();
         $this->userService = new UserService(
             $userRepository,
             $this->encrypter

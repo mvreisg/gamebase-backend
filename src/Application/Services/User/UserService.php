@@ -9,17 +9,17 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 
 class UserService
 {
     private UserRepositoryInterface $repository;
-    private EncryptionInterface $encrypter;
+    private EncryptionAdapter $encrypter;
 
     public function __construct(
         UserRepositoryInterface $repository,
-        EncryptionInterface $encrypter
+        EncryptionAdapter $encrypter
     ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;

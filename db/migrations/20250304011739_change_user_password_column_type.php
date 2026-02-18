@@ -8,10 +8,21 @@ final class ChangeUserPasswordColumnType extends AbstractMigration
 {
     public function up()
     {
-        $users = $this->table("user");
-        $users
+        $this
+            ->table("user")
             ->changeColumn("password", "blob", [
                 "null" => false
+            ])
+            ->save();
+    }
+
+    public function down()
+    {
+        $this
+            ->table("user")
+            ->changeColumn("password", "string", [
+                "null" => false,
+                "limit" => 255
             ])
             ->save();
     }

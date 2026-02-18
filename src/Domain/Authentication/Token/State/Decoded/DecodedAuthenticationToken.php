@@ -6,10 +6,8 @@ namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
 
 class DecodedAuthenticationToken
 {
@@ -47,18 +45,8 @@ class DecodedAuthenticationToken
         return $this->data->getUsername();
     }
 
-    public function getUserPermissions(): PermissionCollection
+    public function getUserSectorPermissionCollection(): UserSectorPermissionCollection
     {
-        return $this->data->getPermissionCollection();
-    }
-
-    public function getSectorPermissionCollection(): SectorPermissionCollection
-    {
-        return $this->data->getSectorPermissionCollection();
-    }
-
-    public function getUserSectors(): SectorCollection
-    {
-        return $this->data->getSectorCollection();
+        return $this->data->getUserSectorPermissionCollection();
     }
 }

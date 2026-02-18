@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class AddingSectorPermissionTable extends AbstractMigration
+final class AddUserSectorPermissionTable extends AbstractMigration
 {
     public function change(): void
     {
         $this
-            ->table("sector_permission")
+            ->table("user_sector_permission")
+            ->addColumn("user_id", "integer", [
+                "null" => false,
+                "signed" => false
+            ])
             ->addColumn("sector_id", "integer", [
                 "null" => false,
                 "signed" => false
@@ -17,6 +21,10 @@ final class AddingSectorPermissionTable extends AbstractMigration
             ->addColumn("permission_id", "integer", [
                 "null" => false,
                 "signed" => false
+            ])
+            ->addForeignKey("user_id", "user", "id", [
+                "delete" => "RESTRICT",
+                "update" => "RESTRICT"
             ])
             ->addForeignKey("sector_id", "sector", "id", [
                 "delete" => "RESTRICT",

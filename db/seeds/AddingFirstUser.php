@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 use Phinx\Seed\AbstractSeed;
 
@@ -15,7 +15,7 @@ class AddingFirstUser extends AbstractSeed
                 "username" => DotenvEnvironment::get(
                     "REPOSITORY_ROOT_USERNAME"
                 ),
-                "password" => (new DefuseEncryption())
+                "password" => (new EncryptionAdapter())
                     ->encrypt(
                         DotenvEnvironment::get(
                             "REPOSITORY_ROOT_PASSWORD"
@@ -25,8 +25,8 @@ class AddingFirstUser extends AbstractSeed
             ]
         ];
 
-        $user = $this->table("user");
-        $user
+        $this
+            ->table("user")
             ->insert($data)
             ->saveData();
     }

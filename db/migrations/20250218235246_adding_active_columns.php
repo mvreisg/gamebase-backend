@@ -8,29 +8,29 @@ final class AddingActiveColumns extends AbstractMigration
 {
     public function change(): void
     {
-        $userTable = $this->table("user");
-        $userTable
+        $this
+            ->table("user")
             ->addColumn("is_active", "boolean", [
                 "null" => false
             ])
             ->update();
 
-        $gameTable = $this->table("game");
-        $gameTable
+        $this
+            ->table("game")
             ->addColumn("is_active", "boolean", [
                 "null" => false
             ])
             ->update();
 
-        $platformTable = $this->table("platform");
-        $platformTable
+        $this
+            ->table("platform")
             ->addColumn("is_active", "boolean", [
                 "null" => false
             ])
             ->update();
 
-        $genreTable = $this->table("genre");
-        $genreTable
+        $this
+            ->table("genre")
             ->addColumn("is_active", "boolean", [
                 "null" => false
             ])

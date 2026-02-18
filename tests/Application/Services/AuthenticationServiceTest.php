@@ -18,20 +18,15 @@ use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Permission;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Sector;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Data\UserPermission;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Clock\MockAuthenticationTokenClock;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Decoder\MockAuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Encoder\MockAuthenticationTokenEncoder;
@@ -39,11 +34,10 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Validator\D
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Validator\Encoded\MockEncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\MockTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\Clock\MockTokenCacheClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockPermissionRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockSectorRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -52,9 +46,8 @@ class AuthenticationServiceTest extends TestCase
     private UserService $userService;
     private PermissionRepositoryInterface $permissionRepository;
     private SectorRepositoryInterface $sectorRepository;
-    private UserPermissionRepositoryInterface $userPermissionRepository;
-    private SectorPermissionRepositoryInterface $sectorPermissionRepository;
-    private EncryptionInterface $encrypter;
+    private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
+    private EncryptionAdapter $encrypter;
     private AuthenticationService $authenticationService;
     private MockTokenCacheClock $tokenCacheClock;
     private MockAuthenticationTokenClock $authenticationTokenClock;
@@ -69,7 +62,7 @@ class AuthenticationServiceTest extends TestCase
         $tokenCache = new MockTokenCache(
             $this->tokenCacheClock
         );
-        $this->encrypter = new DefuseEncryption();
+        $this->encrypter = new EncryptionAdapter();
         $this->userService = new UserService(
             $userRepository,
             $this->encrypter
@@ -85,8 +78,7 @@ class AuthenticationServiceTest extends TestCase
         );
         $this->permissionRepository = new MockPermissionRepository();
         $this->sectorRepository = new MockSectorRepository();
-        $this->sectorPermissionRepository = new MockSectorPermissionRepository();
-        $this->userPermissionRepository = new MockUserPermissionRepository();
+        $this->userSectorPermissionRepository = new MockUserSectorPermissionRepository();
         $encodedAuthenticationTokenValidator = new MockEncodedAuthenticationTokenValidator(
             $authenticationTokenDecoder,
             new MockDecodedAuthenticationTokenValidator(
@@ -100,10 +92,7 @@ class AuthenticationServiceTest extends TestCase
             $this->encrypter,
             $authenticationTokenEncoder,
             $authenticationTokenDecoder,
-            $this->permissionRepository,
-            $this->sectorRepository,
-            $this->sectorPermissionRepository,
-            $this->userPermissionRepository,
+            $this->userSectorPermissionRepository,
             $encodedAuthenticationTokenValidator
         );
     }
@@ -174,15 +163,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -204,14 +187,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $result->getData()
@@ -247,9 +224,7 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection(null),
-                new SectorCollection(null),
-                new SectorPermissionCollection(null)
+                new UserSectorPermissionCollection(null)
             ),
             $result->getData()
         );
@@ -282,15 +257,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -312,14 +281,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $result->getData()
@@ -353,15 +316,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -408,15 +365,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -463,14 +414,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-        $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -518,14 +464,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-        $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -601,15 +542,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -630,14 +565,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -657,14 +586,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $existingResult->getData()
@@ -698,15 +621,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -727,14 +644,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -754,14 +665,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $existingResult->getData()
@@ -795,15 +700,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -824,14 +723,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -874,15 +767,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -903,14 +790,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -953,15 +834,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -982,14 +857,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1032,15 +901,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1061,14 +924,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1111,15 +968,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1140,14 +991,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1197,15 +1042,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1226,14 +1065,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1283,15 +1116,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1312,14 +1139,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1369,15 +1190,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1398,14 +1213,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1455,15 +1264,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1484,14 +1287,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1520,14 +1317,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $existingResult->getData()
@@ -1561,15 +1352,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1590,14 +1375,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1647,15 +1426,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1676,14 +1449,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1733,15 +1500,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1762,14 +1523,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1787,22 +1542,14 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             new AuthenticationData(
                 $validationResult->getUserId(),
                 $validationResult->getUsername(),
-                $validationResult->getPermissionCollection(),
-                $validationResult->getSectorCollection(),
-                $validationResult->getSectorPermissionCollection()
+                $validationResult->getUserSectorPermissionCollection()
             )
         );
     }
@@ -1834,15 +1581,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1863,14 +1604,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1915,15 +1650,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -1944,14 +1673,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -1996,15 +1719,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -2025,14 +1742,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -2058,22 +1769,14 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             new AuthenticationData(
                 $validationResult->getUserId(),
                 $validationResult->getUsername(),
-                $validationResult->getPermissionCollection(),
-                $validationResult->getSectorCollection(),
-                $validationResult->getSectorPermissionCollection()
+                $validationResult->getUserSectorPermissionCollection()
             )
         );
     }
@@ -2105,15 +1808,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -2134,14 +1831,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -2167,22 +1858,14 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             new AuthenticationData(
                 $validationResult->getUserId(),
                 $validationResult->getUsername(),
-                $validationResult->getPermissionCollection(),
-                $validationResult->getSectorCollection(),
-                $validationResult->getSectorPermissionCollection()
+                $validationResult->getUserSectorPermissionCollection()
             )
         );
     }
@@ -2214,15 +1897,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -2243,14 +1920,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -2296,15 +1967,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $insertedSectorPermission = $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )
@@ -2325,14 +1990,8 @@ class AuthenticationServiceTest extends TestCase
             new AuthenticationData(
                 Id::make($insertedUser->getIdValue()),
                 Username::make($insertedUser->getUsernameValue()),
-                new PermissionCollection([
-                    $insertedPermission
-                ]),
-                new SectorCollection([
-                    $insertedSector
-                ]),
-                new SectorPermissionCollection([
-                    $insertedSectorPermission
+                new UserSectorPermissionCollection([
+                    $insertedUserSectorPermission
                 ])
             ),
             $newResult->getData()
@@ -2389,14 +2048,9 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->userPermissionRepository->insert(
-            new UserPermission(
+        $this->userSectorPermissionRepository->insert(
+            new UserSectorPermission(
                 Id::make($insertedUser->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-        $this->sectorPermissionRepository->insert(
-            new SectorPermission(
                 Id::make($insertedSector->getIdValue()),
                 Id::make($insertedPermission->getIdValue())
             )

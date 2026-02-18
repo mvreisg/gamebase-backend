@@ -6,16 +6,16 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpSectorPermissionControllerFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpUserSectorPermissionControllerFactory;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoute;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoutePart;
 
-class HttpSectorPermissionRoutes
+class HttpUserSectorPermissionRoutes
 {
     public static function get(): array
     {
         try {
-            $controller = HttpSectorPermissionControllerFactory::make();
+            $controller = HttpUserSectorPermissionControllerFactory::make();
 
             $routes = [
                 HttpRoute::make()
@@ -24,7 +24,7 @@ class HttpSectorPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "sector_permission",
+                            "user_sector_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -37,7 +37,7 @@ class HttpSectorPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "sector_permission",
+                            "user_sector_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -56,7 +56,7 @@ class HttpSectorPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "sector_permission",
+                            "user_sector_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -75,7 +75,7 @@ class HttpSectorPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "sector_permission",
+                            "user_sector_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -94,9 +94,9 @@ class HttpSectorPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "sector_permission",
+                            "user_sector_permission",
                             HttpRouteParameterTypes::Route
-                        ),
+                        )
                     )
                     ->setCallback(
                         fn ($request) => $controller->findAll($request)

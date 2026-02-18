@@ -9,9 +9,8 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGameRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGenreRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpPlatformRoutes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpSectorPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpSectorRoutes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserPermissionRoutes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserSectorPermissionRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserRoutes;
 
 try {
@@ -40,18 +39,15 @@ try {
             HttpPlatformRoutes::get()
         )
         ->addRoutes(
-            HttpSectorPermissionRoutes::get()
-        )
-        ->addRoutes(
             HttpSectorRoutes::get()
         )
         ->addRoutes(
-            HttpUserPermissionRoutes::get()
+            HttpUserSectorPermissionRoutes::get()
         )
         ->addRoutes(
             HttpUserRoutes::get()
         )
         ->run();
 } catch (\Throwable $e) {
-    HttpLogger::logThrowable($e::class, $e->getMessage(), $e->getLine(), $e->getFile());
+    HttpLogger::logThrowable($e);
 }

@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class AddingSectorPermissionTable extends AbstractMigration
+final class DropTableSectorPermission extends AbstractMigration
 {
-    public function change(): void
+    public function up(): void
+    {
+        $this
+            ->table("sector_permission")
+            ->drop()
+            ->save();
+    }
+
+    public function down(): void
     {
         $this
             ->table("sector_permission")

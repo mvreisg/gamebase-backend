@@ -5,72 +5,42 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Domain\Authentication\Data;
 
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\Permission;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Sector;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
 
 class AuthenticationData
 {
     private Id $userId;
     private Username $username;
-    private PermissionCollection $permissionCollection;
-    private SectorCollection $sectorCollection;
-    private SectorPermissionCollection $sectorPermissionCollection;
+    private UserSectorPermissionCollection $userSectorPermissionCollection;
 
     public function __construct(
         Id $userId,
         Username $username,
-        PermissionCollection $permissionCollection,
-        SectorCollection $sectorCollection,
-        SectorPermissionCollection $sectorPermissionCollection
+        UserSectorPermissionCollection $userSectorPermissionCollection
     ) {
         $this->userId = $userId;
         $this->username = $username;
-        $this->permissionCollection = $permissionCollection;
-        $this->sectorCollection = $sectorCollection;
-        $this->sectorPermissionCollection = $sectorPermissionCollection;
+        $this->userSectorPermissionCollection = $userSectorPermissionCollection;
     }
 
     public static function toObject(\stdClass $data): self
     {
-        $permissions = [];
-        foreach ($data->permissions as $permission) {
-            $value = new Permission(
-                Name::make($permission->name),
-                $permission->isActive
+        $userSectorPermissions = [];
+        foreach ($data->userSectorPermissions as $userSectorPermission) {
+            $value = new UserSectorPermission(
+                Id::make($userSectorPermission->userId),
+                Id::make($userSectorPermission->sectorId),
+                Id::make($userSectorPermission->permissionId)
             );
-            $value->setId(Id::make($permission->id));
-            $permissions[] = $value;
-        }
-        $sectors = [];
-        foreach ($data->sectors as $sector) {
-            $value = new Sector(
-                Name::make($sector->name),
-                $sector->isActive
-            );
-            $value->setId(Id::make($sector->id));
-            $sectors[] = $value;
-        }
-        $sectorPermissions = [];
-        foreach ($data->sectorPermissions as $sectorPermission) {
-            $value = new SectorPermission(
-                Id::make($sectorPermission->sectorId),
-                Id::make($sectorPermission->permissionId)
-            );
-            $value->setId(Id::make($sectorPermission->id));
-            $sectorPermissions[] = $value;
+            $value->setId(Id::make($userSectorPermission->id));
+            $userSectorPermissions[] = $value;
         }
         return new self(
             Id::make($data->userId),
             Username::make($data->username),
-            new PermissionCollection($permissions),
-            new SectorCollection($sectors),
-            new SectorPermissionCollection($sectorPermissions)
+            new UserSectorPermissionCollection($userSectorPermissions)
         );
     }
 
@@ -84,88 +54,44 @@ class AuthenticationData
         return $this->username;
     }
 
-    public function getPermissionCollection(): PermissionCollection
+    public function getUserSectorPermissionCollection(): UserSectorPermissionCollection
     {
-        return $this->permissionCollection;
-    }
-
-    public function getSectorCollection(): SectorCollection
-    {
-        return $this->sectorCollection;
-    }
-
-    public function getSectorPermissionCollection(): SectorPermissionCollection
-    {
-        return $this->sectorPermissionCollection;
+        return $this->userSectorPermissionCollection;
     }
 
     public function toArray(): array
     {
-        $permissions = [];
-        foreach ($this->permissionCollection->fetchAll() as $permission) {
-            $permissions[] = [
-                "id" => $permission->getIdValue(),
-                "name" => $permission->getNameValue(),
-                "isActive" => $permission->getIsActive(),
-            ];
-        }
-        $sectors = [];
-        foreach ($this->sectorCollection->fetchAll() as $sector) {
-            $sectors[] = [
-                "id" => $sector->getIdValue(),
-                "name" => $sector->getNameValue(),
-                "isActive" => $sector->getIsActive(),
-            ];
-        }
-        $sectorPermissions = [];
-        foreach ($this->sectorPermissionCollection->fetchAll() as $sectorPermission) {
-            $sectorPermissions[] = [
-                "id" => $sectorPermission->getIdValue(),
-                "sectorId" => $sectorPermission->getSectorIdValue(),
-                "permissionId" => $sectorPermission->getPermissionIdValue(),
+        $userSectorPermissions = [];
+        foreach ($this->userSectorPermissionCollection->fetchAll() as $userSectorPermission) {
+            $userSectorPermissions[] = [
+                "id" => $userSectorPermission->getIdValue(),
+                "userId" => $userSectorPermission->getUserIdValue(),
+                "sectorId" => $userSectorPermission->getSectorIdValue(),
+                "permissionId" => $userSectorPermission->getPermissionIdValue(),
             ];
         }
         return [
             "userId" => $this->userId->getValue(),
             "username" => $this->username->getValue(),
-            "permissions" => $permissions,
-            "sectors" => $sectors,
-            "sectorPermissions" => $sectorPermissions,
+            "userSectorPermissions" => $userSectorPermissions,
         ];
     }
 
     public function toSnakeCaseArray(): array
     {
-        $permissions = [];
-        foreach ($this->permissionCollection->fetchAll() as $permission) {
-            $permissions[] = [
-                "id" => $permission->getIdValue(),
-                "name" => $permission->getNameValue(),
-                "is_active" => $permission->getIsActive(),
-            ];
-        }
-        $sectors = [];
-        foreach ($this->sectorCollection->fetchAll() as $sector) {
-            $sectors[] = [
-                "id" => $sector->getIdValue(),
-                "name" => $sector->getNameValue(),
-                "is_active" => $sector->getIsActive(),
-            ];
-        }
-        $sectorPermissions = [];
-        foreach ($this->sectorPermissionCollection->fetchAll() as $sectorPermission) {
-            $sectorPermissions[] = [
-                "id" => $sectorPermission->getIdValue(),
-                "sector_id" => $sectorPermission->getSectorIdValue(),
-                "permission_id" => $sectorPermission->getPermissionIdValue(),
+        $userSectorPermissions = [];
+        foreach ($this->userSectorPermissionCollection->fetchAll() as $userSectorPermission) {
+            $userSectorPermissions[] = [
+                "id" => $userSectorPermission->getIdValue(),
+                "user_id" => $userSectorPermission->getUserIdValue(),
+                "sector_id" => $userSectorPermission->getSectorIdValue(),
+                "permission_id" => $userSectorPermission->getPermissionIdValue(),
             ];
         }
         return [
             "user_id" => $this->userId->getValue(),
             "username" => $this->username->getValue(),
-            "permissions" => $permissions,
-            "sectors" => $sectors,
-            "sector_permissions" => $sectorPermissions,
+            "user_sector_permissions" => $userSectorPermissions,
         ];
     }
 }

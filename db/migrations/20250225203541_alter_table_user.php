@@ -8,16 +8,16 @@ final class AlterTableUser extends AbstractMigration
 {
     public function up()
     {
-        $table = $this->table("user");
-        $table
+        $this
+            ->table("user")
             ->renameColumn("name", "username")
             ->save();
     }
 
     public function down()
     {
-        $table = $this->table("user");
-        $table
+        $this
+            ->table("user")
             ->renameColumn("username", "name")
             ->save();
     }
