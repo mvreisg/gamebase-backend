@@ -24,13 +24,7 @@ class HttpGamePlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "game",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "platform",
+                            "game_platform",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -43,13 +37,7 @@ class HttpGamePlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "game",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "platform",
+                            "game_platform",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -68,13 +56,7 @@ class HttpGamePlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "game",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "platform",
+                            "game_platform",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -93,13 +75,7 @@ class HttpGamePlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "game",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "platform",
+                            "game_platform",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -118,13 +94,7 @@ class HttpGamePlatformRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "game",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "platform",
+                            "game_platform",
                             HttpRouteParameterTypes::Route
                         )
                     )

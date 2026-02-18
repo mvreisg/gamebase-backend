@@ -24,13 +24,7 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "user",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "permission",
+                            "user_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -43,13 +37,7 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "user",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "permission",
+                            "user_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -68,13 +56,7 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "user",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "permission",
+                            "user_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -93,13 +75,7 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "user",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "permission",
+                            "user_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
@@ -118,13 +94,7 @@ class HttpUserPermissionRoutes
                     )
                     ->appendPathPart(
                         HttpRoutePart::make(
-                            "user",
-                            HttpRouteParameterTypes::Route
-                        )
-                    )
-                    ->appendPathPart(
-                        HttpRoutePart::make(
-                            "permission",
+                            "user_permission",
                             HttpRouteParameterTypes::Route
                         )
                     )
