@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\Clock\MockTokenCacheClock;
@@ -32,16 +33,16 @@ class MockTokenCache implements TokenCacheInterface
         try {
             $exists = $this->exists($username);
             if ($exists === false) {
-                throw new \DomainException(
-                    "Mock get error: Unexistant username {$username->getValue()}",
+                throw new TokenCacheException(
+                    "Unexistant key: {$username->getValue()}",
                 );
             }
             $expiresIn = $this->expirationArray[$username->getValue()];
             $expired = $this->clock->now()->getTimestamp() >= $expiresIn;
             if ($expired) {
                 $this->delete($username);
-                throw new \DomainException(
-                    "Mock get error: Expired username {$username->getValue()}",
+                throw new TokenCacheException(
+                    "Expired: {$username->getValue()}",
                 );
             }
             return new EncodedAuthenticationToken($this->data[$username->getValue()]);
@@ -55,8 +56,8 @@ class MockTokenCache implements TokenCacheInterface
         try {
             $exists = $this->exists($username);
             if ($exists === false) {
-                throw new \DomainException(
-                    "Mock expire error: Unexistant username $username",
+                throw new TokenCacheException(
+                    "Unexistant key: {$username->getValue()}",
                 );
             }
             $this->expirationArray[$username->getValue()] = $this->clock->now()->add($time)->getTimestamp();
@@ -75,8 +76,8 @@ class MockTokenCache implements TokenCacheInterface
         try {
             $exists = $this->exists($username);
             if ($exists === false) {
-                throw new \DomainException(
-                    "Mock expire error: Unexistant username $username",
+                throw new TokenCacheException(
+                    "Unexistant key: {$username->getValue()}",
                 );
             }
             unset(

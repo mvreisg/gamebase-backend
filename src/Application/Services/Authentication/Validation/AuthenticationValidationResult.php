@@ -7,9 +7,8 @@ namespace Mvreisg\GamebaseBackend\Application\Services\Authentication\Validation
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
 
 class AuthenticationValidationResult
 {
@@ -34,19 +33,19 @@ class AuthenticationValidationResult
         return $this->data->getUsername();
     }
 
-    public function getPermissionCollection(): PermissionCollection
+    public function getUserSectorPermissionCollection(): UserSectorPermissionCollection
     {
-        return $this->data->getPermissionCollection();
-    }
-
-    public function getSectorCollection(): SectorCollection
-    {
-        return $this->data->getSectorCollection();
+        return $this->data->getUserSectorPermissionCollection();
     }
 
     public function toArray(): array
     {
         return $this->data->toArray();
+    }
+
+    public function toSnakeCaseArray(): array
+    {
+        return $this->data->toSnakeCaseArray();
     }
 
     public function getToken(): EncodedAuthenticationToken

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services\Authentication;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceInvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceInvalidTokenException;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginResult;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
@@ -16,39 +17,28 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Authentic
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Encoded\EncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 
 class AuthenticationService
 {
     private UserRepositoryInterface $userRepository;
     private TokenCacheInterface $tokenCache;
-    private EncryptionInterface $encrypter;
+    private EncryptionAdapter $encrypter;
     private AuthenticationTokenEncoder $authenticationTokenEncoder;
     private AuthenticationTokenDecoder $authenticationTokenDecoder;
-    private PermissionRepositoryInterface $permissionRepository;
-    private SectorRepositoryInterface $sectorRepository;
-    private SectorPermissionRepositoryInterface $sectorPermissionRepository;
-    private UserPermissionRepositoryInterface $userPermissionRepository;
+    private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
     private EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator;
 
     public function __construct(
         UserRepositoryInterface $userRepository,
         TokenCacheInterface $tokenCache,
-        EncryptionInterface $encrypter,
+        EncryptionAdapter $encrypter,
         AuthenticationTokenEncoder $authenticationTokenEncoder,
         AuthenticationTokenDecoder $authenticationTokenDecoder,
-        PermissionRepositoryInterface $permissionRepository,
-        SectorRepositoryInterface $sectorRepository,
-        SectorPermissionRepositoryInterface $sectorPermissionRepository,
-        UserPermissionRepositoryInterface $userPermissionRepository,
+        UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator
     ) {
         $this->userRepository = $userRepository;
@@ -56,10 +46,7 @@ class AuthenticationService
         $this->encrypter = $encrypter;
         $this->authenticationTokenEncoder = $authenticationTokenEncoder;
         $this->authenticationTokenDecoder = $authenticationTokenDecoder;
-        $this->permissionRepository = $permissionRepository;
-        $this->sectorRepository = $sectorRepository;
-        $this->sectorPermissionRepository = $sectorPermissionRepository;
-        $this->userPermissionRepository = $userPermissionRepository;
+        $this->userSectorPermissionRepository = $userSectorPermissionRepository;
         $this->encodedAuthenticationTokenValidator = $encodedAuthenticationTokenValidator;
     }
 
@@ -97,43 +84,19 @@ class AuthenticationService
                     new AuthenticationData(
                         $result->getUserId(),
                         $result->getUsername(),
-                        $result->getPermissionCollection(),
-                        $result->getSectorCollection()
+                        $result->getUserSectorPermissionCollection()
                     )
                 );
             }
 
-            $permissions = new PermissionCollection(null);
-            $userPermissions = $this->userPermissionRepository->findAllByUserId(
+            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
                 Id::make($fetchedUser->getIdValue())
             );
-            foreach ($userPermissions->fetchAll() as $userPermission) {
-                $fetchedPermission = $this->permissionRepository->findById(
-                    Id::make($userPermission->getPermissionIdValue())
-                );
-                $permissions->add($fetchedPermission);
-            }
-            $sectors = new SectorCollection(null);
-            foreach ($permissions->fetchAll() as $permission) {
-                $sectorPermissions = $this->sectorPermissionRepository->findAllByPermissionId(
-                    Id::make($permission->getIdValue())
-                );
-                foreach ($sectorPermissions->fetchAll() as $sectorPermission) {
-                    $fetchedSector = $this->sectorRepository->findById(
-                        Id::make($sectorPermission->getSectorIdValue())
-                    );
-                    $exists = $sectors->exists(Id::make($fetchedSector->getIdValue()));
-                    if ($exists === false) {
-                        $sectors->add($fetchedSector);
-                    }
-                }
-            }
 
             $authenticationData = new AuthenticationData(
                 Id::make($fetchedUser->getIdValue()),
                 Username::make($fetchedUser->getUsernameValue()),
-                $permissions,
-                $sectors
+                $userSectorPermissions
             );
 
             $interval = new \DateInterval("P0D");
@@ -201,9 +164,7 @@ class AuthenticationService
             ) === 0;
 
             if ($isTheTokenTheSame === false) {
-                throw new \DomainException(
-                    "Invalid token!"
-                );
+                throw new AuthenticationServiceInvalidTokenException();
             }
 
             $this->encodedAuthenticationTokenValidator->validate($token);
@@ -211,8 +172,7 @@ class AuthenticationService
             $authenticationData = new AuthenticationData(
                 $decodedToken->getUserId(),
                 $decodedToken->getUsername(),
-                $decodedToken->getUserPermissions(),
-                $decodedToken->getUserSectors()
+                $decodedToken->getUserSectorPermissionCollection()
             );
 
             return new AuthenticationValidationResult(

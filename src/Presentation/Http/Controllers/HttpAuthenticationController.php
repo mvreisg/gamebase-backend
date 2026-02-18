@@ -11,6 +11,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
 class HttpAuthenticationController
@@ -28,9 +29,9 @@ class HttpAuthenticationController
         try {
             $response = HttpResponse::make();
 
-            $username = $request->getBodyOrDieTrying("username");
-            $password = $request->getBodyOrDieTrying("password");
-            $oneWeekLogin = $request->getBodyOrDieTrying("one_week_login");
+            $username = $request->getBodyOrDieTrying("username", HttpRequestBodyPartTypes::String);
+            $password = $request->getBodyOrDieTrying("password", HttpRequestBodyPartTypes::String);
+            $oneWeekLogin = $request->getBodyOrDieTrying("one_week_login", HttpRequestBodyPartTypes::Bool);
 
             $result = $this->authenticationService->tryLogin(
                 new AuthenticationLoginInfo(
@@ -49,7 +50,7 @@ class HttpAuthenticationController
                         ->setBody([
                             "seconds_to_expire" => $timeToExpireInSeconds,
                             "token" => $token->getToken(),
-                            "login_data" => $result->getData()->toArray()
+                            "login_data" => $result->getData()->toSnakeCaseArray()
                         ])
                         ->setStatusCreated()
                         ->setContentTypeAsJson();
@@ -59,7 +60,7 @@ class HttpAuthenticationController
                     $response
                         ->setBody([
                             "token" => $token->getToken(),
-                            "login_data" => $result->getData()->toArray()
+                            "login_data" => $result->getData()->toSnakeCaseArray()
                         ])
                         ->setStatusOk()
                         ->setContentTypeAsJson();
@@ -87,7 +88,7 @@ class HttpAuthenticationController
             $response
                 ->setStatusOk()
                 ->setBody([
-                    "login_info" => $result->toArray()
+                    "login_info" => $result->toSnakeCaseArray()
                 ])
                 ->setContentTypeAsJson();
             return $response;

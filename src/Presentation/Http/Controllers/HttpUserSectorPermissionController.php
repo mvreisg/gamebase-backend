@@ -5,23 +5,25 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\SectorPermission\SectorPermissionService;
+use Mvreisg\GamebaseBackend\Application\Services\UserSectorPermission\UserSectorPermissionService;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
-class HttpSectorPermissionController
+class HttpUserSectorPermissionController
 {
-    private SectorPermissionService $sectorPermissionService;
+    private UserSectorPermissionService $userSectorPermissionService;
     private AuthenticationService $authenticationService;
 
     public function __construct(
-        SectorPermissionService $sectorPermissionService,
+        UserSectorPermissionService $userSectorPermissionService,
         AuthenticationService $authenticationService
     ) {
-        $this->sectorPermissionService = $sectorPermissionService;
+        $this->userSectorPermissionService = $userSectorPermissionService;
         $this->authenticationService = $authenticationService;
     }
 
@@ -35,11 +37,13 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $sectorId = $request->getBodyOrDieTrying("sector_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $userId = $request->getBodyOrDieTrying("user_id", HttpRequestBodyPartTypes::Int);
+            $sectorId = $request->getBodyOrDieTrying("sector_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
-            $sectorPermission = $this->sectorPermissionService->insert(
-                new SectorPermission(
+            $userSectorPermission = $this->userSectorPermissionService->insert(
+                new UserSectorPermission(
+                    Id::make($userId),
                     Id::make($sectorId),
                     Id::make($permissionId)
                 )
@@ -48,9 +52,10 @@ class HttpSectorPermissionController
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sectorPermission->getIdValue(),
-                        "sector_id" => $sectorPermission->getSectorIdValue(),
-                        "permission_id" => $sectorPermission->getPermissionIdValue()
+                        "id" => $userSectorPermission->getIdValue(),
+                        "user_id" => $userSectorPermission->getUserIdValue(),
+                        "sector_id" => $userSectorPermission->getSectorIdValue(),
+                        "permission_id" => $userSectorPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusCreated()
@@ -60,6 +65,7 @@ class HttpSectorPermissionController
             throw $e;
         }
     }
+
 
     public function update(HttpRequest $request): HttpResponse
     {
@@ -71,18 +77,20 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $sectorId = $request->getBodyOrDieTrying("sector_id");
-            $permissionId = $request->getBodyOrDieTrying("permission_id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $userId = $request->getBodyOrDieTrying("user_id", HttpRequestBodyPartTypes::Int);
+            $sectorId = $request->getBodyOrDieTrying("sector_id", HttpRequestBodyPartTypes::Int);
+            $permissionId = $request->getBodyOrDieTrying("permission_id", HttpRequestBodyPartTypes::Int);
 
-            $sectorPermission = new SectorPermission(
+            $userSectorPermission = new UserSectorPermission(
+                Id::make($userId),
                 Id::make($sectorId),
                 Id::make($permissionId)
             );
-            $sectorPermission->setId(Id::make($id));
+            $userSectorPermission->setId(Id::make($id));
 
-            $wasUpdated = $this->sectorPermissionService->update(
-                $sectorPermission
+            $wasUpdated = $this->userSectorPermissionService->update(
+                $userSectorPermission
             );
 
             $response
@@ -107,9 +115,9 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
-            $wasDeleted = $this->sectorPermissionService->delete(
+            $wasDeleted = $this->userSectorPermissionService->delete(
                 Id::make($id)
             );
 
@@ -135,18 +143,19 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
-            $sectorPermission = $this->sectorPermissionService->findById(
+            $userSectorPermission = $this->userSectorPermissionService->findById(
                 Id::make($id)
             );
 
             $response
                 ->setBody([
                     "data" => [
-                        "id" => $sectorPermission->getIdValue(),
-                        "sector_id" => $sectorPermission->getSectorIdValue(),
-                        "permission_id" => $sectorPermission->getPermissionIdValue()
+                        "id" => $userSectorPermission->getIdValue(),
+                        "user_id" => $userSectorPermission->getUserIdValue(),
+                        "sector_id" => $userSectorPermission->getSectorIdValue(),
+                        "permission_id" => $userSectorPermission->getPermissionIdValue()
                     ]
                 ])
                 ->setStatusOk()
@@ -167,9 +176,9 @@ class HttpSectorPermissionController
                 $this->authenticationService
             );
 
-            $sectorPermissions = $this->sectorPermissionService->findAll();
+            $userSectorPermissions = $this->userSectorPermissionService->findAll();
 
-            if ($sectorPermissions->isEmpty()) {
+            if ($userSectorPermissions->isEmpty()) {
                 $response
                     ->setBody([
                         "message" => "Nothing found!"
@@ -180,17 +189,18 @@ class HttpSectorPermissionController
             }
 
             $data = [];
-            foreach ($sectorPermissions->fetchAll() as $sectorPermission) {
+            foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $data[] = [
-                    "id" => $sectorPermission->getIdValue(),
-                    "sector_id" => $sectorPermission->getSectorIdValue(),
-                    "permission_id" => $sectorPermission->getPermissionIdValue()
+                    "id" => $userSectorPermission->getIdValue(),
+                    "user_id" => $userSectorPermission->getUserIdValue(),
+                    "sector_id" => $userSectorPermission->getSectorIdValue(),
+                    "permission_id" => $userSectorPermission->getPermissionIdValue()
                 ];
             }
 
             $response
                 ->setBody([
-                    "number_found" => $sectorPermissions->count(),
+                    "number_found" => $userSectorPermissions->count(),
                     "data" => $data
                 ])
                 ->setStatusOk()

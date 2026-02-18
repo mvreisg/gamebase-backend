@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpContentTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpException;
 
 class HttpResponse
 {
@@ -110,7 +111,7 @@ class HttpResponse
     {
         switch ($contentType) {
             default:
-                throw new \InvalidArgumentException(
+                throw new HttpException(
                     "Untreated Content-Type: {$contentType->value}"
                 );
             case HttpContentTypes::Text:
@@ -148,7 +149,7 @@ class HttpResponse
             return json_encode($this->body);
         }
 
-        throw new \InvalidArgumentException(
+        throw new HttpException(
             "Unknown header type: {$type}"
         );
     }

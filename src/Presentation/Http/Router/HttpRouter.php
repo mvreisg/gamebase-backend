@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Router;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceInvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpHeader;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpQuery;
@@ -13,9 +18,15 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpStatusCodes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpException;
 
 class HttpRouter
 {
+    public static function make(): HttpRouter
+    {
+        return new HttpRouter();
+    }
+
     /**
      * @var string[]
      */
@@ -84,7 +95,7 @@ class HttpRouter
         }
     }
 
-    private function sendRaw(HttpStatusCodes $statusCode, ?string $message, ?array $headers): void
+    private function sendJson(HttpStatusCodes $statusCode, ?string $message, ?array $headers): void
     {
         if (isset($headers)) {
             foreach ($headers as $header) {
@@ -132,7 +143,7 @@ class HttpRouter
                     $method = HttpMethods::Options;
                     break;
                 default:
-                    $this->sendRaw(
+                    $this->sendJson(
                         HttpStatusCodes::InternalServerError,
                         "Unsupported HTTP method: $method",
                         null
@@ -203,7 +214,7 @@ class HttpRouter
                         $isTheCorrectParameter = true;
                         switch ($routePartType) {
                             case HttpRouteParameterTypes::Route:
-                                throw new \DomainException(
+                                throw new HttpException(
                                     "Unexpected value: $routePartType"
                                 );
                             case HttpRouteParameterTypes::Text:
@@ -246,7 +257,7 @@ class HttpRouter
                                 }
                                 break;
                             default:
-                                $this->sendRaw(
+                                $this->sendJson(
                                     HttpStatusCodes::InternalServerError,
                                     "Untreated route type: $routePartType",
                                     null
@@ -324,7 +335,7 @@ class HttpRouter
             }
 
             if ($passedRoute === null) {
-                $this->sendRaw(
+                $this->sendJson(
                     HttpStatusCodes::NotFound,
                     "Route not found!",
                     null
@@ -347,7 +358,34 @@ class HttpRouter
                 $response->hasReadableBody() ? $response->parseBody() : null,
                 $response->getHeaders()
             );
+        } catch (
+            HttpException |
+            DataException
+            $e
+        ) {
+            $this->sendJson(
+                HttpStatusCodes::BadRequest,
+                $e->getMessage(),
+                null
+            );
+        } catch (
+            RepositoryUnexistantRegisterException |
+            RepositoryDuplicatedRegisterException |
+            AuthenticationServiceInvalidCredentialsException |
+            TokenCacheException
+            $e
+        ) {
+            $this->sendJson(
+                HttpStatusCodes::Unauthorized,
+                $e->getMessage(),
+                null
+            );
         } catch (\Throwable $e) {
+            $this->sendJson(
+                HttpStatusCodes::InternalServerError,
+                $e->getMessage(),
+                null
+            );
             throw $e;
         }
     }

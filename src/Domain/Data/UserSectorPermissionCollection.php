@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
-class UserPermissionCollection
+class UserSectorPermissionCollection
 {
     /**
-     * @var UserPermission[]
+     * @var UserSectorPermission[]
      */
     private array $values;
 
-    public function __construct()
+    public function __construct(?array $values)
     {
-        $this->values = [];
+        if (isset($values) === true) {
+            $this->values = $values;
+        } else {
+            $this->values = [];
+        }
     }
 
-    public function add(UserPermission $value): bool
+    public function add(UserSectorPermission $value): bool
     {
         if (isset($value) === false) {
             return false;
@@ -26,14 +30,14 @@ class UserPermissionCollection
     }
 
     /**
-     * @return UserPermission[]
+     * @return UserSectorPermission[]
      */
     public function fetchAll(): array
     {
         return $this->values;
     }
 
-    public function findById(Id $id): ?UserPermission
+    public function findById(Id $id): ?UserSectorPermission
     {
         foreach ($this->values as $value) {
             if ($value->getIdValue() === $id->getValue()) {
@@ -43,9 +47,9 @@ class UserPermissionCollection
         return null;
     }
 
-    public function findAllByUserId(Id $userId): UserPermissionCollection
+    public function findAllByUserId(Id $userId): UserSectorPermissionCollection
     {
-        $matches = new UserPermissionCollection();
+        $matches = new UserSectorPermissionCollection(null);
         foreach ($this->values as $value) {
             if ($value->getUserIdValue() === $userId->getValue()) {
                 $matches->add($value);
@@ -54,7 +58,7 @@ class UserPermissionCollection
         return $matches;
     }
 
-    public function replace(Id $id, UserPermission $new): void
+    public function replace(Id $id, UserSectorPermission $new): void
     {
         foreach ($this->values as $key => $value) {
             if ($value->getIdValue() === $id->getValue()) {

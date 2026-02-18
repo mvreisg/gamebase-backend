@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class Name
 {
     private string $value;
@@ -28,14 +30,14 @@ class Name
         $originalName = trim($value);
 
         if ($originalName === "") {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The name is empty!"
             );
         }
 
         $isInvalid = preg_match("/[^a-zA-Z0-9]/", $originalName);
         if ($isInvalid) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The name is invalid!"
             );
         }

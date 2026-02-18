@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
 class User
 {
     private ?Id $id;
@@ -27,7 +29,7 @@ class User
     public function getIdValue(): int
     {
         if ($this->id === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "Id is null."
             );
         }
@@ -37,7 +39,7 @@ class User
     public function getUsernameValue(): string
     {
         if ($this->username === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "Username is null."
             );
         }
@@ -47,7 +49,7 @@ class User
     public function getPasswordValue(): string
     {
         if ($this->password === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "Password is null."
             );
         }

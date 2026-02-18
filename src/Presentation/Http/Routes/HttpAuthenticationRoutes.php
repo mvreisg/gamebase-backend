@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpAuthenticationControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoute;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoutePart;
 
 class HttpAuthenticationRoutes
 {
@@ -18,19 +18,19 @@ class HttpAuthenticationRoutes
             $controller = HttpAuthenticationControllerFactory::make();
 
             $routes = [
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Post
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "auth",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "login",
                             HttpRouteParameterTypes::Route
                         )
@@ -38,19 +38,19 @@ class HttpAuthenticationRoutes
                     ->setCallback(
                         fn ($request) => $controller->handleLogin($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "auth",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "validate",
                             HttpRouteParameterTypes::Route
                         )
@@ -58,19 +58,19 @@ class HttpAuthenticationRoutes
                     ->setCallback(
                         fn ($request) => $controller->handleValidation($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Delete
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "auth",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "logoff",
                             HttpRouteParameterTypes::Route
                         )

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Entities;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Exceptions\HttpException;
 
 class HttpRequest
 {
@@ -48,11 +51,21 @@ class HttpRequest
                 $type = $header->getValue();
             }
         }
+        $body = [];
         if (str_contains($type, "application/json")) {
-            return json_decode($stream, true);
+            $body = json_decode($stream, true);
+            if ($body === null || $body === false) {
+                throw new HttpException(
+                    "Invalid JSON body"
+                );
+            }
         }
+        return $body;
+    }
 
-        return null;
+    public function hasReadableBody(): bool
+    {
+        return $this->body !== null;
     }
 
     public function getMethod(): HttpMethods
@@ -90,13 +103,74 @@ class HttpRequest
         return null;
     }
 
-    public function getParamOrDieTrying(string $key): mixed
+    public function getParamOrDieTrying(string $key, HttpRouteParameterTypes $type): mixed
     {
         $exists = isset($this->params[$key]);
         if ($exists === false) {
             return null;
         }
-        return $this->params[$key];
+        $value = $this->params[$key];
+        switch ($type) {
+            case HttpRouteParameterTypes::Text:
+                $isMatchingValue =
+                    is_string($value) &&
+                    $value !== "true" &&
+                    $value !== "false" &&
+                    $value !== "0" &&
+                    filter_var($value, FILTER_VALIDATE_INT) === false &&
+                    filter_var($value, FILTER_VALIDATE_FLOAT) === false &&
+                    filter_var($value, FILTER_VALIDATE_BOOL) === false;
+                if ($isMatchingValue === false) {
+                    throw new HttpException(
+                        "Parameter key '$key' is not a string"
+                    );
+                }
+                break;
+            case HttpRouteParameterTypes::Integer:
+                $isMatchingValue =
+                    filter_var($value, FILTER_VALIDATE_INT) ||
+                    $value === "0";
+                if ($isMatchingValue) {
+                    $value = intval($value);
+                } else {
+                    throw new HttpException(
+                        "Parameter key '$key' is not an integer"
+                    );
+                }
+                break;
+            case HttpRouteParameterTypes::Decimal:
+                $isMatchingValue = filter_var($value, FILTER_VALIDATE_FLOAT);
+                if ($isMatchingValue) {
+                    $value = floatval($value);
+                } else {
+                    throw new HttpException(
+                        "Parameter key '$key' is not a float"
+                    );
+                }
+                break;
+            case HttpRouteParameterTypes::Boolean:
+                $isMatchingValue =
+                    filter_var($value, FILTER_VALIDATE_BOOL)
+                    && $value !== "0"
+                    && $value !== "1"
+                    && $value !== "true"
+                    && $value !== "false"
+                    && $value !== 0
+                    && $value !== 1;
+                if ($isMatchingValue) {
+                    $value = boolval($value);
+                } else {
+                    throw new HttpException(
+                        "Parameter key '$key' is not a boolean"
+                    );
+                }
+                break;
+            default:
+                throw new HttpException(
+                    "Invalid route part type"
+                );
+        }
+        return $value;
     }
 
     public function getQueryOrDieTrying(string $key): ?HttpQuery
@@ -112,12 +186,62 @@ class HttpRequest
         }
     }
 
-    public function getBodyOrDieTrying(string $key): mixed
+    public function getBodyOrDieTrying(string $key, HttpRequestBodyPartTypes $type): mixed
     {
         $exists = isset($this->body[$key]);
         if ($exists === false) {
-            return null;
+            throw new HttpException(
+                "Body key '$key' not found"
+            );
         }
-        return $this->body[$key];
+        $value = $this->body[$key];
+        switch ($type) {
+            case HttpRequestBodyPartTypes::String:
+                if (
+                    is_string($value) === false ||
+                    filter_var($value, FILTER_VALIDATE_INT) === true ||
+                    filter_var($value, FILTER_VALIDATE_FLOAT) === true ||
+                    filter_var($value, FILTER_VALIDATE_BOOL) === true
+                ) {
+                    throw new HttpException(
+                        "Body key '$key' is not a string"
+                    );
+                }
+                break;
+            case HttpRequestBodyPartTypes::Int:
+                if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+                    throw new HttpException(
+                        "Body key '$key' is not an integer"
+                    );
+                }
+                break;
+            case HttpRequestBodyPartTypes::Float:
+                if (filter_var($value, FILTER_VALIDATE_FLOAT) === false) {
+                    throw new HttpException(
+                        "Body key '$key' is not a float"
+                    );
+                }
+                break;
+            case HttpRequestBodyPartTypes::Bool:
+                if (
+                    $value === "0" ||
+                    $value === "1" ||
+                    $value === "true" ||
+                    $value === "false" ||
+                    $value === 0 ||
+                    $value === 1
+                ) {
+                    throw new HttpException(
+                        "Body key '$key' is not a boolean"
+                    );
+                }
+                break;
+            default:
+                throw new HttpException(
+                    "Invalid body part type"
+                );
+                break;
+        }
+        return $value;
     }
 }

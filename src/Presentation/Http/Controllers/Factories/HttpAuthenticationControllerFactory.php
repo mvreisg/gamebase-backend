@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories;
 
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Connections\MariaDBRepositoryConnection;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Services\Factories\Authentication\HttpAuthenticationServiceFactory;
@@ -16,7 +16,7 @@ class HttpAuthenticationControllerFactory
         try {
             $repositoryConnection = MariaDBRepositoryConnection::get();
 
-            $encrypter = new DefuseEncryption();
+            $encrypter = new EncryptionAdapter();
 
             $service = HttpAuthenticationServiceFactory::make(
                 $repositoryConnection,

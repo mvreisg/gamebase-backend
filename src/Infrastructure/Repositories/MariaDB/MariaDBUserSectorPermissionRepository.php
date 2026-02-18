@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB;
 
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryTransactionCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryUnexistantRegisterException;
 
-class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInterface
+class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
 {
     private \PDO $pdo;
 
@@ -23,7 +23,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
         $this->pdo = $pdo;
     }
 
-    public function insert(SectorPermission $sectorPermission): SectorPermission
+    public function insert(UserSectorPermission $userSectorPermission): UserSectorPermission
     {
         try {
             $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
@@ -31,16 +31,19 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
 
-            $sectorId = $sectorPermission->getSectorIdValue();
-            $permissionId = $sectorPermission->getPermissionIdValue();
+            $userId = $userSectorPermission->getUserIdValue();
+            $sectorId = $userSectorPermission->getSectorIdValue();
+            $permissionId = $userSectorPermission->getPermissionIdValue();
 
             $insertStatement = $this->pdo->prepare(
-                "INSERT INTO sector_permission (
-                    sector_id, 
+                "INSERT INTO user_sector_permission (
+                    user_id, 
+                    sector_id,
                     permission_id
                 ) 
                 VALUES (
-                    :sectorId, 
+                    :userId, 
+                    :sectorId,
                     :permissionId
                 );"
             );
@@ -49,6 +52,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
             }
 
             $wasTheInsertStatementSuccessfullyExecuted = $insertStatement->execute([
+                ":userId" => $userId,
                 ":sectorId" => $sectorId,
                 ":permissionId" => $permissionId
             ]);
@@ -64,7 +68,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                 "SELECT 
                     * 
                 FROM 
-                    sector_permission 
+                    user_sector_permission 
                 WHERE 
                     id = :id;"
             );
@@ -86,7 +90,8 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $this->pdo->commit();
 
-            $return = new SectorPermission(
+            $return = new UserSectorPermission(
+                Id::make($fetchResult["user_id"]),
                 Id::make($fetchResult["sector_id"]),
                 Id::make($fetchResult["permission_id"])
             );
@@ -98,18 +103,20 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
         }
     }
 
-    public function update(SectorPermission $sectorPermission): bool
+    public function update(UserSectorPermission $userSectorPermission): bool
     {
         try {
-            $id = $sectorPermission->getIdValue();
-            $sectorId = $sectorPermission->getSectorIdValue();
-            $permissionId = $sectorPermission->getPermissionIdValue();
+            $id = $userSectorPermission->getIdValue();
+            $userId = $userSectorPermission->getUserIdValue();
+            $sectorId = $userSectorPermission->getSectorIdValue();
+            $permissionId = $userSectorPermission->getPermissionIdValue();
 
             $statement = $this->pdo->prepare(
                 "UPDATE 
-                    sector_permission 
+                    user_sector_permission 
                 SET 
-                    sector_id = :sectorId, 
+                    user_id = :userId, 
+                    sector_id = :sectorId,
                     permission_id = :permissionId 
                 WHERE 
                     id = :id;"
@@ -120,6 +127,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $wasTheStatementExecutionSuccessful = $statement->execute([
                 ":id" => $id,
+                ":userId" => $userId,
                 ":sectorId" => $sectorId,
                 ":permissionId" => $permissionId
             ]);
@@ -141,7 +149,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $statement = $this->pdo->prepare(
                 "DELETE FROM
-                    sector_permission
+                    user_sector_permission
                 WHERE
                     id = :id;"
             );
@@ -163,7 +171,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
         }
     }
 
-    public function findById(Id $id): SectorPermission
+    public function findById(Id $id): UserSectorPermission
     {
         try {
             $idValue = $id->getValue();
@@ -172,7 +180,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                 "SELECT 
                     * 
                 FROM 
-                    sector_permission 
+                    user_sector_permission 
                 WHERE 
                     id = :id;"
             );
@@ -194,7 +202,8 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                 );
             }
 
-            $return = new SectorPermission(
+            $return = new UserSectorPermission(
+                Id::make($fetchResult["user_id"]),
                 Id::make($fetchResult["sector_id"]),
                 Id::make($fetchResult["permission_id"])
             );
@@ -205,25 +214,25 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
         }
     }
 
-    public function findAllByPermissionId(Id $permissionId): SectorPermissionCollection
+    public function findAllByUserId(Id $userId): UserSectorPermissionCollection
     {
         try {
-            $permissionIdValue = $permissionId->getValue();
+            $userIdValue = $userId->getValue();
 
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
                 FROM 
-                    sector_permission
+                    user_sector_permission
                 WHERE
-                    permission_id = :permissionId;"
+                    user_id = :userId;"
             );
             if ($statement === false) {
                 throw new MariaDBRepositoryStatementCreationFailureException();
             }
 
             $wasTheStatementSuccessfullyExecuted = $statement->execute([
-                ":permissionId" => $permissionIdValue
+                ":userId" => $userIdValue
             ]);
             if ($wasTheStatementSuccessfullyExecuted === false) {
                 throw new MariaDBRepositoryStatementExecutionFailureException();
@@ -231,32 +240,33 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return new SectorPermissionCollection();
+                return new UserSectorPermissionCollection(null);
             }
 
-            $sectorPermissions = new SectorPermissionCollection();
+            $userSectorPermissions = new UserSectorPermissionCollection(null);
             foreach ($fetchResult as $row) {
-                $value = new SectorPermission(
+                $value = new UserSectorPermission(
+                    Id::make($row["user_id"]),
                     Id::make($row["sector_id"]),
                     Id::make($row["permission_id"])
                 );
                 $value->setId(Id::make($row["id"]));
-                $sectorPermissions->add($value);
+                $userSectorPermissions->add($value);
             }
-            return $sectorPermissions;
+            return $userSectorPermissions;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): SectorPermissionCollection
+    public function findAll(): UserSectorPermissionCollection
     {
         try {
             $statement = $this->pdo->prepare(
                 "SELECT 
                     * 
                 FROM 
-                    sector_permission;"
+                    user_sector_permission;"
             );
             if ($statement === false) {
                 throw new MariaDBRepositoryStatementCreationFailureException();
@@ -269,19 +279,20 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
 
             $fetchResult = $statement->fetchAll();
             if ($fetchResult === false) {
-                return new SectorPermissionCollection();
+                return new UserSectorPermissionCollection(null);
             }
 
-            $sectorPermissions = new SectorPermissionCollection();
+            $userSectorPermissions = new UserSectorPermissionCollection(null);
             foreach ($fetchResult as $row) {
-                $value = new SectorPermission(
+                $value = new UserSectorPermission(
+                    Id::make($row["user_id"]),
                     Id::make($row["sector_id"]),
                     Id::make($row["permission_id"])
                 );
                 $value->setId(Id::make($row["id"]));
-                $sectorPermissions->add($value);
+                $userSectorPermissions->add($value);
             }
-            return $sectorPermissions;
+            return $userSectorPermissions;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -290,8 +301,8 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
     public function checkIfExists(Id $id): void
     {
         try {
-            $alias = "number_of_ids";
             $idValue = $id->getValue();
+            $alias = "number_of_ids";
 
             $statement = $this->pdo->prepare(
                 "SELECT
@@ -299,7 +310,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                     AS
                     $alias
                 FROM
-                    sector_permission
+                    user_sector_permission
                 WHERE
                     id = :id;"
             );
@@ -320,6 +331,7 @@ class MariaDBSectorPermissionRepository implements SectorPermissionRepositoryInt
                     $alias
                 ]
             );
+
             if ($numberOfIds === 0) {
                 throw new MariaDBRepositoryUnexistantRegisterException(
                     $idValue

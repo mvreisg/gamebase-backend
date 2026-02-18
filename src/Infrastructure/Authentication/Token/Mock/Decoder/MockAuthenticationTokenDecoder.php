@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Decod
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Data\Calendar;
@@ -26,8 +27,8 @@ class MockAuthenticationTokenDecoder implements AuthenticationTokenDecoder
         $split = explode("|", $decoded);
         $count = count($split);
         if ($count < 3) {
-            throw new \DomainException(
-                "Invalid token: invalid number of parts."
+            throw new AuthenticationTokenDecoderException(
+                "Invalid number of parts."
             );
         }
         $seconds = intval($split[0]);
@@ -35,8 +36,13 @@ class MockAuthenticationTokenDecoder implements AuthenticationTokenDecoder
         $issuedAt = intval($split[2]);
         $expiresAt = $issuedAt + $seconds;
         if ($this->clock->now()->getTimestamp() >= $expiresAt) {
-            throw new \DomainException(
-                "Invalid token: expired date."
+            throw new AuthenticationTokenDecoderException(
+                "Expired date."
+            );
+        }
+        if ($issuedAt > $this->clock->now()->getTimestamp()) {
+            throw new AuthenticationTokenDecoderException(
+                "Issued date is in the future."
             );
         }
         $data = AuthenticationData::toObject($payload);

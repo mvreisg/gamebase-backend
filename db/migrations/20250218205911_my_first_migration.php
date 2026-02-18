@@ -8,9 +8,8 @@ final class MyFirstMigration extends AbstractMigration
 {
     public function change(): void
     {
-        // User - Usuário
-        $userTable = $this->table("user");
-        $userTable
+        $this
+            ->table("user")
             ->addColumn("name", "text", [
                 "null" => false
             ])
@@ -22,9 +21,8 @@ final class MyFirstMigration extends AbstractMigration
             ])
             ->create();
 
-        // Game - Jogo
-        $gameTable = $this->table("game");
-        $gameTable
+        $this
+            ->table("game")
             ->addColumn("name", "string", [
                 "limit" => 400,
                 "null" => false
@@ -34,9 +32,8 @@ final class MyFirstMigration extends AbstractMigration
             ])
             ->create();
 
-        // Platform - Plataforma
-        $platformTable = $this->table("platform");
-        $platformTable
+        $this
+            ->table("platform")
             ->addColumn("name", "string", [
                 "limit" => 100,
                 "null" => false
@@ -46,9 +43,8 @@ final class MyFirstMigration extends AbstractMigration
             ])
             ->create();
 
-        // Genre - Gênero
-        $genreTable = $this->table("genre");
-        $genreTable
+        $this
+            ->table("genre")
             ->addColumn("name", "string", [
                 "limit" => 100,
                 "null" => false
@@ -58,8 +54,8 @@ final class MyFirstMigration extends AbstractMigration
             ])
             ->create();
 
-        $gamePlatformTable = $this->table("game_platform");
-        $gamePlatformTable
+        $this
+            ->table("game_platform")
             ->addColumn("game_id", "integer", [
                 "null" => false,
                 "signed" => false
@@ -78,8 +74,7 @@ final class MyFirstMigration extends AbstractMigration
             ])
             ->create();
 
-        $gameGenreTable = $this->table("game_genre");
-        $gameGenreTable
+        $this->table("game_genre")
             ->addColumn("game_id", "integer", [
                 "null" => false,
                 "signed" => false

@@ -12,6 +12,8 @@ use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
+use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteQueryTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
 
@@ -38,9 +40,9 @@ class HttpUserController
                 $this->authenticationService
             );
 
-            $username = $request->getBodyOrDieTrying("username");
-            $password = $request->getBodyOrDieTrying("password");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $username = $request->getBodyOrDieTrying("username", HttpRequestBodyPartTypes::String);
+            $password = $request->getBodyOrDieTrying("password", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $user = $this->userService->insert(
                 new User(
@@ -77,10 +79,10 @@ class HttpUserController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $username = $request->getBodyOrDieTrying("username");
-            $password = $request->getBodyOrDieTrying("password");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $username = $request->getBodyOrDieTrying("username", HttpRequestBodyPartTypes::String);
+            $password = $request->getBodyOrDieTrying("password", HttpRequestBodyPartTypes::String);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $user = new User(
                 Username::make($username),
@@ -115,8 +117,8 @@ class HttpUserController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
-            $isActive = $request->getBodyOrDieTrying("is_active");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
 
             $wasUpdated = $this->userService->setIsActive(
                 Id::make($id),
@@ -145,7 +147,7 @@ class HttpUserController
                 $this->authenticationService
             );
 
-            $id = $request->getParamOrDieTrying("id");
+            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
 
             $user = $this->userService->findById(
                 Id::make($id)
@@ -189,7 +191,7 @@ class HttpUserController
                 $this->authenticationService
             );
 
-            $username = $request->getParamOrDieTrying("username");
+            $username = $request->getParamOrDieTrying("username", HttpRouteParameterTypes::Text);
 
             $user = $this->userService->findByUsername(
                 Username::make($username)

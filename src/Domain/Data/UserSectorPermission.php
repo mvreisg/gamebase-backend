@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Data;
 
-class SectorPermission
+use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
+
+class UserSectorPermission
 {
     private ?Id $id;
+    private Id $userId;
     private Id $sectorId;
     private Id $permissionId;
 
-    public function __construct(Id $sectorId, Id $permissionId)
+    public function __construct(Id $userId, Id $sectorId, Id $permissionId)
     {
         $this->id = null;
+        $this->userId = $userId;
         $this->sectorId = $sectorId;
         $this->permissionId = $permissionId;
     }
@@ -25,17 +29,27 @@ class SectorPermission
     public function getIdValue(): int
     {
         if ($this->id === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The id is null."
             );
         }
         return $this->id->getValue();
     }
 
+    public function getUserIdValue(): int
+    {
+        if ($this->userId === null) {
+            throw new DataException(
+                "The userId is null."
+            );
+        }
+        return $this->userId->getValue();
+    }
+
     public function getSectorIdValue(): int
     {
         if ($this->sectorId === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The sectorId is null."
             );
         }
@@ -45,7 +59,7 @@ class SectorPermission
     public function getPermissionIdValue(): int
     {
         if ($this->permissionId === null) {
-            throw new \InvalidArgumentException(
+            throw new DataException(
                 "The permissionId is null."
             );
         }

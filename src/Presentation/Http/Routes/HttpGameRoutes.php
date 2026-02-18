@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Routes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpMethods;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\Factories\HttpGameControllerFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRouteFactory;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\Factories\HttpRoutePartFactory;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoute;
+use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRoutePart;
 
 class HttpGameRoutes
 {
@@ -18,13 +18,13 @@ class HttpGameRoutes
             $controller = HttpGameControllerFactory::make();
 
             $routes = [
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Post
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "game",
                             HttpRouteParameterTypes::Route
                         )
@@ -32,19 +32,19 @@ class HttpGameRoutes
                     ->setCallback(
                         fn ($request) => $controller->insert($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Put
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "game",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -52,19 +52,19 @@ class HttpGameRoutes
                     ->setCallback(
                         fn ($request) => $controller->update($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Patch
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "game",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -72,19 +72,19 @@ class HttpGameRoutes
                     ->setCallback(
                         fn ($request) => $controller->setIsActive($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "game",
                             HttpRouteParameterTypes::Route
                         )
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "id",
                             HttpRouteParameterTypes::Integer
                         )
@@ -92,13 +92,13 @@ class HttpGameRoutes
                     ->setCallback(
                         fn ($request) => $controller->findById($request)
                     ),
-                HttpRouteFactory::make()
+                HttpRoute::make()
                     ->setSeparator("/")
                     ->setMethod(
                         HttpMethods::Get
                     )
                     ->appendPathPart(
-                        HttpRoutePartFactory::make(
+                        HttpRoutePart::make(
                             "game",
                             HttpRouteParameterTypes::Route
                         )
