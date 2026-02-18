@@ -102,6 +102,14 @@ REPOSITORY_CHARSET="database charset"
 REPOSITORY_EXPOSE_PORT="docker expose port"
 ```
 
+### Setting `ENCRYPTION_METHOD` environment variable.
+
+Available methods:
+- `sodium` - Sodium
+- `defuse` - PHP Defuse 
+
+*The choice is mandatory.*
+
 ### Setting `DEFUSE_PHP_ENCRYPTION_KEY` environment variable.
 
 Run:
@@ -119,6 +127,8 @@ php defuse_key.php
 
 Copy the generated key (inside the parentheses) into the `DEFUSE_PHP_ENCRYPTION_KEY` field in your `.env.{environment}.{machine}` file. **Keep it secret.**
 
+*Provide the value even if you don't use it. This prevents future errors.*
+
 ### Setting `SODIUM_CRYPTO_SECRETBOX_KEY` environment variable.
 
 Run:
@@ -135,6 +145,8 @@ php sodium_key.php
 ```
 
 Copy the generated key (inside the parentheses) into the `SODIUM_CRYPTO_SECRETBOX_KEY` field in your `.env.{environment}.{machine}` file. **Keep it secret.**
+
+*Provide the value even if you don't use it. This prevents future errors.*
 
 ### Setting `JWT_SECRET` environment variable.
 

@@ -361,7 +361,8 @@ class HttpRouter
         } catch (
             HttpException |
             DataException
-        $e) {
+            $e
+        ) {
             $this->sendJson(
                 HttpStatusCodes::BadRequest,
                 $e->getMessage(),
@@ -372,7 +373,8 @@ class HttpRouter
             RepositoryDuplicatedRegisterException |
             AuthenticationServiceInvalidCredentialsException |
             TokenCacheException
-        $e) {
+            $e
+        ) {
             $this->sendJson(
                 HttpStatusCodes::Unauthorized,
                 $e->getMessage(),
