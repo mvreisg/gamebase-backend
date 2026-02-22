@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
+use Mvreisg\GamebaseBackend\Domain\Logs\Logger;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 try {
-    require_once __DIR__ . "/bootstrap.php";
+    require_once "constants.php";
+    require_once PROJECT_ROOT . "/bootstrap.php";
 
-    DotenvEnvironment::load();
-
-    return
-    [
+    return [
         "paths" => [
             "migrations" => "%%PHINX_CONFIG_DIR%%/db/migrations",
             "seeds" => "%%PHINX_CONFIG_DIR%%/db/seeds"
@@ -49,5 +48,5 @@ try {
         "version_order" => "creation"
     ];
 } catch (\Throwable $e) {
-    print("Error: " . $e->getMessage());
+    Logger::logAppError($e);
 }
