@@ -17,7 +17,14 @@ class DotenvEnvironment
         $environment = $_SERVER["ENVIRONMENT"];
         $machine = $_SERVER["MACHINE"];
 
-        $dotenv = Dotenv::createMutable(PROJECT_ROOT, ".env." . $environment . "." . $machine);
+        $dotenv = Dotenv::createMutable(
+            PROJECT_ROOT,
+            sprintf(
+                ".env.%s.%s",
+                $environment,
+                $machine
+            )
+        );
         $dotenv->load();
     }
 
