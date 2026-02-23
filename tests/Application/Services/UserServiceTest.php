@@ -22,7 +22,7 @@ class UserServiceTest extends TestCase
     protected function setUp(): void
     {
         $userRepository = new MockUserRepository();
-        $this->encrypter = new EncryptionAdapter();
+        $this->encrypter = EncryptionAdapter::make();
         $this->userService = new UserService(
             $userRepository,
             $this->encrypter

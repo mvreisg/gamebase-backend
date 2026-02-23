@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Genre\GenreService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Data\Genre;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
@@ -19,13 +22,16 @@ class HttpGenreController
 {
     private GenreService $genreService;
     private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
 
     public function __construct(
         GenreService $genreService,
-        AuthenticationService $authenticationService
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService
     ) {
         $this->genreService = $genreService;
         $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
     }
 
     public function insert(HttpRequest $request): HttpResponse
@@ -33,9 +39,15 @@ class HttpGenreController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Genre,
+                PermissionTypes::Create
             );
 
             $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
@@ -69,9 +81,15 @@ class HttpGenreController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Genre,
+                PermissionTypes::Update
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -105,9 +123,15 @@ class HttpGenreController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Genre,
+                PermissionTypes::Activate
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -135,9 +159,15 @@ class HttpGenreController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Genre,
+                PermissionTypes::List
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -167,9 +197,15 @@ class HttpGenreController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Genre,
+                PermissionTypes::List
             );
 
             $genres = $this->genreService->findAll();

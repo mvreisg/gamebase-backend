@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\Permission;
 use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
@@ -63,6 +64,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
 
         $new = new Permission(
             Name::make($permission->getNameValue()),
+            PermissionValue::make($permission->getPermissionValue()),
             $permission->getIsActive()
         );
         $new->setId(Id::make($permission->getIdValue()));
@@ -94,6 +96,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
 
         $new = new Permission(
             Name::make($foundPermission->getNameValue()),
+            PermissionValue::make($foundPermission->getPermissionValue()),
             $isActive
         );
         $new->setId(Id::make($foundPermission->getIdValue()));

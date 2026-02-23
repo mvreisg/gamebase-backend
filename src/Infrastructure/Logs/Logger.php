@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Domain\Logs;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Logs;
 
 use Mvreisg\GamebaseBackend\Domain\Data\Calendar;
 

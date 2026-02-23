@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
@@ -18,17 +19,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBGameRepository implements GameRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(Game $game): Game
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -42,7 +43,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 $game->getIsActive()
             );
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO 
                     game (
                         name, 
@@ -66,10 +67,10 @@ class MariaDBGameRepository implements GameRepositoryInterface
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -93,7 +94,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new Game(
                 Name::make($fetchResult["name"]),
@@ -107,7 +108,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -125,7 +126,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
                 $game->getIsActive()
             );
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE 
                     game 
                 SET 
@@ -164,7 +165,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
              */
             $intIsActive = intval($isActive);
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     game
                 SET
@@ -198,7 +199,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -244,7 +245,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
     public function findAll(): GameCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -290,7 +291,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $idValue = $id->getValue();
 
             $alias = "number_of_ids";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
@@ -334,7 +335,7 @@ class MariaDBGameRepository implements GameRepositoryInterface
             $nameValue = $name->getValue();
 
             $alias = "number_of_names";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     COUNT(*)
                     AS

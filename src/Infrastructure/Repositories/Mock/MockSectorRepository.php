@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\Sector;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
@@ -52,10 +53,13 @@ class MockSectorRepository implements SectorRepositoryInterface
         $hasDifferentNames =
             $foundSector->getNameValue() !== $sector->getNameValue();
 
+        $hasDifferentValues =
+            $foundSector->getSectorValue() !== $sector->getSectorValue();
+
         $hasDifferentIsActive =
             $foundSector->getIsActive() !== $sector->getIsActive();
 
-        $isDifferent = $hasDifferentNames || $hasDifferentIsActive;
+        $isDifferent = $hasDifferentNames || $hasDifferentValues || $hasDifferentIsActive;
 
         if ($isDifferent === false) {
             return false;
@@ -63,6 +67,7 @@ class MockSectorRepository implements SectorRepositoryInterface
 
         $new = new Sector(
             Name::make($sector->getNameValue()),
+            SectorValue::make($sector->getSectorValue()),
             $sector->getIsActive()
         );
         $new->setId(Id::make($sector->getIdValue()));
@@ -94,6 +99,7 @@ class MockSectorRepository implements SectorRepositoryInterface
 
         $new = new Sector(
             Name::make($foundSector->getNameValue()),
+            SectorValue::make($foundSector->getSectorValue()),
             $isActive
         );
         $new->setId(Id::make($foundSector->getIdValue()));

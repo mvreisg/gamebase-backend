@@ -27,6 +27,11 @@ class EncryptionAdapter
         }
     }
 
+    public static function make(): self
+    {
+        return new self();
+    }
+
     public function encrypt(string $data): string
     {
         return $this->encrypter->encrypt($data);

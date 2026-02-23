@@ -1,6 +1,6 @@
 <?php
 
-use Mvreisg\GamebaseBackend\Domain\Logs\Logger;
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Presentation\Http\Router\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpAuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGameGenreRoutes;

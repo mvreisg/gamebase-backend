@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
@@ -16,17 +17,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(UserSectorPermission $userSectorPermission): UserSectorPermission
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -35,7 +36,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
             $sectorId = $userSectorPermission->getSectorIdValue();
             $permissionId = $userSectorPermission->getPermissionIdValue();
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO user_sector_permission (
                     user_id, 
                     sector_id,
@@ -61,10 +62,10 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -88,7 +89,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new UserSectorPermission(
                 Id::make($fetchResult["user_id"]),
@@ -98,7 +99,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -111,7 +112,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
             $sectorId = $userSectorPermission->getSectorIdValue();
             $permissionId = $userSectorPermission->getPermissionIdValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE 
                     user_sector_permission 
                 SET 
@@ -147,7 +148,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "DELETE FROM
                     user_sector_permission
                 WHERE
@@ -176,7 +177,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -219,7 +220,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
         try {
             $userIdValue = $userId->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -262,7 +263,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
     public function findAll(): UserSectorPermissionCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -304,7 +305,7 @@ class MariaDBUserSectorPermissionRepository implements UserSectorPermissionRepos
             $idValue = $id->getValue();
             $alias = "number_of_ids";
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS

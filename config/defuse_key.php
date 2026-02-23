@@ -1,7 +1,7 @@
 <?php
 
 use Defuse\Crypto\Key;
-use Mvreisg\GamebaseBackend\Domain\Logs\Logger;
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 
 try {
     require_once dirname(__DIR__) . "/constants.php";

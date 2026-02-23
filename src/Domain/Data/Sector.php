@@ -10,12 +10,14 @@ class Sector
 {
     private ?Id $id;
     private Name $name;
+    private SectorValue $value;
     private bool $isActive;
 
-    public function __construct(Name $name, bool $isActive)
+    public function __construct(Name $name, SectorValue $value, bool $isActive)
     {
         $this->id = null;
         $this->name = $name;
+        $this->value = $value;
         $this->isActive = $isActive;
     }
 
@@ -42,6 +44,16 @@ class Sector
             );
         }
         return $this->name->getValue();
+    }
+
+    public function getSectorValue(): string
+    {
+        if ($this->value === null) {
+            throw new DataException(
+                "The sector value is null"
+            );
+        }
+        return $this->value->getValue();
     }
 
     public function getIsActive(): bool

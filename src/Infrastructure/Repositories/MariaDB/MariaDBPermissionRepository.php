@@ -8,7 +8,9 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Permission;
 use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
@@ -18,17 +20,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBPermissionRepository implements PermissionRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(Permission $permission): Permission
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -42,7 +44,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 $permission->getIsActive()
             );
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO 
                     permission 
                 (
@@ -67,10 +69,10 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     *
                 FROM
@@ -94,10 +96,11 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new Permission(
                 Name::make($fetchResult["name"]),
+                PermissionValue::make($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -108,7 +111,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -126,7 +129,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
                 $permission->getIsActive()
             );
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     permission
                 SET
@@ -165,7 +168,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
              */
             $intIsActive = intval($isActive);
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     permission
                 SET
@@ -197,7 +200,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM
@@ -225,6 +228,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
 
             $return = new Permission(
                 Name::make($fetchResult["name"]),
+                PermissionValue::make($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -242,7 +246,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
     public function findAll(): PermissionCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     *
                 FROM
@@ -266,6 +270,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             foreach ($fetchResult as $row) {
                 $value = new Permission(
                     Name::make($row["name"]),
+                    PermissionValue::make($row["value"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -289,7 +294,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $idValue = $id->getValue();
 
             $alias = "number_of_ids";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
@@ -333,7 +338,7 @@ class MariaDBPermissionRepository implements PermissionRepositoryInterface
             $nameValue = $name->getValue();
 
             $alias = "number_of_names";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     COUNT(*)
                     AS

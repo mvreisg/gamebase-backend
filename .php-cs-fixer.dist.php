@@ -3,7 +3,7 @@
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use GD75\DoubleQuoteFixer\DoubleQuoteFixer;
-use Mvreisg\GamebaseBackend\Domain\Logs\Logger;
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 
 try {
     $finder = Finder::create()->in(__DIR__);
