@@ -10,14 +10,14 @@ class Logger
 {
     public static function logAppError(\Throwable $e): void
     {
-        $path = PROJECT_ROOT . "/logs/app/error-" . Calendar::getNowWithTimezone()->format("Y-m-d H:i:s") . ".log";
+        $path = PROJECT_ROOT . "/logs/error/app/error-" . Calendar::getNowWithTimezone()->format("Y-m-d H:i:s") . ".log";
         self::write($path, $e);
     }
 
     public static function logHttpError(\Throwable $e): void
     {
         $now = Calendar::getNowWithTimezone();
-        $path = PROJECT_ROOT . "/logs/http/error-" . Calendar::getNowWithTimezone()->format("Y-m-d H:i:s") . ".log";
+        $path = PROJECT_ROOT . "/logs/error/http/error-" . Calendar::getNowWithTimezone()->format("Y-m-d H:i:s") . ".log";
         self::write($path, $e);
     }
 

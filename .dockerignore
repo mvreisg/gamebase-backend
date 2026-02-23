@@ -1,0 +1,14 @@
+# Composer
+/vendor/
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# PHP Lint
+.phplint.cache
+
+# PHPUnit
+.phpunit.result.cache
+
+# logs
+/logs/

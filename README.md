@@ -2,12 +2,14 @@
 
 RESTful backend for managing a game database, built with modern PHP practices and a DDD-inspired structure.
 
-Designed as a study and portfolio project focusing on:
+This project is designed as a study and portfolio application focusing on:
 
 - Clean architecture
-- Security (JWT + encryption)
+- Secure authentication and encryption
 - Containerized development
 - Scalable environment configuration
+
+<hr>
 
 ## Features
 
@@ -15,15 +17,18 @@ Designed as a study and portfolio project focusing on:
 - JWT Authentication
 - Redis caching
 - Database migrations with Phinx
-- Encryption using Defuse PHP Encryption
+- Encryption (Sodium / Defuse)
 - Docker-first development
 - PSR-4 and PSR-12 compliant
 - Unit testing with PHPUnit
 - Environment variables
+- Centralized error logging
+
+<hr>
 
 ## Tech Stack
 
-- PHP 8.3
+- PHP 8.4
 - Nginx
 - MariaDB
 - Redis
@@ -33,185 +38,263 @@ Designed as a study and portfolio project focusing on:
 - Phinx
 - Dotenv
 
+<hr>
+
 ## Project Architecture
 
 The project loosely follows DDD principles:
 
-- Domain
-- Application
-- Infrastructure
-- Presentation
+- **Domain**
+- **Application**
+- **Infrastructure**
+- **Presentation**
+
+<hr>
 
 ## Project Status
 
-Active development.
+🚧 Active development.
+
+<hr>
 
 ## License
 
 GPL-3.0
 
+<hr>
+
 ## Running the project
 
-### Setup
+### 1. Environment Configuration
 
-Make sure to create a `.env` file in the root directory with `ENVIRONMENT={environment}` and `MACHINE={machine}`, and another file following the pattern `.env.{environment}.{machine}` containing the values specified below.
-
-For example, the `.env` must be like this:
+The project uses layered environment files:
 
 ```
-ENVIRONMENT="development"
-
-MACHINE="local"
+.env
+.env.{environment}.{machine}
 ```
 
-This allows `Dotenv` to determine which environment and machine configuration to load. In the example above, it will load `.env.development.local` which should contain all values from `.env.example`.
+Example `.env`:
 
-### Setting `NGINX` environment variables.
+```
+ENVIRONMENT=development
+MACHINE=local
+```
 
-`NGINX_PORT` is the internal Docker port and `NGINX_EXPOSE_PORT` is the host port. Requests to the host port are forwarded to the container port.
+This requires a matching file:
+
+```
+.env.development.local
+```
+
+Copy all keys from `.env.example` into your environment file and fill in the values.
+
+<hr>
+
+### 2. Environment Variables
+#### Nginx
 
 ```
 NGINX_PORT="80"
 NGINX_EXPOSE_PORT="8081"
 ```
 
-### Setting `API_CONSUMERS` environment variables.
+`NGINX_PORT`: internal container port
 
-Add the URL list to `API_CONSUMERS_ADDRESSES` and separate them using `API_CONSUMERS_ADDRESSES_SEPARATOR`.
+`NGINX_EXPOSE_PORT`: host port mapped to container
 
-Example:
+<hr>
+
+#### API Consumers
 
 ```
 API_CONSUMERS_ADDRESSES="http://localhost:8082,http://localhost:8083"
 API_CONSUMERS_ADDRESSES_SEPARATOR=","
 ```
 
-### Setting `REPOSITORY` environment variables.
+<hr>
 
-`REPOSITORY_PORT` is the internal Docker port and `REPOSITORY_EXPOSE_PORT` is the host port. Requests to the host port are forwarded to the container port.
+#### Repository (Database)
 
 ```
-REPOSITORY_ROOT_USERNAME="your root backend username"
-REPOSITORY_ROOT_PASSWORD="your root backend password"
-REPOSITORY_HOST="database host"
-REPOSITORY_DATABASE="database name"
-REPOSITORY_USERNAME="database username"
-REPOSITORY_PASSWORD="database password"
-REPOSITORY_PORT="internal port"
-REPOSITORY_CHARSET="database charset"
-REPOSITORY_EXPOSE_PORT="docker expose port"
+REPOSITORY_ROOT_USERNAME="backend_root"
+REPOSITORY_ROOT_PASSWORD="secret"
+
+REPOSITORY_HOST="database"
+REPOSITORY_DATABASE="gamebase"
+REPOSITORY_USERNAME="user"
+REPOSITORY_PASSWORD="password"
+REPOSITORY_PORT="3306"
+REPOSITORY_CHARSET="utf8mb4"
+REPOSITORY_EXPOSE_PORT="3307"
 ```
 
-### Setting `ENCRYPTION_METHOD` environment variable.
+<hr>
 
-Available methods:
-- `sodium` - Sodium
-- `defuse` - PHP Defuse 
+#### Encryption
 
-*The choice is mandatory.*
+Choose one method:
 
-### Setting `DEFUSE_PHP_ENCRYPTION_KEY` environment variable.
+```
+ENCRYPTION_METHOD="sodium"
+```
+
+Available:
+ - `sodium`
+ - `defuse`
+
+<hr>
+
+#### Encryption Keys
+
+You may keep the default values, but generating your own keys is recommended.
+
+Enter the PHP container:
+
+```
+docker exec -it gamebase-backend-php bash
+```
+
+Generate Defuse key:
+
+```
+php config/defuse_key.php
+```
+
+Generate Sodium key:
+
+```
+php config/sodium_key.php
+```
+
+Copy the values into:
+
+```
+DEFUSE_PHP_ENCRYPTION_KEY="insert here"
+SODIUM_CRYPTO_SECRETBOX_KEY="insert here"
+```
+
+⚠️ Keep both values secret (even if unused).
+
+<hr>
+
+#### JWT Secret
+
+```
+JWT_SECRET="your-secret-key"
+```
+
+<hr>
+
+#### Redis
+
+```
+REDIS_SCHEME=redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_EXPOSE_PORT=6380
+```
+
+<hr>
+
+### 3. Create the Database
+
+Phinx does **not** create databases automatically.
+
+You can create it manually or run:
+
+```
+docker exec -it gamebase-backend-php bash
+php config/pdo_create_database.php
+```
+
+This creates the database defined in:
+
+```
+REPOSITORY_DATABASE
+```
+
+<hr>
+
+### 4. Start the Application
+
+```
+docker compose --env-file .env.{environment}.{machine} up -d
+```
+
+Enter the PHP container:
+
+```
+docker exec -it gamebase-backend-php bash
+```
 
 Run:
 
 ```
-docker compose --env-file ./.env.{environment}.{machine} up php --build
+startup.sh
 ```
 
-Then access `bash` inside `gamebase-backend-php` container and run:
+<hr>
+
+### Composer Commands
+
+All commands are defined in `composer.json`.
+
+Formatting follows PSR-12 from [PHP-FIG](https://www.php-fig.org/).
+
+<hr>
+
+#### Code Style
 
 ```
-cd config
-php defuse_key.php
+composer lint:fix
 ```
 
-Copy the generated key (inside the parentheses) into the `DEFUSE_PHP_ENCRYPTION_KEY` field in your `.env.{environment}.{machine}` file. **Keep it secret.**
-
-*Provide the value even if you don't use it. This prevents future errors.*
-
-### Setting `SODIUM_CRYPTO_SECRETBOX_KEY` environment variable.
-
-Run:
+Fixes issues using php-cs-fixer.
 
 ```
-docker compose --env-file ./.env.{environment}.{machine} up php --build
+composer format
 ```
 
-Then access `bash` inside `gamebase-backend-php` container and run:
+Shows PSR-12 violations using phpcs.
 
 ```
-cd config
-php sodium_key.php
+composer format:fix
 ```
 
-Copy the generated key (inside the parentheses) into the `SODIUM_CRYPTO_SECRETBOX_KEY` field in your `.env.{environment}.{machine}` file. **Keep it secret.**
+Fixes PSR-12 issues using phpcbf.
 
-*Provide the value even if you don't use it. This prevents future errors.*
+<hr>
 
-### Setting `JWT_SECRET` environment variable.
-
-This can be any string value, **but keep it secret.**
+#### Tests
 
 ```
-JWT_SECRET="potato"
+composer phpunit:test
 ```
 
-### Setting `REDIS` environment variables.
-
-`REDIS_PORT` is the internal Docker port and `REDIS_EXPOSE_PORT` is the host port. Requests to the host port are forwarded to the container port.
+Examples:
 
 ```
-REDIS_SCHEME="redis protocol"
-REDIS_HOST="redis address"
-REDIS_PORT="redis internal port"
-REDIS_EXPOSE_PORT="redis expose port"
+composer phpunit:test:all
 ```
 
-### Creating the `DATABASE` *(if it does not exist!)*.
+<hr>
 
-`Phinx` does not create databases, so you must create it manually by running the `create_database_[insert your database here].php` configuration file or by executing the `CREATE DATABASE gamebase;` SQL query in your database management system. 
-
-A MariaDB implementation is already provided as an example in the `./config` directory.
-
-### Starting the application
-
-Run:
-
-```
-docker compose --env-file ./.env.{environment}.{machine} up --build
-```
-
-Make sure all containers start successfully, then access the `gamebase-backend-php` container `bash` and run:
+#### Database (Phinx)
 
 ```
 composer phinx migrate
-```
-
-to run database migrations, and:
-
-```
 composer phinx seed:run
 ```
 
-to insert the root user into the database. The root credentials are defined in `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD` inside the `.env.{environment}.{machine}` file.
+<hr>
 
-## Commands (via Composer)
+### Summary
 
-All commands can be configured in `composer.json`.
+Gamebase Backend is a modern PHP REST API demonstrating:
 
-All formatting operations follow the PSR-12 standard defined by [PHP-FIG](https://www.php-fig.org/psr/).
-
-`composer lint:fix` 
-Attempts to fix code issues using *php-cs-fixer*.
-
-`composer format`
-Displays formatting issues based on PSR-12 using *phpcs*.
-
-`composer format:fix`
-Attempts to fix formatting issues based on PSR-12 using *phpcbf*.
-
-`composer phpunit:test`
-Runs *PHPUnit*. Allows commands like `phpunit:test:all` to run all the unit tests.
-
-`composer phinx`
-Runs *Phinx*. Allows commands like `phinx migrate` and `phinx seed:run`.
+- DDD structure
+- secure authentication
+- encryption strategies
+- containerized infrastructure
+- scalable environment configuration
