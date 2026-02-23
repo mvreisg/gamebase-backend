@@ -8,7 +8,9 @@ use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Sector;
 use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
@@ -18,17 +20,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBSectorRepository implements SectorRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(Sector $sector): Sector
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -42,7 +44,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 $sector->getIsActive()
             );
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO 
                     sector 
                 (
@@ -67,10 +69,10 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     *
                 FROM
@@ -94,10 +96,11 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new Sector(
                 Name::make($fetchResult["name"]),
+                SectorValue::make($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -108,7 +111,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -126,7 +129,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
                 $sector->getIsActive()
             );
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     sector
                 SET
@@ -165,7 +168,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
              */
             $isActive = intval($isActive);
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     sector
                 SET
@@ -199,7 +202,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM
@@ -229,6 +232,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
 
             $return = new Sector(
                 Name::make($fetchResult["name"]),
+                SectorValue::make($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -246,7 +250,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
     public function findAll(): SectorCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     *
                 FROM
@@ -272,6 +276,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             foreach ($fetchResult as $row) {
                 $value = new Sector(
                     Name::make($row["name"]),
+                    SectorValue::make($row["value"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -294,7 +299,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $idValue = $id->getValue();
             $alias = "number_of_ids";
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
@@ -338,7 +343,7 @@ class MariaDBSectorRepository implements SectorRepositoryInterface
             $nameValue = $name->getValue();
             $alias = "number_of_names";
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     COUNT(*)
                     AS

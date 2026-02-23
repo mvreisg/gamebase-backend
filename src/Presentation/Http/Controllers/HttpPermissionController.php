@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Permission\PermissionService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Permission;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
@@ -19,13 +23,16 @@ class HttpPermissionController
 {
     private PermissionService $permissionService;
     private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
 
     public function __construct(
         PermissionService $permissionService,
-        AuthenticationService $authenticationService
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService
     ) {
         $this->permissionService = $permissionService;
         $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
     }
 
     public function insert(HttpRequest $request): HttpResponse
@@ -33,17 +40,25 @@ class HttpPermissionController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
             );
 
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Permission,
+                PermissionTypes::Create
+            );
+
             $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
             $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $value = $request->getBodyOrDieTrying("value", HttpRequestBodyPartTypes::String);
 
             $permission = $this->permissionService->insert(
                 new Permission(
                     Name::make($name),
+                    PermissionValue::make($value),
                     $isActive
                 )
             );
@@ -69,17 +84,25 @@ class HttpPermissionController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Permission,
+                PermissionTypes::Update
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
             $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
             $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $value = $request->getBodyOrDieTrying("value", HttpRequestBodyPartTypes::String);
 
             $permission = new Permission(
                 Name::make($name),
+                PermissionValue::make($value),
                 $isActive
             );
             $permission->setId(Id::make($id));
@@ -105,9 +128,15 @@ class HttpPermissionController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Permission,
+                PermissionTypes::Activate
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -135,9 +164,15 @@ class HttpPermissionController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Permission,
+                PermissionTypes::List
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -151,6 +186,7 @@ class HttpPermissionController
                     "data" => [
                         "id" => $permission->getIdValue(),
                         "name" => $permission->getNameValue(),
+                        "value" => $permission->getPermissionValue(),
                         "is_active" => $permission->getIsActive()
                     ]
                 ])
@@ -167,9 +203,15 @@ class HttpPermissionController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::Permission,
+                PermissionTypes::List
             );
 
             $permissions = $this->permissionService->findAll();
@@ -189,6 +231,7 @@ class HttpPermissionController
                 $data[] = [
                     "id" => $permission->getIdValue(),
                     "name" => $permission->getNameValue(),
+                    "value" => $permission->getPermissionValue(),
                     "is_active" => $permission->getIsActive()
                 ];
             }

@@ -1,5 +1,6 @@
 <?php
 
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 try {
@@ -8,5 +9,5 @@ try {
 
     DotenvEnvironment::load();
 } catch (\Throwable $e) {
-    print_r($e->getMessage());
+    Logger::logAppError($e);
 }

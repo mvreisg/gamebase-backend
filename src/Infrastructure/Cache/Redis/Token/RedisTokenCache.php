@@ -8,25 +8,36 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAut
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Predis\Client;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Predis\PredisConnection;
 
 class RedisTokenCache implements TokenCacheInterface
 {
-    private Client $redis;
+    private PredisConnection $connection;
 
-    public function __construct(Client $redis)
+    public function __construct(PredisConnection $connection)
     {
-        $this->redis = $redis;
+        $this->connection = $connection;
     }
 
     public function set(Username $username, EncodedAuthenticationToken $token): void
     {
-        $this->redis->set($username->getValue(), $token->getToken());
+        $this
+            ->connection
+            ->get()
+            ->set(
+                $username->getValue(),
+                $token->getToken()
+            );
     }
 
     public function get(Username $username): EncodedAuthenticationToken
     {
-        $value = $this->redis->get($username->getValue());
+        $value = $this
+            ->connection
+            ->get()
+            ->get(
+                $username->getValue()
+            );
         if ($value === null) {
             throw new TokenCacheException(
                 "Unexistant value."
@@ -38,19 +49,35 @@ class RedisTokenCache implements TokenCacheInterface
     public function expire(Username $username, \DateInterval $time): void
     {
         $oneDayInSeconds = 60 * 60 * 24;
-        $this->redis->expire($username->getValue(), $time->d * $oneDayInSeconds);
+        $this
+            ->connection
+            ->get()
+            ->expire(
+                $username->getValue(),
+                $time->d * $oneDayInSeconds
+            );
     }
 
     public function exists(Username $username): bool
     {
-        $exists = $this->redis->exists($username->getValue());
+        $exists = $this
+            ->connection
+            ->get()
+            ->exists(
+                $username->getValue()
+            );
         $exists = boolval($exists);
         return $exists;
     }
 
     public function delete(Username $username): void
     {
-        $status = $this->redis->del($username->getValue());
+        $status = $this
+            ->connection
+            ->get()
+            ->del(
+                $username->getValue()
+            );
         $status = boolval($status);
         if ($status === false) {
             throw new TokenCacheException(

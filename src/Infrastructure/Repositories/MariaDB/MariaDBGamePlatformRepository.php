@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Data\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementFetchFailureException;
@@ -16,17 +17,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(GamePlatform $gamePlatform): GamePlatform
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -34,7 +35,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $platformId = $gamePlatform->getPlatformIdValue();
             $gameId = $gamePlatform->getGameIdValue();
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO game_platform (
                     platform_id, 
                     game_id
@@ -57,10 +58,10 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -84,7 +85,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new GamePlatform(
                 Id::make($fetchResult["game_id"]),
@@ -93,7 +94,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -105,7 +106,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $platformId = $gamePlatform->getPlatformIdValue();
             $gameId = $gamePlatform->getGameIdValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE 
                     game_platform 
                 SET 
@@ -139,7 +140,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "DELETE FROM
                     game_platform
                 WHERE
@@ -168,7 +169,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     *
                 FROM
@@ -208,7 +209,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
     public function findAll(): GamePlatformCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -249,7 +250,7 @@ class MariaDBGamePlatformRepository implements GamePlatformRepositoryInterface
             $alias = "number_of_ids";
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS

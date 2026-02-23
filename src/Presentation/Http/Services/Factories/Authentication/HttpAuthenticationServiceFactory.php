@@ -10,16 +10,19 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtA
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Decoded\JwtDecodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Connection\RedisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Redis\Token\RedisTokenCache;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Predis\PredisConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\MariaDBUserRepository;
 
 class HttpAuthenticationServiceFactory
 {
-    public static function make(\PDO $repositoryConnection, EncryptionAdapter $encrypter): AuthenticationService
+    public static function make(): AuthenticationService
     {
+        $repositoryConnection = PdoRepositoryConnection::make();
+
         $userRepository = new MariaDBUserRepository(
             $repositoryConnection
         );
@@ -28,11 +31,13 @@ class HttpAuthenticationServiceFactory
             $repositoryConnection
         );
 
-        $cacheConnection = RedisConnection::get();
+        $cacheConnection = PredisConnection::make();
 
         $tokenCache = new RedisTokenCache(
             $cacheConnection
         );
+
+        $encrypter = EncryptionAdapter::make();
 
         $jwtAuthenticationTokenClock = new JwtAuthenticationTokenClock();
 

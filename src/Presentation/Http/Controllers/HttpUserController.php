@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
@@ -21,13 +24,16 @@ class HttpUserController
 {
     private UserService $userService;
     private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
 
     public function __construct(
         UserService $userService,
-        AuthenticationService $authenticationService
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService
     ) {
         $this->userService = $userService;
         $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
     }
 
     public function insert(HttpRequest $request): HttpResponse
@@ -35,9 +41,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::Create
             );
 
             $username = $request->getBodyOrDieTrying("username", HttpRequestBodyPartTypes::String);
@@ -74,9 +86,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::Update
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -112,9 +130,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::Activate
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -142,9 +166,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::List
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -186,9 +216,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::List
             );
 
             $username = $request->getParamOrDieTrying("username", HttpRouteParameterTypes::Text);
@@ -230,9 +266,15 @@ class HttpUserController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::User,
+                PermissionTypes::List
             );
 
             $users = $this->userService->findAll();

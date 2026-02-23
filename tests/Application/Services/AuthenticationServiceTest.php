@@ -18,7 +18,9 @@ use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Data\Permission;
+use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Data\Sector;
+use Mvreisg\GamebaseBackend\Domain\Data\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Data\User;
 use Mvreisg\GamebaseBackend\Domain\Data\Username;
 use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
@@ -62,7 +64,7 @@ class AuthenticationServiceTest extends TestCase
         $tokenCache = new MockTokenCache(
             $this->tokenCacheClock
         );
-        $this->encrypter = new EncryptionAdapter();
+        $this->encrypter = EncryptionAdapter::make();
         $this->userService = new UserService(
             $userRepository,
             $this->encrypter
@@ -141,6 +143,7 @@ class AuthenticationServiceTest extends TestCase
         $insertedPermission = $this->permissionRepository->insert(
             new Permission(
                 Name::make("permission"),
+                PermissionValue::make("a"),
                 true
             )
         );
@@ -148,6 +151,7 @@ class AuthenticationServiceTest extends TestCase
         $insertedSector = $this->sectorRepository->insert(
             new Sector(
                 Name::make("sector"),
+                SectorValue::make("a"),
                 true
             )
         );
@@ -232,19 +236,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -291,19 +297,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -340,19 +348,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -389,19 +399,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -439,19 +451,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -517,19 +531,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsSucceds(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -596,19 +612,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -675,19 +693,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithInvalidUsernameFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -742,19 +762,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -809,19 +831,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -876,19 +900,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -943,19 +969,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneDayBecauseOfExpiredTokenOnCache(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1017,19 +1045,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneDayBecauseOfExpiredTokenWhenValidating(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1091,19 +1121,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeekBecauseOfExpiredTokenOnCache(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1165,19 +1197,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeekBecauseOfExpiredTokenWhenValidating(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1239,19 +1273,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesLoginAfterOneDay(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1327,19 +1363,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeekBecauseOfExpiredTokenOnCache(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1401,19 +1439,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeekBecauseOfExpiredTokenWhenValidating(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1475,19 +1515,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneDayToAUserWithPermissionsToSectorsIsStillValidInThatDay(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1556,19 +1598,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneDayToAUserWithPermissionsToSectorsTurnsInvalidAfterOneDayBecauseOfExpiredTokenOnCache(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1625,19 +1669,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneDayToAUserWithPermissionsToSectorsTurnsInvalidAfterOneDayBecauseOfExpiredTokenWhenValidating(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1694,19 +1740,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsIsStillValidInThatDay(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1783,19 +1831,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsIsStillValidAfterOneDay(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1872,19 +1922,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsTurnsInvalidAfterOneWeekBecauseOfExpiredTokenOnCache(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -1942,19 +1994,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAEmittedTokenValidForOneWeekToAUserWithPermissionsToSectorsTurnsInvalidAfterOneWeekBecauseOfExpiredTokenWhenValidating(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
@@ -2023,19 +2077,21 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfALogoffSuccedsWithAValidTokenInformedByAUserWithPermissionsToSectors(): void
     {
-        $permission = new Permission(
-            Name::make("permission"),
-            true
+        $insertedPermission = $this->permissionRepository->insert(
+            new Permission(
+                Name::make("permission"),
+                PermissionValue::make("a"),
+                true
+            )
         );
 
-        $insertedPermission = $this->permissionRepository->insert($permission);
-
-        $sector = new Sector(
-            Name::make("sector"),
-            true
+        $insertedSector = $this->sectorRepository->insert(
+            new Sector(
+                Name::make("sector"),
+                SectorValue::make("a"),
+                true
+            )
         );
-
-        $insertedSector = $this->sectorRepository->insert($sector);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("test");

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Tests;
 
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 try {
@@ -12,5 +13,5 @@ try {
 
     DotenvEnvironment::load();
 } catch (\Throwable $e) {
-    print_r("Error! " . $e->getMessage());
+    Logger::logAppError($e);
 }

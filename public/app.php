@@ -1,6 +1,6 @@
 <?php
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Logger\HttpLogger;
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Presentation\Http\Router\HttpRouter;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpAuthenticationRoutes;
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpGameGenreRoutes;
@@ -49,5 +49,5 @@ try {
         )
         ->run();
 } catch (\Throwable $e) {
-    HttpLogger::logThrowable($e);
+    Logger::logHttpError($e);
 }

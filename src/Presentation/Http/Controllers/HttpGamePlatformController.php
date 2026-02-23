@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\GamePlatformService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Data\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
@@ -18,13 +21,16 @@ class HttpGamePlatformController
 {
     private GamePlatformService $gamePlatformService;
     private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
 
     public function __construct(
         GamePlatformService $gamePlatformService,
-        AuthenticationService $authenticationService
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService
     ) {
         $this->gamePlatformService = $gamePlatformService;
         $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
     }
 
     public function insert(HttpRequest $request): HttpResponse
@@ -32,9 +38,15 @@ class HttpGamePlatformController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::GamePlatform,
+                PermissionTypes::Create
             );
 
             $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
@@ -70,9 +82,15 @@ class HttpGamePlatformController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::GamePlatform,
+                PermissionTypes::Update
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -105,9 +123,15 @@ class HttpGamePlatformController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::GamePlatform,
+                PermissionTypes::Delete
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -133,9 +157,15 @@ class HttpGamePlatformController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::GamePlatform,
+                PermissionTypes::List
             );
 
             $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
@@ -165,9 +195,15 @@ class HttpGamePlatformController
         try {
             $response = HttpResponse::make();
 
-            HttpJwtAuthenticationTokenValidator::validate(
+            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
                 $request->getHeaderOrDieTrying("Authorization"),
                 $this->authenticationService
+            );
+
+            $this->authorizationService->check(
+                $validationResult->getUserSectorPermissionCollection(),
+                SectorTypes::GamePlatform,
+                PermissionTypes::List
             );
 
             $gamePlatforms = $this->gamePlatformService->findAll();

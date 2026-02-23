@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Data\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Data\Id;
 use Mvreisg\GamebaseBackend\Domain\Data\Name;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Connections\Pdo\PdoRepositoryConnection;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementCreationFailureException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\MariaDBRepositoryStatementExecutionFailureException;
@@ -18,17 +19,17 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDB\Exceptions\Maria
 
 class MariaDBGenreRepository implements GenreRepositoryInterface
 {
-    private \PDO $pdo;
+    private PdoRepositoryConnection $connection;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(PdoRepositoryConnection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
     }
 
     public function insert(Genre $genre): Genre
     {
         try {
-            $wasTheTransactionSuccessfullyCreated = $this->pdo->beginTransaction();
+            $wasTheTransactionSuccessfullyCreated = $this->connection->get()->beginTransaction();
             if ($wasTheTransactionSuccessfullyCreated === false) {
                 throw new MariaDBRepositoryTransactionCreationFailureException();
             }
@@ -42,7 +43,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 $genre->getIsActive()
             );
 
-            $insertStatement = $this->pdo->prepare(
+            $insertStatement = $this->connection->get()->prepare(
                 "INSERT INTO 
                     genre (
                         name,
@@ -67,10 +68,10 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             }
 
             $lastInsertedId = intval(
-                $this->pdo->lastInsertId()
+                $this->connection->get()->lastInsertId()
             );
 
-            $selectStatement = $this->pdo->prepare(
+            $selectStatement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -94,7 +95,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 throw new MariaDBRepositoryStatementFetchFailureException();
             }
 
-            $this->pdo->commit();
+            $this->connection->get()->commit();
 
             $return = new Genre(
                 Name::make($fetchResult["name"]),
@@ -108,7 +109,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            $this->connection->get()->rollBack();
             throw $e;
         }
     }
@@ -126,7 +127,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
                 $genre->getIsActive()
             );
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE 
                     genre 
                 SET 
@@ -166,7 +167,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
              */
             $intIsActive = intval($isActive);
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "UPDATE
                     genre
                 SET
@@ -200,7 +201,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
         try {
             $idValue = $id->getValue();
 
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -245,7 +246,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
     public function findAll(): GenreCollection
     {
         try {
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     * 
                 FROM 
@@ -291,7 +292,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $idValue = $id->getValue();
 
             $alias = "number_of_ids";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT
                     COUNT(*) 
                     AS
@@ -334,7 +335,7 @@ class MariaDBGenreRepository implements GenreRepositoryInterface
             $nameValue = $name->getValue();
 
             $alias = "number_of_names";
-            $statement = $this->pdo->prepare(
+            $statement = $this->connection->get()->prepare(
                 "SELECT 
                     COUNT(*)
                     AS

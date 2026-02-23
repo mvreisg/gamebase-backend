@@ -1,16 +1,21 @@
 <?php
 
-require_once dirname(__DIR__) . "/constants.php";
-require_once PROJECT_ROOT . "/bootstrap.php";
-
 use Defuse\Crypto\Key;
+use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 
-$key = Key::createNewRandomKey();
+try {
+    require_once dirname(__DIR__) . "/constants.php";
+    require_once PROJECT_ROOT . "/bootstrap.php";
 
-$key = $key->saveToAsciiSafeString();
+    $key = Key::createNewRandomKey();
 
-print_r(PHP_EOL);
-print_r("copy the value inside the parenthesis to DEFUSE_PHP_ENCRYPTION_KEY: ");
-print_r(PHP_EOL);
-print_r("(" . $key . ")");
-print_r(PHP_EOL);
+    $key = $key->saveToAsciiSafeString();
+
+    print_r(PHP_EOL);
+    print_r("copy the value inside the parenthesis to DEFUSE_PHP_ENCRYPTION_KEY: ");
+    print_r(PHP_EOL);
+    print_r("(" . $key . ")");
+    print_r(PHP_EOL);
+} catch (\Throwable $e) {
+    Logger::logAppError($e);
+}

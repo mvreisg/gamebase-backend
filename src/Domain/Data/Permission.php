@@ -10,12 +10,14 @@ class Permission
 {
     private ?Id $id;
     private Name $name;
+    private PermissionValue $value;
     private bool $isActive;
 
-    public function __construct(Name $name, bool $isActive)
+    public function __construct(Name $name, PermissionValue $value, bool $isActive)
     {
         $this->id = null;
         $this->name = $name;
+        $this->value = $value;
         $this->isActive = $isActive;
     }
 
@@ -42,6 +44,16 @@ class Permission
             );
         }
         return $this->name->getValue();
+    }
+
+    public function getPermissionValue(): string
+    {
+        if ($this->value === null) {
+            throw new DataException(
+                "The permission value is null"
+            );
+        }
+        return $this->value->getValue();
     }
 
     public function getIsActive(): bool

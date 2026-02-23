@@ -12,18 +12,19 @@ class AddingFirstUser extends AbstractSeed
     {
         $data = [
             [
-                "username" => DotenvEnvironment::get(
-                    "REPOSITORY_ROOT_USERNAME"
-                ),
-                "password" => (new EncryptionAdapter())
-                    ->encrypt(
-                        DotenvEnvironment::get(
-                            "REPOSITORY_ROOT_PASSWORD"
-                        )
-                    ),
+                "username" => DotenvEnvironment::get("REPOSITORY_ROOT_USERNAME"),
+                "password" => EncryptionAdapter::make()->encrypt(DotenvEnvironment::get("REPOSITORY_ROOT_PASSWORD")),
                 "is_active" => 1
             ]
         ];
+
+        $result = $this->fetchRow(
+            "SELECT COUNT(*) AS count FROM user WHERE username = '{$data[0]["username"]}'",
+        );
+
+        if ($result["count"] > 0) {
+            return;
+        }
 
         $this
             ->table("user")

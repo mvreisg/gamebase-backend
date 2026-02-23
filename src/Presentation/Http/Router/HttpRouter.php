@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Router;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Exceptions\AuthenticationServiceInvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\Exceptions\AuthorizationServiceUnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
@@ -372,6 +373,7 @@ class HttpRouter
             RepositoryUnexistantRegisterException |
             RepositoryDuplicatedRegisterException |
             AuthenticationServiceInvalidCredentialsException |
+            AuthorizationServiceUnauthorizedException |
             TokenCacheException
             $e
         ) {
