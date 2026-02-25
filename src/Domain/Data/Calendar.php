@@ -14,8 +14,8 @@ class Calendar
     }
 
     public static function getNowWithTimezone(): \DateTimeImmutable
-    {
-        return new \DateTimeImmutable()
+    {        
+        return (new \DateTimeImmutable())
             ->setTimezone(
                 new \DateTimeZone(
                     DotenvEnvironment::get("TIME_ZONE")
