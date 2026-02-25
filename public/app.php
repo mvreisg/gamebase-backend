@@ -14,7 +14,8 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserSectorPermissionRou
 use Mvreisg\GamebaseBackend\Presentation\Http\Routes\HttpUserRoutes;
 
 try {
-    require_once dirname(__DIR__) . "/bootstrap.php";
+    require_once dirname(__DIR__) . "/constants.php";
+    require_once PROJECT_ROOT . "/bootstrap.php";
 
     HttpRouter::make()
         ->addRoutes(
