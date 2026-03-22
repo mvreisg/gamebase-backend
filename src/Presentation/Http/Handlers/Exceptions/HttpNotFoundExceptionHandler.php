@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Error;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

@@ -13,8 +13,8 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Utils\ArrayKeysExistanceChecker;
-use Mvreisg\GamebaseBackend\Presentation\Http\Utils\HttpMissingKeysInformer;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Arrays\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -55,12 +55,12 @@ class HttpGameController
 
             $body = $request->getParsedBody();
 
-            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissing(
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
                 $body,
                 ["name", "is_active"]
             );
             if (count($missingBodyKeys) > 0) {
-                return HttpMissingKeysInformer::informBodyKeys($missingBodyKeys, $response);
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
             }
 
             $name = $body["name"];
@@ -111,19 +111,19 @@ class HttpGameController
                 PermissionTypes::Update
             );
 
-            $missingParams = ArrayKeysExistanceChecker::checkAndReturnMissing($args, ["id"]);
-            if (count($missingParams) > 0) {
-                return HttpMissingKeysInformer::informUriParams($missingParams, $response);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
             }
 
             $body = $request->getParsedBody();
 
-            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissing(
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
                 $body,
                 ["name", "is_active"]
             );
             if (count($missingBodyKeys) > 0) {
-                return HttpMissingKeysInformer::informBodyKeys($missingBodyKeys, $response);
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
             }
 
             $id = (int)$args["id"];
@@ -173,19 +173,19 @@ class HttpGameController
                 PermissionTypes::Activate
             );
 
-            $missingParams = ArrayKeysExistanceChecker::checkAndReturnMissing($args, ["id"]);
-            if (count($missingParams) > 0) {
-                return HttpMissingKeysInformer::informUriParams($missingParams, $response);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
             }
 
             $body = $request->getParsedBody();
 
-            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissing(
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
                 $body,
                 ["is_active"]
             );
             if (count($missingBodyKeys) > 0) {
-                return HttpMissingKeysInformer::informBodyKeys($missingBodyKeys, $response);
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
             }
 
             $id = (int)$args["id"];
@@ -229,9 +229,9 @@ class HttpGameController
                 PermissionTypes::List
             );
 
-            $missingParams = ArrayKeysExistanceChecker::checkAndReturnMissing($args, ["id"]);
-            if (count($missingParams) > 0) {
-                return HttpMissingKeysInformer::informUriParams($missingParams, $response);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
             }
 
             $id = (int)$args["id"];

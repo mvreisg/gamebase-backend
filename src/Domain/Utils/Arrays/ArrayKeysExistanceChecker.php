@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Domain\Utils;
+namespace Mvreisg\GamebaseBackend\Domain\Utils\Arrays;
 
 class ArrayKeysExistanceChecker
 {
-    public static function checkAndReturnMissing(array $container, array $requiredKeys): array
+    public static function checkAndReturnMissingKeys(array $container, array $requiredKeys): array
     {
         $missingKeys = [];
         foreach ($requiredKeys as $requiredKey) {

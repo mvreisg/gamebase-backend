@@ -5,8 +5,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpSessionController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Error\HttpNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\HttpAuthorizationTokenRetrieverMiddleware;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions\HttpNotFoundExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\HttpAuthenticationTokenRetrieverMiddleware;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
@@ -31,12 +31,12 @@ try {
 
     $app->group("/session", function (RouteCollectorProxy $sessionGroup) {
         $sessionGroup->post("/login", [HttpSessionController::class, "login"]);
-        $sessionGroup->delete("/logoff", [HttpSessionController::class, "logoff"])->add(HttpAuthorizationTokenRetrieverMiddleware::class);
+        $sessionGroup->delete("/logoff", [HttpSessionController::class, "logoff"])->add(HttpAuthenticationTokenRetrieverMiddleware::class);
     });
 
     $app->group("/authentication", function (RouteCollectorProxy $authenticationGroup) {
         $authenticationGroup->get("/validate", [HttpAuthenticationController::class, "validate"]);
-    })->add(HttpAuthorizationTokenRetrieverMiddleware::class);
+    })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
 
     $app->group("/game", function (RouteCollectorProxy $gameGroup) {
         $gameGroup->post("", [HttpGameController::class, "insert"]);
@@ -44,7 +44,7 @@ try {
         $gameGroup->patch("/{id:[0-9]+}", [HttpGameController::class, "setIsActive"]);
         $gameGroup->get("/{id:[0-9]+}", [HttpGameController::class, "findById"]);
         $gameGroup->get("", [HttpGameController::class, "findAll"]);
-    })->add(HttpAuthorizationTokenRetrieverMiddleware::class);
+    })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
 
     $app->run();
 

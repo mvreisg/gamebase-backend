@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Middlewares;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token;
 
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,7 +11,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
-class HttpAuthorizationTokenRetrieverMiddleware implements MiddlewareInterface
+class HttpAuthenticationTokenRetrieverMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

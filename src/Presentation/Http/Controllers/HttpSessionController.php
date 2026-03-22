@@ -12,8 +12,8 @@ use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
-use Mvreisg\GamebaseBackend\Domain\Utils\ArrayKeysExistanceChecker;
-use Mvreisg\GamebaseBackend\Presentation\Http\Utils\HttpMissingKeysInformer;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Arrays\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -34,12 +34,12 @@ class HttpSessionController
 
             $body = $request->getParsedBody();
 
-            $missingKeys = ArrayKeysExistanceChecker::checkAndReturnMissing(
+            $missingKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
                 $body,
                 ["username", "password", "one_week_login"]
             );
             if (count($missingKeys) > 0) {
-                return HttpMissingKeysInformer::informBodyKeys($missingKeys, $response);
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingKeys);
             }
 
             $username = $body["username"];
