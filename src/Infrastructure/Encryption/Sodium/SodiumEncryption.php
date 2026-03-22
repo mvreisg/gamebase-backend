@@ -12,7 +12,7 @@ class SodiumEncryption implements EncryptionInterface
 {
     public function encrypt(string $text): string
     {
-        $key = DotenvEnvironment::get("SODIUM_CRYPTO_SECRETBOX_KEY");
+        $key = getenv("SODIUM_CRYPTO_SECRETBOX_KEY");
         $key = sodium_hex2bin($key);
         $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
         $encrypted = sodium_crypto_secretbox($text, $nonce, $key);
@@ -22,7 +22,7 @@ class SodiumEncryption implements EncryptionInterface
 
     public function decrypt(string $secret): string
     {
-        $key = DotenvEnvironment::get("SODIUM_CRYPTO_SECRETBOX_KEY");
+        $key = getenv("SODIUM_CRYPTO_SECRETBOX_KEY");
         $key = sodium_hex2bin($key);
         $opened = base64_decode($secret, true);
         if ($opened === false) {

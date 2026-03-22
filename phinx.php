@@ -2,51 +2,55 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use DI\Container;
 
 try {
     require_once "constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
 
+    /**
+     * @var Container
+     */
+    $container = require_once PROJECT_ROOT . "/configurations/php-di/container_bootstrap.php";
+
     return [
         "paths" => [
-            "migrations" => "%%PHINX_CONFIG_DIR%%/db/migrations",
-            "seeds" => "%%PHINX_CONFIG_DIR%%/db/seeds"
+            "migrations" => "%%PHINX_CONFIG_DIR%%/configurations/phinx/migrations",
+            "seeds" => "%%PHINX_CONFIG_DIR%%/configurations/phinx/seeds"
         ],
         "environments" => [
             "default_migration_table" => "phinxlog",
             "default_environment" => "development",
             "production" => [
-                "adapter" => DotenvEnvironment::get("REPOSITORY_ADAPTER"),
-                "host" => DotenvEnvironment::get("REPOSITORY_HOST"),
-                "name" => DotenvEnvironment::get("REPOSITORY_DATABASE"),
-                "user" => DotenvEnvironment::get("REPOSITORY_USERNAME"),
-                "pass" => DotenvEnvironment::get("REPOSITORY_PASSWORD"),
-                "port" => DotenvEnvironment::get("REPOSITORY_PORT"),
-                "charset" => DotenvEnvironment::get("REPOSITORY_CHARSET"),
+                "adapter" => $container->get("repository.adapter"),
+                "host" => $container->get("repository.host"),
+                "name" => $container->get("repository.database"),
+                "user" => $container->get("repository.username"),
+                "pass" => $container->get("repository.password"),
+                "port" => $container->get("repository.port"),
+                "charset" => $container->get("repository.charset"),
             ],
             "development" => [
-                "adapter" => DotenvEnvironment::get("REPOSITORY_ADAPTER"),
-                "host" => DotenvEnvironment::get("REPOSITORY_HOST"),
-                "name" => DotenvEnvironment::get("REPOSITORY_DATABASE"),
-                "user" => DotenvEnvironment::get("REPOSITORY_USERNAME"),
-                "pass" => DotenvEnvironment::get("REPOSITORY_PASSWORD"),
-                "port" => DotenvEnvironment::get("REPOSITORY_PORT"),
-                "charset" => DotenvEnvironment::get("REPOSITORY_CHARSET"),
+                "adapter" => $container->get("repository.adapter"),
+                "host" => $container->get("repository.host"),
+                "name" => $container->get("repository.database"),
+                "user" => $container->get("repository.username"),
+                "pass" => $container->get("repository.password"),
+                "port" => $container->get("repository.port"),
+                "charset" => $container->get("repository.charset"),
             ],
             "testing" => [
-                "adapter" => DotenvEnvironment::get("REPOSITORY_ADAPTER"),
-                "host" => DotenvEnvironment::get("REPOSITORY_HOST"),
-                "name" => DotenvEnvironment::get("REPOSITORY_DATABASE"),
-                "user" => DotenvEnvironment::get("REPOSITORY_USERNAME"),
-                "pass" => DotenvEnvironment::get("REPOSITORY_PASSWORD"),
-                "port" => DotenvEnvironment::get("REPOSITORY_PORT"),
-                "charset" => DotenvEnvironment::get("REPOSITORY_CHARSET"),
+                "adapter" => $container->get("repository.adapter"),
+                "host" => $container->get("repository.host"),
+                "name" => $container->get("repository.database"),
+                "user" => $container->get("repository.username"),
+                "pass" => $container->get("repository.password"),
+                "port" => $container->get("repository.port"),
+                "charset" => $container->get("repository.charset"),
             ]
         ],
         "version_order" => "creation"
     ];
 } catch (\Throwable $e) {
-    Logger::logAppError($e);
+    throw $e;
 }

@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\Clock\MockTokenCacheClock;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Clock\MockTokenCacheClock;
 
 class MockTokenCache implements TokenCacheInterface
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Platform;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\Platform;
-use Mvreisg\GamebaseBackend\Domain\Data\PlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
+use Mvreisg\GamebaseBackend\Domain\Entities\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
 
 class PlatformService

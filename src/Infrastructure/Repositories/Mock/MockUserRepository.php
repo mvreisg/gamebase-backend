@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;

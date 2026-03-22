@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 
 class DecodedAuthenticationToken
 {
     private \DateTimeImmutable $issuedAt;
     private \DateTimeImmutable $expiresAt;
-    private AuthenticationData $data;
+    private SessionData $data;
 
     public function __construct(
         \DateTimeImmutable $issuedAt,
         \DateTimeImmutable $expiresAt,
-        AuthenticationData $data
+        SessionData $data
     ) {
         $this->issuedAt = $issuedAt;
         $this->expiresAt = $expiresAt;

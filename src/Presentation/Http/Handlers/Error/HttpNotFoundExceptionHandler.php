@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Error;
+
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Interfaces\ErrorHandlerInterface;
+use Slim\Psr7\Response;
+
+class HttpNotFoundExceptionHandler implements ErrorHandlerInterface
+{
+    public function __invoke(
+        ServerRequestInterface $request,
+        \Throwable $exception,
+        bool $displayErrorDetails,
+        bool $logErrors,
+        bool $logErrorDetails
+    ): ResponseInterface {
+        $response = new Response();
+        $response
+            ->getBody()
+            ->write(
+                json_encode([
+                    "message" => "Route not found."
+                ])
+            );
+        return $response
+            ->withHeader("Content-Type", "application/json")
+            ->withStatus(404);
+    }
+}

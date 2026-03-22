@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\GamePlatform;
 
-use Mvreisg\GamebaseBackend\Domain\Data\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Data\GamePlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;

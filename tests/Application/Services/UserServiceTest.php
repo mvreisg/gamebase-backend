@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
-use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\MockUserRepository;
 use PHPUnit\Framework\TestCase;
@@ -97,7 +97,7 @@ class UserServiceTest extends TestCase
 
     public function testIfAInsertionAttemptOfAActiveUserWithInvalidUsernameFails(): void
     {
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
 
         $username = Username::make("-");
         $password = DecodedPassword::make("test");
@@ -116,7 +116,7 @@ class UserServiceTest extends TestCase
 
     public function testIfAInsertionAttemptOfAActiveUserWithInvalidPasswordFails(): void
     {
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
 
         $username = Username::make("test");
         $password = DecodedPassword::make("-");
@@ -254,7 +254,7 @@ class UserServiceTest extends TestCase
             $insertedUser->getIsActive()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
 
         $updatedUser = new User(
             Username::make("-"),
@@ -301,7 +301,7 @@ class UserServiceTest extends TestCase
             $insertedUser->getIsActive()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
 
         $updatedUser = new User(
             Username::make("test2"),

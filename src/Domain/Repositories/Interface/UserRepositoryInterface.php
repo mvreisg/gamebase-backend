@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Repositories\Interface;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 
 interface UserRepositoryInterface
 {

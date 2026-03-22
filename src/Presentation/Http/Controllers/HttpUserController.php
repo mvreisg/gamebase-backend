@@ -9,10 +9,10 @@ use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationServ
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
 use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
 use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;

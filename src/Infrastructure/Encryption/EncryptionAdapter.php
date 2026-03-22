@@ -7,29 +7,23 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\SodiumEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 class EncryptionAdapter
 {
     private EncryptionInterface $encrypter;
 
-    public function __construct()
+    public function __construct(string $method, string $key)
     {
-        switch (DotenvEnvironment::get("ENCRYPTION_METHOD")) {
+        switch ($method) {
             case "sodium":
                 $this->encrypter = new SodiumEncryption();
                 break;
             case "defuse":
-                $this->encrypter = new DefuseEncryption();
+                $this->encrypter = new DefuseEncryption($key);
                 break;
             default:
                 throw new \DomainException("Invalid encryption method");
         }
-    }
-
-    public static function make(): self
-    {
-        return new self();
     }
 
     public function encrypt(string $data): string

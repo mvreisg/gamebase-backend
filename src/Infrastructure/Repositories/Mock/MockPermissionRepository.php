@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Permission;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;

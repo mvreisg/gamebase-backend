@@ -21,11 +21,15 @@ class JwtDecodedAuthenticationTokenValidator implements DecodedAuthenticationTok
     public function validate(DecodedAuthenticationToken $token): void
     {
         if ($token->getIssuedAt() > $this->clock->now()) {
-            throw new DecodedAuthenticationTokenValidatorException("The token issue date is in the future.");
+            throw new DecodedAuthenticationTokenValidatorException(
+                "The token issue date is in the future."
+            );
         }
 
         if ($token->getExpiresAt() < $this->clock->now()) {
-            throw new DecodedAuthenticationTokenValidatorException("The token has expired.");
+            throw new DecodedAuthenticationTokenValidatorException(
+                "The token has expired."
+            );
         }
     }
 }

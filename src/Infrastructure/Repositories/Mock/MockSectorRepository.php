@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Sector;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;

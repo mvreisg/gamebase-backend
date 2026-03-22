@@ -15,7 +15,8 @@ class DotenvEnvironment
         $dotenv->required(["ENVIRONMENT", "MACHINE"])->required();
 
         $environment = $_ENV["ENVIRONMENT"];
-        $machine = $_ENV["MACHINE"];                
+        $machine = $_ENV["MACHINE"];
+
         $dotenv = Dotenv::createMutable(
             PROJECT_ROOT,
             sprintf(
@@ -25,20 +26,5 @@ class DotenvEnvironment
             )
         );
         $dotenv->load();
-    }
-
-    public static function get(string $key): mixed
-    {
-        $value = $_ENV[$key];
-        return $value;
-    }
-
-    public static function getArray(string $key, string $separator): array
-    {
-        $values = explode(
-            $separator,
-            self::get($key)
-        );
-        return $values;
     }
 }

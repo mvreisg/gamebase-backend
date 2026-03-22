@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Repositories\Interface;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 
 interface UserSectorPermissionRepositoryInterface
 {

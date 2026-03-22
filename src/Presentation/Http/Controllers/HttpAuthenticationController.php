@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
-use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\Exceptions\DecodedAuthenticationTokenValidatorException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class HttpAuthenticationController
 {
@@ -24,96 +22,45 @@ class HttpAuthenticationController
         $this->authenticationService = $authenticationService;
     }
 
-    public function handleLogin(HttpRequest $request): HttpResponse
+    public function validate(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $username = $request->getBodyOrDieTrying("username", HttpRequestBodyPartTypes::String);
-            $password = $request->getBodyOrDieTrying("password", HttpRequestBodyPartTypes::String);
-            $oneWeekLogin = $request->getBodyOrDieTrying("one_week_login", HttpRequestBodyPartTypes::Bool);
+            $token = $request->getAttribute("token");
 
-            $result = $this->authenticationService->tryLogin(
-                new AuthenticationLoginInfo(
-                    Username::make($username),
-                    DecodedPassword::make($password),
-                    $oneWeekLogin
+            $this->authenticationService->validate(
+                new EncodedAuthenticationToken(
+                    $token
                 )
             );
-            $state = $result->getState();
-            switch ($state) {
-                case AuthenticationLoginStates::New:
-                    $token = $result->getToken();
-                    $oneDayInSeconds = 60 * 60 * 24;
-                    $timeToExpireInSeconds = $oneWeekLogin ? $oneDayInSeconds * 7 : $oneDayInSeconds;
-                    $response
-                        ->setBody([
-                            "seconds_to_expire" => $timeToExpireInSeconds,
-                            "token" => $token->getToken(),
-                            "login_data" => $result->getData()->toSnakeCaseArray()
-                        ])
-                        ->setStatusCreated()
-                        ->setContentTypeAsJson();
-                    return $response;
-                case AuthenticationLoginStates::Existing:
-                    $token = $result->getToken();
-                    $response
-                        ->setBody([
-                            "token" => $token->getToken(),
-                            "login_data" => $result->getData()->toSnakeCaseArray()
-                        ])
-                        ->setStatusOk()
-                        ->setContentTypeAsJson();
-                    return $response;
-                default:
-                    $response
-                        ->setStatusInternalServerError()
-                        ->setContentTypeAsJson();
-                    return $response;
+
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => "Valid."
+                    ])
+                );
+            return $response->withStatus(200);
+        } catch (\Throwable $e) {
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => $e->getMessage()
+                    ])
+                );
+            if ($e instanceof UnauthorizedException) {
+                return $response->withStatus(401);
+            } elseif (
+                $e instanceof InvalidTokenException ||
+                $e instanceof DecodedAuthenticationTokenValidatorException
+            ) {
+                return $response->withStatus(400);
+            } else {
+                return $response->withStatus(500);
             }
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    public function handleValidation(HttpRequest $request): HttpResponse
-    {
-        try {
-            $response = HttpResponse::make();
-
-            $result = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
-            );
-            $response
-                ->setStatusOk()
-                ->setBody([
-                    "login_info" => $result->toSnakeCaseArray()
-                ])
-                ->setContentTypeAsJson();
-            return $response;
-        } catch (\Throwable $e) {
-            throw $e;
-        }
-    }
-
-    public function handleLogoff(HttpRequest $request): HttpResponse
-    {
-        try {
-            $response = HttpResponse::make();
-
-            $result = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
-            );
-            $this->authenticationService->tryLogoff(
-                $result->getToken()
-            );
-            $response
-                ->setStatusOk();
-            return $response;
-        } catch (\Throwable $e) {
-            throw $e;
         }
     }
 }

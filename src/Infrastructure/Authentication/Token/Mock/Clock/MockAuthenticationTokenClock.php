@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Clock;
 
-use Mvreisg\GamebaseBackend\Domain\Interfaces\Clock;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
-class MockAuthenticationTokenClock implements Clock
+class MockAuthenticationTokenClock implements ClockInterface
 {
     private \DateTimeImmutable $now;
+    private \DateTimeZone $timezone;
 
-    public function __construct(\DateTimeImmutable $now)
+    public function __construct(\DateTimeImmutable $now, \DateTimeZone $timezone)
     {
-        $this->now = $now->setTimezone($this->getTimezone());
+        $this->timezone = $timezone;
+        $this->now = $now->setTimezone($this->timezone);
     }
 
     public function now(): \DateTimeImmutable
@@ -23,16 +24,18 @@ class MockAuthenticationTokenClock implements Clock
 
     public function getTimezone(): \DateTimeZone
     {
-        return new \DateTimeZone(DotenvEnvironment::get("TIME_ZONE"));
-    }
+        return $this->timezone;
+    }    
 
-    public function advance(\DateInterval $interval): void
+    public function add(\DateInterval $interval): \DateTimeImmutable
     {
         $this->now = $this->now->add($interval);
+        return $this->now;
     }
 
-    public function rewind(\DateInterval $interval): void
+    public function subtract(\DateInterval $interval): \DateTimeImmutable
     {
         $this->now = $this->now->sub($interval);
+        return $this->now;
     }
 }

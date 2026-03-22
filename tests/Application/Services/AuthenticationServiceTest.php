@@ -13,18 +13,18 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
-use Mvreisg\GamebaseBackend\Domain\Data\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Exceptions\DataException;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\Permission;
-use Mvreisg\GamebaseBackend\Domain\Data\PermissionValue;
-use Mvreisg\GamebaseBackend\Domain\Data\Sector;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorValue;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
@@ -332,7 +332,7 @@ class AuthenticationServiceTest extends TestCase
             )
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
 
         $wrongUsername = Username::make("-");
         $oneWeekLogin = true;
@@ -385,7 +385,7 @@ class AuthenticationServiceTest extends TestCase
 
         $oneWeekLogin = true;
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $wrongUsername = Username::make("-");
 
         $this->authenticationService->tryLogin(
@@ -436,7 +436,7 @@ class AuthenticationServiceTest extends TestCase
 
         $oneWeekLogin = false;
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $username = Username::make("test");
         $wrongPassword = DecodedPassword::make("-");
 
@@ -488,7 +488,7 @@ class AuthenticationServiceTest extends TestCase
 
         $oneWeekLogin = true;
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $username = Username::make("test");
         $wrongPassword = DecodedPassword::make("-");
 
@@ -750,7 +750,7 @@ class AuthenticationServiceTest extends TestCase
             $newResult->getData()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $this->authenticationService->tryLogin(
             new AuthenticationLoginInfo(
                 Username::make("-"),
@@ -819,7 +819,7 @@ class AuthenticationServiceTest extends TestCase
             $newResult->getData()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $this->authenticationService->tryLogin(
             new AuthenticationLoginInfo(
                 Username::make("-"),
@@ -888,7 +888,7 @@ class AuthenticationServiceTest extends TestCase
             $newResult->getData()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $this->authenticationService->tryLogin(
             new AuthenticationLoginInfo(
                 $username,
@@ -957,7 +957,7 @@ class AuthenticationServiceTest extends TestCase
             $newResult->getData()
         );
 
-        $this->expectException(DataException::class);
+        $this->expectException(EntityException::class);
         $this->authenticationService->tryLogin(
             new AuthenticationLoginInfo(
                 $username,

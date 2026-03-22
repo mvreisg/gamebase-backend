@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock;
 
-use Mvreisg\GamebaseBackend\Domain\Interfaces\Clock;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
-class JwtAuthenticationTokenClock implements Clock
+class JwtAuthenticationTokenClock implements ClockInterface
 {
+    private \DateTimeZone $timezone;
+
+    public function __construct(\DateTimeZone $timezone)
+    {
+        $this->timezone = $timezone;
+    }
+
     public function now(): \DateTimeImmutable
     {
-        return new \DateTimeImmutable("now", $this->getTimezone());
+        return new \DateTimeImmutable()->setTimezone($this->timezone);
     }
 
     public function getTimezone(): \DateTimeZone
     {
-        return new \DateTimeZone(DotenvEnvironment::get("TIME_ZONE"));
+        return $this->timezone;
     }
 }

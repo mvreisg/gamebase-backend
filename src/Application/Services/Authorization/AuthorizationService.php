@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authorization;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\Exceptions\AuthorizationServiceUnauthorizedException;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
@@ -60,7 +60,7 @@ class AuthorizationService
                 }
                 return;
             }
-            throw new AuthorizationServiceUnauthorizedException();
+            throw new UnauthorizedException();
         } catch (\Throwable $e) {
             throw $e;
         }

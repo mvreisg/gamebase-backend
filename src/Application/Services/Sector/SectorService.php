@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Sector;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
-use Mvreisg\GamebaseBackend\Domain\Data\Sector;
-use Mvreisg\GamebaseBackend\Domain\Data\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 
 class SectorService
