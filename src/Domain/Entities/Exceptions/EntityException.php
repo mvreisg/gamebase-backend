@@ -8,6 +8,6 @@ class EntityException extends \DomainException
 {
     public function __construct(string $message)
     {
-        parent::__construct("Domain data exception: $message");
+        parent::__construct("Entity data exception: $message");
     }
 }

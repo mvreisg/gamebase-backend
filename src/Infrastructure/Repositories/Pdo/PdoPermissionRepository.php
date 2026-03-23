@@ -36,22 +36,27 @@ class PdoPermissionRepository implements PermissionRepositoryInterface
                 $permission->getIsActive()
             );
 
+            $value = $permission->getPermissionValue();
+
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
                     permission 
                 (
                     name,
-                    is_active
+                    is_active,
+                    value
                 )
                 VALUES (
                     :name,
-                    :isActive
+                    :isActive,
+                    :value
                 );"
             );
 
             $insertStatement->execute([
                 ":name" => $name,
-                ":isActive" => $isActive
+                ":isActive" => $isActive,
+                ":value" => $value
             ]);
 
             $lastInsertedId = intval(
@@ -106,12 +111,15 @@ class PdoPermissionRepository implements PermissionRepositoryInterface
                 $permission->getIsActive()
             );
 
+            $value = $permission->getPermissionValue();
+
             $statement = $this->connection->prepare(
                 "UPDATE
                     permission
                 SET
                     name = :name,
-                    is_active = :isActive
+                    is_active = :isActive,
+                    value = :value
                 WHERE
                     id = :id;"
             );
@@ -119,7 +127,8 @@ class PdoPermissionRepository implements PermissionRepositoryInterface
             $statement->execute([
                 ":name" => $name,
                 ":isActive" => $isActive,
-                ":id" => $id
+                ":id" => $id,
+                ":value" => $value
             ]);
 
             $wasUpdated = $statement->rowCount() > 0;

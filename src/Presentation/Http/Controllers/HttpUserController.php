@@ -15,7 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
-use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Arrays\HttpMissingKeysInformerResponse;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 

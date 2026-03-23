@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Utils\Arrays;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response;
 
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayMissingKeysInformer;
 use Psr\Http\Message\ResponseInterface;

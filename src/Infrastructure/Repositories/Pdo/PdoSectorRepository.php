@@ -36,22 +36,27 @@ class PdoSectorRepository implements SectorRepositoryInterface
                 $sector->getIsActive()
             );
 
+            $value = $sector->getSectorValue();
+
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
                     sector 
                 (
                     name,
-                    is_active
+                    is_active,
+                    value
                 )
                 VALUES (
                     :name,
-                    :isActive
+                    :isActive,
+                    :value
                 );"
             );
 
             $insertStatement->execute([
                 ":name" => $name,
-                ":isActive" => $isActive
+                ":isActive" => $isActive,
+                ":value" => $value
             ]);
 
             $lastInsertedId = intval(
@@ -106,12 +111,15 @@ class PdoSectorRepository implements SectorRepositoryInterface
                 $sector->getIsActive()
             );
 
+            $value = $sector->getSectorValue();
+
             $statement = $this->connection->prepare(
                 "UPDATE
                     sector
                 SET
                     name = :name,
-                    is_active = :isActive
+                    is_active = :isActive,
+                    value = :value
                 WHERE
                     id = :id;"
             );
@@ -119,6 +127,7 @@ class PdoSectorRepository implements SectorRepositoryInterface
             $statement->execute([
                 ":name" => $name,
                 ":isActive" => $isActive,
+                ":value" => $value,
                 ":id" => $id
             ]);
 

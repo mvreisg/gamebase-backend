@@ -72,14 +72,31 @@ class SessionService
                     Username::make($fetchedUser->getUsernameValue())
                 );
                 $result = $this->authenticationTokenDecoder->decode($token);
+                $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
+                    $result->getUserId()
+                );
+                $sessionData = new SessionData(
+                    $result->getUserId(),
+                    $result->getUsername(),
+                    $userSectorPermissions
+                );
+                $duration = $result->getExpiresAt()->diff($result->getIssuedAt());
+                $newToken = $this->authenticationTokenEncoder->encode(
+                    $sessionData,
+                    $duration
+                );
+                $this->tokenCache->set(
+                    $result->getUsername(),
+                    $newToken
+                );
+                $this->tokenCache->expire(
+                    $result->getUsername(),
+                    $duration
+                );
                 return new SessionLoginResult(
                     SessionLoginStates::Existing,
-                    $token,
-                    new SessionData(
-                        $result->getUserId(),
-                        $result->getUsername(),
-                        $result->getUserSectorPermissionCollection()
-                    )
+                    $newToken,
+                    $sessionData
                 );
             }
 

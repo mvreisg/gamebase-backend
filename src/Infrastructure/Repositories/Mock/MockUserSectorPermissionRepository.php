@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
 {
@@ -42,7 +42,7 @@ class MockUserSectorPermissionRepository implements UserSectorPermissionReposito
         );
 
         if ($foundUserPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$userSectorPermission->getIdValue()}"
             );
         }
@@ -90,7 +90,7 @@ class MockUserSectorPermissionRepository implements UserSectorPermissionReposito
         );
 
         if ($foundUserPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -115,7 +115,7 @@ class MockUserSectorPermissionRepository implements UserSectorPermissionReposito
         );
 
         if ($foundUserPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }

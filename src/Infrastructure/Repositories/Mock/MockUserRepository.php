@@ -9,9 +9,9 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockUserRepository implements UserRepositoryInterface
 {
@@ -48,7 +48,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUser === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$user->getIdValue()}"
             );
         }
@@ -96,7 +96,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUser === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -132,7 +132,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUser === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -147,7 +147,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUser === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "username: {$username->getValue()}"
             );
         }
@@ -167,7 +167,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUser === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -180,7 +180,7 @@ class MockUserRepository implements UserRepositoryInterface
         );
 
         if ($foundUsers->count() > 1) {
-            throw new MockDuplicatedRegisterException(
+            throw new RepositoryDuplicatedRegisterException(
                 "username: {$username->getValue()}"
             );
         }

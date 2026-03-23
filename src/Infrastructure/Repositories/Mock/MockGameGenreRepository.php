@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGameGenreRepository implements GameGenreRepositoryInterface
 {
@@ -42,7 +42,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         );
 
         if ($foundGameGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$gameGenre->getIdValue()}"
             );
         }
@@ -87,7 +87,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         );
 
         if ($foundGameGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -107,7 +107,7 @@ class MockGameGenreRepository implements GameGenreRepositoryInterface
         );
 
         if ($foundGameGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }

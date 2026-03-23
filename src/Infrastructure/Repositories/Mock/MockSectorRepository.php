@@ -9,9 +9,9 @@ use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockSectorRepository implements SectorRepositoryInterface
 {
@@ -45,7 +45,7 @@ class MockSectorRepository implements SectorRepositoryInterface
         );
 
         if ($foundSector === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$sector->getIdValue()}"
             );
         }
@@ -86,7 +86,7 @@ class MockSectorRepository implements SectorRepositoryInterface
         );
 
         if ($foundSector === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -118,7 +118,7 @@ class MockSectorRepository implements SectorRepositoryInterface
         );
 
         if ($foundSector === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -138,7 +138,7 @@ class MockSectorRepository implements SectorRepositoryInterface
         );
 
         if ($foundSector === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -151,7 +151,7 @@ class MockSectorRepository implements SectorRepositoryInterface
         );
 
         if ($foundSectors->count() > 1) {
-            throw new MockDuplicatedRegisterException(
+            throw new RepositoryDuplicatedRegisterException(
                 "name: {$name->getValue()}"
             );
         }

@@ -8,9 +8,9 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Entities\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGenreRepository implements GenreRepositoryInterface
 {
@@ -44,7 +44,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         );
 
         if ($foundGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$genre->getIdValue()}"
             );
         }
@@ -81,7 +81,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         );
 
         if ($foundGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -112,7 +112,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         );
 
         if ($foundGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -132,7 +132,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         );
 
         if ($foundGenre === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -145,7 +145,7 @@ class MockGenreRepository implements GenreRepositoryInterface
         );
 
         if ($foundGenres->count() > 1) {
-            throw new MockDuplicatedRegisterException(
+            throw new RepositoryDuplicatedRegisterException(
                 "name: {$name->getValue()}"
             );
         }

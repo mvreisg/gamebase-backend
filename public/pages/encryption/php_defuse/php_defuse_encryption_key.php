@@ -23,17 +23,15 @@ require_once PROJECT_ROOT . "/public/components/head.php";
 ?>
 </head>
 <body>
-    <h1>PHP Defuse Encryption Key</h1>
+    <h1 class="m-1">PHP Defuse Encryption Key</h1>
 <?php
 require_once PROJECT_ROOT . "/public/components/nav.php";
 ?>
-<div>
-    <p>
-        Key: 
+<div class="m-1">
+    <span class="fw-semibold">Key:</span>
 <?php
-    echo $key;
+    echo "<pre style=\"background-color: gray;\" class=\"d-inline-flex\">$key</pre>";
 ?>
-    </p>
 </div>
 <?php
 require_once PROJECT_ROOT . "/public/components/js.php";

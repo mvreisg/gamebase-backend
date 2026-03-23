@@ -8,9 +8,9 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Entities\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockPlatformRepository implements PlatformRepositoryInterface
 {
@@ -44,7 +44,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         );
 
         if ($foundPlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$platform->getIdValue()}"
             );
         }
@@ -81,7 +81,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         );
 
         if ($foundPlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -112,7 +112,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         );
 
         if ($foundPlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -132,7 +132,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         );
 
         if ($foundPlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -145,7 +145,7 @@ class MockPlatformRepository implements PlatformRepositoryInterface
         );
 
         if ($foundPlatforms->count() > 1) {
-            throw new MockDuplicatedRegisterException(
+            throw new RepositoryDuplicatedRegisterException(
                 "name: {$name->getValue()}"
             );
         }

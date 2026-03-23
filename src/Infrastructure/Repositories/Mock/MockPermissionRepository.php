@@ -9,9 +9,9 @@ use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockPermissionRepository implements PermissionRepositoryInterface
 {
@@ -45,7 +45,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         );
 
         if ($foundPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$permission->getIdValue()}"
             );
         }
@@ -83,7 +83,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         );
 
         if ($foundPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -115,7 +115,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         );
 
         if ($foundPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -135,7 +135,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         );
 
         if ($foundPermission === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -148,7 +148,7 @@ class MockPermissionRepository implements PermissionRepositoryInterface
         );
 
         if ($foundPermissions->count() > 1) {
-            throw new MockDuplicatedRegisterException(
+            throw new RepositoryDuplicatedRegisterException(
                 "name: {$name->getValue()}"
             );
         }

@@ -7,8 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Mock\Exceptions\MockUnexistantRegisterException;
 
 class MockGamePlatformRepository implements GamePlatformRepositoryInterface
 {
@@ -42,7 +42,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         );
 
         if ($foundGamePlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$gamePlatform->getIdValue()}"
             );
         }
@@ -86,7 +86,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         );
 
         if ($foundGamePlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }
@@ -106,7 +106,7 @@ class MockGamePlatformRepository implements GamePlatformRepositoryInterface
         );
 
         if ($foundGamePlatform === null) {
-            throw new MockUnexistantRegisterException(
+            throw new RepositoryUnexistantRegisterException(
                 "id: {$id->getValue()}"
             );
         }

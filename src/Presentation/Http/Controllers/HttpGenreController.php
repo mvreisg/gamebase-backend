@@ -4,54 +4,67 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Genre\GenreService;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class HttpGenreController
 {
     private GenreService $genreService;
-    private AuthenticationService $authenticationService;
     private AuthorizationService $authorizationService;
+    private AuthenticationTokenDecoder $authenticationTokenDecoder;
 
     public function __construct(
         GenreService $genreService,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        AuthorizationService $authorizationService,
+        AuthenticationTokenDecoder $authenticationTokenDecoder
     ) {
         $this->genreService = $genreService;
-        $this->authenticationService = $authenticationService;
         $this->authorizationService = $authorizationService;
+        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
     }
 
-    public function insert(HttpRequest $request): HttpResponse
+    public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Genre,
                 PermissionTypes::Create
             );
 
-            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["name", "is_active"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $name = $body["name"];
+            $isActive = $body["is_active"];
 
             $genre = $this->genreService->insert(
                 new Genre(
@@ -60,41 +73,62 @@ class HttpGenreController
                 )
             );
 
+            $data = [
+                "id" => $genre->getIdValue(),
+                "name" => $genre->getNameValue(),
+                "is_active" => $genre->getIsActive()
+            ];
+
             $response
-                ->setBody([
-                    "data" => [
-                        "id" => $genre->getIdValue(),
-                        "name" => $genre->getNameValue(),
-                        "is_active" => $genre->getIsActive()
-                    ]
-                ])
-                ->setStatusCreated()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(201);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request): HttpResponse
+    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Genre,
                 PermissionTypes::Update
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
-            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["name", "is_active"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $id = (int)$args["id"];
+            $name = $body["name"];
+            $isActive = $body["is_active"];
 
             $genre = new Genre(
                 Name::make($name),
@@ -107,35 +141,55 @@ class HttpGenreController
             );
 
             $response
-                ->setBody([
-                    "was_updated" => $wasUpdated
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasUpdated ? "updated" : "same"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request): HttpResponse
+    public function setIsActive(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Genre,
                 PermissionTypes::Activate
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["is_active"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $id = (int)$args["id"];
+            $isActive = $body["is_active"];
 
             $wasUpdated = $this->genreService->setIsActive(
                 Id::make($id),
@@ -143,67 +197,83 @@ class HttpGenreController
             );
 
             $response
-                ->setBody([
-                    "was_updated" => $wasUpdated
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasUpdated ? "updated" : "same"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request): HttpResponse
+    public function findById(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Genre,
                 PermissionTypes::List
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $id = (int)$args["id"];
 
             $genre = $this->genreService->findById(
                 Id::make($id)
             );
 
             $response
-                ->setBody([
-                    "data" => [
-                        "id" => $genre->getIdValue(),
-                        "name" => $genre->getNameValue(),
-                        "is_active" => $genre->getIsActive()
-                    ]
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => [
+                            "id" => $genre->getIdValue(),
+                            "name" => $genre->getNameValue(),
+                            "is_active" => $genre->getIsActive()
+                        ]
+                    ])
+                );
+            return $response
+                ->withStatus(200);
             return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request): HttpResponse
+    public function findAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Genre,
                 PermissionTypes::List
             );
@@ -212,12 +282,13 @@ class HttpGenreController
 
             if ($genres->count() === 0) {
                 $response
-                    ->setBody([
-                        "message" => "Nothing found!"
-                    ])
-                    ->setStatusNoContent()
-                    ->setContentTypeAsJson();
-                return $response;
+                    ->getBody()
+                    ->write(
+                        json_encode([
+                            "message" => "Nothing found!"
+                        ])
+                    );
+                return $response->withStatus(404);
             }
 
             foreach ($genres->fetchAll() as $genre) {
@@ -229,13 +300,14 @@ class HttpGenreController
             }
 
             $response
-                ->setBody([
-                    "number_found" => $genres->count(),
-                    "data" => $data
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "number_found" => $genres->count(),
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }

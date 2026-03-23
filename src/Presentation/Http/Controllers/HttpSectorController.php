@@ -4,56 +4,69 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\SectorService;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorValue;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class HttpSectorController
 {
     private SectorService $sectorService;
-    private AuthenticationService $authenticationService;
     private AuthorizationService $authorizationService;
+    private AuthenticationTokenDecoder $authenticationTokenDecoder;
 
     public function __construct(
         SectorService $sectorService,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        AuthorizationService $authorizationService,
+        AuthenticationTokenDecoder $authenticationTokenDecoder
     ) {
         $this->sectorService = $sectorService;
-        $this->authenticationService = $authenticationService;
         $this->authorizationService = $authorizationService;
+        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
     }
 
-    public function insert(HttpRequest $request): HttpResponse
+    public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Sector,
                 PermissionTypes::Create
             );
 
-            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
-            $value = $request->getBodyOrDieTrying("value", HttpRequestBodyPartTypes::String);
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["name", "is_active", "value"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $name = $body["name"];
+            $isActive = $body["is_active"];
+            $value = $body["value"];
 
             $sector = $this->sectorService->insert(
                 new Sector(
@@ -63,42 +76,64 @@ class HttpSectorController
                 )
             );
 
+            $data = [
+                "id" => $sector->getIdValue(),
+                "name" => $sector->getNameValue(),
+                "is_active" => $sector->getIsActive(),
+                "value" => $sector->getSectorValue()
+            ];
+
             $response
-                ->setBody([
-                    "data" => [
-                        "id" => $sector->getIdValue(),
-                        "name" => $sector->getNameValue(),
-                        "is_active" => $sector->getIsActive()
-                    ]
-                ])
-                ->setStatusCreated()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(201);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request): HttpResponse
+    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Sector,
                 PermissionTypes::Update
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
-            $name = $request->getBodyOrDieTrying("name", HttpRequestBodyPartTypes::String);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
-            $value = $request->getBodyOrDieTrying("value", HttpRequestBodyPartTypes::String);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["name", "is_active", "value"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $id = (int)$args["id"];
+            $name = $body["name"];
+            $isActive = $body["is_active"];
+            $value = $body["value"];
 
             $sector = new Sector(
                 Name::make($name),
@@ -112,35 +147,55 @@ class HttpSectorController
             );
 
             $response
-                ->setBody([
-                    "was_updated" => $wasUpdated
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasUpdated ? "updated" : "same"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function setIsActive(HttpRequest $request): HttpResponse
+    public function setIsActive(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Sector,
                 PermissionTypes::Activate
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
-            $isActive = $request->getBodyOrDieTrying("is_active", HttpRequestBodyPartTypes::Bool);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["is_active"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $id = (int)$args["id"];
+            $isActive = $body["is_active"];
 
             $wasUpdated = $this->sectorService->setIsActive(
                 Id::make($id),
@@ -148,67 +203,84 @@ class HttpSectorController
             );
 
             $response
-                ->setBody([
-                    "was_updated" => $wasUpdated
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasUpdated ? "updated" : "same"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request): HttpResponse
+    public function findById(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Sector,
                 PermissionTypes::List
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $id = (int)$args["id"];
 
             $sector = $this->sectorService->findById(
                 Id::make($id)
             );
 
             $response
-                ->setBody([
-                    "data" => [
-                        "id" => $sector->getIdValue(),
-                        "name" => $sector->getNameValue(),
-                        "is_active" => $sector->getIsActive()
-                    ]
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => [
+                            "id" => $sector->getIdValue(),
+                            "name" => $sector->getNameValue(),
+                            "value" => $sector->getSectorValue(),
+                            "is_active" => $sector->getIsActive()
+                        ]
+                    ])
+                );
+            return $response
+                ->withStatus(200);
             return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request): HttpResponse
+    public function findAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
+                $decodedToken->getUserSectorPermissionCollection(),
                 SectorTypes::Sector,
                 PermissionTypes::List
             );
@@ -217,31 +289,33 @@ class HttpSectorController
 
             if ($sectors->count() === 0) {
                 $response
-                    ->setBody([
-                        "message" => "Nothing found!"
-                    ])
-                    ->setStatusNoContent()
-                    ->setContentTypeAsJson();
-                return $response;
+                    ->getBody()
+                    ->write(
+                        json_encode([
+                            "message" => "Nothing found!"
+                        ])
+                    );
+                return $response->withStatus(404);
             }
 
-            $data = [];
             foreach ($sectors->fetchAll() as $sector) {
                 $data[] = [
                     "id" => $sector->getIdValue(),
                     "name" => $sector->getNameValue(),
+                    "value" => $sector->getSectorValue(),
                     "is_active" => $sector->getIsActive()
                 ];
             }
 
             $response
-                ->setBody([
-                    "number_found" => $sectors->count(),
-                    "data" => $data
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "number_found" => $sectors->count(),
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }

@@ -10,7 +10,7 @@ require_once PROJECT_ROOT . "/public/components/head.php";
 ?>
 </head>
 <body>
-    <h1>Gamebase-Backend</h1>
+    <h1 class="m-1">Gamebase-Backend</h1>
 <?php
 require_once PROJECT_ROOT . "/public/components/nav.php";
 ?>

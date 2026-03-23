@@ -35,7 +35,7 @@ class PermissionValue
             );
         }
 
-        $isInvalid = preg_match("/[^a-zA-Z0-9]/", $originalName);
+        $isInvalid = preg_match("/[^a-zA-Z0-9\_]/", $originalName);
         if ($isInvalid) {
             throw new EntityException(
                 "The value is invalid!"
