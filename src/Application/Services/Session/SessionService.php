@@ -11,19 +11,19 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAut
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Domain\Session\Exceptions\InvalidCredentialsException;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 
 class SessionService
 {
     private UserRepositoryInterface $userRepository;
     private TokenCacheInterface $tokenCache;
-    private EncryptionAdapter $encrypter;
+    private EncryptionInterface $encrypter;
     private AuthenticationTokenEncoder $authenticationTokenEncoder;
     private AuthenticationTokenDecoder $authenticationTokenDecoder;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
@@ -31,7 +31,7 @@ class SessionService
     public function __construct(
         UserRepositoryInterface $userRepository,
         TokenCacheInterface $tokenCache,
-        EncryptionAdapter $encrypter,
+        EncryptionInterface $encrypter,
         AuthenticationTokenEncoder $authenticationTokenEncoder,
         AuthenticationTokenDecoder $authenticationTokenDecoder,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,

@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Authentic
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\DecodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Encoded\EncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
@@ -22,7 +23,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtA
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Decoded\JwtDecodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Predis\Token\PredisTokenCache;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGameGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGamePlatformRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGameRepository;
@@ -38,7 +39,6 @@ try {
     return [
         "timezone" => fn () => $_ENV["TIME_ZONE"],
 
-        "encryption.method" => fn () => $_ENV["ENCRYPTION_METHOD"],
         "encryption.defuse.key" => fn () => $_ENV["DEFUSE_PHP_ENCRYPTION_KEY"],
         "encryption.sodium.key" => fn () => $_ENV["SODIUM_CRYPTO_SECRETBOX_KEY"],
 
@@ -58,8 +58,9 @@ try {
         "cache.redis.host" => fn () => $_ENV["REDIS_HOST"],
         "cache.redis.port" => fn () => $_ENV["REDIS_PORT"],
 
-        EncryptionAdapter::class => DI\autowire()
-            ->constructorParameter("method", DI\get("encryption.method"))
+        EncryptionInterface::class => DI\get(DefuseEncryption::class),
+
+        DefuseEncryption::class => DI\autowire()
             ->constructorParameter("key", DI\get("encryption.defuse.key")),
 
         JwtAuthenticationTokenDecoder::class => DI\autowire()

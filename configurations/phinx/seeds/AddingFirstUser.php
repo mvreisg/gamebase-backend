@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use DI\Container;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Phinx\Seed\AbstractSeed;
 
 class AddingFirstUser extends AbstractSeed
@@ -18,9 +18,9 @@ class AddingFirstUser extends AbstractSeed
         $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
         /**
-         * @var EncryptionAdapter
+         * @var EncryptionInterface
          */
-        $encrypter = $container->get(EncryptionAdapter::class);
+        $encrypter = $container->get(EncryptionInterface::class);
         $data = [
             [
                 "username" => $container->get("repository.root.username"),
