@@ -11,7 +11,7 @@ try {
     /**
      * @var Container
      */
-    $container = require_once PROJECT_ROOT . "/configurations/php-di/container_bootstrap.php";
+    $container = require_once PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
     return [
         "paths" => [

@@ -9,7 +9,7 @@ try {
     require_once PROJECT_ROOT . "/bootstrap.php";
 
     $builder = new ContainerBuilder();
-    $builder->addDefinitions(PROJECT_ROOT . "/config/php-di/definitions.php");
+    $builder->addDefinitions(PROJECT_ROOT . "/configurations/php_di/definitions.php");
     $container = $builder->build();
 
     return $container;

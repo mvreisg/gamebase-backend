@@ -3,16 +3,15 @@
 declare(strict_types=1);
 
 use DI\Container;
-use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 
 try {
-    require_once dirname(__DIR__) . "/constants.php";
+    require_once dirname(__DIR__, 4) . "/constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
 
     /**
      * @var Container
      */
-    $container = require PROJECT_ROOT . "/configurations/php-di/container_bootstrap.php";
+    $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
     $database = $container->get("repository.database");
     $adapter = $container->get("repository.adapter");
@@ -29,7 +28,38 @@ try {
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
         ]
     );
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS $database;");
+    $result = $pdo->exec("DROP DATABASE IF EXISTS $database;");
+
 } catch (\Throwable $e) {
-    Logger::logAppError($e);
+    print_r($e);
 }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<?php
+require_once PROJECT_ROOT . "/public/components/head.php";
+?>
+</head>
+<body>
+    <h1>PDO Create Database</h1>
+<?php
+require_once PROJECT_ROOT . "/public/components/nav.php";
+?>
+<div>
+    <p>
+        Drop status: 
+<?php
+if ($result) {
+    print_r("ok");
+} else {
+    print_r("error");
+}
+?>
+    </p>
+</div>
+<?php
+require_once PROJECT_ROOT . "/public/components/js.php";
+?>
+</body>
+</html>

@@ -15,7 +15,7 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
         /**
          * @var Container
          */
-        $container = require PROJECT_ROOT . "/config/php-di/container_bootstrap.php";
+        $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
         $userResult = $this->fetchRow("SELECT * FROM user WHERE username = '{$container->get("repository.root.username")}'");
 

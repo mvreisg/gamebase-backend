@@ -15,7 +15,7 @@ class AddingFirstUser extends AbstractSeed
         /**
          * @var Container
          */
-        $container = require PROJECT_ROOT . "/configurations/php-di/container_bootstrap.php";
+        $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
         /**
          * @var EncryptionAdapter

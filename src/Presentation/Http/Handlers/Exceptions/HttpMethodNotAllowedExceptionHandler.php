@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\Interfaces\ErrorHandlerInterface;
 use Slim\Psr7\Response;
 
-class HttpNotFoundExceptionHandler implements ErrorHandlerInterface
+class HttpMethodNotAllowedExceptionHandler implements ErrorHandlerInterface
 {
     public function __invoke(
         ServerRequestInterface $request,
@@ -23,7 +23,7 @@ class HttpNotFoundExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Route not found: {$request->getUri()->getPath()}."
+                    "message" => "Method not allowed: {$request->getMethod()}."
                 ])
             );
         return $response

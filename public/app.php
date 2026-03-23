@@ -1,12 +1,14 @@
 <?php
 
 use DI\ContainerBuilder;
-use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpSessionController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpUserController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions\HttpMethodNotAllowedExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions\HttpNotFoundExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\HttpAuthenticationTokenRetrieverMiddleware;
+use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
@@ -16,7 +18,7 @@ try {
     require_once PROJECT_ROOT . "/bootstrap.php";
 
     $builder = new ContainerBuilder();
-    $builder->addDefinitions(PROJECT_ROOT . "/configurations/php-di/definitions.php");
+    $builder->addDefinitions(PROJECT_ROOT . "/configurations/php_di/definitions.php");
     $container = $builder->build();
 
     AppFactory::setContainer($container);
@@ -24,9 +26,14 @@ try {
 
     $app->addBodyParsingMiddleware();
 
-    $app->addErrorMiddleware(true, true, true)->setErrorHandler(
+    $errorMiddleware = $app->addErrorMiddleware(true, true, true);
+    $errorMiddleware->setErrorHandler(
         HttpNotFoundException::class,
         HttpNotFoundExceptionHandler::class
+    );
+    $errorMiddleware->setErrorHandler(
+        HttpMethodNotAllowedException::class,
+        HttpMethodNotAllowedExceptionHandler::class
     );
 
     $app->group("/session", function (RouteCollectorProxy $sessionGroup) {
@@ -46,9 +53,16 @@ try {
         $gameGroup->get("", [HttpGameController::class, "findAll"]);
     })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
 
-    $app->run();
+    $app->group("/user", function (RouteCollectorProxy $userGroup) {
+        $userGroup->post("", [HttpUserController::class, "insert"]);
+        $userGroup->put("/{id:[0-9]+}", [HttpUserController::class, "update"]);
+        $userGroup->patch("/{id:[0-9]+}", [HttpUserController::class, "setIsActive"]);
+        $userGroup->get("/{id:[0-9]+}", [HttpUserController::class, "findById"]);
+        $userGroup->get("/{username:[a-zA-Z0-9]+}", [HttpUserController::class, "findByUsername"]);
+        $userGroup->get("", [HttpUserController::class, "findAll"]);
+    })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
 
+    $app->run();
 } catch (\Throwable $e) {
-    Logger::logHttpError($e);
     print_r($e);
 }
