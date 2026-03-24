@@ -47,7 +47,7 @@ class HttpGameGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::GamePlatform,
                 PermissionTypes::Create
             );
@@ -105,7 +105,7 @@ class HttpGameGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::GamePlatform,
                 PermissionTypes::Update
             );
@@ -167,7 +167,7 @@ class HttpGameGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::GamePlatform,
                 PermissionTypes::Delete
             );
@@ -211,7 +211,7 @@ class HttpGameGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::GamePlatform,
                 PermissionTypes::List
             );
@@ -260,7 +260,7 @@ class HttpGameGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::GamePlatform,
                 PermissionTypes::List
             );

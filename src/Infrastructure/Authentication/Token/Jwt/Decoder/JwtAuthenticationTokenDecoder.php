@@ -6,11 +6,11 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decode
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
-use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
 
 class JwtAuthenticationTokenDecoder implements AuthenticationTokenDecoder
@@ -28,7 +28,7 @@ class JwtAuthenticationTokenDecoder implements AuthenticationTokenDecoder
     {
         try {
             $payload = JWT::decode($token->getToken(), new Key($this->key, "HS256"));
-            $data = SessionData::toObject($payload->sub);
+            $data = AuthenticationData::toObject($payload->sub);
             return new DecodedAuthenticationToken(
                 new \DateTimeImmutable("@{$payload->iat}")->setTimezone($this->clock->getTimezone()),
                 new \DateTimeImmutable("@{$payload->exp}")->setTimezone($this->clock->getTimezone()),

@@ -48,7 +48,7 @@ class HttpGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Genre,
                 PermissionTypes::Create
             );
@@ -106,7 +106,7 @@ class HttpGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Genre,
                 PermissionTypes::Update
             );
@@ -168,7 +168,7 @@ class HttpGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Genre,
                 PermissionTypes::Activate
             );
@@ -224,7 +224,7 @@ class HttpGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Genre,
                 PermissionTypes::List
             );
@@ -273,7 +273,7 @@ class HttpGenreController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Genre,
                 PermissionTypes::List
             );

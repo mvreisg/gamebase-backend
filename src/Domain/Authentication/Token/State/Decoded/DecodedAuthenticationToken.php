@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded;
 
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 
 class DecodedAuthenticationToken
 {
     private \DateTimeImmutable $issuedAt;
     private \DateTimeImmutable $expiresAt;
-    private SessionData $data;
+    private AuthenticationData $authenticationData;
 
     public function __construct(
         \DateTimeImmutable $issuedAt,
         \DateTimeImmutable $expiresAt,
-        SessionData $data
+        AuthenticationData $authenticationData
     ) {
         $this->issuedAt = $issuedAt;
         $this->expiresAt = $expiresAt;
-        $this->data = $data;
+        $this->authenticationData = $authenticationData;
     }
 
     public function getIssuedAt(): \DateTimeImmutable
@@ -37,16 +36,11 @@ class DecodedAuthenticationToken
 
     public function getUserId(): Id
     {
-        return $this->data->getUserId();
+        return $this->authenticationData->getUserId();
     }
 
     public function getUsername(): Username
     {
-        return $this->data->getUsername();
-    }
-
-    public function getUserSectorPermissionCollection(): UserSectorPermissionCollection
-    {
-        return $this->data->getUserSectorPermissionCollection();
+        return $this->authenticationData->getUsername();
     }
 }

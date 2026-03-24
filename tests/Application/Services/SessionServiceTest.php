@@ -36,8 +36,6 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterfac
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Domain\Session\Exceptions\InvalidCredentialsException;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Clock\MockTokenCacheClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Mock\Token\MockTokenCache;
 use PHPUnit\Framework\TestCase;
 
 class SessionServiceTest extends TestCase
@@ -793,12 +791,22 @@ class SessionServiceTest extends TestCase
             ->method("findByUsername")
             ->willReturn($user);
 
-        $tokenCache = new MockTokenCache(
-            new MockTokenCacheClock(
-                new \DateTimeImmutable(),
-                new \DateTimeZone("UTC")
-            )
-        );
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+        $tokenCache
+            ->method("set")
+            ->with($username, $encodedToken);
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
 
         $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
 
@@ -868,7 +876,6 @@ class SessionServiceTest extends TestCase
             ->method("findAllByUserId")
             ->willReturn($userSectorPermissionCollection);
 
-        $token = $this->createMock(EncodedAuthenticationToken::class);
         $sessionData = $this->createMock(SessionData::class);
         $sessionData
             ->method("getUserId")
@@ -885,7 +892,7 @@ class SessionServiceTest extends TestCase
         $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
         $authenticationTokenEncoder
             ->method("encode")
-            ->willReturn($token);
+            ->willReturn($encodedToken);
 
         $sessionService = new SessionService(
             $userRepository,
@@ -929,7 +936,7 @@ class SessionServiceTest extends TestCase
             $result->getState()
         );
         $this->assertEquals(
-            $token,
+            $encodedToken,
             $result->getToken()
         );
 
@@ -954,7 +961,7 @@ class SessionServiceTest extends TestCase
             $secondResult->getState()
         );
         $this->assertEquals(
-            $token,
+            $encodedToken,
             $secondResult->getToken()
         );
     }

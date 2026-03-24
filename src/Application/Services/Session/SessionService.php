@@ -7,6 +7,7 @@ namespace Mvreisg\GamebaseBackend\Application\Services\Session;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginResult;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginStates;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
@@ -63,39 +64,27 @@ class SessionService
                 throw new InvalidCredentialsException();
             }
 
+            $username = Username::make($fetchedUser->getUsernameValue());
             $exists = $this->tokenCache->exists(
-                Username::make($fetchedUser->getUsernameValue())
+                $username
             );
 
             if ($exists) {
                 $token = $this->tokenCache->get(
                     Username::make($fetchedUser->getUsernameValue())
                 );
-                $result = $this->authenticationTokenDecoder->decode($token);
+                $id = Id::make($fetchedUser->getIdValue());
                 $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                    $result->getUserId()
+                    $id
                 );
                 $sessionData = new SessionData(
-                    $result->getUserId(),
-                    $result->getUsername(),
+                    $id,
+                    $username,
                     $userSectorPermissions
-                );
-                $duration = $result->getExpiresAt()->diff($result->getIssuedAt());
-                $newToken = $this->authenticationTokenEncoder->encode(
-                    $sessionData,
-                    $duration
-                );
-                $this->tokenCache->set(
-                    $result->getUsername(),
-                    $newToken
-                );
-                $this->tokenCache->expire(
-                    $result->getUsername(),
-                    $duration
                 );
                 return new SessionLoginResult(
                     SessionLoginStates::Existing,
-                    $newToken,
+                    $token,
                     $sessionData
                 );
             }
@@ -119,7 +108,10 @@ class SessionService
             }
 
             $token = $this->authenticationTokenEncoder->encode(
-                $sessionData,
+                new AuthenticationData(
+                    Id::make($fetchedUser->getIdValue()),
+                    Username::make($fetchedUser->getUsernameValue())
+                ),
                 $interval
             );
 

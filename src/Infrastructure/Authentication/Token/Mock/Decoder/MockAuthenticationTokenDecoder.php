@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Decoder;
 
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Mock\Clock\MockAuthenticationTokenClock;
 
 class MockAuthenticationTokenDecoder implements AuthenticationTokenDecoder
@@ -44,7 +44,7 @@ class MockAuthenticationTokenDecoder implements AuthenticationTokenDecoder
                 "Issued date is in the future."
             );
         }
-        $data = SessionData::toObject($payload);
+        $data = AuthenticationData::toObject($payload);
         return new DecodedAuthenticationToken(
             new \DateTimeImmutable("@$issuedAt")->setTimezone($this->clock->getTimezone()),
             new \DateTimeImmutable("@$expiresAt")->setTimezone($this->clock->getTimezone()),

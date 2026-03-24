@@ -49,7 +49,7 @@ class HttpSectorController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Sector,
                 PermissionTypes::Create
             );
@@ -110,7 +110,7 @@ class HttpSectorController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Sector,
                 PermissionTypes::Update
             );
@@ -174,7 +174,7 @@ class HttpSectorController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Sector,
                 PermissionTypes::Activate
             );
@@ -230,7 +230,7 @@ class HttpSectorController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Sector,
                 PermissionTypes::List
             );
@@ -280,7 +280,7 @@ class HttpSectorController
             );
 
             $this->authorizationService->check(
-                $decodedToken->getUserSectorPermissionCollection(),
+                $decodedToken->getUserId(),
                 SectorTypes::Sector,
                 PermissionTypes::List
             );

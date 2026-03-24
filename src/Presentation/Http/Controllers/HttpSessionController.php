@@ -60,9 +60,25 @@ class HttpSessionController
                     $oneDayInSeconds = 60 * 60 * 24;
                     $timeToExpireInSeconds = $oneWeekLogin ? $oneDayInSeconds * 7 : $oneDayInSeconds;
                     $data = [
-                        "seconds_to_expire" => $timeToExpireInSeconds,
-                        "token" => $token->getToken(),
-                        "login_data" => $result->getData()->toSnakeCaseArray()
+                        "data" => [
+                            "expires" => [
+                                "unit" => "seconds",
+                                "time" => $timeToExpireInSeconds
+                            ],
+                            "token" => $token->getToken(),
+                            "user" => [
+                                "id" => $result->getData()->getUserId()->getValue(),
+                                "username" => $result->getData()->getUsername()->getValue(),
+                                "permissions" => array_map(function ($item) {
+                                    return [
+                                        "id" => $item->getIdValue(),
+                                        "user_id" => $item->getUserIdValue(),
+                                        "sector_id" => $item->getSectorIdValue(),
+                                        "permission_id" => $item->getPermissionIdValue(),
+                                    ];
+                                }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
+                            ]
+                        ]
                     ];
                     $response
                         ->getBody()
@@ -74,8 +90,21 @@ class HttpSessionController
                 case SessionLoginStates::Existing:
                     $token = $result->getToken();
                     $data = [
-                        "token" => $token->getToken(),
-                        "login_data" => $result->getData()->toSnakeCaseArray()
+                        "data" => [
+                            "token" => $token->getToken(),
+                            "user" => [
+                                "id" => $result->getData()->getUserId()->getValue(),
+                                "username" => $result->getData()->getUsername()->getValue(),
+                                "permissions" => array_map(function ($item) {
+                                    return [
+                                        "id" => $item->getIdValue(),
+                                        "user_id" => $item->getUserIdValue(),
+                                        "sector_id" => $item->getSectorIdValue(),
+                                        "permission_id" => $item->getPermissionIdValue(),
+                                    ];
+                                }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
+                            ]
+                        ]
                     ];
                     $response
                         ->getBody()
