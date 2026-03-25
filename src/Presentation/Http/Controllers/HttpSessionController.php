@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginInfo;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginStates;
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
@@ -46,84 +45,44 @@ class HttpSessionController
             $password = $body["password"];
             $oneWeekLogin = $body["one_week_login"];
 
-            $result = $this->sessionService->tryLogin(
-                new SessionLoginInfo(
+            $result = $this->sessionService->login(
+                new SessionLoginParameters(
                     Username::make($username),
                     DecodedPassword::make($password),
                     $oneWeekLogin
                 )
             );
-            $state = $result->getState();
-            switch ($state) {
-                case SessionLoginStates::New:
-                    $token = $result->getToken();
-                    $oneDayInSeconds = 60 * 60 * 24;
-                    $timeToExpireInSeconds = $oneWeekLogin ? $oneDayInSeconds * 7 : $oneDayInSeconds;
-                    $data = [
-                        "data" => [
-                            "expires" => [
-                                "unit" => "seconds",
-                                "time" => $timeToExpireInSeconds
-                            ],
-                            "token" => $token->getToken(),
-                            "user" => [
-                                "id" => $result->getData()->getUserId()->getValue(),
-                                "username" => $result->getData()->getUsername()->getValue(),
-                                "permissions" => array_map(function ($item) {
-                                    return [
-                                        "id" => $item->getIdValue(),
-                                        "user_id" => $item->getUserIdValue(),
-                                        "sector_id" => $item->getSectorIdValue(),
-                                        "permission_id" => $item->getPermissionIdValue(),
-                                    ];
-                                }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
-                            ]
-                        ]
-                    ];
-                    $response
-                        ->getBody()
-                        ->write(
-                            json_encode($data)
-                        );
-                    return $response
-                        ->withStatus(201);
-                case SessionLoginStates::Existing:
-                    $token = $result->getToken();
-                    $data = [
-                        "data" => [
-                            "token" => $token->getToken(),
-                            "user" => [
-                                "id" => $result->getData()->getUserId()->getValue(),
-                                "username" => $result->getData()->getUsername()->getValue(),
-                                "permissions" => array_map(function ($item) {
-                                    return [
-                                        "id" => $item->getIdValue(),
-                                        "user_id" => $item->getUserIdValue(),
-                                        "sector_id" => $item->getSectorIdValue(),
-                                        "permission_id" => $item->getPermissionIdValue(),
-                                    ];
-                                }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
-                            ]
-                        ]
-                    ];
-                    $response
-                        ->getBody()
-                        ->write(
-                            json_encode($data)
-                        );
-                    return $response
-                        ->withStatus(200);
-                default:
-                    $response
-                        ->getBody()
-                        ->write(
-                            json_encode([
-                                "message" => "Untreated state: $state"
-                            ])
-                        );
-                    return $response
-                        ->withStatus(500);
-            }
+            $token = $result->getToken();
+            $oneDayInSeconds = 60 * 60 * 24;
+            $timeToExpireInSeconds = $oneWeekLogin ? $oneDayInSeconds * 7 : $oneDayInSeconds;
+            $data = [
+                "data" => [
+                    "expires" => [
+                        "unit" => "seconds",
+                        "time" => $timeToExpireInSeconds
+                    ],
+                    "token" => $token->getToken(),
+                    "user" => [
+                        "id" => $result->getData()->getUserId()->getValue(),
+                        "username" => $result->getData()->getUsername()->getValue(),
+                        "permissions" => array_map(function ($item) {
+                            return [
+                                "id" => $item->getIdValue(),
+                                "user_id" => $item->getUserIdValue(),
+                                "sector_id" => $item->getSectorIdValue(),
+                                "permission_id" => $item->getPermissionIdValue(),
+                            ];
+                        }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
+                    ]
+                ]
+            ];
+            $response
+                ->getBody()
+                ->write(
+                    json_encode($data)
+                );
+            return $response
+                ->withStatus(201);
         } catch (\Throwable $e) {
             $response
                 ->getBody()
@@ -146,7 +105,7 @@ class HttpSessionController
 
             $token = $request->getAttribute("token");
 
-            $this->sessionService->tryLogoff(
+            $wasDeleted = $this->sessionService->logoff(
                 new EncodedAuthenticationToken(
                     $token
                 )
@@ -156,7 +115,56 @@ class HttpSessionController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "message" => "Logoff succesful"
+                        "status" => $wasDeleted ? "deleted" : "same"
+                    ])
+                );
+            return $response->withStatus(200);
+        } catch (\Throwable $e) {
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => $e->getMessage()
+                    ])
+                );
+            if ($e instanceof TokenCacheException) {
+                return $response->withStatus(500);
+            }
+            return $response->withStatus(500);
+        }
+    }
+
+    public function retrieveData(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        try {
+            $response = $response->withHeader("Content-Type", "application/json");
+
+            $token = $request->getAttribute("token");
+
+            $sessionData = $this->sessionService->retrieveData(
+                new EncodedAuthenticationToken(
+                    $token
+                )
+            );
+
+            $data = [
+                "id" => $sessionData->getUserId()->getValue(),
+                "username" => $sessionData->getUsername()->getValue(),
+                "permissions" => array_map(function ($item) {
+                    return [
+                        "id" => $item->getIdValue(),
+                        "user_id" => $item->getUserIdValue(),
+                        "sector_id" => $item->getSectorIdValue(),
+                        "permission_id" => $item->getPermissionIdValue(),
+                    ];
+                }, $sessionData->getUserSectorPermissionCollection()->fetchAll())
+            ];
+
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => $data
                     ])
                 );
             return $response->withStatus(200);

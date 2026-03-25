@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Session;
 
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginInfo;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginResult;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginStates;
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
@@ -45,11 +45,13 @@ class SessionService
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
-    public function tryLogin(SessionLoginInfo $info): SessionLoginResult
+    public function login(SessionLoginParameters $info): SessionLoginReturn
     {
         try {
+            $username = Username::make($info->getUsernameValue());
+
             $fetchedUser = $this->userRepository->findByUsername(
-                Username::make($info->getUsernameValue())
+                $username
             );
 
             $fetchedAndEncodedPassword = $fetchedUser->getPasswordValue();
@@ -64,38 +66,15 @@ class SessionService
                 throw new InvalidCredentialsException();
             }
 
-            $username = Username::make($fetchedUser->getUsernameValue());
-            $exists = $this->tokenCache->exists(
-                $username
-            );
-
-            if ($exists) {
-                $token = $this->tokenCache->get(
-                    Username::make($fetchedUser->getUsernameValue())
-                );
-                $id = Id::make($fetchedUser->getIdValue());
-                $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                    $id
-                );
-                $sessionData = new SessionData(
-                    $id,
-                    $username,
-                    $userSectorPermissions
-                );
-                return new SessionLoginResult(
-                    SessionLoginStates::Existing,
-                    $token,
-                    $sessionData
-                );
-            }
+            $id = Id::make($fetchedUser->getIdValue());
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                Id::make($fetchedUser->getIdValue())
+                $id
             );
 
             $sessionData = new SessionData(
-                Id::make($fetchedUser->getIdValue()),
-                Username::make($fetchedUser->getUsernameValue()),
+                $id,
+                $username,
                 $userSectorPermissions
             );
 
@@ -109,24 +88,23 @@ class SessionService
 
             $token = $this->authenticationTokenEncoder->encode(
                 new AuthenticationData(
-                    Id::make($fetchedUser->getIdValue()),
-                    Username::make($fetchedUser->getUsernameValue())
+                    $id,
+                    $username
                 ),
                 $interval
             );
 
             $this->tokenCache->set(
-                Username::make($fetchedUser->getUsernameValue()),
+                $username,
                 $token
             );
 
             $this->tokenCache->expire(
-                Username::make($fetchedUser->getUsernameValue()),
+                $username,
                 $interval
             );
 
-            return new SessionLoginResult(
-                SessionLoginStates::New,
+            return new SessionLoginReturn(
                 $token,
                 $sessionData
             );
@@ -135,14 +113,61 @@ class SessionService
         }
     }
 
-    public function tryLogoff(EncodedAuthenticationToken $token): void
+    public function logoff(EncodedAuthenticationToken $token): bool
     {
         try {
             $result = $this->authenticationTokenDecoder->decode($token);
 
-            $this->tokenCache->delete(
+            $wasDeleted = $this->tokenCache->delete(
                 $result->getUsername()
             );
+
+            return $wasDeleted;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function retrieveData(EncodedAuthenticationToken $token): SessionData
+    {
+        try {
+            $result = $this->authenticationTokenDecoder->decode($token);
+
+            $id = $result->getUserId();
+            $username = $result->getUsername();
+
+            $exists = $this->tokenCache->exists(
+                $username
+            );
+
+            if ($exists === false) {
+                throw new UnauthorizedException();
+            }
+
+            $cachedToken = $this->tokenCache->get(
+                $username
+            );
+
+            $isTokensIdenticals = strcmp(
+                $token->getToken(),
+                $cachedToken->getToken()
+            ) === 0;
+
+            if ($isTokensIdenticals === false) {
+                throw new UnauthorizedException();
+            }
+
+            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
+                $id
+            );
+
+            $sessionData = new SessionData(
+                $id,
+                $username,
+                $userSectorPermissions
+            );
+
+            return $sessionData;
         } catch (\Throwable $e) {
             throw $e;
         }

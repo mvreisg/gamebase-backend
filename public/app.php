@@ -46,6 +46,7 @@ try {
     $app->group("/session", function (RouteCollectorProxy $sessionGroup) {
         $sessionGroup->post("/login", [HttpSessionController::class, "login"]);
         $sessionGroup->delete("/logoff", [HttpSessionController::class, "logoff"])->add(HttpAuthenticationTokenRetrieverMiddleware::class);
+        $sessionGroup->get("/me", [HttpSessionController::class, "retrieveData"])->add(HttpAuthenticationTokenRetrieverMiddleware::class);
     });
 
     $app->group("/authentication", function (RouteCollectorProxy $authenticationGroup) {

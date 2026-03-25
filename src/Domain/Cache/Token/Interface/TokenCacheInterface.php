@@ -15,7 +15,7 @@ interface TokenCacheInterface
 
     public function expire(Username $username, \DateInterval $time): void;
 
-    public function delete(Username $username): void;
+    public function delete(Username $username): bool;
 
     public function exists(Username $username): bool;
 }

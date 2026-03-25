@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginInfo;
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginStates;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
@@ -106,7 +106,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn($username->getValue());
@@ -117,7 +117,7 @@ class SessionServiceTest extends TestCase
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
-        $result = $sessionService->tryLogin(
+        $result = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -238,7 +238,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn($username->getValue());
@@ -250,7 +250,7 @@ class SessionServiceTest extends TestCase
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
-        $result = $sessionService->tryLogin(
+        $result = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -342,7 +342,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn($username->getValue());
@@ -353,7 +353,7 @@ class SessionServiceTest extends TestCase
             ->method("getOneWeekLogin")
             ->willReturn(true);
 
-        $result = $sessionService->tryLogin(
+        $result = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -474,7 +474,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn($username->getValue());
@@ -486,7 +486,7 @@ class SessionServiceTest extends TestCase
             ->method("getOneWeekLogin")
             ->willReturn(true);
 
-        $result = $sessionService->tryLogin(
+        $result = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -635,7 +635,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn("error");
@@ -648,7 +648,7 @@ class SessionServiceTest extends TestCase
 
         $this->expectException(InvalidCredentialsException::class);
 
-        $sessionService->tryLogin(
+        $sessionService->login(
             $sessionLoginInfo
         );
     }
@@ -748,7 +748,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn("error");
@@ -761,7 +761,7 @@ class SessionServiceTest extends TestCase
 
         $this->expectException(InvalidCredentialsException::class);
 
-        $sessionService->tryLogin(
+        $sessionService->login(
             $sessionLoginInfo
         );
     }
@@ -903,7 +903,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginInfo::class);
+        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
         $sessionLoginInfo
             ->method("getUsernameValue")
             ->willReturn($username->getValue());
@@ -915,7 +915,7 @@ class SessionServiceTest extends TestCase
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
-        $result = $sessionService->tryLogin(
+        $result = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -940,7 +940,7 @@ class SessionServiceTest extends TestCase
             $result->getToken()
         );
 
-        $secondResult = $sessionService->tryLogin(
+        $secondResult = $sessionService->login(
             $sessionLoginInfo
         );
 
@@ -1004,7 +1004,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1025,7 +1025,7 @@ class SessionServiceTest extends TestCase
             $newResult->getData()
         );
 
-        $existingResult = $this->authenticationService->tryLogin(
+        $existingResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1085,7 +1085,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1107,7 +1107,7 @@ class SessionServiceTest extends TestCase
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 Username::make("-"),
                 $password,
@@ -1154,7 +1154,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1176,7 +1176,7 @@ class SessionServiceTest extends TestCase
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 Username::make("-"),
                 $password,
@@ -1223,7 +1223,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1245,7 +1245,7 @@ class SessionServiceTest extends TestCase
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 DecodedPassword::make("-"),
@@ -1292,7 +1292,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1314,7 +1314,7 @@ class SessionServiceTest extends TestCase
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 DecodedPassword::make("-"),
@@ -1361,7 +1361,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1390,7 +1390,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1437,7 +1437,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1466,7 +1466,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1513,7 +1513,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1542,7 +1542,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1589,7 +1589,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1618,7 +1618,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1665,7 +1665,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1695,7 +1695,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $existingResult = $this->authenticationService->tryLogin(
+        $existingResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1755,7 +1755,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1784,7 +1784,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1831,7 +1831,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1860,7 +1860,7 @@ class SessionServiceTest extends TestCase
             $interval
         );
 
-        $this->authenticationService->tryLogin(
+        $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1907,7 +1907,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -1990,7 +1990,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2061,7 +2061,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = false;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2132,7 +2132,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2223,7 +2223,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2314,7 +2314,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2386,7 +2386,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $newResult = $this->authenticationService->tryLogin(
+        $newResult = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2469,7 +2469,7 @@ class SessionServiceTest extends TestCase
         );
 
         $oneWeekLogin = true;
-        $result = $this->authenticationService->tryLogin(
+        $result = $this->authenticationService->login(
             new AuthenticationLoginInfo(
                 $username,
                 $password,
@@ -2479,7 +2479,7 @@ class SessionServiceTest extends TestCase
 
         $this->expectNotToPerformAssertions();
 
-        $this->authenticationService->tryLogoff(
+        $this->authenticationService->logoff(
             $result->getToken()
         );
     }
@@ -2488,7 +2488,7 @@ class SessionServiceTest extends TestCase
     {
         $this->expectException(AuthenticationTokenDecoderException::class);
 
-        $this->authenticationService->tryLogoff(
+        $this->authenticationService->logoff(
             new EncodedAuthenticationToken(
                 "batata"
             )

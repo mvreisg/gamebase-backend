@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Session\Login;
+namespace Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Password;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 
-class SessionLoginInfo
+class SessionLoginParameters
 {
     private Username $username;
     private Password $password;

@@ -71,19 +71,18 @@ class MockTokenCache implements TokenCacheInterface
         return isset($this->data[$username->getValue()]);
     }
 
-    public function delete(Username $username): void
+    public function delete(Username $username): bool
     {
         try {
             $exists = $this->exists($username);
             if ($exists === false) {
-                throw new TokenCacheException(
-                    "Unexistant key: {$username->getValue()}",
-                );
+                return false;
             }
             unset(
                 $this->data[$username->getValue()],
                 $this->expirationArray[$username->getValue()]
             );
+            return true;
         } catch (\Throwable $e) {
             throw $e;
         }

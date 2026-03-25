@@ -66,18 +66,13 @@ class PredisTokenCache implements TokenCacheInterface
         return $exists;
     }
 
-    public function delete(Username $username): void
+    public function delete(Username $username): bool
     {
         $status = $this
             ->connection
             ->del(
                 $username->getValue()
             );
-        $status = boolval($status);
-        if ($status === false) {
-            throw new TokenCacheException(
-                "Unsuccesful deletion."
-            );
-        }
+        return boolval($status);
     }
 }
