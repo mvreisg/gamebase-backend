@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\GamePlatform\GamePlatformService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
@@ -73,9 +73,9 @@ class HttpGamePlatformController
             );
 
             $data = [
-                "id" => $gamePlatform->getIdValue(),
-                "game_id" => $gamePlatform->getGameIdValue(),
-                "platform_id" => $gamePlatform->getPlatformIdValue()
+                "id" => $gamePlatform->getId()->getValue(),
+                "game_id" => $gamePlatform->getGameId()->getValue(),
+                "platform_id" => $gamePlatform->getPlatformId()->getValue()
             ];
 
             $response
@@ -232,9 +232,9 @@ class HttpGamePlatformController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $gamePlatform->getIdValue(),
-                            "game_id" => $gamePlatform->getGameIdValue(),
-                            "platform_id" => $gamePlatform->getPlatformIdValue()
+                            "id" => $gamePlatform->getId()->getValue(),
+                            "game_id" => $gamePlatform->getGameId()->getValue(),
+                            "platform_id" => $gamePlatform->getPlatformId()->getValue()
                         ]
                     ])
                 );
@@ -281,9 +281,9 @@ class HttpGamePlatformController
             $data = [];
             foreach ($gamePlatforms->fetchAll() as $gamePlatform) {
                 $data[] = [
-                    "id" => $gamePlatform->getIdValue(),
-                    "game_id" => $gamePlatform->getGameIdValue(),
-                    "platform_id" => $gamePlatform->getPlatformIdValue()
+                    "id" => $gamePlatform->getId()->getValue(),
+                    "game_id" => $gamePlatform->getGameId()->getValue(),
+                    "platform_id" => $gamePlatform->getPlatformId()->getValue()
                 ];
             }
 

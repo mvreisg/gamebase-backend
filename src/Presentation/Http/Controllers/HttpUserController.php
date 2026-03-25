@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
@@ -83,13 +83,13 @@ class HttpUserController
             );
 
             $data = [
-                "id" => $user->getIdValue(),
-                "username" => $user->getUsernameValue(),
+                "id" => $user->getId()->getValue(),
+                "username" => $user->getUsername()->getValue(),
                 "isActive" => $user->getIsActive()
             ];
 
             if ($showPassword) {
-                $data["password"] = $user->getPasswordValue();
+                $data["password"] = $user->getPassword()->getValue();
             }
 
             $response
@@ -260,13 +260,13 @@ class HttpUserController
             );
 
             $data = [
-                "id" => $user->getIdValue(),
-                "username" => $user->getUsernameValue(),
+                "id" => $user->getId()->getValue(),
+                "username" => $user->getUsername()->getValue(),
                 "isActive" => $user->getIsActive()
             ];
 
             if ($showPassword) {
-                $data["password"] = $user->getPasswordValue();
+                $data["password"] = $user->getPassword()->getValue();
             }
 
             $response
@@ -317,13 +317,13 @@ class HttpUserController
             );
 
             $data = [
-                "id" => $user->getIdValue(),
-                "username" => $user->getUsernameValue(),
+                "id" => $user->getId()->getValue(),
+                "username" => $user->getUsername()->getValue(),
                 "isActive" => $user->getIsActive()
             ];
 
             if ($showPassword) {
-                $data["password"] = $user->getPasswordValue();
+                $data["password"] = $user->getPassword()->getValue();
             }
 
             $response
@@ -378,13 +378,13 @@ class HttpUserController
             $data = [];
             foreach ($users->fetchAll() as $user) {
                 $value = [
-                    "id" => $user->getIdValue(),
-                    "username" => $user->getUsernameValue(),
+                    "id" => $user->getId()->getValue(),
+                    "username" => $user->getUsername()->getValue(),
                     "isActive" => $user->getIsActive()
                 ];
 
                 if ($showPassword) {
-                    $value["password"] = $user->getPasswordValue();
+                    $value["password"] = $user->getPassword()->getValue();
                 }
 
                 $data[] = $value;

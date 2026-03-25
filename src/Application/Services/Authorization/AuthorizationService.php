@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authorization;
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
@@ -50,12 +50,12 @@ class AuthorizationService
 
             foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $sector = $this->sectorRepository->findById(
-                    Id::make($userSectorPermission->getSectorIdValue())
+                    $userSectorPermission->getSectorId()
                 );
                 $sectors->add($sector);
 
                 $permission = $this->permissionRepository->findById(
-                    Id::make($userSectorPermission->getPermissionIdValue())
+                    $userSectorPermission->getPermissionId()
                 );
                 $permissions->add($permission);
             }

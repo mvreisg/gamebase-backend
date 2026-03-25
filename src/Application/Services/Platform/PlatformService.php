@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services\Platform;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Entities\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
@@ -23,7 +22,7 @@ class PlatformService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($platform->getNameValue())
+                $platform->getName()
             );
 
             $insertedPlatform = $this->repository->insert($platform);
@@ -38,11 +37,11 @@ class PlatformService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($platform->getIdValue())
+                $platform->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($platform->getNameValue())
+                $platform->getName()
             );
 
             $wasUpdated = $this->repository->update($platform);

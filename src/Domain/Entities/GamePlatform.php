@@ -24,33 +24,33 @@ class GamePlatform
         $this->id = $id;
     }
 
-    public function getIdValue(): int
+    public function getId(): Id
     {
         if ($this->id === null) {
             throw new EntityException(
                 "The id is null."
             );
         }
-        return $this->id->getValue();
+        return $this->id;
     }
 
-    public function getPlatformIdValue(): int
+    public function getPlatformId(): Id
     {
         if ($this->platformId === null) {
             throw new EntityException(
                 "The platformId is null."
             );
         }
-        return $this->platformId->getValue();
+        return $this->platformId;
     }
 
-    public function getGameIdValue(): int
+    public function getGameId(): Id
     {
         if ($this->gameId === null) {
             throw new EntityException(
                 "The gameId is null."
             );
         }
-        return $this->gameId->getValue();
+        return $this->gameId;
     }
 }

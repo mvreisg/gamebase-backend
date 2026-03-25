@@ -23,7 +23,7 @@ class GameService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($game->getNameValue())
+                Name::make($game->getName()->getValue())
             );
 
             $insertedGame = $this->repository->insert($game);
@@ -38,11 +38,11 @@ class GameService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($game->getIdValue())
+                $game->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($game->getNameValue())
+                $game->getName()
             );
 
             $wasUpdated = $this->repository->update($game);

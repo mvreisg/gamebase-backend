@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services\Sector;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
 use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
@@ -23,7 +22,7 @@ class SectorService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($sector->getNameValue())
+                $sector->getName()
             );
 
             $insertedSector = $this->repository->insert($sector);
@@ -38,11 +37,11 @@ class SectorService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($sector->getIdValue())
+                $sector->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($sector->getNameValue())
+                $sector->getName()
             );
 
             $wasUpdated = $this->repository->update($sector);

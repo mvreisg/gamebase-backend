@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Game\GameService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Game;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
@@ -74,8 +74,8 @@ class HttpGameController
             );
 
             $data = [
-                "id" => $game->getIdValue(),
-                "name" => $game->getNameValue(),
+                "id" => $game->getId()->getValue(),
+                "name" => $game->getName()->getValue(),
                 "is_active" => $game->getIsActive()
             ];
 
@@ -245,8 +245,8 @@ class HttpGameController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $game->getIdValue(),
-                            "name" => $game->getNameValue(),
+                            "id" => $game->getId()->getValue(),
+                            "name" => $game->getName()->getValue(),
                             "is_active" => $game->getIsActive()
                         ]
                     ])
@@ -293,8 +293,8 @@ class HttpGameController
 
             foreach ($games->fetchAll() as $game) {
                 $data[] = [
-                    "id" => $game->getIdValue(),
-                    "name" => $game->getNameValue(),
+                    "id" => $game->getId()->getValue(),
+                    "name" => $game->getName()->getValue(),
                     "is_active" => $game->getIsActive()
                 ];
             }

@@ -24,33 +24,33 @@ class GameGenre
         $this->id = $id;
     }
 
-    public function getIdValue(): int
+    public function getId(): Id
     {
         if ($this->id === null) {
             throw new EntityException(
                 "The id is null."
             );
         }
-        return $this->id->getValue();
+        return $this->id;
     }
 
-    public function getGameIdValue(): int
+    public function getGameId(): Id
     {
         if ($this->gameId === null) {
             throw new EntityException(
                 "The gameId is null."
             );
         }
-        return $this->gameId->getValue();
+        return $this->gameId;
     }
 
-    public function getGenreIdValue(): int
+    public function getGenreId(): Id
     {
         if ($this->genreId === null) {
             throw new EntityException(
                 "The genreId is null."
             );
         }
-        return $this->genreId->getValue();
+        return $this->genreId;
     }
 }

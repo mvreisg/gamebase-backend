@@ -7,7 +7,6 @@ namespace Mvreisg\GamebaseBackend\Application\Services\Genre;
 use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
 use Mvreisg\GamebaseBackend\Domain\Entities\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
 
 class GenreService
@@ -23,7 +22,7 @@ class GenreService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($genre->getNameValue())
+                $genre->getName()
             );
 
             $insertedGenre = $this->repository->insert($genre);
@@ -38,11 +37,11 @@ class GenreService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($genre->getIdValue())
+                $genre->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($genre->getNameValue())
+                $genre->getName()
             );
 
             $wasUpdated = $this->repository->update($genre);

@@ -7,14 +7,13 @@ namespace Mvreisg\GamebaseBackend\Application\Services\Session;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
@@ -45,20 +44,18 @@ class SessionService
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
-    public function login(SessionLoginParameters $info): SessionLoginReturn
+    public function login(SessionLoginParameters $parameters): SessionLoginReturn
     {
         try {
-            $username = Username::make($info->getUsernameValue());
-
             $fetchedUser = $this->userRepository->findByUsername(
-                $username
+                $parameters->getUsername()
             );
 
-            $fetchedAndEncodedPassword = $fetchedUser->getPasswordValue();
+            $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
 
             $doTheTwoPasswordsMatchesEqually = strcmp(
-                $info->getPasswordValue(),
+                $parameters->getPassword()->getValue(),
                 $decodedPassword
             ) === 0;
 
@@ -66,41 +63,39 @@ class SessionService
                 throw new InvalidCredentialsException();
             }
 
-            $id = Id::make($fetchedUser->getIdValue());
-
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                $id
+                $fetchedUser->getId()
             );
 
             $sessionData = new SessionData(
-                $id,
-                $username,
+                $fetchedUser->getId(),
+                $fetchedUser->getUsername(),
                 $userSectorPermissions
             );
 
             $interval = new \DateInterval("P0D");
-            $oneWeekLogin = $info->getOneWeekLogin();
+            $oneWeekLogin = $parameters->getOneWeekLogin();
             if ($oneWeekLogin === true) {
-                $interval->d = 7;
+                $interval->s = ClockInterface::ONE_DAY_IN_SECONDS * 7;
             } else {
-                $interval->d = 1;
+                $interval->s = ClockInterface::ONE_DAY_IN_SECONDS;
             }
 
             $token = $this->authenticationTokenEncoder->encode(
                 new AuthenticationData(
-                    $id,
-                    $username
+                    $fetchedUser->getId(),
+                    $fetchedUser->getUsername()
                 ),
                 $interval
             );
 
             $this->tokenCache->set(
-                $username,
+                $fetchedUser->getUsername(),
                 $token
             );
 
             $this->tokenCache->expire(
-                $username,
+                $fetchedUser->getUsername(),
                 $interval
             );
 
@@ -154,6 +149,14 @@ class SessionService
             ) === 0;
 
             if ($isTokensIdenticals === false) {
+                throw new UnauthorizedException();
+            }
+
+            $cachedResult = $this->authenticationTokenDecoder->decode($token);
+
+            $isIdIdenticals = $id->getValue() === $cachedResult->getUserId()->getValue();
+
+            if ($isIdIdenticals === false) {
                 throw new UnauthorizedException();
             }
 

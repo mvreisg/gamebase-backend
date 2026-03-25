@@ -36,7 +36,7 @@ class GamePlatformCollection
     public function findById(Id $id): ?GamePlatform
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -46,7 +46,7 @@ class GamePlatformCollection
     public function replace(Id $id, GamePlatform $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -56,7 +56,7 @@ class GamePlatformCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

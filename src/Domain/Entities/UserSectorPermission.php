@@ -26,43 +26,43 @@ class UserSectorPermission
         $this->id = $id;
     }
 
-    public function getIdValue(): int
+    public function getId(): Id
     {
         if ($this->id === null) {
             throw new EntityException(
                 "The id is null."
             );
         }
-        return $this->id->getValue();
+        return $this->id;
     }
 
-    public function getUserIdValue(): int
+    public function getUserId(): Id
     {
         if ($this->userId === null) {
             throw new EntityException(
                 "The userId is null."
             );
         }
-        return $this->userId->getValue();
+        return $this->userId;
     }
 
-    public function getSectorIdValue(): int
+    public function getSectorId(): Id
     {
         if ($this->sectorId === null) {
             throw new EntityException(
                 "The sectorId is null."
             );
         }
-        return $this->sectorId->getValue();
+        return $this->sectorId;
     }
 
-    public function getPermissionIdValue(): int
+    public function getPermissionId(): Id
     {
         if ($this->permissionId === null) {
             throw new EntityException(
                 "The permissionId is null."
             );
         }
-        return $this->permissionId->getValue();
+        return $this->permissionId;
     }
 }

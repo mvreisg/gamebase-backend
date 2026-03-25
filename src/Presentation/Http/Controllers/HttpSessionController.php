@@ -6,11 +6,13 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Units\Time\TimeUnits;
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -53,13 +55,13 @@ class HttpSessionController
                 )
             );
             $token = $result->getToken();
-            $oneDayInSeconds = 60 * 60 * 24;
-            $timeToExpireInSeconds = $oneWeekLogin ? $oneDayInSeconds * 7 : $oneDayInSeconds;
             $data = [
                 "data" => [
                     "expires" => [
-                        "unit" => "seconds",
-                        "time" => $timeToExpireInSeconds
+                        "unit" => TimeUnits::Second->value,
+                        "time" => $oneWeekLogin === true ?
+                            ClockInterface::ONE_DAY_IN_SECONDS * 7 :
+                            ClockInterface::ONE_DAY_IN_SECONDS
                     ],
                     "token" => $token->getToken(),
                     "user" => [
@@ -67,10 +69,10 @@ class HttpSessionController
                         "username" => $result->getData()->getUsername()->getValue(),
                         "permissions" => array_map(function ($item) {
                             return [
-                                "id" => $item->getIdValue(),
-                                "user_id" => $item->getUserIdValue(),
-                                "sector_id" => $item->getSectorIdValue(),
-                                "permission_id" => $item->getPermissionIdValue(),
+                                "id" => $item->getId()->getValue(),
+                                "user_id" => $item->getUserId()->getValue(),
+                                "sector_id" => $item->getSectorId()->getValue(),
+                                "permission_id" => $item->getPermissionId()->getValue(),
                             ];
                         }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
                     ]
@@ -84,6 +86,7 @@ class HttpSessionController
             return $response
                 ->withStatus(201);
         } catch (\Throwable $e) {
+            var_dump($e);
             $response
                 ->getBody()
                 ->write(
@@ -152,10 +155,10 @@ class HttpSessionController
                 "username" => $sessionData->getUsername()->getValue(),
                 "permissions" => array_map(function ($item) {
                     return [
-                        "id" => $item->getIdValue(),
-                        "user_id" => $item->getUserIdValue(),
-                        "sector_id" => $item->getSectorIdValue(),
-                        "permission_id" => $item->getPermissionIdValue(),
+                        "id" => $item->getId()->getValue(),
+                        "user_id" => $item->getUserId()->getValue(),
+                        "sector_id" => $item->getSectorId()->getValue(),
+                        "permission_id" => $item->getPermissionId()->getValue(),
                     ];
                 }, $sessionData->getUserSectorPermissionCollection()->fetchAll())
             ];

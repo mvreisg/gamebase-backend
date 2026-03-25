@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Phinx\Seed\AbstractSeed;
 
 class AddingSectors extends AbstractSeed

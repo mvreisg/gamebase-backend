@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\SectorService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
@@ -77,8 +77,8 @@ class HttpSectorController
             );
 
             $data = [
-                "id" => $sector->getIdValue(),
-                "name" => $sector->getNameValue(),
+                "id" => $sector->getId()->getValue(),
+                "name" => $sector->getName()->getValue(),
                 "is_active" => $sector->getIsActive(),
                 "value" => $sector->getSectorValue()
             ];
@@ -251,8 +251,8 @@ class HttpSectorController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $sector->getIdValue(),
-                            "name" => $sector->getNameValue(),
+                            "id" => $sector->getId()->getValue(),
+                            "name" => $sector->getName()->getValue(),
                             "value" => $sector->getSectorValue(),
                             "is_active" => $sector->getIsActive()
                         ]
@@ -300,8 +300,8 @@ class HttpSectorController
 
             foreach ($sectors->fetchAll() as $sector) {
                 $data[] = [
-                    "id" => $sector->getIdValue(),
-                    "name" => $sector->getNameValue(),
+                    "id" => $sector->getId()->getValue(),
+                    "name" => $sector->getName()->getValue(),
                     "value" => $sector->getSectorValue(),
                     "is_active" => $sector->getIsActive()
                 ];

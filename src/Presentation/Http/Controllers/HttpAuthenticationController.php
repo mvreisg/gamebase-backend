@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\InvalidTokenException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\Exceptions\DecodedAuthenticationTokenValidatorException;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -39,7 +39,7 @@ class HttpAuthenticationController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "message" => "Valid."
+                        "status" => "valid"
                     ])
                 );
             return $response->withStatus(200);

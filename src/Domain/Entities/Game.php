@@ -24,24 +24,24 @@ class Game
         $this->id = $id;
     }
 
-    public function getIdValue(): int
+    public function getId(): Id
     {
         if ($this->id === null) {
             throw new EntityException(
                 "The id is null."
             );
         }
-        return $this->id->getValue();
+        return $this->id;
     }
 
-    public function getNameValue(): string
+    public function getName(): Name
     {
         if ($this->name === null) {
             throw new EntityException(
                 "The name is null"
             );
         }
-        return $this->name->getValue();
+        return $this->name;
     }
 
     public function getIsActive(): bool

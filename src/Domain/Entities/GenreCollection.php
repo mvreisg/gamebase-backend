@@ -36,7 +36,7 @@ class GenreCollection
     public function findById(Id $id): ?Genre
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -47,7 +47,7 @@ class GenreCollection
     {
         $matches = new GenreCollection();
         foreach ($this->values as $value) {
-            if ($value->getNameValue() === $id->getValue()) {
+            if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);
             }
         }
@@ -57,7 +57,7 @@ class GenreCollection
     public function replace(Id $id, Genre $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -67,7 +67,7 @@ class GenreCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

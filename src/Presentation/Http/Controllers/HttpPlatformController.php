@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Platform\PlatformService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
@@ -74,8 +74,8 @@ class HttpPlatformController
             );
 
             $data = [
-                "id" => $platform->getIdValue(),
-                "name" => $platform->getNameValue(),
+                "id" => $platform->getId()->getValue(),
+                "name" => $platform->getName()->getValue(),
                 "is_active" => $platform->getIsActive()
             ];
 
@@ -245,8 +245,8 @@ class HttpPlatformController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $platform->getIdValue(),
-                            "name" => $platform->getNameValue(),
+                            "id" => $platform->getId()->getValue(),
+                            "name" => $platform->getName()->getValue(),
                             "is_active" => $platform->getIsActive()
                         ]
                     ])
@@ -293,8 +293,8 @@ class HttpPlatformController
 
             foreach ($platforms->fetchAll() as $platform) {
                 $data[] = [
-                    "id" => $platform->getIdValue(),
-                    "name" => $platform->getNameValue(),
+                    "id" => $platform->getId()->getValue(),
+                    "name" => $platform->getName()->getValue(),
                     "is_active" => $platform->getIsActive()
                 ];
             }

@@ -7,16 +7,15 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginInfo;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\Login\AuthenticationLoginStates;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginParameters;
-use Mvreisg\GamebaseBackend\Application\Services\Session\Login\SessionLoginStates;
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
 use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
@@ -46,19 +45,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -106,19 +98,19 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $sessionLoginInfo
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
         $result = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -132,10 +124,6 @@ class SessionServiceTest extends TestCase
         $this->assertEquals(
             $userSectorPermissionCollection,
             $result->getData()->getUserSectorPermissionCollection()
-        );
-        $this->assertEquals(
-            SessionLoginStates::New,
-            $result->getState()
         );
         $this->assertEquals(
             $token,
@@ -149,19 +137,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -182,20 +163,24 @@ class SessionServiceTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = $this->createMock(UserSectorPermission::class);
             $userSectorPermission
-                ->method("getIdValue")
-                ->willReturn($i + 1);
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getUserIdValue")
-                ->willReturn($i + 1);
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getSectorIdValue")
-                ->willReturn($i + 1);
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getPermissionIdValue")
-                ->willReturn($i + 1);
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermissions[$i] = $userSectorPermission;
         }
@@ -238,20 +223,20 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
 
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $sessionLoginInfo
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
         $result = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -265,10 +250,6 @@ class SessionServiceTest extends TestCase
         $this->assertEquals(
             $userSectorPermissionCollection,
             $result->getData()->getUserSectorPermissionCollection()
-        );
-        $this->assertEquals(
-            SessionLoginStates::New,
-            $result->getState()
         );
         $this->assertEquals(
             $token,
@@ -282,19 +263,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -342,19 +316,19 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $sessionLoginInfo
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(true);
 
         $result = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -370,10 +344,6 @@ class SessionServiceTest extends TestCase
             $result->getData()->getUserSectorPermissionCollection()
         );
         $this->assertEquals(
-            SessionLoginStates::New,
-            $result->getState()
-        );
-        $this->assertEquals(
             $token,
             $result->getToken()
         );
@@ -385,19 +355,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -418,20 +381,24 @@ class SessionServiceTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = $this->createMock(UserSectorPermission::class);
             $userSectorPermission
-                ->method("getIdValue")
-                ->willReturn($i + 1);
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getUserIdValue")
-                ->willReturn($i + 1);
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getSectorIdValue")
-                ->willReturn($i + 1);
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getPermissionIdValue")
-                ->willReturn($i + 1);
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermissions[$i] = $userSectorPermission;
         }
@@ -474,20 +441,20 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
 
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $sessionLoginInfo
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(true);
 
         $result = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -501,10 +468,6 @@ class SessionServiceTest extends TestCase
         $this->assertEquals(
             $userSectorPermissionCollection,
             $result->getData()->getUserSectorPermissionCollection()
-        );
-        $this->assertEquals(
-            SessionLoginStates::New,
-            $result->getState()
         );
         $this->assertEquals(
             $token,
@@ -546,19 +509,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -579,20 +535,24 @@ class SessionServiceTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = $this->createMock(UserSectorPermission::class);
             $userSectorPermission
-                ->method("getIdValue")
-                ->willReturn($i + 1);
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getUserIdValue")
-                ->willReturn($i + 1);
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getSectorIdValue")
-                ->willReturn($i + 1);
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getPermissionIdValue")
-                ->willReturn($i + 1);
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermissions[$i] = $userSectorPermission;
         }
@@ -635,21 +595,21 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn("error");
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn("error");
-        $sessionLoginInfo
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn(Username::make("error"));
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn(DecodedPassword::make("error"));
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
         $this->expectException(InvalidCredentialsException::class);
 
         $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
     }
 
@@ -659,19 +619,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -692,20 +645,24 @@ class SessionServiceTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = $this->createMock(UserSectorPermission::class);
             $userSectorPermission
-                ->method("getIdValue")
-                ->willReturn($i + 1);
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getUserIdValue")
-                ->willReturn($i + 1);
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getSectorIdValue")
-                ->willReturn($i + 1);
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getPermissionIdValue")
-                ->willReturn($i + 1);
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermissions[$i] = $userSectorPermission;
         }
@@ -748,21 +705,21 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn("error");
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn("error");
-        $sessionLoginInfo
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn(Username::make("error"));
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn(DecodedPassword::make("error"));
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(true);
 
         $this->expectException(InvalidCredentialsException::class);
 
         $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
     }
 
@@ -772,19 +729,12 @@ class SessionServiceTest extends TestCase
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $user = $this->createMock(User::class);
-        $user
-            ->method("getIdValue")
-            ->willReturn($id->getValue());
-        $user
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
-        $user
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $user
-            ->method("getIsActive")
-            ->willReturn($isActive);
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
@@ -848,20 +798,24 @@ class SessionServiceTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = $this->createMock(UserSectorPermission::class);
             $userSectorPermission
-                ->method("getIdValue")
-                ->willReturn($i + 1);
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getUserIdValue")
-                ->willReturn($i + 1);
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getSectorIdValue")
-                ->willReturn($i + 1);
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermission
-                ->method("getPermissionIdValue")
-                ->willReturn($i + 1);
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
 
             $userSectorPermissions[$i] = $userSectorPermission;
         }
@@ -903,20 +857,20 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository
         );
 
-        $sessionLoginInfo = $this->createMock(SessionLoginParameters::class);
-        $sessionLoginInfo
-            ->method("getUsernameValue")
-            ->willReturn($username->getValue());
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
 
-        $sessionLoginInfo
-            ->method("getPasswordValue")
-            ->willReturn($password->getValue());
-        $sessionLoginInfo
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
             ->method("getOneWeekLogin")
             ->willReturn(false);
 
         $result = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -932,16 +886,12 @@ class SessionServiceTest extends TestCase
             $result->getData()->getUserSectorPermissionCollection()
         );
         $this->assertEquals(
-            SessionLoginStates::New,
-            $result->getState()
-        );
-        $this->assertEquals(
             $encodedToken,
             $result->getToken()
         );
 
         $secondResult = $sessionService->login(
-            $sessionLoginInfo
+            $sessionLoginParameters
         );
 
         $this->assertEquals(
@@ -957,303 +907,658 @@ class SessionServiceTest extends TestCase
             $secondResult->getData()->getUserSectorPermissionCollection()
         );
         $this->assertEquals(
-            SessionLoginStates::Existing,
-            $secondResult->getState()
+            $encodedToken,
+            $secondResult->getToken()
+        );
+    }
+
+    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
+    {
+        $id = Id::make(1);
+        $username = Username::make("test");
+        $password = DecodedPassword::make("test");
+        $isActive = true;
+        $user = new User(
+            $username,
+            $password,
+            $isActive
+        );
+        $user->setId($id);
+
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("findByUsername")
+            ->willReturn($user);
+
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+        $tokenCache
+            ->method("set")
+            ->with($username, $encodedToken);
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
+
+        $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
+
+        $decodedToken
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $decodedToken
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $decodedToken
+            ->method("getIssuedAt")
+            ->willReturn(new \DateTimeImmutable());
+
+        $decodedToken
+            ->method("getExpiresAt")
+            ->willReturn(
+                new \DateTimeImmutable()
+                    ->add(
+                        new \DateInterval("P1D")
+                    )
+            );
+
+        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
+        $authenticationTokenDecoder
+            ->method("decode")
+            ->willReturn($decodedToken);
+
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("decrypt")
+            ->willReturn("test");
+
+        /**
+         * @var UserSectorPermission[]
+         */
+        $userSectorPermissions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $userSectorPermission = $this->createMock(UserSectorPermission::class);
+            $userSectorPermission
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermissions[$i] = $userSectorPermission;
+        }
+
+        $userSectorPermissionCollection = $this->createMock(UserSectorPermissionCollection::class);
+        $userSectorPermissionCollection
+            ->method("fetchAll")
+            ->willReturn($userSectorPermissions);
+
+        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $userSectorPermissionRepository
+            ->method("findAllByUserId")
+            ->willReturn($userSectorPermissionCollection);
+
+        $sessionData = $this->createMock(SessionData::class);
+        $sessionData
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $sessionData
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $sessionData
+            ->method("getUserSectorPermissionCollection")
+            ->willReturn($userSectorPermissionCollection);
+
+        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
+        $authenticationTokenEncoder
+            ->method("encode")
+            ->willReturn($encodedToken);
+
+        $sessionService = new SessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $userSectorPermissionRepository
+        );
+
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
+            ->method("getOneWeekLogin")
+            ->willReturn(true);
+
+        $result = $sessionService->login(
+            $sessionLoginParameters
+        );
+
+        $this->assertEquals(
+            $id,
+            $result->getData()->getUserId()
+        );
+        $this->assertEquals(
+            $username,
+            $result->getData()->getUsername()
+        );
+        $this->assertEquals(
+            $userSectorPermissionCollection,
+            $result->getData()->getUserSectorPermissionCollection()
+        );
+        $this->assertEquals(
+            $encodedToken,
+            $result->getToken()
+        );
+
+        $secondResult = $sessionService->login(
+            $sessionLoginParameters
+        );
+
+        $this->assertEquals(
+            $id,
+            $secondResult->getData()->getUserId()
+        );
+        $this->assertEquals(
+            $username,
+            $secondResult->getData()->getUsername()
+        );
+        $this->assertEquals(
+            $userSectorPermissionCollection,
+            $secondResult->getData()->getUserSectorPermissionCollection()
         );
         $this->assertEquals(
             $encodedToken,
             $secondResult->getToken()
         );
     }
-    /*
-    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
-    {
-        $insertedPermission = $this->permissionRepository->insert(
-            new Permission(
-                Name::make("permission"),
-                PermissionValue::make("a"),
-                true
-            )
-        );
-
-        $insertedSector = $this->sectorRepository->insert(
-            new Sector(
-                Name::make("sector"),
-                SectorValue::make("a"),
-                true
-            )
-        );
-
-        $username = Username::make("test");
-        $password = DecodedPassword::make("test");
-        $isActive = true;
-        $insertedUser = $this->userService->insert(
-            new User(
-                $username,
-                $password,
-                $isActive
-            )
-        );
-
-        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
-            new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
-
-        $oneWeekLogin = true;
-        $newResult = $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                $password,
-                $oneWeekLogin
-            )
-        );
-
-        $this->assertEquals(AuthenticationLoginStates::New, $newResult->getState());
-        $this->assertNotEmpty($newResult->getToken());
-        $this->assertEquals(
-            new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
-                new UserSectorPermissionCollection([
-                    $insertedUserSectorPermission
-                ])
-            ),
-            $newResult->getData()
-        );
-
-        $existingResult = $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                $password,
-                $oneWeekLogin
-            )
-        );
-
-        $this->assertEquals(AuthenticationLoginStates::Existing, $existingResult->getState());
-        $this->assertNotEmpty($existingResult->getToken());
-        $this->assertEquals(
-            new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
-                new UserSectorPermissionCollection([
-                    $insertedUserSectorPermission
-                ])
-            ),
-            $existingResult->getData()
-        );
-    }
 
     public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithInvalidUsernameFails(): void
     {
-        $insertedPermission = $this->permissionRepository->insert(
-            new Permission(
-                Name::make("permission"),
-                PermissionValue::make("a"),
-                true
-            )
-        );
-
-        $insertedSector = $this->sectorRepository->insert(
-            new Sector(
-                Name::make("sector"),
-                SectorValue::make("a"),
-                true
-            )
-        );
-
+        $id = Id::make(1);
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $insertedUser = $this->userService->insert(
-            new User(
-                $username,
-                $password,
-                $isActive
-            )
+        $user = new User(
+            $username,
+            $password,
+            $isActive
         );
+        $user->setId($id);
 
-        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
-            new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("findByUsername")
+            ->willReturn($user);
 
-        $oneWeekLogin = false;
-        $newResult = $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                $password,
-                $oneWeekLogin
-            )
-        );
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+        $tokenCache
+            ->method("set")
+            ->with($username, $encodedToken);
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
 
-        $this->assertEquals(AuthenticationLoginStates::New, $newResult->getState());
-        $this->assertNotEmpty($newResult->getToken());
-        $this->assertEquals(
-            new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
-                new UserSectorPermissionCollection([
-                    $insertedUserSectorPermission
-                ])
-            ),
-            $newResult->getData()
+        $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
+
+        $decodedToken
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $decodedToken
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $decodedToken
+            ->method("getIssuedAt")
+            ->willReturn(new \DateTimeImmutable());
+
+        $decodedToken
+            ->method("getExpiresAt")
+            ->willReturn(
+                new \DateTimeImmutable()
+                    ->add(
+                        new \DateInterval("P1D")
+                    )
+            );
+
+        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
+        $authenticationTokenDecoder
+            ->method("decode")
+            ->willReturn($decodedToken);
+
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("decrypt")
+            ->willReturn("test");
+
+        /**
+         * @var UserSectorPermission[]
+         */
+        $userSectorPermissions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $userSectorPermission = $this->createMock(UserSectorPermission::class);
+            $userSectorPermission
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermissions[$i] = $userSectorPermission;
+        }
+
+        $userSectorPermissionCollection = $this->createMock(UserSectorPermissionCollection::class);
+        $userSectorPermissionCollection
+            ->method("fetchAll")
+            ->willReturn($userSectorPermissions);
+
+        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $userSectorPermissionRepository
+            ->method("findAllByUserId")
+            ->willReturn($userSectorPermissionCollection);
+
+        $sessionData = $this->createMock(SessionData::class);
+        $sessionData
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $sessionData
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $sessionData
+            ->method("getUserSectorPermissionCollection")
+            ->willReturn($userSectorPermissionCollection);
+
+        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
+        $authenticationTokenEncoder
+            ->method("encode")
+            ->willReturn($encodedToken);
+
+        $sessionService = new SessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $userSectorPermissionRepository
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                Username::make("-"),
-                $password,
-                $oneWeekLogin
-            )
+
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn(Username::make("----"));
+
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
+            ->method("getOneWeekLogin")
+            ->willReturn(false);
+
+        $sessionService->login(
+            $sessionLoginParameters
         );
     }
 
     public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
     {
-        $insertedPermission = $this->permissionRepository->insert(
-            new Permission(
-                Name::make("permission"),
-                PermissionValue::make("a"),
-                true
-            )
-        );
-
-        $insertedSector = $this->sectorRepository->insert(
-            new Sector(
-                Name::make("sector"),
-                SectorValue::make("a"),
-                true
-            )
-        );
-
+        $id = Id::make(1);
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $insertedUser = $this->userService->insert(
-            new User(
-                $username,
-                $password,
-                $isActive
-            )
+        $user = new User(
+            $username,
+            $password,
+            $isActive
         );
+        $user->setId($id);
 
-        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
-            new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("findByUsername")
+            ->willReturn($user);
 
-        $oneWeekLogin = true;
-        $newResult = $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                $password,
-                $oneWeekLogin
-            )
-        );
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+        $tokenCache
+            ->method("set")
+            ->with($username, $encodedToken);
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
 
-        $this->assertEquals(AuthenticationLoginStates::New, $newResult->getState());
-        $this->assertNotEmpty($newResult->getToken());
-        $this->assertEquals(
-            new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
-                new UserSectorPermissionCollection([
-                    $insertedUserSectorPermission
-                ])
-            ),
-            $newResult->getData()
+        $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
+
+        $decodedToken
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $decodedToken
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $decodedToken
+            ->method("getIssuedAt")
+            ->willReturn(new \DateTimeImmutable());
+
+        $decodedToken
+            ->method("getExpiresAt")
+            ->willReturn(
+                new \DateTimeImmutable()
+                    ->add(
+                        new \DateInterval("P1D")
+                    )
+            );
+
+        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
+        $authenticationTokenDecoder
+            ->method("decode")
+            ->willReturn($decodedToken);
+
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("decrypt")
+            ->willReturn("test");
+
+        /**
+         * @var UserSectorPermission[]
+         */
+        $userSectorPermissions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $userSectorPermission = $this->createMock(UserSectorPermission::class);
+            $userSectorPermission
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermissions[$i] = $userSectorPermission;
+        }
+
+        $userSectorPermissionCollection = $this->createMock(UserSectorPermissionCollection::class);
+        $userSectorPermissionCollection
+            ->method("fetchAll")
+            ->willReturn($userSectorPermissions);
+
+        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $userSectorPermissionRepository
+            ->method("findAllByUserId")
+            ->willReturn($userSectorPermissionCollection);
+
+        $sessionData = $this->createMock(SessionData::class);
+        $sessionData
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $sessionData
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $sessionData
+            ->method("getUserSectorPermissionCollection")
+            ->willReturn($userSectorPermissionCollection);
+
+        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
+        $authenticationTokenEncoder
+            ->method("encode")
+            ->willReturn($encodedToken);
+
+        $sessionService = new SessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $userSectorPermissionRepository
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                Username::make("-"),
-                $password,
-                $oneWeekLogin
-            )
+
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn(Username::make("----"));
+
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn($password);
+        $sessionLoginParameters
+            ->method("getOneWeekLogin")
+            ->willReturn(true);
+
+        $sessionService->login(
+            $sessionLoginParameters
         );
     }
 
     public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
-        $insertedPermission = $this->permissionRepository->insert(
-            new Permission(
-                Name::make("permission"),
-                PermissionValue::make("a"),
-                true
-            )
-        );
-
-        $insertedSector = $this->sectorRepository->insert(
-            new Sector(
-                Name::make("sector"),
-                SectorValue::make("a"),
-                true
-            )
-        );
-
+        $id = Id::make(1);
         $username = Username::make("test");
         $password = DecodedPassword::make("test");
         $isActive = true;
-        $insertedUser = $this->userService->insert(
-            new User(
-                $username,
-                $password,
-                $isActive
-            )
+        $user = new User(
+            $username,
+            $password,
+            $isActive
         );
+        $user->setId($id);
 
-        $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
-            new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
-            )
-        );
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("findByUsername")
+            ->willReturn($user);
 
-        $oneWeekLogin = false;
-        $newResult = $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                $password,
-                $oneWeekLogin
-            )
-        );
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+        $tokenCache
+            ->method("set")
+            ->with($username, $encodedToken);
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
 
-        $this->assertEquals(AuthenticationLoginStates::New, $newResult->getState());
-        $this->assertNotEmpty($newResult->getToken());
-        $this->assertEquals(
-            new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
-                new UserSectorPermissionCollection([
-                    $insertedUserSectorPermission
-                ])
-            ),
-            $newResult->getData()
+        $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
+
+        $decodedToken
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $decodedToken
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $decodedToken
+            ->method("getIssuedAt")
+            ->willReturn(new \DateTimeImmutable());
+
+        $decodedToken
+            ->method("getExpiresAt")
+            ->willReturn(
+                new \DateTimeImmutable()
+                    ->add(
+                        new \DateInterval("P1D")
+                    )
+            );
+
+        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
+        $authenticationTokenDecoder
+            ->method("decode")
+            ->willReturn($decodedToken);
+
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("decrypt")
+            ->willReturn("test");
+
+        /**
+         * @var UserSectorPermission[]
+         */
+        $userSectorPermissions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $userSectorPermission = $this->createMock(UserSectorPermission::class);
+            $userSectorPermission
+                ->method("getId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getUserId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getSectorId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermission
+                ->method("getPermissionId")
+                ->willReturn(Id::make($i + 1));
+
+
+            $userSectorPermissions[$i] = $userSectorPermission;
+        }
+
+        $userSectorPermissionCollection = $this->createMock(UserSectorPermissionCollection::class);
+        $userSectorPermissionCollection
+            ->method("fetchAll")
+            ->willReturn($userSectorPermissions);
+
+        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $userSectorPermissionRepository
+            ->method("findAllByUserId")
+            ->willReturn($userSectorPermissionCollection);
+
+        $sessionData = $this->createMock(SessionData::class);
+        $sessionData
+            ->method("getUserId")
+            ->willReturn($id);
+
+        $sessionData
+            ->method("getUsername")
+            ->willReturn($username);
+
+        $sessionData
+            ->method("getUserSectorPermissionCollection")
+            ->willReturn($userSectorPermissionCollection);
+
+        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
+        $authenticationTokenEncoder
+            ->method("encode")
+            ->willReturn($encodedToken);
+
+        $sessionService = new SessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $userSectorPermissionRepository
         );
 
         $this->expectException(EntityException::class);
-        $this->authenticationService->login(
-            new AuthenticationLoginInfo(
-                $username,
-                DecodedPassword::make("-"),
-                $oneWeekLogin
-            )
+
+        $sessionLoginParameters = $this->createMock(SessionLoginParameters::class);
+        $sessionLoginParameters
+            ->method("getUsername")
+            ->willReturn($username);
+        $sessionLoginParameters
+            ->method("getPassword")
+            ->willReturn(DecodedPassword::make("===/.,"));
+        $sessionLoginParameters
+            ->method("getOneWeekLogin")
+            ->willReturn(false);
+
+        $sessionService->login(
+            $sessionLoginParameters
         );
     }
-
+    /*
     public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
     {
         $insertedPermission = $this->permissionRepository->insert(
@@ -1285,9 +1590,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1304,8 +1609,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1354,9 +1659,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1373,8 +1678,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1430,9 +1735,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1449,8 +1754,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1506,9 +1811,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1525,8 +1830,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1582,9 +1887,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1601,8 +1906,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1658,9 +1963,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1677,8 +1982,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1707,8 +2012,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($existingResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1748,9 +2053,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1767,8 +2072,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1824,9 +2129,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1843,8 +2148,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1900,9 +2205,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -1919,8 +2224,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1938,8 +2243,8 @@ class SessionServiceTest extends TestCase
         );
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -1983,9 +2288,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2002,8 +2307,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2054,9 +2359,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2073,8 +2378,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2125,9 +2430,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2144,8 +2449,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2171,8 +2476,8 @@ class SessionServiceTest extends TestCase
         );
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2216,9 +2521,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2235,8 +2540,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2262,8 +2567,8 @@ class SessionServiceTest extends TestCase
         );
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2307,9 +2612,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2326,8 +2631,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2379,9 +2684,9 @@ class SessionServiceTest extends TestCase
 
         $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 
@@ -2398,8 +2703,8 @@ class SessionServiceTest extends TestCase
         $this->assertNotEmpty($newResult->getToken());
         $this->assertEquals(
             new AuthenticationData(
-                Id::make($insertedUser->getIdValue()),
-                Username::make($insertedUser->getUsernameValue()),
+                Id::make($insertedUser->getId()->getValue()),
+                Username::make($insertedUser->getUsername()->getValue()),
                 new UserSectorPermissionCollection([
                     $insertedUserSectorPermission
                 ])
@@ -2462,9 +2767,9 @@ class SessionServiceTest extends TestCase
 
         $this->userSectorPermissionRepository->insert(
             new UserSectorPermission(
-                Id::make($insertedUser->getIdValue()),
-                Id::make($insertedSector->getIdValue()),
-                Id::make($insertedPermission->getIdValue())
+                Id::make($insertedUser->getId()->getValue()),
+                Id::make($insertedSector->getId()->getValue()),
+                Id::make($insertedPermission->getId()->getValue())
             )
         );
 

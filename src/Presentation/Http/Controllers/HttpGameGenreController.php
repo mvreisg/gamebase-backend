@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenre\GameGenreService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
@@ -73,9 +73,9 @@ class HttpGameGenreController
             );
 
             $data = [
-                "id" => $gameGenre->getIdValue(),
-                "game_id" => $gameGenre->getGameIdValue(),
-                "genre_id" => $gameGenre->getGenreIdValue()
+                "id" => $gameGenre->getId()->getValue(),
+                "game_id" => $gameGenre->getGameId()->getValue(),
+                "genre_id" => $gameGenre->getGenreId()->getValue()
             ];
 
             $response
@@ -232,9 +232,9 @@ class HttpGameGenreController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $gameGenre->getIdValue(),
-                            "game_id" => $gameGenre->getGameIdValue(),
-                            "genre_id" => $gameGenre->getGenreIdValue()
+                            "id" => $gameGenre->getId()->getValue(),
+                            "game_id" => $gameGenre->getGameId()->getValue(),
+                            "genre_id" => $gameGenre->getGenreId()->getValue()
                         ]
                     ])
                 );
@@ -281,9 +281,9 @@ class HttpGameGenreController
             $data = [];
             foreach ($gameGenres->fetchAll() as $gameGenre) {
                 $data[] = [
-                    "id" => $gameGenre->getIdValue(),
-                    "game_id" => $gameGenre->getGameIdValue(),
-                    "genre_id" => $gameGenre->getGenreIdValue()
+                    "id" => $gameGenre->getId()->getValue(),
+                    "game_id" => $gameGenre->getGameId()->getValue(),
+                    "genre_id" => $gameGenre->getGenreId()->getValue()
                 ];
             }
 

@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encode
 
 use Firebase\JWT\JWT;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Exceptions\AuthenticationTokenEncoderException;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
@@ -25,10 +25,9 @@ class JwtAuthenticationTokenEncoder implements AuthenticationTokenEncoder
     public function encode(AuthenticationData $data, \DateInterval $duration): EncodedAuthenticationToken
     {
         try {
-            $oneDayInSeconds = 60 * 60 * 24;
             $secretKey = $this->key;
             $issuedAt = $this->clock->now();
-            $expireAt = $issuedAt->getTimestamp() + $duration->d * $oneDayInSeconds;
+            $expireAt = $issuedAt->getTimestamp() + $duration->s;
 
             $payload = [
                 "iat" => $issuedAt->getTimestamp(),

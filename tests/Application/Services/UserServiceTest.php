@@ -46,15 +46,15 @@ class UserServiceTest extends TestCase
         );
 
         $decodedPassword = $this->encrypter->decrypt(
-            $insertedUser->getPasswordValue()
+            $insertedUser->getPassword()->getValue()
         );
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -79,14 +79,14 @@ class UserServiceTest extends TestCase
             $user
         );
 
-        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPasswordValue());
+        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPassword()->getValue());
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -149,14 +149,14 @@ class UserServiceTest extends TestCase
             $user
         );
 
-        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPasswordValue());
+        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPassword()->getValue());
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -169,7 +169,7 @@ class UserServiceTest extends TestCase
             DecodedPassword::make("test2"),
             $isActive
         );
-        $updatedUser->setId(Id::make($insertedUser->getIdValue()));
+        $updatedUser->setId(Id::make($insertedUser->getId()->getValue()));
 
         $wasUpdated = $this->userService->update(
             $updatedUser
@@ -194,14 +194,14 @@ class UserServiceTest extends TestCase
             $user
         );
 
-        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPasswordValue());
+        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPassword()->getValue());
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -214,7 +214,7 @@ class UserServiceTest extends TestCase
             DecodedPassword::make("test2"),
             $isActive
         );
-        $updatedUser->setId(Id::make($insertedUser->getIdValue()));
+        $updatedUser->setId(Id::make($insertedUser->getId()->getValue()));
 
         $wasUpdated = $this->userService->update(
             $updatedUser
@@ -239,14 +239,14 @@ class UserServiceTest extends TestCase
             $user
         );
 
-        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPasswordValue());
+        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPassword()->getValue());
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -261,7 +261,7 @@ class UserServiceTest extends TestCase
             DecodedPassword::make("test2"),
             $isActive
         );
-        $updatedUser->setId(Id::make($insertedUser->getIdValue()));
+        $updatedUser->setId(Id::make($insertedUser->getId()->getValue()));
 
         $wasUpdated = $this->userService->update(
             $updatedUser
@@ -286,14 +286,14 @@ class UserServiceTest extends TestCase
             $user
         );
 
-        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPasswordValue());
+        $decodedPassword = $this->encrypter->decrypt($insertedUser->getPassword()->getValue());
 
         $this->assertEquals(
-            $user->getUsernameValue(),
-            $insertedUser->getUsernameValue()
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
         );
         $this->assertEquals(
-            $user->getPasswordValue(),
+            $user->getPassword()->getValue(),
             $decodedPassword
         );
         $this->assertEquals(
@@ -308,7 +308,7 @@ class UserServiceTest extends TestCase
             DecodedPassword::make("-"),
             $isActive
         );
-        $updatedUser->setId(Id::make($insertedUser->getIdValue()));
+        $updatedUser->setId(Id::make($insertedUser->getId()->getValue()));
 
         $wasUpdated = $this->userService->update(
             $updatedUser

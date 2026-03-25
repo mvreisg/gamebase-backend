@@ -40,7 +40,7 @@ class PermissionCollection
     public function findById(Id $id): ?Permission
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -51,7 +51,7 @@ class PermissionCollection
     {
         $matches = new PermissionCollection(null);
         foreach ($this->values as $value) {
-            if ($value->getNameValue() === $id->getValue()) {
+            if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);
             }
         }
@@ -61,7 +61,7 @@ class PermissionCollection
     public function replace(Id $id, Permission $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -71,7 +71,7 @@ class PermissionCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

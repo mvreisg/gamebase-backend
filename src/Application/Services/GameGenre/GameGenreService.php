@@ -31,11 +31,11 @@ class GameGenreService
     {
         try {
             $this->gameRepository->checkIfExists(
-                Id::make($gameGenre->getGameIdValue())
+                $gameGenre->getGameId()
             );
 
             $this->genreRepository->checkIfExists(
-                Id::make($gameGenre->getGenreIdValue())
+                $gameGenre->getGenreId()
             );
 
             $insertedGameGenre = $this->gameGenreRepository->insert($gameGenre);
@@ -50,15 +50,15 @@ class GameGenreService
     {
         try {
             $this->gameGenreRepository->checkIfExists(
-                Id::make($gameGenre->getIdValue())
+                $gameGenre->getId()
             );
 
             $this->gameRepository->checkIfExists(
-                Id::make($gameGenre->getGameIdValue())
+                $gameGenre->getGameId()
             );
 
             $this->genreRepository->checkIfExists(
-                Id::make($gameGenre->getGenreIdValue())
+                $gameGenre->getGenreId()
             );
 
             $wasUpdated = $this->gameGenreRepository->update($gameGenre);

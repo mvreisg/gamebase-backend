@@ -36,7 +36,7 @@ class UserCollection
     public function findById(Id $id): ?User
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -46,7 +46,7 @@ class UserCollection
     public function findByUsername(Username $username): ?User
     {
         foreach ($this->values as $value) {
-            if ($value->getUsernameValue() === $username->getValue()) {
+            if ($value->getUsername()->getValue() === $username->getValue()) {
                 return $value;
             }
         }
@@ -57,7 +57,7 @@ class UserCollection
     {
         $matches = new UserCollection();
         foreach ($this->values as $value) {
-            if ($value->getUsernameValue() === $username->getValue()) {
+            if ($value->getUsername()->getValue() === $username->getValue()) {
                 $matches->add($value);
             }
         }
@@ -67,7 +67,7 @@ class UserCollection
     public function replace(Id $id, User $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -77,7 +77,7 @@ class UserCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

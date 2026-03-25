@@ -20,14 +20,14 @@ class SessionLoginParameters
         $this->oneWeekLogin = $oneWeekLogin;
     }
 
-    public function getUsernameValue(): string
+    public function getUsername(): Username
     {
-        return $this->username->getValue();
+        return $this->username;
     }
 
-    public function getPasswordValue(): string
+    public function getPassword(): Password
     {
-        return $this->password->getValue();
+        return $this->password;
     }
 
     public function getOneWeekLogin(): bool

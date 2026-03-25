@@ -31,11 +31,11 @@ class GamePlatformService
     {
         try {
             $this->gameRepository->checkIfExists(
-                Id::make($gamePlatform->getGameIdValue())
+                $gamePlatform->getGameId()->getValue()
             );
 
             $this->platformRepository->checkIfExists(
-                Id::make($gamePlatform->getPlatformIdValue())
+                $gamePlatform->getPlatformId()->getValue()
             );
 
             $insertedGamePlatform = $this->gamePlatformRepository->insert($gamePlatform);
@@ -50,15 +50,15 @@ class GamePlatformService
     {
         try {
             $this->gamePlatformRepository->checkIfExists(
-                Id::make($gamePlatform->getIdValue())
+                $gamePlatform->getId()
             );
 
             $this->gameRepository->checkIfExists(
-                Id::make($gamePlatform->getGameIdValue())
+                $gamePlatform->getGameId()->getValue()
             );
 
             $this->platformRepository->checkIfExists(
-                Id::make($gamePlatform->getPlatformIdValue())
+                $gamePlatform->getPlatformId()->getValue()
             );
 
             $wasUpdated = $this->gamePlatformRepository->update($gamePlatform);

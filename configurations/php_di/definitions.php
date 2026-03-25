@@ -24,15 +24,15 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\De
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Predis\Token\PredisTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGameGenreRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGamePlatformRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGameRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoGenreRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoPermissionRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoPlatformRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoSectorRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoUserRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Pdo\PdoUserSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameGenreRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGamePlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGenreRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
 use Predis\Client;
 
 try {
@@ -72,15 +72,15 @@ try {
         \DateTimeZone::class => DI\autowire()
             ->constructorParameter("timezone", DI\get("timezone")),
 
-        UserRepositoryInterface::class => DI\get(PdoUserRepository::class),
-        PermissionRepositoryInterface::class => DI\get(PdoPermissionRepository::class),
-        SectorRepositoryInterface::class => DI\get(PdoSectorRepository::class),
-        UserSectorPermissionRepositoryInterface::class => DI\get(PdoUserSectorPermissionRepository::class),
-        GameRepositoryInterface::class => DI\get(PdoGameRepository::class),
-        GenreRepositoryInterface::class => DI\get(PdoGenreRepository::class),
-        PlatformRepositoryInterface::class => DI\get(PdoPlatformRepository::class),
-        GameGenreRepositoryInterface::class => DI\get(PdoGameGenreRepository::class),
-        GamePlatformRepositoryInterface::class => DI\get(PdoGamePlatformRepository::class),
+        UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
+        PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),
+        SectorRepositoryInterface::class => DI\get(MariaDbSectorRepository::class),
+        UserSectorPermissionRepositoryInterface::class => DI\get(MariaDbUserSectorPermissionRepository::class),
+        GameRepositoryInterface::class => DI\get(MariaDbGameRepository::class),
+        GenreRepositoryInterface::class => DI\get(MariaDbGenreRepository::class),
+        PlatformRepositoryInterface::class => DI\get(MariaDbPlatformRepository::class),
+        GameGenreRepositoryInterface::class => DI\get(MariaDbGameGenreRepository::class),
+        GamePlatformRepositoryInterface::class => DI\get(MariaDbGamePlatformRepository::class),
 
         AuthenticationTokenEncoder::class => DI\get(JwtAuthenticationTokenEncoder::class),
         AuthenticationTokenDecoder::class => DI\get(JwtAuthenticationTokenDecoder::class),
@@ -89,12 +89,12 @@ try {
 
         TokenCacheInterface::class => DI\get(PredisTokenCache::class),
 
-        \PDO::class => DI\factory(function (ContainerInterface $ci) {
-            $adapter = $ci->get("repository.adapter");
-            $host = $ci->get("repository.host");
-            $database = $ci->get("repository.database");
-            $username = $ci->get("repository.username");
-            $password = $ci->get("repository.password");
+        \PDO::class => DI\factory(function (ContainerInterface $container) {
+            $adapter = $container->get("repository.adapter");
+            $host = $container->get("repository.host");
+            $database = $container->get("repository.database");
+            $username = $container->get("repository.username");
+            $password = $container->get("repository.password");
             $dsn = "$adapter:host=$host;dbname=$database;";
             return new \PDO(
                 $dsn,
@@ -107,10 +107,10 @@ try {
             );
         }),
 
-        Client::class => DI\factory(function (ContainerInterface $ci) {
-            $scheme = $ci->get("cache.redis.scheme");
-            $host = $ci->get("cache.redis.host");
-            $port = $ci->get("cache.redis.port");
+        Client::class => DI\factory(function (ContainerInterface $container) {
+            $scheme = $container->get("cache.redis.scheme");
+            $host = $container->get("cache.redis.host");
+            $port = $container->get("cache.redis.port");
             return new Client([
                 "scheme" => $scheme,
                 "host" => $host,

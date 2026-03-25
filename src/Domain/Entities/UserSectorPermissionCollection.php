@@ -40,7 +40,7 @@ class UserSectorPermissionCollection
     public function findById(Id $id): ?UserSectorPermission
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -51,7 +51,7 @@ class UserSectorPermissionCollection
     {
         $matches = new UserSectorPermissionCollection(null);
         foreach ($this->values as $value) {
-            if ($value->getUserIdValue() === $userId->getValue()) {
+            if ($value->getUserId()->getValue() === $userId->getValue()) {
                 $matches->add($value);
             }
         }
@@ -61,7 +61,7 @@ class UserSectorPermissionCollection
     public function replace(Id $id, UserSectorPermission $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -71,7 +71,7 @@ class UserSectorPermissionCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

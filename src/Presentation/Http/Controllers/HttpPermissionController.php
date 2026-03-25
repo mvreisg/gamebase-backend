@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Permission\PermissionService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
@@ -77,8 +77,8 @@ class HttpPermissionController
             );
 
             $data = [
-                "id" => $permission->getIdValue(),
-                "name" => $permission->getNameValue(),
+                "id" => $permission->getId()->getValue(),
+                "name" => $permission->getName()->getValue(),
                 "is_active" => $permission->getIsActive(),
                 "value" => $permission->getPermissionValue()
             ];
@@ -251,8 +251,8 @@ class HttpPermissionController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $permission->getIdValue(),
-                            "name" => $permission->getNameValue(),
+                            "id" => $permission->getId()->getValue(),
+                            "name" => $permission->getName()->getValue(),
                             "value" => $permission->getPermissionValue(),
                             "is_active" => $permission->getIsActive()
                         ]
@@ -300,8 +300,8 @@ class HttpPermissionController
 
             foreach ($permissions->fetchAll() as $permission) {
                 $data[] = [
-                    "id" => $permission->getIdValue(),
-                    "name" => $permission->getNameValue(),
+                    "id" => $permission->getId()->getValue(),
+                    "name" => $permission->getName()->getValue(),
                     "value" => $permission->getPermissionValue(),
                     "is_active" => $permission->getIsActive()
                 ];

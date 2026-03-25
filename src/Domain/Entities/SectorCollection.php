@@ -32,7 +32,7 @@ class SectorCollection
     public function exists(Id $id): bool
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return true;
             }
         }
@@ -50,7 +50,7 @@ class SectorCollection
     public function findById(Id $id): ?Sector
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -61,7 +61,7 @@ class SectorCollection
     {
         $matches = new SectorCollection(null);
         foreach ($this->values as $value) {
-            if ($value->getNameValue() === $id->getValue()) {
+            if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);
             }
         }
@@ -71,7 +71,7 @@ class SectorCollection
     public function replace(Id $id, Sector $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -81,7 +81,7 @@ class SectorCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

@@ -36,7 +36,7 @@ class GameCollection
     public function findById(Id $id): ?Game
     {
         foreach ($this->values as $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 return $value;
             }
         }
@@ -47,7 +47,7 @@ class GameCollection
     {
         $matches = new GameCollection();
         foreach ($this->values as $value) {
-            if ($value->getNameValue() === $id->getValue()) {
+            if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);
             }
         }
@@ -57,7 +57,7 @@ class GameCollection
     public function replace(Id $id, Game $new): void
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 $this->values[$key] = $new;
                 return;
             }
@@ -67,7 +67,7 @@ class GameCollection
     public function remove(Id $id): bool
     {
         foreach ($this->values as $key => $value) {
-            if ($value->getIdValue() === $id->getValue()) {
+            if ($value->getId()->getValue() === $id->getValue()) {
                 isset($this->values[$key]);
                 return true;
             }

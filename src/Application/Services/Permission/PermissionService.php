@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Services\Permission;
 
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
 use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
@@ -23,7 +22,7 @@ class PermissionService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($permission->getNameValue())
+                $permission->getName()
             );
 
             $insertedPermission = $this->repository->insert($permission);
@@ -38,11 +37,11 @@ class PermissionService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($permission->getIdValue())
+                $permission->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($permission->getNameValue())
+                $permission->getName()
             );
 
             $wasUpdated = $this->repository->update($permission);

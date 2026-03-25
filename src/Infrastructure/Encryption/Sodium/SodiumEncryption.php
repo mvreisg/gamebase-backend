@@ -6,7 +6,6 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium;
 
 use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
 
 class SodiumEncryption implements EncryptionInterface
 {

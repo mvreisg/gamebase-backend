@@ -7,9 +7,9 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\UserSectorPermission\UserSectorPermissionService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
@@ -80,10 +80,10 @@ class HttpUserSectorPermissionController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $userSectorPermission->getIdValue(),
-                            "user_id" => $userSectorPermission->getUserIdValue(),
-                            "sector_id" => $userSectorPermission->getSectorIdValue(),
-                            "permission_id" => $userSectorPermission->getPermissionIdValue()
+                            "id" => $userSectorPermission->getId()->getValue(),
+                            "user_id" => $userSectorPermission->getUserId()->getValue(),
+                            "sector_id" => $userSectorPermission->getSectorId()->getValue(),
+                            "permission_id" => $userSectorPermission->getPermissionId()->getValue()
                         ]
                     ])
                 );
@@ -236,10 +236,10 @@ class HttpUserSectorPermissionController
                 ->write(
                     json_encode([
                         "data" => [
-                            "id" => $userSectorPermission->getIdValue(),
-                            "user_id" => $userSectorPermission->getUserIdValue(),
-                            "sector_id" => $userSectorPermission->getSectorIdValue(),
-                            "permission_id" => $userSectorPermission->getPermissionIdValue()
+                            "id" => $userSectorPermission->getId()->getValue(),
+                            "user_id" => $userSectorPermission->getUserId()->getValue(),
+                            "sector_id" => $userSectorPermission->getSectorId()->getValue(),
+                            "permission_id" => $userSectorPermission->getPermissionId()->getValue()
                         ]
                     ])
                 );
@@ -286,10 +286,10 @@ class HttpUserSectorPermissionController
             $data = [];
             foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $data[] = [
-                    "id" => $userSectorPermission->getIdValue(),
-                    "user_id" => $userSectorPermission->getUserIdValue(),
-                    "sector_id" => $userSectorPermission->getSectorIdValue(),
-                    "permission_id" => $userSectorPermission->getPermissionIdValue()
+                    "id" => $userSectorPermission->getId()->getValue(),
+                    "user_id" => $userSectorPermission->getUserId()->getValue(),
+                    "sector_id" => $userSectorPermission->getSectorId()->getValue(),
+                    "permission_id" => $userSectorPermission->getPermissionId()->getValue()
                 ];
             }
 

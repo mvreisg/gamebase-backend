@@ -26,34 +26,34 @@ class User
         $this->id = $id;
     }
 
-    public function getIdValue(): int
+    public function getId(): Id
     {
         if ($this->id === null) {
             throw new EntityException(
                 "Id is null."
             );
         }
-        return $this->id->getValue();
+        return $this->id;
     }
 
-    public function getUsernameValue(): string
+    public function getUsername(): Username
     {
         if ($this->username === null) {
             throw new EntityException(
                 "Username is null."
             );
         }
-        return $this->username->getValue();
+        return $this->username;
     }
 
-    public function getPasswordValue(): string
+    public function getPassword(): Password
     {
         if ($this->password === null) {
             throw new EntityException(
                 "Password is null."
             );
         }
-        return $this->password->getValue();
+        return $this->password;
     }
 
     public function getIsActive(): bool

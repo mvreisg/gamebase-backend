@@ -29,16 +29,16 @@ class UserService
     {
         try {
             $this->repository->checkDuplicatedUsernames(
-                Username::make($new->getUsernameValue())
+                $new->getUsername()
             );
 
             $encodedPassword = $this->encrypter->encrypt(
-                $new->getPasswordValue()
+                $new->getPassword()->getValue()
             );
 
             $insertedUser = $this->repository->insert(
                 new User(
-                    Username::make($new->getUsernameValue()),
+                    $new->getUsername(),
                     EncodedPassword::make($encodedPassword),
                     $new->getIsActive()
                 )
@@ -54,22 +54,23 @@ class UserService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($existant->getIdValue())
+                $existant->getId()
             );
 
             $this->repository->checkDuplicatedUsernames(
-                Username::make($existant->getUsernameValue())
+                $existant->getUsername()
             );
 
-            $validatedPassword = $existant->getPasswordValue();
-            $encodedPassword = $this->encrypter->encrypt($validatedPassword);
+            $encodedPassword = $this->encrypter->encrypt(
+                $existant->getPassword()->getValue()
+            );
 
             $user = new User(
-                Username::make($existant->getUsernameValue()),
+                $existant->getUsername(),
                 EncodedPassword::make($encodedPassword),
                 $existant->getIsActive()
             );
-            $user->setId(Id::make($existant->getIdValue()));
+            $user->setId($existant->getId());
             $wasUpdated = $this->repository->update(
                 $user
             );

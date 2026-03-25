@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
 use Phinx\Seed\AbstractSeed;
 
 class AddingPermissions extends AbstractSeed
