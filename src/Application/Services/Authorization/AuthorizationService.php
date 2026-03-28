@@ -45,8 +45,8 @@ class AuthorizationService
             );
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId($userId);
-            $sectors = new SectorCollection(null);
-            $permissions = new PermissionCollection(null);
+            $sectors = new SectorCollection();
+            $permissions = new PermissionCollection();
 
             foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $sector = $this->sectorRepository->findById(

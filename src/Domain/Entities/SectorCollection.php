@@ -11,13 +11,9 @@ class SectorCollection
      */
     private array $values;
 
-    public function __construct(?array $values)
+    public function __construct(?array $values = null)
     {
-        if (isset($values) === true) {
-            $this->values = $values;
-        } else {
-            $this->values = [];
-        }
+        $this->values = $values ?? [];
     }
 
     public function add(Sector $value): bool
@@ -59,7 +55,7 @@ class SectorCollection
 
     public function findByName(Name $id): SectorCollection
     {
-        $matches = new SectorCollection(null);
+        $matches = new SectorCollection();
         foreach ($this->values as $value) {
             if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);

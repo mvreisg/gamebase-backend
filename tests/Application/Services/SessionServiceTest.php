@@ -952,7 +952,6 @@ class SessionServiceTest extends TestCase
         $result = $sessionService->login(
             $sessionLoginParameters
         );
-        var_dump($result->getToken()->getToken());
 
         $this->assertLoginResultEquals(
             $user,
@@ -964,7 +963,6 @@ class SessionServiceTest extends TestCase
         $result = $sessionService->login(
             $sessionLoginParameters
         );
-        var_dump($result->getToken()->getToken());
 
         $this->assertLoginResultEquals(
             $user,

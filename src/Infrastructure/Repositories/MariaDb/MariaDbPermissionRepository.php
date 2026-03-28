@@ -225,10 +225,10 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new PermissionCollection(null);
+                return new PermissionCollection();
             }
 
-            $permissions = new PermissionCollection(null);
+            $permissions = new PermissionCollection();
             foreach ($fetchResult as $row) {
                 $value = new Permission(
                     Name::make($row["name"]),

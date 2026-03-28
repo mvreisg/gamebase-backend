@@ -11,13 +11,9 @@ class PermissionCollection
      */
     private array $values;
 
-    public function __construct(?array $values)
+    public function __construct(?array $values = null)
     {
-        if (isset($values) === true) {
-            $this->values = $values;
-        } else {
-            $this->values = [];
-        }
+        $this->values = $values ?? [];
     }
 
     public function add(Permission $value): bool
@@ -49,7 +45,7 @@ class PermissionCollection
 
     public function findByName(Name $id): PermissionCollection
     {
-        $matches = new PermissionCollection(null);
+        $matches = new PermissionCollection();
         foreach ($this->values as $value) {
             if ($value->getName()->getValue() === $id->getValue()) {
                 $matches->add($value);

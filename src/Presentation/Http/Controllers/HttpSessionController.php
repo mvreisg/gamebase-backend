@@ -86,7 +86,6 @@ class HttpSessionController
             return $response
                 ->withStatus(201);
         } catch (\Throwable $e) {
-            var_dump($e);
             $response
                 ->getBody()
                 ->write(

@@ -228,10 +228,10 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $fetchResult = $statement->fetchAll();
 
             if ($fetchResult === false) {
-                return new SectorCollection(null);
+                return new SectorCollection();
             }
 
-            $sectors = new SectorCollection(null);
+            $sectors = new SectorCollection();
             foreach ($fetchResult as $row) {
                 $value = new Sector(
                     Name::make($row["name"]),
