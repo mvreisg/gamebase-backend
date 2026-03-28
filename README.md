@@ -65,7 +65,7 @@ GPL-3.0
 
 ### Documentation
 
-🚧 *In the future*
+🚧 *In the future with Swagger*
 
 ---
 
@@ -88,7 +88,7 @@ Example `.env` to run with `Docker` under `development` environment:
 
 Copy all keys from `.env.example` into your environment file and fill in the values.
 
-*The `run.development.docker.sh` script is available to ease the `Docker` running.*
+*The `docker-compose.development.up` and `docker-compose.development.down` scripts are available to ease the `Docker` setup.*
 
 ---
 
