@@ -149,6 +149,7 @@ class SessionServiceTest extends TestCase
         $authenticationService = new AuthenticationService(
             $tokenCache,
             $authenticationTokenDecoder,
+            $authenticationTokenEncoder,
             $authenticationTokenValidator
         );
         return new SessionService(
@@ -156,8 +157,7 @@ class SessionServiceTest extends TestCase
             $userRepository,
             $tokenCache,
             $encrypter,
-            $authenticationTokenEncoder,
-            $userSectorPermissionRepository,
+            $userSectorPermissionRepository
         );
     }
 

@@ -34,11 +34,8 @@ class AuthorizationService
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
-    public function check(
-        Id $userId,
-        SectorTypes $sectorType,
-        PermissionTypes $permissionType
-    ): void {
+    public function check(Id $userId, SectorTypes $sectorType, PermissionTypes $permissionType): void
+    {
         try {
             $this->userRepository->checkIfExists(
                 $userId

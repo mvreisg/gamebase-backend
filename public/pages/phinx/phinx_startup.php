@@ -10,10 +10,7 @@ $returnCode = 0;
 
 $root = escapeshellarg(PROJECT_ROOT);
 
-$command = "
-    cd $root &&
-    bash $root/startup.sh 2>&1
-";
+$command = "bash $root/configurations/phinx/startup/phinx_startup.sh 2>&1";
 
 exec($command, $output, $returnCode);
 

@@ -1,6 +1,5 @@
 <?php
 
-use DI\ContainerBuilder;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameGenreController;
@@ -24,9 +23,7 @@ try {
     require_once dirname(__DIR__) . "/constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
 
-    $builder = new ContainerBuilder();
-    $builder->addDefinitions(PROJECT_ROOT . "/configurations/php_di/definitions.php");
-    $container = $builder->build();
+    $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
 
     AppFactory::setContainer($container);
     $app = AppFactory::create();

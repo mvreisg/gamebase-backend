@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Platform;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
 use Mvreisg\GamebaseBackend\Domain\Entities\PlatformCollection;
@@ -12,15 +17,32 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInte
 class PlatformService
 {
     private PlatformRepositoryInterface $repository;
+    private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
 
-    public function __construct(PlatformRepositoryInterface $repository)
-    {
+    public function __construct(
+        PlatformRepositoryInterface $repository,
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService
+    ) {
         $this->repository = $repository;
+        $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
     }
 
-    public function insert(Platform $platform): Platform
+    public function insert(Platform $platform, EncodedAuthenticationToken $token): Platform
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::Platform,
+                PermissionTypes::Create
+            );
+
             $this->repository->checkDuplicatedNames(
                 $platform->getName()
             );
@@ -33,9 +55,19 @@ class PlatformService
         }
     }
 
-    public function update(Platform $platform): bool
+    public function update(Platform $platform, EncodedAuthenticationToken $token): bool
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::Platform,
+                PermissionTypes::Update
+            );
+
             $this->repository->checkIfExists(
                 $platform->getId()
             );
@@ -52,9 +84,19 @@ class PlatformService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::Platform,
+                PermissionTypes::Activate
+            );
+
             $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
@@ -68,9 +110,19 @@ class PlatformService
         }
     }
 
-    public function findById(Id $id): Platform
+    public function findById(Id $id, EncodedAuthenticationToken $token): Platform
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::Platform,
+                PermissionTypes::List
+            );
+
             $fetchedPlatform = $this->repository->findById($id);
 
             return $fetchedPlatform;
@@ -79,9 +131,19 @@ class PlatformService
         }
     }
 
-    public function findAll(): PlatformCollection
+    public function findAll(EncodedAuthenticationToken $token): PlatformCollection
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::Platform,
+                PermissionTypes::List
+            );
+
             return $this->repository->findAll();
         } catch (\Throwable $e) {
             throw $e;

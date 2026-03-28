@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
@@ -46,6 +47,13 @@ class AuthenticationServiceTest extends TestCase
         return $authenticationTokenDecoder;
     }
 
+    private function createAuthenticationTokenEncoder(): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder
+    {
+        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
+        return $authenticationTokenEncoder;
+    }
+
+
     private function createAuthenticationTokenValidator(): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator
     {
         $authenticationTokenValidator = $this->createMock(AuthenticationTokenValidator::class);
@@ -58,11 +66,13 @@ class AuthenticationServiceTest extends TestCase
             $this->createEncodedToken($token)
         );
         $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder();
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder();
         $authenticationTokenValidator = $this->createAuthenticationTokenValidator();
 
         return new AuthenticationService(
             $tokenCache,
             $authenticationTokenDecoder,
+            $authenticationTokenEncoder,
             $authenticationTokenValidator
         );
     }

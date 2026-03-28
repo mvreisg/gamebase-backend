@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\User;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
@@ -15,19 +20,35 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterfac
 class UserService
 {
     private UserRepositoryInterface $repository;
+    private AuthenticationService $authenticationService;
+    private AuthorizationService $authorizationService;
     private EncryptionInterface $encrypter;
 
     public function __construct(
         UserRepositoryInterface $repository,
+        AuthenticationService $authenticationService,
+        AuthorizationService $authorizationService,
         EncryptionInterface $encrypter
     ) {
         $this->repository = $repository;
+        $this->authenticationService = $authenticationService;
+        $this->authorizationService = $authorizationService;
         $this->encrypter = $encrypter;
     }
 
-    public function insert(User $new): User
+    public function insert(User $new, EncodedAuthenticationToken $token): User
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::Create
+            );
+
             $this->repository->checkDuplicatedUsernames(
                 $new->getUsername()
             );
@@ -50,9 +71,19 @@ class UserService
         }
     }
 
-    public function update(User $existant): bool
+    public function update(User $existant, EncodedAuthenticationToken $token): bool
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::Update
+            );
+
             $this->repository->checkIfExists(
                 $existant->getId()
             );
@@ -81,9 +112,19 @@ class UserService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive): bool
+    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::Activate
+            );
+
             $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
@@ -97,9 +138,19 @@ class UserService
         }
     }
 
-    public function findById(Id $id): User
+    public function findById(Id $id, EncodedAuthenticationToken $token): User
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::List
+            );
+
             $fetchedUser = $this->repository->findById($id);
 
             return $fetchedUser;
@@ -108,9 +159,19 @@ class UserService
         }
     }
 
-    public function findByUsername(Username $username): ?User
+    public function findByUsername(Username $username, EncodedAuthenticationToken $token): ?User
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::List
+            );
+
             $fetchedUser = $this->repository->findByUsername($username);
 
             return $fetchedUser;
@@ -119,9 +180,19 @@ class UserService
         }
     }
 
-    public function findAll(): UserCollection
+    public function findAll(EncodedAuthenticationToken $token): UserCollection
     {
         try {
+            $decodedToken = $this->authenticationService->decode(
+                $token
+            );
+
+            $this->authorizationService->check(
+                $decodedToken->getUserId(),
+                SectorTypes::User,
+                PermissionTypes::List
+            );
+
             return $this->repository->findAll();
         } catch (\Throwable $e) {
             throw $e;

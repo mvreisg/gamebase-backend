@@ -11,7 +11,7 @@ try {
     /**
      * @var Container
      */
-    $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
+    $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
 
     $database = $container->get("repository.database");
     $adapter = $container->get("repository.adapter");
@@ -88,20 +88,16 @@ require_once PROJECT_ROOT . "/public/components/head.php";
 require_once PROJECT_ROOT . "/public/components/nav.php";
 ?>
 <div class="m-1">
-    Does database <span class="fw-semibold"><?php echo $database?></span> exists?
+    <span class="fw-semibold"><?php echo $database?></span> status:
 <?php
 if ($exists) {
-    echo "<span class=\"fw-semibold\" style=\"color: lime\">yes</span>";
+    echo "<span class=\"fw-semibold\" style=\"color: lime\">exists.</span>";
+    echo "<a style=\"color: red\" class=\"fw-semibold mt-1 ms-1\" href=\"{$baseUrl}{$items["PDO Database"]}?action=drop\">Drop</a>";
 } else {
-    echo "<span class=\"fw-semibold\" style=\"color: red\">no</span>";
+    echo "<span class=\"fw-semibold\" style=\"color: red\">unexistant.</span>";
+    echo "<a style=\"color: lime\" class=\"fw-semibold mt-1 ms-1\" href=\"{$baseUrl}{$items["PDO Database"]}?action=create\">Create</a>";
 }
 ?>
-<p>
-<?php
-echo "<a style=\"color: lime\" class=\"fw-semibold mt-1\" href=\"{$baseUrl}{$items["PDO Database"]}?action=create\">Create</a>";
-echo "<a style=\"color: red\" class=\"fw-semibold mt-1 ms-1\" href=\"{$baseUrl}{$items["PDO Database"]}?action=drop\">Drop</a>";
-?>
-</p>
 </div>
 <?php
 require_once PROJECT_ROOT . "/public/components/js.php";
