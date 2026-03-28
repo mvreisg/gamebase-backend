@@ -4,55 +4,78 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authentication;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\InvalidTokenException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Encoded\EncodedAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 
 class AuthenticationService
 {
-    private UserRepositoryInterface $userRepository;
     private TokenCacheInterface $tokenCache;
     private AuthenticationTokenDecoder $authenticationTokenDecoder;
-    private EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator;
+    private AuthenticationTokenValidator $authenticationTokenValidator;
 
     public function __construct(
-        UserRepositoryInterface $userRepository,
         TokenCacheInterface $tokenCache,
         AuthenticationTokenDecoder $authenticationTokenDecoder,
-        EncodedAuthenticationTokenValidator $encodedAuthenticationTokenValidator
+        AuthenticationTokenValidator $authenticationTokenValidator
     ) {
-        $this->userRepository = $userRepository;
         $this->tokenCache = $tokenCache;
         $this->authenticationTokenDecoder = $authenticationTokenDecoder;
-        $this->encodedAuthenticationTokenValidator = $encodedAuthenticationTokenValidator;
+        $this->authenticationTokenValidator = $authenticationTokenValidator;
     }
 
-    public function validate(EncodedAuthenticationToken $token): void
+    public function validate(EncodedAuthenticationToken $token): DecodedAuthenticationToken
     {
         try {
             $decodedToken = $this->authenticationTokenDecoder->decode($token);
 
-            $this->userRepository->checkIfExists(
-                $decodedToken->getUserId()
+            $this->authenticationTokenValidator->validate($decodedToken);
+
+            $id = $decodedToken->getUserId();
+            $username = $decodedToken->getUsername();
+
+            $exists = $this->tokenCache->exists(
+                $username
             );
+
+            if ($exists === false) {
+                throw new UnauthorizedException();
+            }
 
             $cachedToken = $this->tokenCache->get(
-                $decodedToken->getUsername()
+                $username
             );
 
-            $isTheTokenTheSame = strcmp(
+            $isTokensIdenticals = strcmp(
                 $token->getToken(),
                 $cachedToken->getToken()
             ) === 0;
 
-            if ($isTheTokenTheSame === false) {
-                throw new InvalidTokenException();
+            if ($isTokensIdenticals === false) {
+                throw new UnauthorizedException();
             }
 
-            $this->encodedAuthenticationTokenValidator->validate($token);
+            $cachedResult = $this->authenticationTokenDecoder->decode($token);
+
+            $isIdIdenticals = $id->getValue() === $cachedResult->getUserId()->getValue();
+
+            if ($isIdIdenticals === false) {
+                throw new UnauthorizedException();
+            }
+
+            $isUsernamesIdenticals = strcmp(
+                $username->getValue(),
+                $cachedResult->getUsername()->getValue()
+            ) === 0;
+
+            if ($isUsernamesIdenticals === false) {
+                throw new UnauthorizedException();
+            }
+
+            return $decodedToken;
         } catch (\Throwable $e) {
             throw $e;
         }

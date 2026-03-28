@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
@@ -126,6 +127,16 @@ class SessionServiceTest extends TestCase
         return $sessionLoginParameters;
     }
 
+    private function createEncodedToken(
+        string $token
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken {
+        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $encodedToken
+            ->method("getToken")
+            ->willReturn($token);
+        return $encodedToken;
+    }
+
     private function createSessionService(
         MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface $userRepository,
         MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface $tokenCache,
@@ -133,18 +144,20 @@ class SessionServiceTest extends TestCase
         MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder $authenticationTokenEncoder,
         MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder $authenticationTokenDecoder,
         AuthenticationTokenValidator $authenticationTokenValidator,
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
-        ClockInterface $clock
+        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface $userSectorPermissionRepository
     ): SessionService {
+        $authenticationService = new AuthenticationService(
+            $tokenCache,
+            $authenticationTokenDecoder,
+            $authenticationTokenValidator
+        );
         return new SessionService(
+            $authenticationService,
             $userRepository,
             $tokenCache,
             $encrypter,
             $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
             $userSectorPermissionRepository,
-            $clock
         );
     }
 
@@ -611,10 +624,7 @@ class SessionServiceTest extends TestCase
         $now = new \DateTimeImmutable();
         $decodedToken = $this->createDecodedToken($user, $now, $now->modify("+1 day"));
 
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $authenticationTokenDecoder
-            ->method("decode")
-            ->willReturn($decodedToken);
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
 
         $encrypter = $this->createEncrypter();
 
@@ -684,10 +694,7 @@ class SessionServiceTest extends TestCase
         $now = new \DateTimeImmutable();
         $decodedToken = $this->createDecodedToken($user, $now, $now->modify("+1 day"));
 
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $authenticationTokenDecoder
-            ->method("decode")
-            ->willReturn($decodedToken);
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
 
         $encrypter = $this->createEncrypter();
 
@@ -758,10 +765,7 @@ class SessionServiceTest extends TestCase
         $expiresAt = $now->modify("+1 day");
         $decodedToken = $this->createDecodedToken($user, $now, $expiresAt);
 
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $authenticationTokenDecoder
-            ->method("decode")
-            ->willReturn($decodedToken);
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
 
         $encrypter = $this->createEncrypter();
 
@@ -900,7 +904,8 @@ class SessionServiceTest extends TestCase
 
         $userRepository = $this->createUserRepository($user);
 
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
+        $encodedToken = $this->createEncodedToken("teste");
+
         $tokenCache = $this->createTokenCache($user, $encodedToken);
 
         $now = new \DateTimeImmutable();
@@ -917,10 +922,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
-        $authenticationTokenEncoder
-            ->method("encode")
-            ->willReturn($encodedToken);
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
 
         $clock = $this->createMock(ClockInterface::class);
         $clock
@@ -950,6 +952,7 @@ class SessionServiceTest extends TestCase
         $result = $sessionService->login(
             $sessionLoginParameters
         );
+        var_dump($result->getToken()->getToken());
 
         $this->assertLoginResultEquals(
             $user,
@@ -961,6 +964,7 @@ class SessionServiceTest extends TestCase
         $result = $sessionService->login(
             $sessionLoginParameters
         );
+        var_dump($result->getToken()->getToken());
 
         $this->assertLoginResultEquals(
             $user,
@@ -1002,10 +1006,7 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
-        $authenticationTokenEncoder
-            ->method("encode")
-            ->willReturn($encodedToken);
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
 
         $clock = $this->createMock(ClockInterface::class);
         $clock

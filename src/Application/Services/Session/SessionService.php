@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Session;
 
+use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
@@ -21,38 +19,64 @@ use Mvreisg\GamebaseBackend\Domain\Session\Exceptions\InvalidCredentialsExceptio
 
 class SessionService
 {
+    private AuthenticationService $authenticationService;
     private UserRepositoryInterface $userRepository;
     private TokenCacheInterface $tokenCache;
     private EncryptionInterface $encrypter;
     private AuthenticationTokenEncoder $authenticationTokenEncoder;
-    private AuthenticationTokenDecoder $authenticationTokenDecoder;
-    private AuthenticationTokenValidator $authenticationTokenValidator;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
 
     public function __construct(
+        AuthenticationService $authenticationService,
         UserRepositoryInterface $userRepository,
         TokenCacheInterface $tokenCache,
         EncryptionInterface $encrypter,
         AuthenticationTokenEncoder $authenticationTokenEncoder,
-        AuthenticationTokenDecoder $authenticationTokenDecoder,
-        AuthenticationTokenValidator $authenticationTokenValidator,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
     ) {
+        $this->authenticationService = $authenticationService;
         $this->userRepository = $userRepository;
         $this->tokenCache = $tokenCache;
         $this->encrypter = $encrypter;
         $this->authenticationTokenEncoder = $authenticationTokenEncoder;
-        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
-        $this->authenticationTokenValidator = $authenticationTokenValidator;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
     public function login(SessionLoginParameters $parameters): SessionLoginReturn
     {
         try {
-            $fetchedUser = $this->userRepository->findByUsername(
-                $parameters->getUsername()
+            $username = $parameters->getUsername();
+
+            $exists = $this->tokenCache->exists(
+                $username
             );
+
+            $fetchedUser = $this->userRepository->findByUsername(
+                $username
+            );
+
+            $id = $fetchedUser->getId();
+
+            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
+                $id
+            );
+
+            $sessionData = new SessionData(
+                $id,
+                $username,
+                $userSectorPermissions
+            );
+
+            if ($exists) {
+                $token = $this->tokenCache->get(
+                    $parameters->getUsername()
+                );
+
+                return new SessionLoginReturn(
+                    $token,
+                    $sessionData
+                );
+            }
 
             $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
@@ -66,16 +90,6 @@ class SessionService
                 throw new InvalidCredentialsException();
             }
 
-            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                $fetchedUser->getId()
-            );
-
-            $sessionData = new SessionData(
-                $fetchedUser->getId(),
-                $fetchedUser->getUsername(),
-                $userSectorPermissions
-            );
-
             $interval = null;
             $oneWeekLogin = $parameters->getOneWeekLogin();
             if ($oneWeekLogin === true) {
@@ -86,19 +100,19 @@ class SessionService
 
             $token = $this->authenticationTokenEncoder->encode(
                 new AuthenticationData(
-                    $fetchedUser->getId(),
-                    $fetchedUser->getUsername()
+                    $id,
+                    $username
                 ),
                 $interval
             );
 
             $this->tokenCache->set(
-                $fetchedUser->getUsername(),
+                $username,
                 $token
             );
 
             $this->tokenCache->expire(
-                $fetchedUser->getUsername(),
+                $username,
                 $interval
             );
 
@@ -114,10 +128,10 @@ class SessionService
     public function logoff(EncodedAuthenticationToken $token): bool
     {
         try {
-            $result = $this->authenticationTokenDecoder->decode($token);
+            $decodedToken = $this->authenticationService->validate($token);
 
             $wasDeleted = $this->tokenCache->delete(
-                $result->getUsername()
+                $decodedToken->getUsername()
             );
 
             return $wasDeleted;
@@ -129,41 +143,10 @@ class SessionService
     public function retrieveData(EncodedAuthenticationToken $token): SessionData
     {
         try {
-            $decodedToken = $this->authenticationTokenDecoder->decode($token);
-
-            $this->authenticationTokenValidator->validate($decodedToken);
+            $decodedToken = $this->authenticationService->validate($token);
 
             $id = $decodedToken->getUserId();
             $username = $decodedToken->getUsername();
-
-            $exists = $this->tokenCache->exists(
-                $username
-            );
-
-            if ($exists === false) {
-                throw new UnauthorizedException();
-            }
-
-            $cachedToken = $this->tokenCache->get(
-                $username
-            );
-
-            $isTokensIdenticals = strcmp(
-                $token->getToken(),
-                $cachedToken->getToken()
-            ) === 0;
-
-            if ($isTokensIdenticals === false) {
-                throw new UnauthorizedException();
-            }
-
-            $cachedResult = $this->authenticationTokenDecoder->decode($token);
-
-            $isIdIdenticals = $id->getValue() === $cachedResult->getUserId()->getValue();
-
-            if ($isIdIdenticals === false) {
-                throw new UnauthorizedException();
-            }
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
                 $id

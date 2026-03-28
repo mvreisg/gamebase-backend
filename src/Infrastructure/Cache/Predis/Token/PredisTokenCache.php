@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuth
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 use Predis\Client;
 
 class PredisTokenCache implements TokenCacheInterface
@@ -50,7 +51,7 @@ class PredisTokenCache implements TokenCacheInterface
             ->connection
             ->expire(
                 $username->getValue(),
-                $time->s
+                $time->d * ClockInterface::ONE_DAY_IN_SECONDS
             );
     }
 
