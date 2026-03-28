@@ -9,14 +9,14 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Exceptions\AuthenticationTokenEncoderException;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
 class JwtAuthenticationTokenEncoder implements AuthenticationTokenEncoder
 {
     private string $key;
-    private JwtAuthenticationTokenClock $clock;
+    private ClockInterface $clock;
 
-    public function __construct(string $key, JwtAuthenticationTokenClock $clock)
+    public function __construct(string $key, ClockInterface $clock)
     {
         $this->key = $key;
         $this->clock = $clock;
@@ -27,7 +27,7 @@ class JwtAuthenticationTokenEncoder implements AuthenticationTokenEncoder
         try {
             $secretKey = $this->key;
             $issuedAt = $this->clock->now();
-            $expireAt = $issuedAt->getTimestamp() + $duration->s;
+            $expireAt = $issuedAt->add($duration)->getTimestamp();
 
             $payload = [
                 "iat" => $issuedAt->getTimestamp(),

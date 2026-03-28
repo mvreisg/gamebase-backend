@@ -59,7 +59,6 @@ class HttpUserSectorPermissionController
                 ["user_id", "sector_id", "permission_id"]
             );
             if (count($missingBodyKeys) > 0) {
-
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
             }
 

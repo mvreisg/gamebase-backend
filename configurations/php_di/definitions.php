@@ -6,10 +6,10 @@ use Psr\Container\ContainerInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\DecodedAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Encoded\EncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
@@ -20,8 +20,6 @@ use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterf
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtAuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Decoded\JwtDecodedAuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Validator\Encoded\JwtEncodedAuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Infrastructure\Cache\Predis\Token\PredisTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameGenreRepository;
@@ -58,6 +56,8 @@ try {
         "cache.redis.host" => fn () => $_ENV["REDIS_HOST"],
         "cache.redis.port" => fn () => $_ENV["REDIS_PORT"],
 
+        ClockInterface::class => DI\get(Clock::class),
+
         EncryptionInterface::class => DI\get(DefuseEncryption::class),
 
         DefuseEncryption::class => DI\autowire()
@@ -84,8 +84,6 @@ try {
 
         AuthenticationTokenEncoder::class => DI\get(JwtAuthenticationTokenEncoder::class),
         AuthenticationTokenDecoder::class => DI\get(JwtAuthenticationTokenDecoder::class),
-        EncodedAuthenticationTokenValidator::class => DI\get(JwtEncodedAuthenticationTokenValidator::class),
-        DecodedAuthenticationTokenValidator::class => DI\get(JwtDecodedAuthenticationTokenValidator::class),
 
         TokenCacheInterface::class => DI\get(PredisTokenCache::class),
 
@@ -118,7 +116,6 @@ try {
             ]);
         })
     ];
-
 } catch (\Throwable $e) {
     throw $e;
 }

@@ -11,13 +11,9 @@ class UserSectorPermissionCollection
      */
     private array $values;
 
-    public function __construct(?array $values)
+    public function __construct(?array $values = null)
     {
-        if (isset($values) === true) {
-            $this->values = $values;
-        } else {
-            $this->values = [];
-        }
+        $this->values = $values ?? [];
     }
 
     public function add(UserSectorPermission $value): bool
@@ -49,7 +45,7 @@ class UserSectorPermissionCollection
 
     public function findAllByUserId(Id $userId): UserSectorPermissionCollection
     {
-        $matches = new UserSectorPermissionCollection(null);
+        $matches = new UserSectorPermissionCollection();
         foreach ($this->values as $value) {
             if ($value->getUserId()->getValue() === $userId->getValue()) {
                 $matches->add($value);

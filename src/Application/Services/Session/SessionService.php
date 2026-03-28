@@ -10,10 +10,10 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
@@ -26,6 +26,7 @@ class SessionService
     private EncryptionInterface $encrypter;
     private AuthenticationTokenEncoder $authenticationTokenEncoder;
     private AuthenticationTokenDecoder $authenticationTokenDecoder;
+    private AuthenticationTokenValidator $authenticationTokenValidator;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
 
     public function __construct(
@@ -34,6 +35,7 @@ class SessionService
         EncryptionInterface $encrypter,
         AuthenticationTokenEncoder $authenticationTokenEncoder,
         AuthenticationTokenDecoder $authenticationTokenDecoder,
+        AuthenticationTokenValidator $authenticationTokenValidator,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
     ) {
         $this->userRepository = $userRepository;
@@ -41,6 +43,7 @@ class SessionService
         $this->encrypter = $encrypter;
         $this->authenticationTokenEncoder = $authenticationTokenEncoder;
         $this->authenticationTokenDecoder = $authenticationTokenDecoder;
+        $this->authenticationTokenValidator = $authenticationTokenValidator;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
@@ -73,12 +76,12 @@ class SessionService
                 $userSectorPermissions
             );
 
-            $interval = new \DateInterval("P0D");
+            $interval = null;
             $oneWeekLogin = $parameters->getOneWeekLogin();
             if ($oneWeekLogin === true) {
-                $interval->s = ClockInterface::ONE_DAY_IN_SECONDS * 7;
+                $interval = new \DateInterval("P7D");
             } else {
-                $interval->s = ClockInterface::ONE_DAY_IN_SECONDS;
+                $interval = new \DateInterval("P1D");
             }
 
             $token = $this->authenticationTokenEncoder->encode(
@@ -126,10 +129,12 @@ class SessionService
     public function retrieveData(EncodedAuthenticationToken $token): SessionData
     {
         try {
-            $result = $this->authenticationTokenDecoder->decode($token);
+            $decodedToken = $this->authenticationTokenDecoder->decode($token);
 
-            $id = $result->getUserId();
-            $username = $result->getUsername();
+            $this->authenticationTokenValidator->validate($decodedToken);
+
+            $id = $decodedToken->getUserId();
+            $username = $decodedToken->getUsername();
 
             $exists = $this->tokenCache->exists(
                 $username

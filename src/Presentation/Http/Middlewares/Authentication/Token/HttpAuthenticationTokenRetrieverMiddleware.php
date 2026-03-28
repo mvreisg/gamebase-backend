@@ -47,6 +47,5 @@ class HttpAuthenticationTokenRetrieverMiddleware implements MiddlewareInterface
                 return $response->withStatus(500);
             }
         }
-
     }
 }

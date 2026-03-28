@@ -11,14 +11,14 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuth
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
 class JwtAuthenticationTokenDecoder implements AuthenticationTokenDecoder
 {
     private string $key;
-    private JwtAuthenticationTokenClock $clock;
+    private ClockInterface $clock;
 
-    public function __construct(string $key, JwtAuthenticationTokenClock $clock)
+    public function __construct(string $key, ClockInterface $clock)
     {
         $this->clock = $clock;
         $this->key = $key;

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock;
+namespace Mvreisg\GamebaseBackend\Domain\Entities;
 
 use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
-class JwtAuthenticationTokenClock implements ClockInterface
+class Clock implements ClockInterface
 {
     private \DateTimeZone $timezone;
 
@@ -17,7 +17,7 @@ class JwtAuthenticationTokenClock implements ClockInterface
 
     public function now(): \DateTimeImmutable
     {
-        return new \DateTimeImmutable()->setTimezone($this->timezone);
+        return new \DateTimeImmutable()->setTimezone($this->getTimezone());
     }
 
     public function getTimezone(): \DateTimeZone

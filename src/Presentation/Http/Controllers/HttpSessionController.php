@@ -58,7 +58,7 @@ class HttpSessionController
             $data = [
                 "data" => [
                     "expires" => [
-                        "unit" => TimeUnits::Second->value,
+                        "unit" => TimeUnits::getName(TimeUnits::Second),
                         "time" => $oneWeekLogin === true ?
                             ClockInterface::ONE_DAY_IN_SECONDS * 7 :
                             ClockInterface::ONE_DAY_IN_SECONDS

@@ -194,10 +194,10 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection(null);
+                return new UserSectorPermissionCollection();
             }
 
-            $userSectorPermissions = new UserSectorPermissionCollection(null);
+            $userSectorPermissions = new UserSectorPermissionCollection();
             foreach ($fetchResult as $row) {
                 $value = new UserSectorPermission(
                     Id::make($row["user_id"]),
@@ -227,10 +227,10 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection(null);
+                return new UserSectorPermissionCollection();
             }
 
-            $userSectorPermissions = new UserSectorPermissionCollection(null);
+            $userSectorPermissions = new UserSectorPermissionCollection();
             foreach ($fetchResult as $row) {
                 $value = new UserSectorPermission(
                     Id::make($row["user_id"]),
