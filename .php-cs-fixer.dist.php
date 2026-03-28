@@ -3,7 +3,6 @@
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use GD75\DoubleQuoteFixer\DoubleQuoteFixer;
-use Mvreisg\GamebaseBackend\Infrastructure\Logs\Logger;
 
 try {
     $finder = Finder::create()->in(__DIR__);
@@ -20,5 +19,5 @@ try {
         ])
         ->setFinder($finder);
 } catch (\Throwable $e) {
-    Logger::logAppError($e);
+    print_r($e);
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Repositories\Interface;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Genre;
-use Mvreisg\GamebaseBackend\Domain\Data\GenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
+use Mvreisg\GamebaseBackend\Domain\Entities\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 
 interface GenreRepositoryInterface
 {

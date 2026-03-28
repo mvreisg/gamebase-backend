@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\UserSectorPermission;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
@@ -35,15 +35,15 @@ class UserSectorPermissionService
     {
         try {
             $this->userRepository->checkIfExists(
-                Id::make($new->getUserIdValue())
+                $new->getUserId()
             );
 
             $this->sectorRepository->checkIfExists(
-                Id::make($new->getSectorIdValue())
+                $new->getSectorId()
             );
 
             $this->permissionRepository->checkIfExists(
-                Id::make($new->getPermissionIdValue())
+                $new->getPermissionId()
             );
 
             $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert($new);
@@ -58,19 +58,19 @@ class UserSectorPermissionService
     {
         try {
             $this->userSectorPermissionRepository->checkIfExists(
-                Id::make($existant->getIdValue())
+                $existant->getId()
             );
 
             $this->userRepository->checkIfExists(
-                Id::make($existant->getUserIdValue())
+                $existant->getUserId()
             );
 
             $this->sectorRepository->checkIfExists(
-                Id::make($existant->getSectorIdValue())
+                $existant->getSectorId()
             );
 
             $this->permissionRepository->checkIfExists(
-                Id::make($existant->getPermissionIdValue())
+                $existant->getPermissionId()
             );
 
             $wasUpdated = $this->userSectorPermissionRepository->update($existant);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Game;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Game;
-use Mvreisg\GamebaseBackend\Domain\Data\GameCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Name;
+use Mvreisg\GamebaseBackend\Domain\Entities\Game;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
 
 class GameService
@@ -23,7 +23,7 @@ class GameService
     {
         try {
             $this->repository->checkDuplicatedNames(
-                Name::make($game->getNameValue())
+                Name::make($game->getName()->getValue())
             );
 
             $insertedGame = $this->repository->insert($game);
@@ -38,11 +38,11 @@ class GameService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($game->getIdValue())
+                $game->getId()
             );
 
             $this->repository->checkDuplicatedNames(
-                Name::make($game->getNameValue())
+                $game->getName()
             );
 
             $wasUpdated = $this->repository->update($game);

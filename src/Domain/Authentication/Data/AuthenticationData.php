@@ -4,44 +4,46 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Authentication\Data;
 
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Casing\SerializationCasingTypes;
 
 class AuthenticationData
 {
     private Id $userId;
     private Username $username;
-    private UserSectorPermissionCollection $userSectorPermissionCollection;
 
     public function __construct(
         Id $userId,
         Username $username,
-        UserSectorPermissionCollection $userSectorPermissionCollection
     ) {
         $this->userId = $userId;
         $this->username = $username;
-        $this->userSectorPermissionCollection = $userSectorPermissionCollection;
     }
 
-    public static function toObject(\stdClass $data): self
+    public static function toObject(\stdClass $data, SerializationCasingTypes $serializationCasingType = SerializationCasingTypes::SnakeCase): self
     {
-        $userSectorPermissions = [];
-        foreach ($data->userSectorPermissions as $userSectorPermission) {
-            $value = new UserSectorPermission(
-                Id::make($userSectorPermission->userId),
-                Id::make($userSectorPermission->sectorId),
-                Id::make($userSectorPermission->permissionId)
-            );
-            $value->setId(Id::make($userSectorPermission->id));
-            $userSectorPermissions[] = $value;
+        switch ($serializationCasingType) {
+            case SerializationCasingTypes::LowerCamelCase:
+                return new self(
+                    Id::make($data->userId),
+                    Username::make($data->username)
+                );
+            case SerializationCasingTypes::UpperCamelCase:
+                return new self(
+                    Id::make($data->UserId),
+                    Username::make($data->Username)
+                );
+            case SerializationCasingTypes::SnakeCase:
+                return new self(
+                    Id::make($data->user_id),
+                    Username::make($data->username)
+                );
+            default:
+                throw new \DomainException(
+                    "Untreated authentication data serialization casing type: $serializationCasingType"
+                );
         }
-        return new self(
-            Id::make($data->userId),
-            Username::make($data->username),
-            new UserSectorPermissionCollection($userSectorPermissions)
-        );
     }
 
     public function getUserId(): Id
@@ -54,44 +56,30 @@ class AuthenticationData
         return $this->username;
     }
 
-    public function getUserSectorPermissionCollection(): UserSectorPermissionCollection
+    public function toArray(SerializationCasingTypes $serializationCasingType = SerializationCasingTypes::SnakeCase): array
     {
-        return $this->userSectorPermissionCollection;
-    }
-
-    public function toArray(): array
-    {
-        $userSectorPermissions = [];
-        foreach ($this->userSectorPermissionCollection->fetchAll() as $userSectorPermission) {
-            $userSectorPermissions[] = [
-                "id" => $userSectorPermission->getIdValue(),
-                "userId" => $userSectorPermission->getUserIdValue(),
-                "sectorId" => $userSectorPermission->getSectorIdValue(),
-                "permissionId" => $userSectorPermission->getPermissionIdValue(),
-            ];
+        $userIdValue = $this->userId->getValue();
+        $usernameValue = $this->username->getValue();
+        switch ($serializationCasingType) {
+            case SerializationCasingTypes::LowerCamelCase:
+                return [
+                    "userId" => $userIdValue,
+                    "username" => $usernameValue
+                ];
+            case SerializationCasingTypes::UpperCamelCase:
+                return [
+                    "UserId" => $userIdValue,
+                    "Username" => $usernameValue
+                ];
+            case SerializationCasingTypes::SnakeCase:
+                return [
+                    "user_id" => $userIdValue,
+                    "username" => $usernameValue
+                ];
+            default:
+                throw new \DomainException(
+                    "Untreated authentication data serialization casing type: $serializationCasingType"
+                );
         }
-        return [
-            "userId" => $this->userId->getValue(),
-            "username" => $this->username->getValue(),
-            "userSectorPermissions" => $userSectorPermissions,
-        ];
-    }
-
-    public function toSnakeCaseArray(): array
-    {
-        $userSectorPermissions = [];
-        foreach ($this->userSectorPermissionCollection->fetchAll() as $userSectorPermission) {
-            $userSectorPermissions[] = [
-                "id" => $userSectorPermission->getIdValue(),
-                "user_id" => $userSectorPermission->getUserIdValue(),
-                "sector_id" => $userSectorPermission->getSectorIdValue(),
-                "permission_id" => $userSectorPermission->getPermissionIdValue(),
-            ];
-        }
-        return [
-            "user_id" => $this->userId->getValue(),
-            "username" => $this->username->getValue(),
-            "user_sector_permissions" => $userSectorPermissions,
-        ];
     }
 }

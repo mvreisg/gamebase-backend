@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\GameGenre;
 
-use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Data\GameGenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
@@ -31,11 +31,11 @@ class GameGenreService
     {
         try {
             $this->gameRepository->checkIfExists(
-                Id::make($gameGenre->getGameIdValue())
+                $gameGenre->getGameId()
             );
 
             $this->genreRepository->checkIfExists(
-                Id::make($gameGenre->getGenreIdValue())
+                $gameGenre->getGenreId()
             );
 
             $insertedGameGenre = $this->gameGenreRepository->insert($gameGenre);
@@ -50,15 +50,15 @@ class GameGenreService
     {
         try {
             $this->gameGenreRepository->checkIfExists(
-                Id::make($gameGenre->getIdValue())
+                $gameGenre->getId()
             );
 
             $this->gameRepository->checkIfExists(
-                Id::make($gameGenre->getGameIdValue())
+                $gameGenre->getGameId()
             );
 
             $this->genreRepository->checkIfExists(
-                Id::make($gameGenre->getGenreIdValue())
+                $gameGenre->getGenreId()
             );
 
             $wasUpdated = $this->gameGenreRepository->update($gameGenre);

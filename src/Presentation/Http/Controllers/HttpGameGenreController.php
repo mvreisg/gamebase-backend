@@ -4,53 +4,66 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\GameGenre\GameGenreService;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Data\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpRequest;
-use Mvreisg\GamebaseBackend\Presentation\Http\Entities\HttpResponse;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRequestBodyPartTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Enums\HttpRouteParameterTypes;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\Jwt\HttpJwtAuthenticationTokenValidator;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class HttpGameGenreController
 {
     private GameGenreService $gameGenreService;
-    private AuthenticationService $authenticationService;
     private AuthorizationService $authorizationService;
+    private AuthenticationTokenDecoder $authenticationTokenDecoder;
 
     public function __construct(
         GameGenreService $gameGenreService,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        AuthorizationService $authorizationService,
+        AuthenticationTokenDecoder $authenticationTokenDecoder
     ) {
         $this->gameGenreService = $gameGenreService;
-        $this->authenticationService = $authenticationService;
         $this->authorizationService = $authorizationService;
+        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
     }
 
-    public function insert(HttpRequest $request): HttpResponse
+    public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
-                SectorTypes::GameGenre,
+                $decodedToken->getUserId(),
+                SectorTypes::GamePlatform,
                 PermissionTypes::Create
             );
 
-            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
-            $genreId = $request->getBodyOrDieTrying("genre_id", HttpRequestBodyPartTypes::Int);
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["game_id", "genre_id"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $gameId = $body["game_id"];
+            $genreId = $body["genre_id"];
 
             $gameGenre = $this->gameGenreService->insert(
                 new GameGenre(
@@ -60,42 +73,61 @@ class HttpGameGenreController
             );
 
             $data = [
-                "id" => $gameGenre->getIdValue(),
-                "game_id" => $gameGenre->getGameIdValue(),
-                "genre_id" => $gameGenre->getGenreIdValue()
+                "id" => $gameGenre->getId()->getValue(),
+                "game_id" => $gameGenre->getGameId()->getValue(),
+                "genre_id" => $gameGenre->getGenreId()->getValue()
             ];
 
             $response
-                ->setBody([
-                    "data" => $data
-                ])
-                ->setStatusCreated()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(201);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function update(HttpRequest $request): HttpResponse
+    public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
-                SectorTypes::GameGenre,
+                $decodedToken->getUserId(),
+                SectorTypes::GamePlatform,
                 PermissionTypes::Update
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
-            $gameId = $request->getBodyOrDieTrying("game_id", HttpRequestBodyPartTypes::Int);
-            $genreId = $request->getBodyOrDieTrying("genre_id", HttpRequestBodyPartTypes::Int);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $body = $request->getParsedBody();
+
+            $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["game_id", "genre_id"]
+            );
+            if (count($missingBodyKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
+            }
+
+            $id = (int)$args["id"];
+            $gameId = $body["game_id"];
+            $genreId = $body["genre_id"];
 
             $gameGenre = new GameGenre(
                 Id::make($gameId),
@@ -108,102 +140,128 @@ class HttpGameGenreController
             );
 
             $response
-                ->setBody([
-                    "was_updated" => $wasUpdated
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasUpdated ? "updated" : "same"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function delete(HttpRequest $request): HttpResponse
+    public function delete(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
-                SectorTypes::GameGenre,
+                $decodedToken->getUserId(),
+                SectorTypes::GamePlatform,
                 PermissionTypes::Delete
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $id = (int)$args["id"];
 
             $wasDeleted = $this->gameGenreService->delete(
                 Id::make($id)
             );
 
             $response
-                ->setBody([
-                    "was_deleted" => $wasDeleted
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasDeleted ? "deleted" : "not_deleted"
+                    ])
+                );
+            return $response
+                ->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findById(HttpRequest $request): HttpResponse
+    public function findById(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
-                SectorTypes::GameGenre,
+                $decodedToken->getUserId(),
+                SectorTypes::GamePlatform,
                 PermissionTypes::List
             );
 
-            $id = $request->getParamOrDieTrying("id", HttpRouteParameterTypes::Integer);
+            $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
+            if (count($missingUriParams) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
+            }
+
+            $id = (int)$args["id"];
 
             $gameGenre = $this->gameGenreService->findById(
                 Id::make($id)
             );
 
             $response
-                ->setBody([
-                    "data" => [
-                        "id" => $gameGenre->getIdValue(),
-                        "game_id" => $gameGenre->getGameIdValue(),
-                        "genre_id" => $gameGenre->getGenreIdValue()
-                    ]
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => [
+                            "id" => $gameGenre->getId()->getValue(),
+                            "game_id" => $gameGenre->getGameId()->getValue(),
+                            "genre_id" => $gameGenre->getGenreId()->getValue()
+                        ]
+                    ])
+                );
+            return $response
+                ->withStatus(200);
             return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(HttpRequest $request): HttpResponse
+    public function findAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            $response = HttpResponse::make();
+            $response = $response->withHeader("Content-Type", "application/json");
 
-            $validationResult = HttpJwtAuthenticationTokenValidator::validate(
-                $request->getHeaderOrDieTrying("Authorization"),
-                $this->authenticationService
+            $token = $request->getAttribute("token");
+
+            $decodedToken = $this->authenticationTokenDecoder->decode(
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $this->authorizationService->check(
-                $validationResult->getUserSectorPermissionCollection(),
-                SectorTypes::GameGenre,
+                $decodedToken->getUserId(),
+                SectorTypes::GamePlatform,
                 PermissionTypes::List
             );
 
@@ -211,31 +269,33 @@ class HttpGameGenreController
 
             if ($gameGenres->isEmpty()) {
                 $response
-                    ->setBody([
-                        "message" => "Nothing found!"
-                    ])
-                    ->setStatusOk()
-                    ->setContentTypeAsJson();
-                return $response;
+                    ->getBody()
+                    ->write(
+                        json_encode([
+                            "message" => "Nothing found!"
+                        ])
+                    );
+                return $response->withStatus(404);
             }
 
             $data = [];
             foreach ($gameGenres->fetchAll() as $gameGenre) {
                 $data[] = [
-                    "id" => $gameGenre->getIdValue(),
-                    "game_id" => $gameGenre->getGameIdValue(),
-                    "genre_id" => $gameGenre->getGenreIdValue()
+                    "id" => $gameGenre->getId()->getValue(),
+                    "game_id" => $gameGenre->getGameId()->getValue(),
+                    "genre_id" => $gameGenre->getGenreId()->getValue()
                 ];
             }
 
             $response
-                ->setBody([
-                    "number_found" => $gameGenres->count(),
-                    "data" => $data
-                ])
-                ->setStatusOk()
-                ->setContentTypeAsJson();
-            return $response;
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "number_found" => $gameGenres->count(),
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }

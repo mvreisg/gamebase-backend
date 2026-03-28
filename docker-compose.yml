@@ -1,5 +1,4 @@
 services:
-
   nginx:
     image: nginx:1.29.1
     container_name: gamebase-backend-nginx
@@ -15,10 +14,13 @@ services:
         condition: service_healthy
 
   php:
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      MACHINE: ${MACHINE}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: gamebase-backend-php    
+    container_name: gamebase-backend-php
     networks:
       - gamebase-backend-network
     depends_on:

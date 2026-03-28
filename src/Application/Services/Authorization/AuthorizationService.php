@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\Authorization;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\Exceptions\AuthorizationServiceUnauthorizedException;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Enums\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
@@ -34,33 +35,48 @@ class AuthorizationService
     }
 
     public function check(
-        UserSectorPermissionCollection $userSectorPermissionCollection,
+        Id $userId,
         SectorTypes $sectorType,
         PermissionTypes $permissionType
     ): void {
         try {
-            foreach ($userSectorPermissionCollection->fetchAll() as $userSectorPermission) {
-                $this->userSectorPermissionRepository->checkIfExists(
-                    Id::make($userSectorPermission->getIdValue())
-                );
-                $this->userRepository->checkIfExists(
-                    Id::make($userSectorPermission->getUserIdValue())
-                );
+            $this->userRepository->checkIfExists(
+                $userId
+            );
+
+            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId($userId);
+            $sectors = new SectorCollection();
+            $permissions = new PermissionCollection();
+
+            foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $sector = $this->sectorRepository->findById(
-                    Id::make($userSectorPermission->getSectorIdValue())
+                    $userSectorPermission->getSectorId()
                 );
+                $sectors->add($sector);
+
                 $permission = $this->permissionRepository->findById(
-                    Id::make($userSectorPermission->getPermissionIdValue())
+                    $userSectorPermission->getPermissionId()
                 );
-                if ($sector->getSectorValue() !== $sectorType->value) {
-                    continue;
-                }
-                if ($permission->getPermissionValue() !== $permissionType->value) {
-                    continue;
-                }
-                return;
+                $permissions->add($permission);
             }
-            throw new AuthorizationServiceUnauthorizedException();
+
+            $hasSector = count(
+                array_filter(
+                    $sectors->fetchAll(),
+                    fn ($item) => $item->getSectorValue() === $sectorType->value
+                )
+            ) > 0;
+
+            $hasPermission = count(
+                array_filter(
+                    $permissions->fetchAll(),
+                    fn ($item) => $item->getPermissionValue() === $permissionType->value
+                )
+            ) > 0;
+
+            if ($hasSector === false || $hasPermission === false) {
+                throw new UnauthorizedException();
+            }
         } catch (\Throwable $e) {
             throw $e;
         }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 
 interface TokenCacheInterface
 {
@@ -15,7 +15,7 @@ interface TokenCacheInterface
 
     public function expire(Username $username, \DateInterval $time): void;
 
-    public function delete(Username $username): void;
+    public function delete(Username $username): bool;
 
     public function exists(Username $username): bool;
 }

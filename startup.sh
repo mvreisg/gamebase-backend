@@ -1,4 +1,6 @@
 #!/bin/bash
-php -f ./config/pdo_create_database.php
-composer phinx migrate
-composer phinx seed:run
+./vendor/bin/phinx migrate -e development
+./vendor/bin/phinx seed:run -e development -s AddingFirstUser
+./vendor/bin/phinx seed:run -e development -s AddingSectors
+./vendor/bin/phinx seed:run -e development -s AddingPermissions
+./vendor/bin/phinx seed:run -e development -s AddingPermissionsToAllSectorsToRootUser

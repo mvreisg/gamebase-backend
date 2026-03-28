@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\User;
 
-use Mvreisg\GamebaseBackend\Domain\Data\EncodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
-use Mvreisg\GamebaseBackend\Domain\Data\User;
-use Mvreisg\GamebaseBackend\Domain\Data\UserCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Username;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\User;
+use Mvreisg\GamebaseBackend\Domain\Entities\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\EncryptionAdapter;
 
 class UserService
 {
     private UserRepositoryInterface $repository;
-    private EncryptionAdapter $encrypter;
+    private EncryptionInterface $encrypter;
 
     public function __construct(
         UserRepositoryInterface $repository,
-        EncryptionAdapter $encrypter
+        EncryptionInterface $encrypter
     ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
@@ -29,16 +29,16 @@ class UserService
     {
         try {
             $this->repository->checkDuplicatedUsernames(
-                Username::make($new->getUsernameValue())
+                $new->getUsername()
             );
 
             $encodedPassword = $this->encrypter->encrypt(
-                $new->getPasswordValue()
+                $new->getPassword()->getValue()
             );
 
             $insertedUser = $this->repository->insert(
                 new User(
-                    Username::make($new->getUsernameValue()),
+                    $new->getUsername(),
                     EncodedPassword::make($encodedPassword),
                     $new->getIsActive()
                 )
@@ -54,22 +54,23 @@ class UserService
     {
         try {
             $this->repository->checkIfExists(
-                Id::make($existant->getIdValue())
+                $existant->getId()
             );
 
             $this->repository->checkDuplicatedUsernames(
-                Username::make($existant->getUsernameValue())
+                $existant->getUsername()
             );
 
-            $validatedPassword = $existant->getPasswordValue();
-            $encodedPassword = $this->encrypter->encrypt($validatedPassword);
+            $encodedPassword = $this->encrypter->encrypt(
+                $existant->getPassword()->getValue()
+            );
 
             $user = new User(
-                Username::make($existant->getUsernameValue()),
+                $existant->getUsername(),
                 EncodedPassword::make($encodedPassword),
                 $existant->getIsActive()
             );
-            $user->setId(Id::make($existant->getIdValue()));
+            $user->setId($existant->getId());
             $wasUpdated = $this->repository->update(
                 $user
             );

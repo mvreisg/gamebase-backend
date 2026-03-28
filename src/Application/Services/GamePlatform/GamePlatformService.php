@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Services\GamePlatform;
 
-use Mvreisg\GamebaseBackend\Domain\Data\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Data\GamePlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Data\Id;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
@@ -31,11 +31,11 @@ class GamePlatformService
     {
         try {
             $this->gameRepository->checkIfExists(
-                Id::make($gamePlatform->getGameIdValue())
+                $gamePlatform->getGameId()->getValue()
             );
 
             $this->platformRepository->checkIfExists(
-                Id::make($gamePlatform->getPlatformIdValue())
+                $gamePlatform->getPlatformId()->getValue()
             );
 
             $insertedGamePlatform = $this->gamePlatformRepository->insert($gamePlatform);
@@ -50,15 +50,15 @@ class GamePlatformService
     {
         try {
             $this->gamePlatformRepository->checkIfExists(
-                Id::make($gamePlatform->getIdValue())
+                $gamePlatform->getId()
             );
 
             $this->gameRepository->checkIfExists(
-                Id::make($gamePlatform->getGameIdValue())
+                $gamePlatform->getGameId()->getValue()
             );
 
             $this->platformRepository->checkIfExists(
-                Id::make($gamePlatform->getPlatformIdValue())
+                $gamePlatform->getPlatformId()->getValue()
             );
 
             $wasUpdated = $this->gamePlatformRepository->update($gamePlatform);

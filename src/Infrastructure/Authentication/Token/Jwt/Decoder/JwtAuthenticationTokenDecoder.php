@@ -7,31 +7,37 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decode
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Decoded\DecodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Data\Calendar;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
 class JwtAuthenticationTokenDecoder implements AuthenticationTokenDecoder
 {
-    private JwtAuthenticationTokenClock $clock;
+    private string $key;
+    private ClockInterface $clock;
 
-    public function __construct(JwtAuthenticationTokenClock $clock)
+    public function __construct(string $key, ClockInterface $clock)
     {
         $this->clock = $clock;
+        $this->key = $key;
     }
 
     public function decode(EncodedAuthenticationToken $token): DecodedAuthenticationToken
     {
-        $secretKey = DotenvEnvironment::get("JWT_SECRET");
-        $payload = JWT::decode($token->getToken(), new Key($secretKey, "HS256"));
-        $data = AuthenticationData::toObject($payload->sub);
-        return new DecodedAuthenticationToken(
-            Calendar::getDateTimeImmutableBasedOnTimestamp($payload->iat),
-            Calendar::getDateTimeImmutableBasedOnTimestamp($payload->exp),
-            $data
-        );
+        try {
+            $payload = JWT::decode($token->getToken(), new Key($this->key, "HS256"));
+            $data = AuthenticationData::toObject($payload->sub);
+            return new DecodedAuthenticationToken(
+                new \DateTimeImmutable("@{$payload->iat}")->setTimezone($this->clock->getTimezone()),
+                new \DateTimeImmutable("@{$payload->exp}")->setTimezone($this->clock->getTimezone()),
+                $data
+            );
+        } catch (\Throwable $e) {
+            throw new AuthenticationTokenDecoderException(
+                $e->getMessage()
+            );
+        }
     }
 }

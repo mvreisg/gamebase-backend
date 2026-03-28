@@ -6,35 +6,42 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encode
 
 use Firebase\JWT\JWT;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\State\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Clock\JwtAuthenticationTokenClock;
-use Mvreisg\GamebaseBackend\Infrastructure\Environments\Dotenv\DotenvEnvironment;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Exceptions\AuthenticationTokenEncoderException;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
 
 class JwtAuthenticationTokenEncoder implements AuthenticationTokenEncoder
 {
-    private JwtAuthenticationTokenClock $clock;
+    private string $key;
+    private ClockInterface $clock;
 
-    public function __construct(JwtAuthenticationTokenClock $clock)
+    public function __construct(string $key, ClockInterface $clock)
     {
+        $this->key = $key;
         $this->clock = $clock;
     }
 
     public function encode(AuthenticationData $data, \DateInterval $duration): EncodedAuthenticationToken
     {
-        $oneDayInSeconds = 60 * 60 * 24;
-        $secretKey = DotenvEnvironment::get("JWT_SECRET");
-        $issuedAt = $this->clock->now();
-        $expireAt = $issuedAt->getTimestamp() + $duration->d * $oneDayInSeconds;
+        try {
+            $secretKey = $this->key;
+            $issuedAt = $this->clock->now();
+            $expireAt = $issuedAt->add($duration)->getTimestamp();
 
-        $payload = [
-            "iat" => $issuedAt->getTimestamp(),
-            "exp" => $expireAt,
-            "sub" => $data->toArray()
-        ];
+            $payload = [
+                "iat" => $issuedAt->getTimestamp(),
+                "exp" => $expireAt,
+                "sub" => $data->toArray()
+            ];
 
-        $token = JWT::encode($payload, $secretKey, "HS256");
+            $token = JWT::encode($payload, $secretKey, "HS256");
 
-        return new EncodedAuthenticationToken($token);
+            return new EncodedAuthenticationToken($token);
+        } catch (\Throwable $e) {
+            throw new AuthenticationTokenEncoderException(
+                $e->getMessage()
+            );
+        }
     }
 }

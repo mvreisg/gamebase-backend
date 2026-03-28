@@ -1,0 +1,187 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
+
+use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\SessionLoginParameters;
+use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Cache\Token\Exceptions\TokenCacheException;
+use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Username;
+use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Units\Time\TimeUnits;
+use Mvreisg\GamebaseBackend\Domain\Utils\Arrays\ArrayKeysExistanceChecker;
+use Mvreisg\GamebaseBackend\Presentation\Http\Utils\Response\HttpMissingKeysInformerResponse;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+class HttpSessionController
+{
+    private SessionService $sessionService;
+
+    public function __construct(
+        SessionService $sessionService
+    ) {
+        $this->sessionService = $sessionService;
+    }
+
+    public function login(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        try {
+            $response = $response->withHeader("Content-Type", "application/json");
+
+            $body = $request->getParsedBody();
+
+            $missingKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
+                $body,
+                ["username", "password", "one_week_login"]
+            );
+            if (count($missingKeys) > 0) {
+                return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingKeys);
+            }
+
+            $username = $body["username"];
+            $password = $body["password"];
+            $oneWeekLogin = $body["one_week_login"];
+
+            $result = $this->sessionService->login(
+                new SessionLoginParameters(
+                    Username::make($username),
+                    DecodedPassword::make($password),
+                    $oneWeekLogin
+                )
+            );
+            $token = $result->getToken();
+            $data = [
+                "data" => [
+                    "expires" => [
+                        "unit" => TimeUnits::getName(TimeUnits::Second),
+                        "time" => $oneWeekLogin === true ?
+                            ClockInterface::ONE_DAY_IN_SECONDS * 7 :
+                            ClockInterface::ONE_DAY_IN_SECONDS
+                    ],
+                    "token" => $token->getToken(),
+                    "user" => [
+                        "id" => $result->getData()->getUserId()->getValue(),
+                        "username" => $result->getData()->getUsername()->getValue(),
+                        "permissions" => array_map(function ($item) {
+                            return [
+                                "id" => $item->getId()->getValue(),
+                                "user_id" => $item->getUserId()->getValue(),
+                                "sector_id" => $item->getSectorId()->getValue(),
+                                "permission_id" => $item->getPermissionId()->getValue(),
+                            ];
+                        }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
+                    ]
+                ]
+            ];
+            $response
+                ->getBody()
+                ->write(
+                    json_encode($data)
+                );
+            return $response
+                ->withStatus(201);
+        } catch (\Throwable $e) {
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => $e->getMessage()
+                    ])
+                );
+            if ($e instanceof EntityException) {
+                return $response->withStatus(400);
+            }
+            return $response->withStatus(500);
+        }
+    }
+
+    public function logoff(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        try {
+            $response = $response->withHeader("Content-Type", "application/json");
+
+            $token = $request->getAttribute("token");
+
+            $wasDeleted = $this->sessionService->logoff(
+                new EncodedAuthenticationToken(
+                    $token
+                )
+            );
+
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "status" => $wasDeleted ? "deleted" : "same"
+                    ])
+                );
+            return $response->withStatus(200);
+        } catch (\Throwable $e) {
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => $e->getMessage()
+                    ])
+                );
+            if ($e instanceof TokenCacheException) {
+                return $response->withStatus(500);
+            }
+            return $response->withStatus(500);
+        }
+    }
+
+    public function retrieveData(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        try {
+            $response = $response->withHeader("Content-Type", "application/json");
+
+            $token = $request->getAttribute("token");
+
+            $sessionData = $this->sessionService->retrieveData(
+                new EncodedAuthenticationToken(
+                    $token
+                )
+            );
+
+            $data = [
+                "id" => $sessionData->getUserId()->getValue(),
+                "username" => $sessionData->getUsername()->getValue(),
+                "permissions" => array_map(function ($item) {
+                    return [
+                        "id" => $item->getId()->getValue(),
+                        "user_id" => $item->getUserId()->getValue(),
+                        "sector_id" => $item->getSectorId()->getValue(),
+                        "permission_id" => $item->getPermissionId()->getValue(),
+                    ];
+                }, $sessionData->getUserSectorPermissionCollection()->fetchAll())
+            ];
+
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "data" => $data
+                    ])
+                );
+            return $response->withStatus(200);
+        } catch (\Throwable $e) {
+            $response
+                ->getBody()
+                ->write(
+                    json_encode([
+                        "message" => $e->getMessage()
+                    ])
+                );
+            if ($e instanceof TokenCacheException) {
+                return $response->withStatus(500);
+            }
+            return $response->withStatus(500);
+        }
+    }
+}
