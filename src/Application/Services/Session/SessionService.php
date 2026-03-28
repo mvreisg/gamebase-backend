@@ -63,17 +63,6 @@ class SessionService
                 $userSectorPermissions
             );
 
-            if ($exists) {
-                $token = $this->tokenCache->get(
-                    $parameters->getUsername()
-                );
-
-                return new SessionLoginReturn(
-                    $token,
-                    $sessionData
-                );
-            }
-
             $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
 
@@ -84,6 +73,17 @@ class SessionService
 
             if ($doTheTwoPasswordsMatchesEqually === false) {
                 throw new InvalidCredentialsException();
+            }
+
+            if ($exists) {
+                $token = $this->tokenCache->get(
+                    $parameters->getUsername()
+                );
+
+                return new SessionLoginReturn(
+                    $token,
+                    $sessionData
+                );
             }
 
             $interval = null;

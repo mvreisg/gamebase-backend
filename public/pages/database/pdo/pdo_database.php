@@ -11,7 +11,7 @@ try {
     /**
      * @var Container
      */
-    $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
+    $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
 
     $database = $container->get("repository.database");
     $adapter = $container->get("repository.adapter");

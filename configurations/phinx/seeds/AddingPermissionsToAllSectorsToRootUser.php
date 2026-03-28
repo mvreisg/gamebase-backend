@@ -15,7 +15,7 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
         /**
          * @var Container
          */
-        $container = require PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
+        $container = require PROJECT_ROOT . "/configurations/php_di/phinx/container_bootstrap.php";
 
         $userResult = $this->fetchRow("SELECT * FROM user WHERE username = '{$container->get("repository.root.username")}'");
 
@@ -24,6 +24,24 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
             $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
 
             foreach (PermissionTypes::cases() as $permissionKey => $permissionValue) {
+                $mustIgnore = false;
+                switch ($sectorValue) {
+                    case SectorTypes::GameGenre:
+                    case SectorTypes::GamePlatform:
+                    case SectorTypes::UserSectorPermission:
+                        if ($permissionValue === PermissionTypes::Activate) {
+                            $mustIgnore = true;
+                        }
+                        break;
+                    default:
+                        if ($permissionValue === PermissionTypes::Delete) {
+                            $mustIgnore = true;
+                        }
+                        break;
+                }
+                if ($mustIgnore) {
+                    continue;
+                }
                 $permissionResult = $this->fetchRow("SELECT * FROM permission WHERE value = '{$permissionValue->value}'");
 
                 $userSectorPermissionResult = $this->fetchRow(
