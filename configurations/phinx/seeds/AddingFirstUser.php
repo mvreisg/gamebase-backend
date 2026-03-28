@@ -25,7 +25,7 @@ class AddingFirstUser extends AbstractSeed
             [
                 "username" => $container->get("repository.root.username"),
                 "password" => $encrypter->encrypt(
-                    $container->get("repository.root.username")
+                    $container->get("repository.root.password")
                 ),
                 "is_active" => 1
             ]

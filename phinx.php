@@ -2,16 +2,9 @@
 
 declare(strict_types=1);
 
-use DI\Container;
-
 try {
     require_once "constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
-
-    /**
-     * @var Container
-     */
-    $container = require_once PROJECT_ROOT . "/configurations/php_di/container_bootstrap.php";
 
     return [
         "paths" => [
@@ -22,31 +15,31 @@ try {
             "default_migration_table" => "phinxlog",
             "default_environment" => "development",
             "production" => [
-                "adapter" => $container->get("repository.adapter"),
-                "host" => $container->get("repository.host"),
-                "name" => $container->get("repository.database"),
-                "user" => $container->get("repository.username"),
-                "pass" => $container->get("repository.password"),
-                "port" => $container->get("repository.port"),
-                "charset" => $container->get("repository.charset"),
+                "adapter" => $_ENV["REPOSITORY_ADAPTER"],
+                "host" => $_ENV["REPOSITORY_HOST"], // mariadb
+                "name" => $_ENV["REPOSITORY_DATABASE"],
+                "user" => $_ENV["REPOSITORY_USERNAME"],
+                "pass" => $_ENV["REPOSITORY_PASSWORD"],
+                "port" => $_ENV["REPOSITORY_PORT"],
+                "charset" => $_ENV["REPOSITORY_CHARSET"],
             ],
             "development" => [
-                "adapter" => $container->get("repository.adapter"),
-                "host" => $container->get("repository.host"),
-                "name" => $container->get("repository.database"),
-                "user" => $container->get("repository.username"),
-                "pass" => $container->get("repository.password"),
-                "port" => $container->get("repository.port"),
-                "charset" => $container->get("repository.charset"),
+                "adapter" => $_ENV["REPOSITORY_ADAPTER"],
+                "host" => $_ENV["REPOSITORY_HOST"], // mariadb
+                "name" => $_ENV["REPOSITORY_DATABASE"],
+                "user" => $_ENV["REPOSITORY_USERNAME"],
+                "pass" => $_ENV["REPOSITORY_PASSWORD"],
+                "port" => $_ENV["REPOSITORY_PORT"],
+                "charset" => $_ENV["REPOSITORY_CHARSET"],
             ],
             "testing" => [
-                "adapter" => $container->get("repository.adapter"),
-                "host" => $container->get("repository.host"),
-                "name" => $container->get("repository.database"),
-                "user" => $container->get("repository.username"),
-                "pass" => $container->get("repository.password"),
-                "port" => $container->get("repository.port"),
-                "charset" => $container->get("repository.charset"),
+                "adapter" => $_ENV["REPOSITORY_ADAPTER"],
+                "host" => $_ENV["REPOSITORY_HOST"], // mariadb
+                "name" => $_ENV["REPOSITORY_DATABASE"],
+                "user" => $_ENV["REPOSITORY_USERNAME"],
+                "pass" => $_ENV["REPOSITORY_PASSWORD"],
+                "port" => $_ENV["REPOSITORY_PORT"],
+                "charset" => $_ENV["REPOSITORY_CHARSET"],
             ]
         ],
         "version_order" => "creation"

@@ -1,6 +1,6 @@
 #!/bin/bash
-composer phinx -- migrate -e development
-composer phinx -- seed:run -e development -s AddingFirstUser
-composer phinx -- seed:run -e development -s AddingSectors
-composer phinx -- seed:run -e development -s AddingPermissions
-composer phinx -- seed:run -e development -s AddingPermissionsToAllSectorsToRootUser
+./vendor/bin/phinx migrate -e development
+./vendor/bin/phinx seed:run -e development -s AddingFirstUser
+./vendor/bin/phinx seed:run -e development -s AddingSectors
+./vendor/bin/phinx seed:run -e development -s AddingPermissions
+./vendor/bin/phinx seed:run -e development -s AddingPermissionsToAllSectorsToRootUser
