@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exceptions\InvalidTokenException;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validator\Decoded\Exceptions\DecodedAuthenticationTokenValidatorException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\Exceptions\AuthenticationTokenValidatorException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
 use Psr\Http\Message\ResponseInterface;
@@ -55,7 +55,7 @@ class HttpAuthenticationController
                 return $response->withStatus(401);
             } elseif (
                 $e instanceof InvalidTokenException ||
-                $e instanceof DecodedAuthenticationTokenValidatorException
+                $e instanceof AuthenticationTokenValidatorException
             ) {
                 return $response->withStatus(400);
             } else {

@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Platform\PlatformService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
@@ -21,17 +17,10 @@ use Psr\Http\Message\ServerRequestInterface;
 class HttpPlatformController
 {
     private PlatformService $platformService;
-    private AuthorizationService $authorizationService;
-    private AuthenticationTokenDecoder $authenticationTokenDecoder;
 
-    public function __construct(
-        PlatformService $platformService,
-        AuthorizationService $authorizationService,
-        AuthenticationTokenDecoder $authenticationTokenDecoder
-    ) {
+    public function __construct(PlatformService $platformService)
+    {
         $this->platformService = $platformService;
-        $this->authorizationService = $authorizationService;
-        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
     }
 
     public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -40,18 +29,6 @@ class HttpPlatformController
             $response = $response->withHeader("Content-Type", "application/json");
 
             $token = $request->getAttribute("token");
-
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Platform,
-                PermissionTypes::Create
-            );
 
             $body = $request->getParsedBody();
 
@@ -70,6 +47,9 @@ class HttpPlatformController
                 new Platform(
                     Name::make($name),
                     $isActive
+                ),
+                new EncodedAuthenticationToken(
+                    $token
                 )
             );
 
@@ -99,18 +79,6 @@ class HttpPlatformController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Platform,
-                PermissionTypes::Update
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -137,7 +105,10 @@ class HttpPlatformController
             $platform->setId(Id::make($id));
 
             $wasUpdated = $this->platformService->update(
-                $platform
+                $platform,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -161,18 +132,6 @@ class HttpPlatformController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Platform,
-                PermissionTypes::Activate
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -193,7 +152,10 @@ class HttpPlatformController
 
             $wasUpdated = $this->platformService->setIsActive(
                 Id::make($id),
-                $isActive
+                $isActive,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -217,18 +179,6 @@ class HttpPlatformController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Platform,
-                PermissionTypes::List
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -237,7 +187,10 @@ class HttpPlatformController
             $id = (int)$args["id"];
 
             $platform = $this->platformService->findById(
-                Id::make($id)
+                Id::make($id),
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -266,19 +219,11 @@ class HttpPlatformController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
+            $platforms = $this->platformService->findAll(
                 new EncodedAuthenticationToken(
                     $token
                 )
             );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Platform,
-                PermissionTypes::List
-            );
-
-            $platforms = $this->platformService->findAll();
 
             if ($platforms->count() === 0) {
                 $response

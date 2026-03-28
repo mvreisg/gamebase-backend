@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controllers;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
 use Mvreisg\GamebaseBackend\Application\Services\Sector\SectorService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
@@ -22,17 +18,10 @@ use Psr\Http\Message\ServerRequestInterface;
 class HttpSectorController
 {
     private SectorService $sectorService;
-    private AuthorizationService $authorizationService;
-    private AuthenticationTokenDecoder $authenticationTokenDecoder;
 
-    public function __construct(
-        SectorService $sectorService,
-        AuthorizationService $authorizationService,
-        AuthenticationTokenDecoder $authenticationTokenDecoder
-    ) {
+    public function __construct(SectorService $sectorService)
+    {
         $this->sectorService = $sectorService;
-        $this->authorizationService = $authorizationService;
-        $this->authenticationTokenDecoder = $authenticationTokenDecoder;
     }
 
     public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -41,18 +30,6 @@ class HttpSectorController
             $response = $response->withHeader("Content-Type", "application/json");
 
             $token = $request->getAttribute("token");
-
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Create
-            );
 
             $body = $request->getParsedBody();
 
@@ -73,6 +50,9 @@ class HttpSectorController
                     Name::make($name),
                     SectorValue::make($value),
                     $isActive
+                ),
+                new EncodedAuthenticationToken(
+                    $token
                 )
             );
 
@@ -103,18 +83,6 @@ class HttpSectorController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Update
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -143,7 +111,10 @@ class HttpSectorController
             $sector->setId(Id::make($id));
 
             $wasUpdated = $this->sectorService->update(
-                $sector
+                $sector,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -167,18 +138,6 @@ class HttpSectorController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Activate
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -199,7 +158,10 @@ class HttpSectorController
 
             $wasUpdated = $this->sectorService->setIsActive(
                 Id::make($id),
-                $isActive
+                $isActive,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -223,18 +185,6 @@ class HttpSectorController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::List
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -243,7 +193,10 @@ class HttpSectorController
             $id = (int)$args["id"];
 
             $sector = $this->sectorService->findById(
-                Id::make($id)
+                Id::make($id),
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -273,19 +226,11 @@ class HttpSectorController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
+            $sectors = $this->sectorService->findAll(
                 new EncodedAuthenticationToken(
                     $token
                 )
             );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::List
-            );
-
-            $sectors = $this->sectorService->findAll();
 
             if ($sectors->count() === 0) {
                 $response

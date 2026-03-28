@@ -8,8 +8,6 @@ use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationServ
 use Mvreisg\GamebaseBackend\Application\Services\Permission\PermissionService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
@@ -42,18 +40,6 @@ class HttpPermissionController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Create
-            );
-
             $body = $request->getParsedBody();
 
             $missingBodyKeys = ArrayKeysExistanceChecker::checkAndReturnMissingKeys(
@@ -73,6 +59,9 @@ class HttpPermissionController
                     Name::make($name),
                     PermissionValue::make($value),
                     $isActive
+                ),
+                new EncodedAuthenticationToken(
+                    $token
                 )
             );
 
@@ -103,18 +92,6 @@ class HttpPermissionController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Update
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -143,7 +120,10 @@ class HttpPermissionController
             $permission->setId(Id::make($id));
 
             $wasUpdated = $this->permissionService->update(
-                $permission
+                $permission,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -167,18 +147,6 @@ class HttpPermissionController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Activate
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -199,7 +167,10 @@ class HttpPermissionController
 
             $wasUpdated = $this->permissionService->setIsActive(
                 Id::make($id),
-                $isActive
+                $isActive,
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -223,18 +194,6 @@ class HttpPermissionController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
-                new EncodedAuthenticationToken(
-                    $token
-                )
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::List
-            );
-
             $missingUriParams = ArrayKeysExistanceChecker::checkAndReturnMissingKeys($args, ["id"]);
             if (count($missingUriParams) > 0) {
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfUriParams($response, $missingUriParams);
@@ -243,7 +202,10 @@ class HttpPermissionController
             $id = (int)$args["id"];
 
             $permission = $this->permissionService->findById(
-                Id::make($id)
+                Id::make($id),
+                new EncodedAuthenticationToken(
+                    $token
+                )
             );
 
             $response
@@ -273,19 +235,11 @@ class HttpPermissionController
 
             $token = $request->getAttribute("token");
 
-            $decodedToken = $this->authenticationTokenDecoder->decode(
+            $permissions = $this->permissionService->findAll(
                 new EncodedAuthenticationToken(
                     $token
                 )
             );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::List
-            );
-
-            $permissions = $this->permissionService->findAll();
 
             if ($permissions->count() === 0) {
                 $response

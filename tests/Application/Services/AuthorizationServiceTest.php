@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedExceptio
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
@@ -131,6 +132,19 @@ class AuthorizationServiceTest extends TestCase
 
         $authorizationService->check(
             Id::make(1),
+            SectorTypes::Platform,
+            PermissionTypes::Create
+        );
+    }
+
+    public function testIfAUserWithAInvalidIdTriesToCheckAuthorization(): void
+    {
+        $authorizationService = $this->createAuthorizationService();
+
+        $this->expectException(EntityException::class);
+
+        $authorizationService->check(
+            Id::make(-1),
             SectorTypes::Platform,
             PermissionTypes::Create
         );

@@ -9,7 +9,6 @@ use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\Sessio
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
@@ -23,7 +22,6 @@ class SessionService
     private UserRepositoryInterface $userRepository;
     private TokenCacheInterface $tokenCache;
     private EncryptionInterface $encrypter;
-    private AuthenticationTokenEncoder $authenticationTokenEncoder;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
 
     public function __construct(
@@ -31,14 +29,12 @@ class SessionService
         UserRepositoryInterface $userRepository,
         TokenCacheInterface $tokenCache,
         EncryptionInterface $encrypter,
-        AuthenticationTokenEncoder $authenticationTokenEncoder,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
     ) {
         $this->authenticationService = $authenticationService;
         $this->userRepository = $userRepository;
         $this->tokenCache = $tokenCache;
         $this->encrypter = $encrypter;
-        $this->authenticationTokenEncoder = $authenticationTokenEncoder;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
     }
 
@@ -98,7 +94,7 @@ class SessionService
                 $interval = new \DateInterval("P1D");
             }
 
-            $token = $this->authenticationTokenEncoder->encode(
+            $token = $this->authenticationService->encode(
                 new AuthenticationData(
                     $id,
                     $username
