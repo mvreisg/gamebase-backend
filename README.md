@@ -80,20 +80,15 @@ The project uses layered environment files:
 .env.{environment}.{machine}
 ```
 
-Example `.env`:
+Example `.env` to run with `Docker` under `development` environment:
 
 ```
-ENVIRONMENT=development
-MACHINE=local
-```
-
-This requires a matching file:
-
-```
-.env.development.local
+.env.development.docker
 ```
 
 Copy all keys from `.env.example` into your environment file and fill in the values.
+
+*The `run.development.docker.sh` script is available to ease the `Docker` running.*
 
 ---
 

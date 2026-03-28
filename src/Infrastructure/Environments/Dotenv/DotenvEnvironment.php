@@ -10,14 +10,10 @@ class DotenvEnvironment
 {
     public static function load(): void
     {
-        $dotenv = Dotenv::createMutable(PROJECT_ROOT, ".env");
-        $dotenv->load();
-        $dotenv->required(["ENVIRONMENT", "MACHINE"])->required();
+        $environment = $_ENV["ENVIRONMENT"] ?? "development";
+        $machine = $_ENV["MACHINE"] ?? "local";
 
-        $environment = $_ENV["ENVIRONMENT"];
-        $machine = $_ENV["MACHINE"];
-
-        $dotenv = Dotenv::createMutable(
+        $dotenv = Dotenv::createImmutable(
             PROJECT_ROOT,
             sprintf(
                 ".env.%s.%s",
