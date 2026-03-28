@@ -30,11 +30,13 @@ require_once PROJECT_ROOT . "/public/components/nav.php";
 <div class="m-1">
     <span class="fw-semibold">Key:</span>
 <?php
-    echo "<pre style=\"background-color: gray;\" class=\"d-inline-flex\">$key</pre>";
+    echo "<pre id=\"key-text\" style=\"background-color: gray;\" class=\"d-inline-flex\">$key</pre>";
 ?>
 </div>
+<button id="key-button">Copy to clipboard</button>
 <?php
 require_once PROJECT_ROOT . "/public/components/js.php";
 ?>
+<script type="text/javascript" src="./../../../js/clipboard.js"></script>
 </body>
 </html>
