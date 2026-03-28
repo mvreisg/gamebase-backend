@@ -45,29 +45,31 @@ try {
     $exists = exists($pdo, $database);
     //$result = $pdo->exec("DROP DATABASE $database;");
     $rawQueries = $_SERVER["QUERY_STRING"];
-    $rawQueries = explode("&", $rawQueries);
-    $queries = [];
-    foreach ($rawQueries as $query) {
-        $values = explode("=", $query);
-        $queries[$values[0]] = $values[1];
-    }
-    if (isset($queries["action"])) {
-        $action = $queries["action"];
-        switch ($action) {
-            case "drop":
-                if ($exists) {
-                    $pdo->exec("DROP DATABASE `$database`");
-                }
-                break;
-            case "create":
-                if ($exists === false) {
-                    $pdo->exec("CREATE DATABASE `$database`");
-                }
-                break;
-            default:
-                break;
+    if ($rawQueries !== "") {
+        $rawQueries = explode("&", $rawQueries);
+        $queries = [];
+        foreach ($rawQueries as $query) {
+            $values = explode("=", $query);
+            $queries[$values[0]] = $values[1];
         }
-        $exists = exists($pdo, $database);
+        if (isset($queries["action"])) {
+            $action = $queries["action"];
+            switch ($action) {
+                case "drop":
+                    if ($exists) {
+                        $pdo->exec("DROP DATABASE `$database`");
+                    }
+                    break;
+                case "create":
+                    if ($exists === false) {
+                        $pdo->exec("CREATE DATABASE `$database`");
+                    }
+                    break;
+                default:
+                    break;
+            }
+            $exists = exists($pdo, $database);
+        }
     }
 } catch (\Throwable $e) {
     print_r($e);
