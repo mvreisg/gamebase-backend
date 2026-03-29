@@ -20,6 +20,7 @@ use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
@@ -29,15 +30,55 @@ use PHPUnit\Framework\TestCase;
 
 class AuthorizationServiceTest extends TestCase
 {
-    private function createUserRepository(): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface
-    {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
+    private function createUser(
+        Id $id,
+        Username $username,
+        DecodedPassword $password,
+        bool $isActive
+    ): User {
         $user = new User(
-            Username::make("marcus"),
-            DecodedPassword::make("batata"),
-            true
+            $username,
+            $password,
+            $isActive
         );
-        $user->setId(Id::make(1));
+        $user->setId($id);
+        return $user;
+    }
+
+    private function createSector(
+        Id $id,
+        Name $name,
+        SectorValue $value,
+        bool $isActive,
+    ): Sector {
+        $sector = new Sector(
+            $name,
+            $value,
+            $isActive
+        );
+        $sector->setId($id);
+        return $sector;
+    }
+
+    private function createPermission(
+        Id $id,
+        Name $name,
+        PermissionValue $value,
+        bool $isActive,
+    ): Permission {
+        $permission = new Permission(
+            $name,
+            $value,
+            $isActive
+        );
+        $permission->setId($id);
+        return $permission;
+    }
+
+    private function createUserRepository(
+        User $user
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface {
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository
             ->method("findById")
             ->willReturn(
@@ -46,15 +87,21 @@ class AuthorizationServiceTest extends TestCase
         return $userRepository;
     }
 
-    private function createPermissionRepository(): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface
-    {
+    private function createUserRepositoryWithUserExistanceNegation(
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface {
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("checkIfExists")
+            ->willThrowException(
+                new RepositoryUnexistantRegisterException("User not found.")
+            );
+        return $userRepository;
+    }
+
+    private function createPermissionRepository(
+        Permission $permission
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface {
         $permissionRepository = $this->createMock(PermissionRepositoryInterface::class);
-        $permission = new Permission(
-            Name::make("Create"),
-            PermissionValue::make(PermissionTypes::Create->value),
-            true
-        );
-        $permission->setId(Id::make(1));
         $permissionRepository
             ->method("findById")
             ->willReturn(
@@ -63,15 +110,10 @@ class AuthorizationServiceTest extends TestCase
         return $permissionRepository;
     }
 
-    private function createSectorRepository(): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface
-    {
+    private function createSectorRepository(
+        Sector $sector
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface {
         $sectorRepository = $this->createMock(SectorRepositoryInterface::class);
-        $sector = new Sector(
-            Name::make("User"),
-            SectorValue::make(SectorTypes::User->value),
-            true
-        );
-        $sector->setId(Id::make(1));
         $sectorRepository
             ->method("findById")
             ->willReturn(
@@ -80,29 +122,39 @@ class AuthorizationServiceTest extends TestCase
         return $sectorRepository;
     }
 
-    private function createUserSectorPermissionRepository(): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface
-    {
+    private function createUserSectorPermission(
+        Id $id,
+        Id $userId,
+        Id $sectorId,
+        Id $permissionId
+    ): UserSectorPermission {
+        $userSectorPermission = new UserSectorPermission(
+            $userId,
+            $sectorId,
+            $permissionId
+        );
+        $userSectorPermission->setId($id);
+        return $userSectorPermission;
+    }
+
+    private function createUserSectorPermissionRepository(
+        UserSectorPermissionCollection $userSectorPermissionCollection
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface {
         $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
         $userSectorPermissionRepository
             ->method("findAllByUserId")
             ->willReturn(
-                new UserSectorPermissionCollection([
-                    new UserSectorPermission(
-                        Id::make(1),
-                        Id::make(1),
-                        Id::make(1),
-                    )
-                ])
+                $userSectorPermissionCollection
             );
         return $userSectorPermissionRepository;
     }
 
-    private function createAuthorizationService(): AuthorizationService
-    {
-        $userRepository = $this->createUserRepository();
-        $permissionRepository = $this->createPermissionRepository();
-        $sectorRepository = $this->createSectorRepository();
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
+    private function createAuthorizationService(
+        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface $userRepository,
+        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface $sectorRepository,
+        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface $permissionRepository,
+        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface $userSectorPermissionRepository
+    ): AuthorizationService {
         return new AuthorizationService(
             $userRepository,
             $permissionRepository,
@@ -111,11 +163,62 @@ class AuthorizationServiceTest extends TestCase
         );
     }
 
+    /*
+    ---------------
+    | Check Tests |
+    ---------------
+    */
+
     public function testIfAUserHaveTheCorrectAuthorizations(): void
     {
-        $authorizationService = $this->createAuthorizationService();
-
         $this->expectNotToPerformAssertions();
+
+        $user = $this->createUser(
+            Id::make(1),
+            new Username("test"),
+            new DecodedPassword("password"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::make(1),
+            new Name("User"),
+            SectorTypes::getValue(SectorTypes::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::make(1),
+            new Name("Create"),
+            PermissionTypes::getValue(PermissionTypes::Create),
+            true
+        );
+        $userSectorPermission = $this->createUserSectorPermission(
+            Id::make(1),
+            $user->getId(),
+            $sector->getId(),
+            $permission->getId()
+        );
+        $userSectorPermissionCollection = new UserSectorPermissionCollection([
+            $userSectorPermission
+        ]);
+
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $sectorRepository = $this->createSectorRepository(
+            $sector
+        );
+        $permissionRepository = $this->createPermissionRepository(
+            $permission
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+        $authorizationService = $this->createAuthorizationService(
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository
+        );
 
         $authorizationService->check(
             Id::make(1),
@@ -124,29 +227,235 @@ class AuthorizationServiceTest extends TestCase
         );
     }
 
-    public function testIfAUserDoNotHaveTheCorrectAuthorizations(): void
+    public function testIfAUserDoNotHaveTheCorrectSectorAuthorization(): void
     {
-        $authorizationService = $this->createAuthorizationService();
-
         $this->expectException(UnauthorizedException::class);
 
-        $authorizationService->check(
+        $user = $this->createUser(
             Id::make(1),
-            SectorTypes::Platform,
+            Username::make("test"),
+            new DecodedPassword("password"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::make(1),
+            Name::make("User"),
+            SectorTypes::getValue(SectorTypes::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::make(1),
+            Name::make("Create"),
+            PermissionTypes::getValue(PermissionTypes::Create),
+            true
+        );
+        $userSectorPermission = $this->createUserSectorPermission(
+            Id::make(1),
+            $user->getId(),
+            $sector->getId(),
+            $permission->getId()
+        );
+        $userSectorPermissionCollection = new UserSectorPermissionCollection([
+            $userSectorPermission
+        ]);
+
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $sectorRepository = $this->createSectorRepository(
+            $sector
+        );
+        $permissionRepository = $this->createPermissionRepository(
+            $permission
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+        $authorizationService = $this->createAuthorizationService(
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository
+        );
+
+        $authorizationService->check(
+            $user->getId(),
+            SectorTypes::Game,
             PermissionTypes::Create
         );
     }
 
-    public function testIfAUserWithAInvalidIdTriesToCheckAuthorization(): void
+    public function testIfAUserDoNotHaveTheCorrectPermissionAuthorization(): void
     {
-        $authorizationService = $this->createAuthorizationService();
+        $this->expectException(UnauthorizedException::class);
 
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            new DecodedPassword("password"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::make(1),
+            Name::make("User"),
+            SectorTypes::getValue(SectorTypes::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::make(1),
+            Name::make("Create"),
+            PermissionTypes::getValue(PermissionTypes::Create),
+            true
+        );
+        $userSectorPermission = $this->createUserSectorPermission(
+            Id::make(1),
+            $user->getId(),
+            $sector->getId(),
+            $permission->getId()
+        );
+        $userSectorPermissionCollection = new UserSectorPermissionCollection([
+            $userSectorPermission
+        ]);
+
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $sectorRepository = $this->createSectorRepository(
+            $sector
+        );
+        $permissionRepository = $this->createPermissionRepository(
+            $permission
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+        $authorizationService = $this->createAuthorizationService(
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository
+        );
+
+        $authorizationService->check(
+            $user->getId(),
+            SectorTypes::User,
+            PermissionTypes::List
+        );
+    }
+
+    public function testIfAUnexistantUserIdTriesToCheckAuthorization(): void
+    {
         $this->expectException(EntityException::class);
+
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            new DecodedPassword("password"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::make(1),
+            Name::make("User"),
+            SectorTypes::getValue(SectorTypes::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::make(1),
+            Name::make("Create"),
+            PermissionTypes::getValue(PermissionTypes::Create),
+            true
+        );
+        $userSectorPermission = $this->createUserSectorPermission(
+            Id::make(1),
+            $user->getId(),
+            $sector->getId(),
+            $permission->getId()
+        );
+        $userSectorPermissionCollection = new UserSectorPermissionCollection([
+            $userSectorPermission
+        ]);
+
+        $userRepository = $this->createUserRepositoryWithUserExistanceNegation(
+            $user
+        );
+        $sectorRepository = $this->createSectorRepository(
+            $sector
+        );
+        $permissionRepository = $this->createPermissionRepository(
+            $permission
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+        $authorizationService = $this->createAuthorizationService(
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository
+        );
 
         $authorizationService->check(
             Id::make(-1),
-            SectorTypes::Platform,
-            PermissionTypes::Create
+            SectorTypes::User,
+            PermissionTypes::List
+        );
+    }
+
+    public function testIfAUnexistantUserTriesToCheckAuthorization(): void
+    {
+        $this->expectException(RepositoryUnexistantRegisterException::class);
+
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            new DecodedPassword("password"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::make(1),
+            Name::make("User"),
+            SectorTypes::getValue(SectorTypes::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::make(1),
+            Name::make("Create"),
+            PermissionTypes::getValue(PermissionTypes::Create),
+            true
+        );
+        $userSectorPermission = $this->createUserSectorPermission(
+            Id::make(1),
+            $user->getId(),
+            $sector->getId(),
+            $permission->getId()
+        );
+        $userSectorPermissionCollection = new UserSectorPermissionCollection([
+            $userSectorPermission
+        ]);
+
+        $userRepository = $this->createUserRepositoryWithUserExistanceNegation(
+            $user
+        );
+        $sectorRepository = $this->createSectorRepository(
+            $sector
+        );
+        $permissionRepository = $this->createPermissionRepository(
+            $permission
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+        $authorizationService = $this->createAuthorizationService(
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository
+        );
+
+        $authorizationService->check(
+            Id::make(2),
+            SectorTypes::User,
+            PermissionTypes::List
         );
     }
 }

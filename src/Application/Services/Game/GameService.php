@@ -33,7 +33,7 @@ class GameService
     public function insert(Game $game, EncodedAuthenticationToken $token): Game
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -58,7 +58,7 @@ class GameService
     public function update(Game $game, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -87,7 +87,7 @@ class GameService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -113,7 +113,7 @@ class GameService
     public function findById(Id $id, EncodedAuthenticationToken $token): Game
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -136,7 +136,7 @@ class GameService
     public function findAll(EncodedAuthenticationToken $token): GameCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

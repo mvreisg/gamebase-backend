@@ -41,7 +41,7 @@ class GamePlatformService
     public function insert(GamePlatform $gamePlatform, EncodedAuthenticationToken $token): GamePlatform
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -70,7 +70,7 @@ class GamePlatformService
     public function update(GamePlatform $gamePlatform, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -103,7 +103,7 @@ class GamePlatformService
     public function delete(Id $id, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -126,7 +126,7 @@ class GamePlatformService
     public function findById(Id $id, EncodedAuthenticationToken $token): GamePlatform
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -149,7 +149,7 @@ class GamePlatformService
     public function findAll(EncodedAuthenticationToken $token): GamePlatformCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

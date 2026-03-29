@@ -33,7 +33,7 @@ class SectorService
     public function insert(Sector $sector, EncodedAuthenticationToken $token): Sector
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -58,7 +58,7 @@ class SectorService
     public function update(Sector $sector, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -87,7 +87,7 @@ class SectorService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -113,7 +113,7 @@ class SectorService
     public function findById(Id $id, EncodedAuthenticationToken $token): Sector
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -134,7 +134,7 @@ class SectorService
     public function findAll(EncodedAuthenticationToken $token): SectorCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

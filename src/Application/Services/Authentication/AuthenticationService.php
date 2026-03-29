@@ -56,10 +56,10 @@ class AuthenticationService
         }
     }
 
-    public function validate(EncodedAuthenticationToken $token): DecodedAuthenticationToken
+    public function validate(EncodedAuthenticationToken $informedToken): DecodedAuthenticationToken
     {
         try {
-            $decodedToken = $this->decode($token);
+            $decodedToken = $this->decode($informedToken);
 
             $this->authenticationTokenValidator->validate($decodedToken);
 
@@ -79,7 +79,7 @@ class AuthenticationService
             );
 
             $isTokensIdenticals = strcmp(
-                $token->getToken(),
+                $informedToken->getToken(),
                 $cachedToken->getToken()
             ) === 0;
 
@@ -87,7 +87,7 @@ class AuthenticationService
                 throw new UnauthorizedException();
             }
 
-            $cachedResult = $this->decode($token);
+            $cachedResult = $this->decode($cachedToken);
 
             $isIdIdenticals = $id->getValue() === $cachedResult->getUserId()->getValue();
 

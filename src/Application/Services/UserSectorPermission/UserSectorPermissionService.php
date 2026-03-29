@@ -45,7 +45,7 @@ class UserSectorPermissionService
     public function insert(UserSectorPermission $new, EncodedAuthenticationToken $token): UserSectorPermission
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -78,7 +78,7 @@ class UserSectorPermissionService
     public function update(UserSectorPermission $existant, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -115,7 +115,7 @@ class UserSectorPermissionService
     public function delete(Id $id, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -138,7 +138,7 @@ class UserSectorPermissionService
     public function findById(Id $id, EncodedAuthenticationToken $token): UserSectorPermission
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -161,7 +161,7 @@ class UserSectorPermissionService
     public function findAll(EncodedAuthenticationToken $token): UserSectorPermissionCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

@@ -9,35 +9,37 @@ use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Parameters\Sessio
 use Mvreisg\GamebaseBackend\Application\Services\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Application\Services\Session\SessionService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
+use Mvreisg\GamebaseBackend\Domain\Session\Exceptions\InvalidCredentialsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class SessionServiceTest extends TestCase
 {
-    private function createUser(): User
-    {
-        $id = Id::make(1);
-        $username = Username::make("test");
-        $password = DecodedPassword::make("test");
-        $isActive = true;
+    private function createUser(
+        Id $id,
+        Username $username,
+        DecodedPassword $password,
+        bool $isActive
+    ): User {
         $user = new User(
             $username,
             $password,
@@ -57,12 +59,39 @@ class SessionServiceTest extends TestCase
         return $userRepository;
     }
 
+    private function createEmptyUserRepository(
+        User $user
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface {
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository
+            ->method("findByUsername")
+            ->willThrowException(
+                new RepositoryUnexistantRegisterException(
+                    "username: {$user->getUsername()->getValue()}"
+                )
+            );
+        return $userRepository;
+    }
+
     private function createEncrypter(): MockObject&\Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface
     {
         $encrypter = $this->createMock(EncryptionInterface::class);
         $encrypter
             ->method("decrypt")
             ->willReturn("test");
+        return $encrypter;
+    }
+
+    private function createEncrypterWithDecryptionException(): MockObject&\Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface
+    {
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("decrypt")
+            ->willThrowException(
+                new EncryptionException(
+                    "Decryption failed"
+                )
+            );
         return $encrypter;
     }
 
@@ -87,6 +116,20 @@ class SessionServiceTest extends TestCase
         $userSectorPermissionRepository
             ->method("findAllByUserId")
             ->willReturn($userSectorPermissionCollection);
+        return $userSectorPermissionRepository;
+    }
+
+    private function createUserSectorPermissionRepositoryWithThrowsExceptionOnFindAllByUserId(
+        UserSectorPermissionCollection $userSectorPermissionCollection
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface {
+        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $userSectorPermissionRepository
+            ->method("findAllByUserId")
+            ->willThrowException(
+                new RepositoryUnexistantRegisterException(
+                    "user_id: {$userSectorPermissionCollection->fetchAll()[0]->getUserId()->getValue()}"
+                )
+            );
         return $userSectorPermissionRepository;
     }
 
@@ -162,24 +205,56 @@ class SessionServiceTest extends TestCase
     }
 
     private function createTokenCache(
-        User $user,
         EncodedAuthenticationToken $token
     ): MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface {
         $tokenCache = $this->createMock(TokenCacheInterface::class);
         $tokenCache
             ->method("exists")
-            ->willReturnOnConsecutiveCalls(
-                false,
+            ->willReturn(
                 true
             );
-        $tokenCache
-            ->method("set")
-            ->with($user->getUsername(), $token);
         $tokenCache
             ->method("get")
             ->willReturn(
                 $token
             );
+        $tokenCache
+            ->method("delete")
+            ->willReturn(
+                true
+            );
+        return $tokenCache;
+    }
+
+    private function createTokenCacheThatDoesNotDelete(
+        EncodedAuthenticationToken $token
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface {
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturn(
+                true
+            );
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $token
+            );
+        $tokenCache
+            ->method("delete")
+            ->willReturn(
+                false
+            );
+        return $tokenCache;
+    }
+
+    private function createEmptyTokenCache(
+
+    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface {
+        $tokenCache = $this->createMock(TokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturn(false);
         return $tokenCache;
     }
 
@@ -253,70 +328,51 @@ class SessionServiceTest extends TestCase
         );
     }
 
-    public function testIfANewLoginValidForOneDayWithARegisteredUserWithoutPermissionsSucceds(): void
+    private function createClock(string $timezone): ClockInterface
     {
-        $user = $this->createUser();
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
 
-        $userRepository = $this->createUserRepository($user);
+    /*
+    ---------------
+    | Login Tests |
+    ---------------
+    */
 
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
+    public function testIfLoginSucceds(): void
+    {
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
         );
 
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
+        $userRepository = $this->createUserRepository(
+            $user
         );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
             $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
+            $issuedAt,
+            $expiredAt
         );
-    }
 
-    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsSucceds(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createMock(EncryptionInterface::class);
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -325,322 +381,9 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
         );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
-        );
-    }
-
-    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithoutPermissionsSucceds(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
-        );
-
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
-        );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
-        );
-    }
-
-    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
-        );
-
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
-        );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
-        );
-    }
-
-    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
-    {
-        $this->expectException(EntityException::class);
-
-        Username::make("-");
-    }
-
-    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidUsernameFails(): void
-    {
-        $this->expectException(EntityException::class);
-
-        Username::make("-");
-    }
-
-    public function testIfANewLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
-    {
-        $this->expectException(EntityException::class);
-
-        DecodedPassword::make("-");
-    }
-
-    public function testIfANewLoginValidForOneWeekWithARegisteredUserWithPermissionsToSectorsButWithAInvalidPasswordFails(): void
-    {
-        $this->expectException(EntityException::class);
-
-        DecodedPassword::make("-");
-    }
-
-    public function testIfANewLoginValidForOneDayWithInvalidCredentialsFails(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
-        );
-
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
-        );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
-        );
-    }
-
-    public function testIfANewLoginValidForOneWeekWithInvalidCredentialsFails(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
-        );
-
-        $token = $this->createMock(EncodedAuthenticationToken::class);
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($token);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
-        );
-
-        $sessionService = $this->createSessionService(
-            $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
-            $userSectorPermissionRepository,
-            $clock
-        );
-
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $token,
-            $result
-        );
-    }
-
-    public function testIfAExistantLoginValidForOneDayWithARegisteredUserWithPermissionsToSectorsSucceds(): void
-    {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
-
-        $now = new \DateTimeImmutable();
-        $decodedToken = $this->createDecodedToken($user, $now, $now->modify("+1 day"));
-
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
-
-        $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
-        );
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -669,33 +412,37 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             $result
         );
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
-        );
     }
 
-    public function testIfAExistantLoginValidForOneWeekWithARegisteredUserWithPermissionToSectorsSucceds(): void
+    public function testIfExistantLoginSucceds(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
 
-        $userRepository = $this->createUserRepository($user);
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
 
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
-
-        $now = new \DateTimeImmutable();
-        $decodedToken = $this->createDecodedToken($user, $now, $now->modify("+1 day"));
-
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
-
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -704,13 +451,9 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
-
-        $now = new \DateTimeImmutable();
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturn($now);
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -729,7 +472,7 @@ class SessionServiceTest extends TestCase
 
         $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
 
-        $result = $sessionService->login(
+        $firstResult = $sessionService->login(
             $sessionLoginParameters
         );
 
@@ -737,10 +480,10 @@ class SessionServiceTest extends TestCase
             $user,
             $userSectorPermissionCollection,
             $encodedToken,
-            $result
+            $firstResult
         );
 
-        $result = $sessionService->login(
+        $secondResult = $sessionService->login(
             $sessionLoginParameters
         );
 
@@ -748,25 +491,41 @@ class SessionServiceTest extends TestCase
             $user,
             $userSectorPermissionCollection,
             $encodedToken,
-            $result
+            $secondResult
         );
     }
 
-    public function testIfAOneDayExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneDayBecauseOfExpiredToken(): void
+    public function testIfLoginFailsByUnexistantUserIdentifiedByUsernameOnRepository(): void
     {
-        $user = $this->createUser();
+        $this->expectException(RepositoryUnexistantRegisterException::class);
 
-        $userRepository = $this->createUserRepository($user);
+        $unexistantUser = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
 
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
+        $userRepository = $this->createEmptyUserRepository(
+            $unexistantUser
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $unexistantUser,
+            $issuedAt,
+            $expiredAt
+        );
 
-        $now = new \DateTimeImmutable();
-        $expiresAt = $now->modify("+1 day");
-        $decodedToken = $this->createDecodedToken($user, $now, $expiresAt);
-
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
-
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -775,15 +534,74 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturnOnConsecutiveCalls(
-                $now,
-                $expiresAt->modify("+1 second")
-            );
+        $authenticationTokenValidator = new AuthenticationTokenValidator(
+            $clock
+        );
+
+        $sessionService = $this->createSessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $authenticationTokenValidator,
+            $userSectorPermissionRepository,
+            $clock
+        );
+
+        $sessionLoginParameters = $this->createSessionLoginParameters($unexistantUser, false);
+
+        $sessionService->login(
+            $sessionLoginParameters
+        );
+    }
+
+    public function testIfLoginFailsByDecryptionException(): void
+    {
+        $this->expectException(EncryptionException::class);
+
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
+
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
+
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
+        $encrypter = $this->createEncrypterWithDecryptionException();
+
+        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
+
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -802,44 +620,42 @@ class SessionServiceTest extends TestCase
 
         $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
 
-        $result = $sessionService->login(
+        $sessionService->login(
             $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
-        );
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
         );
     }
 
-    public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesNotLoginAfterOneWeekBecauseOfExpiredToken(): void
+    public function testIfLoginFailsByUnequalsPasswords(): void
     {
-        $user = $this->createUser();
+        $this->expectException(InvalidCredentialsException::class);
 
-        $userRepository = $this->createUserRepository($user);
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
 
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
 
-        $now = new \DateTimeImmutable();
-        $expiresAt = $now->modify("+1 day");
-        $decodedToken = $this->createDecodedToken($user, $now, $expiresAt);
-
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
-
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -848,15 +664,9 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
-
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturnOnConsecutiveCalls(
-                $now,
-                $expiresAt->modify("+1 second")
-            );
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -873,47 +683,54 @@ class SessionServiceTest extends TestCase
             $clock
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
+        $userWithWrongPassword = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("wrongpassword"),
+            true
+        );
+        $sessionLoginParameters = $this->createSessionLoginParameters($userWithWrongPassword, false);
 
-        $result = $sessionService->login(
+        $sessionService->login(
             $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
-        );
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
         );
     }
 
-    public function testIfAOneWeekExistantLoginByAUserWithPermissionsToSectorsDoesStillValidAfterOneDay(): void
+    /*
+    ----------------
+    | Logoff Tests |
+    ----------------
+    */
+
+    public function testIfLogoffSucceds(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
 
-        $userRepository = $this->createUserRepository($user);
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
 
-        $encodedToken = $this->createEncodedToken("teste");
-
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
-
-        $now = new \DateTimeImmutable();
-        $expiresAt = $now->modify("+1 week");
-        $decodedToken = $this->createDecodedToken($user, $now, $expiresAt);
-
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder($decodedToken);
-
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -922,15 +739,9 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
-
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturnOnConsecutiveCalls(
-                $now,
-                $now->modify("+1 day")
-            );
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -947,55 +758,42 @@ class SessionServiceTest extends TestCase
             $clock
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters($user, false);
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
+        $hasLoggedOut = $sessionService->logoff(
+            $encodedToken
         );
 
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
-        );
-
-        $result = $sessionService->login(
-            $sessionLoginParameters
-        );
-
-        $this->assertLoginResultEquals(
-            $user,
-            $userSectorPermissionCollection,
-            $encodedToken,
-            $result
-        );
+        $this->assertTrue($hasLoggedOut);
     }
 
-    public function testIfAInvalidTokenIsInformedToRetrieveData(): void
+    public function testIfLogoffFails(): void
     {
-        $user = $this->createUser();
-
-        $userRepository = $this->createUserRepository($user);
-
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $tokenCache = $this->createTokenCache($user, $encodedToken);
-
-        $now = new \DateTimeImmutable();
-
-        $invalidToken = new EncodedAuthenticationToken(
-            "batata"
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
         );
 
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $authenticationTokenDecoder
-            ->method("decode")
-            ->willThrowException(
-                new AuthenticationTokenDecoderException(
-                    "Invalid token {$invalidToken->getToken()}."
-                )
-            );
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
 
+        $tokenCache = $this->createTokenCacheThatDoesNotDelete(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
         $encrypter = $this->createEncrypter();
 
         $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
@@ -1004,15 +802,9 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionCollection
         );
 
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder($encodedToken);
-
-        $clock = $this->createMock(ClockInterface::class);
-        $clock
-            ->method("now")
-            ->willReturnOnConsecutiveCalls(
-                $now,
-                $now->modify("+1 day")
-            );
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
 
         $authenticationTokenValidator = new AuthenticationTokenValidator(
             $clock
@@ -1029,10 +821,90 @@ class SessionServiceTest extends TestCase
             $clock
         );
 
-        $this->expectException(AuthenticationTokenDecoderException::class);
+        $hasLoggedOut = $sessionService->logoff(
+            $encodedToken
+        );
 
-        $sessionService->retrieveData(
-            $invalidToken
+        $this->assertFalse($hasLoggedOut);
+    }
+
+    /*
+    -----------------------
+    | Retrieve Data Tests |
+    -----------------------
+    */
+
+    public function testIfRetrieveDataSucceeds(): void
+    {
+        $user = $this->createUser(
+            Id::make(1),
+            Username::make("test"),
+            DecodedPassword::make("test"),
+            true
+        );
+
+        $userRepository = $this->createUserRepository(
+            $user
+        );
+        $encodedToken = $this->createEncodedToken("potato");
+        $clock = $this->createClock("UTC");
+        $now = $clock->now();
+        $issuedAt = $now;
+        $expiredAt = $now->modify("+1 hour");
+        $decodedToken = $this->createDecodedToken(
+            $user,
+            $issuedAt,
+            $expiredAt
+        );
+
+        $tokenCache = $this->createTokenCache(
+            $encodedToken
+        );
+        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
+            $decodedToken
+        );
+        $encrypter = $this->createEncrypter();
+
+        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
+
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            $userSectorPermissionCollection
+        );
+
+        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
+            $encodedToken
+        );
+
+        $authenticationTokenValidator = new AuthenticationTokenValidator(
+            $clock
+        );
+
+        $sessionService = $this->createSessionService(
+            $userRepository,
+            $tokenCache,
+            $encrypter,
+            $authenticationTokenEncoder,
+            $authenticationTokenDecoder,
+            $authenticationTokenValidator,
+            $userSectorPermissionRepository,
+            $clock
+        );
+
+        $sessionData = $sessionService->retrieveData(
+            $encodedToken
+        );
+
+        $this->assertEquals(
+            $user->getId()->getValue(),
+            $sessionData->getUserId()->getValue()
+        );
+        $this->assertEquals(
+            $user->getUsername()->getValue(),
+            $sessionData->getUsername()->getValue()
+        );
+        $this->assertCount(
+            $userSectorPermissionCollection->count(),
+            $sessionData->getUserSectorPermissionCollection()->fetchAll()
         );
     }
 }

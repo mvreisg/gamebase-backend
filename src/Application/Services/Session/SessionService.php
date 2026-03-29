@@ -43,10 +43,6 @@ class SessionService
         try {
             $username = $parameters->getUsername();
 
-            $exists = $this->tokenCache->exists(
-                $username
-            );
-
             $fetchedUser = $this->userRepository->findByUsername(
                 $username
             );
@@ -73,17 +69,6 @@ class SessionService
 
             if ($doTheTwoPasswordsMatchesEqually === false) {
                 throw new InvalidCredentialsException();
-            }
-
-            if ($exists) {
-                $token = $this->tokenCache->get(
-                    $parameters->getUsername()
-                );
-
-                return new SessionLoginReturn(
-                    $token,
-                    $sessionData
-                );
             }
 
             $interval = null;

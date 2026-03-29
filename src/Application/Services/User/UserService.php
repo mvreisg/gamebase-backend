@@ -39,7 +39,7 @@ class UserService
     public function insert(User $new, EncodedAuthenticationToken $token): User
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -74,7 +74,7 @@ class UserService
     public function update(User $existant, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -115,7 +115,7 @@ class UserService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -141,7 +141,7 @@ class UserService
     public function findById(Id $id, EncodedAuthenticationToken $token): User
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -162,7 +162,7 @@ class UserService
     public function findByUsername(Username $username, EncodedAuthenticationToken $token): ?User
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -183,7 +183,7 @@ class UserService
     public function findAll(EncodedAuthenticationToken $token): UserCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

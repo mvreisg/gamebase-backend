@@ -33,7 +33,7 @@ class GenreService
     public function insert(Genre $genre, EncodedAuthenticationToken $token): Genre
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -58,7 +58,7 @@ class GenreService
     public function update(Genre $genre, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -87,7 +87,7 @@ class GenreService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -113,7 +113,7 @@ class GenreService
     public function findById(Id $id, EncodedAuthenticationToken $token): Genre
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -136,7 +136,7 @@ class GenreService
     public function findAll(EncodedAuthenticationToken $token): GenreCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

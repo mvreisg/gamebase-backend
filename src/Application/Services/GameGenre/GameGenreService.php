@@ -41,7 +41,7 @@ class GameGenreService
     public function insert(GameGenre $gameGenre, EncodedAuthenticationToken $token): GameGenre
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -70,7 +70,7 @@ class GameGenreService
     public function update(GameGenre $gameGenre, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -103,7 +103,7 @@ class GameGenreService
     public function delete(Id $id, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -126,7 +126,7 @@ class GameGenreService
     public function findById(Id $id, EncodedAuthenticationToken $token): GameGenre
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -149,7 +149,7 @@ class GameGenreService
     public function findAll(EncodedAuthenticationToken $token): GameGenreCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

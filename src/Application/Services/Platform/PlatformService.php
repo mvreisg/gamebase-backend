@@ -33,7 +33,7 @@ class PlatformService
     public function insert(Platform $platform, EncodedAuthenticationToken $token): Platform
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -58,7 +58,7 @@ class PlatformService
     public function update(Platform $platform, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -87,7 +87,7 @@ class PlatformService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -113,7 +113,7 @@ class PlatformService
     public function findById(Id $id, EncodedAuthenticationToken $token): Platform
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -134,7 +134,7 @@ class PlatformService
     public function findAll(EncodedAuthenticationToken $token): PlatformCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 

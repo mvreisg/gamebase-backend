@@ -33,7 +33,7 @@ class PermissionService
     public function insert(Permission $permission, EncodedAuthenticationToken $token): Permission
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -58,7 +58,7 @@ class PermissionService
     public function update(Permission $permission, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -87,7 +87,7 @@ class PermissionService
     public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -113,7 +113,7 @@ class PermissionService
     public function findById(Id $id, EncodedAuthenticationToken $token): Permission
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
@@ -134,7 +134,7 @@ class PermissionService
     public function findAll(EncodedAuthenticationToken $token): PermissionCollection
     {
         try {
-            $decodedToken = $this->authenticationService->decode(
+            $decodedToken = $this->authenticationService->validate(
                 $token
             );
 
