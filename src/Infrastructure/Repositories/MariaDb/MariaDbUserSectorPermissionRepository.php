@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 
 class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
 {
@@ -137,7 +136,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function findById(Id $id): UserSectorPermission
+    public function findById(Id $id): ?UserSectorPermission
     {
         try {
             $idValue = $id->getValue();
@@ -157,9 +156,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new UserSectorPermission(
@@ -174,7 +171,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function findAllByUserId(Id $userId): UserSectorPermissionCollection
+    public function findAllByUserId(Id $userId): ?UserSectorPermissionCollection
     {
         try {
             $userIdValue = $userId->getValue();
@@ -194,7 +191,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection();
+                return null;
             }
 
             $userSectorPermissions = new UserSectorPermissionCollection();
@@ -213,7 +210,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function findAll(): UserSectorPermissionCollection
+    public function findAll(): ?UserSectorPermissionCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -227,7 +224,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection();
+                return null;
             }
 
             $userSectorPermissions = new UserSectorPermissionCollection();
@@ -246,7 +243,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -274,11 +271,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

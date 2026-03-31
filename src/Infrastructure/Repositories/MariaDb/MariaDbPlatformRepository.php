@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Entities\Platform;
-use Mvreisg\GamebaseBackend\Domain\Entities\PlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbPlatformRepository implements PlatformRepositoryInterface
 {
@@ -159,7 +157,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Platform
+    public function findById(Id $id): ?Platform
     {
         try {
             $idValue = $id->getValue();
@@ -179,9 +177,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Platform(
@@ -200,7 +196,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function findAll(): PlatformCollection
+    public function findAll(): ?PlatformCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -214,7 +210,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new PlatformCollection();
+                return null;
             }
 
             $platforms = new PlatformCollection();
@@ -237,7 +233,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -265,17 +261,13 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -302,11 +294,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

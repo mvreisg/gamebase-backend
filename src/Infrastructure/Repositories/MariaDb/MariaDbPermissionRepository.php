@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\PermissionValue;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbPermissionRepository implements PermissionRepositoryInterface
 {
@@ -169,7 +167,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Permission
+    public function findById(Id $id): ?Permission
     {
         try {
             $idValue = $id->getValue();
@@ -189,9 +187,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Permission(
@@ -211,7 +207,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function findAll(): PermissionCollection
+    public function findAll(): ?PermissionCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -225,7 +221,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new PermissionCollection();
+                return null;
             }
 
             $permissions = new PermissionCollection();
@@ -250,7 +246,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -278,17 +274,13 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -315,11 +307,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

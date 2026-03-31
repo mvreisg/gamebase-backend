@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 {
@@ -129,7 +128,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function findById(Id $id): GamePlatform
+    public function findById(Id $id): ?GamePlatform
     {
         try {
             $idValue = $id->getValue();
@@ -149,9 +148,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new GamePlatform(
@@ -165,7 +162,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function findAll(): GamePlatformCollection
+    public function findAll(): ?GamePlatformCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -179,7 +176,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $result = $statement->fetchAll();
             if (count($result) === 0) {
-                return new GamePlatformCollection();
+                return null;
             }
 
             $gamePlatforms = new GamePlatformCollection();
@@ -197,7 +194,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $alias = "number_of_ids";
@@ -225,11 +222,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

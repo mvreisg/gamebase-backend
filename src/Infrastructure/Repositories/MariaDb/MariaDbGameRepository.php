@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbGameRepository implements GameRepositoryInterface
 {
@@ -159,7 +157,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Game
+    public function findById(Id $id): ?Game
     {
         try {
             $idValue = $id->getValue();
@@ -180,9 +178,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
             $fetchResult = $statement->fetch();
 
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Game(
@@ -238,7 +234,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -266,17 +262,13 @@ class MariaDbGameRepository implements GameRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -304,11 +296,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
                 ]
             );
 
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

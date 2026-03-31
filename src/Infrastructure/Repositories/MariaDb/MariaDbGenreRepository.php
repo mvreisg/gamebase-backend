@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
-use Mvreisg\GamebaseBackend\Domain\Entities\GenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbGenreRepository implements GenreRepositoryInterface
 {
@@ -160,7 +158,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Genre
+    public function findById(Id $id): ?Genre
     {
         try {
             $idValue = $id->getValue();
@@ -180,9 +178,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Genre(
@@ -201,7 +197,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function findAll(): GenreCollection
+    public function findAll(): ?GenreCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -215,7 +211,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new GenreCollection();
+                return null;
             }
 
             $genres = new GenreCollection();
@@ -238,7 +234,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -265,17 +261,13 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -302,11 +294,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
