@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\User\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Authentication\Services\Exceptions\UnauthorizedException;
-use Mvreisg\GamebaseBackend\Application\Authorization\Service\AuthorizationService;
+use Mvreisg\GamebaseBackend\Application\Authorization\Exceptions\UnauthorizedException;
+use Mvreisg\GamebaseBackend\Application\Authorization\Service\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\User\Service\Exceptions\DuplicatedUserException;
+use Mvreisg\GamebaseBackend\Application\User\Service\Exceptions\DuplicatedUsernameException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
@@ -21,30 +23,26 @@ class UserService
 {
     private UserRepositoryInterface $repository;
     private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
     private EncryptionInterface $encrypter;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
 
     public function __construct(
         UserRepositoryInterface $repository,
         AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService,
-        EncryptionInterface $encrypter
+        EncryptionInterface $encrypter,
+        CheckAuthorizationUseCase $checkAuthorizationUseCase
     ) {
         $this->repository = $repository;
         $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
         $this->encrypter = $encrypter;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
     }
 
     public function insert(User $new, string $token): User
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $isAuthorized = $this->authorizationService->check(
-                $decodedToken->getAuthenticationData()->getUserId(),
+            $isAuthorized = $this->checkAuthorizationUseCase->execute(
+                $token,
                 SectorType::User,
                 PermissionType::Create
             );
@@ -58,7 +56,9 @@ class UserService
             );
 
             if ($hasDuplicatedUsernames) {
-                throw new \Exception("TODO: Duplicated username exception.");
+                throw new DuplicatedUsernameException(
+                    $new->getUsername()
+                );
             }
 
             $encodedPassword = $this->encrypter->encrypt(
@@ -82,23 +82,35 @@ class UserService
     public function update(User $existant, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getAuthenticationData()->getUserId(),
+            $isAuthorized = $this->checkAuthorizationUseCase->execute(
+                $token,
                 SectorType::User,
                 PermissionType::Update
             );
 
-            $this->repository->checkIfExists(
+            if ($isAuthorized === false) {
+                throw new UnauthorizedException();
+            }
+
+            $doesUserAlreadyExists = $this->repository->checkIfExists(
                 $existant->getId()
             );
 
-            $this->repository->checkDuplicatedUsernames(
+            if ($doesUserAlreadyExists) {
+                throw new DuplicatedUserException(
+                    $existant->getId()
+                );
+            }
+
+            $hasDuplicatedUsernames = $this->repository->checkDuplicatedUsernames(
                 $existant->getUsername()
             );
+
+            if ($hasDuplicatedUsernames) {
+                throw new DuplicatedUsernameException(
+                    $existant->getUsername()
+                );
+            }
 
             $encodedPassword = $this->encrypter->encrypt(
                 $existant->getPassword()->getValue()
@@ -109,7 +121,10 @@ class UserService
                 EncodedPassword::make($encodedPassword),
                 $existant->getIsActive()
             );
-            $user->setId($existant->getId());
+            $user->setId(
+                $existant->getId()
+            );
+
             $wasUpdated = $this->repository->update(
                 $user
             );
