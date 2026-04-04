@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection;
+
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
-
-;
 
 class GameCollection
 {

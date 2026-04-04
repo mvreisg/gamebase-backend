@@ -72,7 +72,8 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
             $this->connection->commit();
 
             $return = new Platform(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -80,7 +81,6 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -181,7 +181,8 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
             }
 
             $return = new Platform(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -189,7 +190,6 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -216,7 +216,8 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
             $platforms = new PlatformCollection();
             foreach ($fetchResult as $row) {
                 $value = new Platform(
-                    Name::make($row["name"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -224,7 +225,6 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $value->setId(Id::make($row["id"]));
                 $platforms->add($value);
             }
             return $platforms;

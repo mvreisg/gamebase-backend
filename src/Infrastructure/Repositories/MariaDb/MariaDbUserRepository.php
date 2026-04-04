@@ -77,8 +77,9 @@ class MariaDbUserRepository implements UserRepositoryInterface
             $this->connection->commit();
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -86,7 +87,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -192,8 +192,9 @@ class MariaDbUserRepository implements UserRepositoryInterface
             }
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -201,7 +202,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -232,8 +232,9 @@ class MariaDbUserRepository implements UserRepositoryInterface
             }
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -241,7 +242,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -268,8 +268,9 @@ class MariaDbUserRepository implements UserRepositoryInterface
             $users = new UserCollection();
             foreach ($fetchResult as $row) {
                 $user = new User(
-                    Username::make($row["username"]),
-                    EncodedPassword::make($row["password"]),
+                    Id::create($row["id"]),
+                    Username::create($row["username"]),
+                    EncodedPassword::create($row["password"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -277,7 +278,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $user->setId(Id::make($row["id"]));
                 $users->add(
                     $user
                 );

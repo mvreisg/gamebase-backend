@@ -18,21 +18,21 @@ class AuthenticationDataSerializer
         switch ($serializationCasingType) {
             case SerializationCasingTypes::LowerCamelCase:
                 return new AuthenticationData(
-                    Id::make($data->userId),
-                    Username::make($data->username)
+                    Id::create($data->userId),
+                    Username::create($data->username)
                 );
             case SerializationCasingTypes::UpperCamelCase:
                 return new AuthenticationData(
-                    Id::make($data->UserId),
-                    Username::make($data->Username)
+                    Id::create($data->UserId),
+                    Username::create($data->Username)
                 );
             case SerializationCasingTypes::SnakeCase:
                 return new AuthenticationData(
-                    Id::make($data->user_id),
-                    Username::make($data->username)
+                    Id::create($data->user_id),
+                    Username::create($data->username)
                 );
             default:
-                throw new \DomainException(
+                throw new \Exception(
                     "Untreated authentication data serialization casing type: $serializationCasingType"
                 );
         }
@@ -61,7 +61,7 @@ class AuthenticationDataSerializer
                     "username" => $usernameValue
                 ];
             default:
-                throw new \DomainException(
+                throw new \Exception(
                     "Untreated authentication data serialization casing type: $serializationCasingType"
                 );
         }

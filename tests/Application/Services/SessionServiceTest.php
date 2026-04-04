@@ -14,7 +14,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\Authenti
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
@@ -24,11 +24,11 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exception\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
-use Mvreisg\GamebaseBackend\Domain\Session\Exceptions\InvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\InvalidCredentialsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -100,9 +100,9 @@ class SessionServiceTest extends TestCase
         $userSectorPermissions = new UserSectorPermissionCollection();
         for ($i = 0; $i < 3; $i++) {
             $userSectorPermission = new UserSectorPermission(
-                Id::make($i + 1),
-                Id::make($i + 1),
-                Id::make($i + 1),
+                Id::create($i + 1),
+                Id::create($i + 1),
+                Id::create($i + 1),
             );
             $userSectorPermissions->add($userSectorPermission);
         }
@@ -347,8 +347,8 @@ class SessionServiceTest extends TestCase
     public function testIfLoginSucceds(): void
     {
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -417,8 +417,8 @@ class SessionServiceTest extends TestCase
     public function testIfExistantLoginSucceds(): void
     {
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -500,8 +500,8 @@ class SessionServiceTest extends TestCase
         $this->expectException(RepositoryUnexistantRegisterException::class);
 
         $unexistantUser = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -565,8 +565,8 @@ class SessionServiceTest extends TestCase
         $this->expectException(EncryptionException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -630,8 +630,8 @@ class SessionServiceTest extends TestCase
         $this->expectException(InvalidCredentialsException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -684,8 +684,8 @@ class SessionServiceTest extends TestCase
         );
 
         $userWithWrongPassword = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("wrongpassword"),
             true
         );
@@ -705,8 +705,8 @@ class SessionServiceTest extends TestCase
     public function testIfLogoffSucceds(): void
     {
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -768,8 +768,8 @@ class SessionServiceTest extends TestCase
     public function testIfLogoffFails(): void
     {
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );
@@ -837,8 +837,8 @@ class SessionServiceTest extends TestCase
     public function testIfRetrieveDataSucceeds(): void
     {
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             DecodedPassword::make("test"),
             true
         );

@@ -2,26 +2,25 @@
 
 declare(strict_types=1);
 
-use Psr\Container\ContainerInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
-use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Decoder\JwtAuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Encoder\JwtAuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Infrastructure\Cache\Predis\Token\PredisTokenCache;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis\PredisAuthenticationTokenCache;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\JwtTokenProvider;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\Option\JwtTokenProviderOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\Option\SodiumEncryptionOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGamePlatformRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameRepository;
@@ -31,6 +30,8 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPlatformR
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
+use Psr\Container\ContainerInterface;
 use Predis\Client;
 
 try {
@@ -60,13 +61,13 @@ try {
 
         EncryptionInterface::class => DI\get(DefuseEncryption::class),
 
-        DefuseEncryption::class => DI\autowire()
+        SodiumEncryptionOptions::class => DI\autowire()
+            ->constructorParameter("key", DI\get("encryption.sodium.key")),
+
+        DefuseEncryptionOptions::class => DI\autowire()
             ->constructorParameter("key", DI\get("encryption.defuse.key")),
 
-        JwtAuthenticationTokenDecoder::class => DI\autowire()
-            ->constructorParameter("key", DI\get("authentication.jwt.key")),
-
-        JwtAuthenticationTokenEncoder::class => DI\autowire()
+        JwtTokenProviderOptions::class => DI\autowire()
             ->constructorParameter("key", DI\get("authentication.jwt.key")),
 
         \DateTimeZone::class => DI\autowire()
@@ -82,10 +83,9 @@ try {
         GameGenreRepositoryInterface::class => DI\get(MariaDbGameGenreRepository::class),
         GamePlatformRepositoryInterface::class => DI\get(MariaDbGamePlatformRepository::class),
 
-        AuthenticationTokenEncoder::class => DI\get(JwtAuthenticationTokenEncoder::class),
-        AuthenticationTokenDecoder::class => DI\get(JwtAuthenticationTokenDecoder::class),
+        AuthenticationTokenProvider::class => DI\get(JwtTokenProvider::class),
 
-        TokenCacheInterface::class => DI\get(PredisTokenCache::class),
+        AuthenticationTokenCacheInterface::class => DI\get(PredisAuthenticationTokenCache::class),
 
         \PDO::class => DI\factory(function (ContainerInterface $container) {
             $adapter = $container->get("repository.adapter");

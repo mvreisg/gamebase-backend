@@ -8,26 +8,26 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exceptions\TokenProviderException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\TokenProvider;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
+use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\Option\JwtTokenProviderOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Authentication\Data\AuthenticationDataSerializer;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 
-class JwtTokenProvider implements TokenProvider
+class JwtTokenProvider implements AuthenticationTokenProvider
 {
-    private string $key;
-    private Clock   $clock;
+    private JwtTokenProviderOptions $options;
+    private Clock $clock;
 
-    public function __construct(string $key, Clock $clock)
+    public function __construct(JwtTokenProviderOptions $options, Clock $clock)
     {
-        $this->key = $key;
+        $this->options = $options;
         $this->clock = $clock;
     }
 
     public function encode(AuthenticationData $data, \DateInterval $duration): string
     {
         try {
-            $secretKey = $this->key;
             $issuedAt = $this->clock->now();
             $expireAt = $issuedAt->add($duration)->getTimestamp();
 
@@ -37,11 +37,15 @@ class JwtTokenProvider implements TokenProvider
                 "sub" => AuthenticationDataSerializer::toArray($data)
             ];
 
-            $token = JWT::encode($payload, $secretKey, "HS256");
+            $token = JWT::encode(
+                $payload,
+                $this->options->getKey(),
+                "HS256"
+            );
 
             return $token;
         } catch (\Throwable $e) {
-            throw new TokenProviderException(
+            throw new AuthenticationTokenProviderException(
                 $e->getMessage()
             );
         }
@@ -50,7 +54,13 @@ class JwtTokenProvider implements TokenProvider
     public function decode(string $token): AuthenticationToken
     {
         try {
-            $payload = JWT::decode($token, new Key($this->key, "HS256"));
+            $payload = JWT::decode(
+                $token,
+                new Key(
+                    $this->options->getKey(),
+                    "HS256"
+                )
+            );
             $data = AuthenticationDataSerializer::toObject($payload->sub);
             return new AuthenticationToken(
                 new \DateTimeImmutable("@{$payload->iat}"),
@@ -58,7 +68,7 @@ class JwtTokenProvider implements TokenProvider
                 $data
             );
         } catch (\Throwable $e) {
-            throw new TokenProviderException(
+            throw new AuthenticationTokenProviderException(
                 $e->getMessage()
             );
         }
@@ -67,13 +77,13 @@ class JwtTokenProvider implements TokenProvider
     public function validate(AuthenticationToken $token): void
     {
         if ($token->getIssuedAt()->getTimestamp() > $this->clock->now()->getTimestamp()) {
-            throw new TokenProviderException(
+            throw new AuthenticationTokenProviderException(
                 "Issued in the future."
             );
         }
 
         if ($this->clock->now()->getTimestamp() > $token->getExpiresAt()->getTimestamp()) {
-            throw new TokenProviderException(
+            throw new AuthenticationTokenProviderException(
                 "Expired token."
             );
         }

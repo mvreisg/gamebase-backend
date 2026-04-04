@@ -8,20 +8,22 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
 
 class DefuseEncryption implements EncryptionInterface
 {
-    private string $key;
+    private DefuseEncryptionOptions $options;
 
-    public function __construct(string $key)
-    {
-        $this->key = $key;
+    public function __construct(
+        DefuseEncryptionOptions $options
+    ) {
+        $this->options = $options;
     }
 
     public function encrypt(string $text): string
     {
         try {
-            $asciiKey = $this->key;
+            $asciiKey = $this->options->getKey();
             $key = Key::loadFromAsciiSafeString($asciiKey);
             $encrypted = Crypto::encrypt($text, $key);
             return $encrypted;
@@ -35,7 +37,7 @@ class DefuseEncryption implements EncryptionInterface
     public function decrypt(string $secret): string
     {
         try {
-            $asciiKey = $this->key;
+            $asciiKey = $this->options->getKey();
             $key = Key::loadFromAsciiSafeString($asciiKey);
             $text = Crypto::decrypt($secret, $key);
             return $text;

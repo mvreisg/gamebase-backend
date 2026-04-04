@@ -17,7 +17,7 @@ class Id
         $this->value = $value;
     }
 
-    public static function make(int $value): self
+    public static function create(int $value): self
     {
         return new self($value);
     }

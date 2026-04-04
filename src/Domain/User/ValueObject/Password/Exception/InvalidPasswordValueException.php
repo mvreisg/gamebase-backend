@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Exception;
 
-class InvalidPasswordValueException extends \DomainException
+class InvalidPasswordValueException extends \Exception
 {
     public function __construct(string $value)
     {

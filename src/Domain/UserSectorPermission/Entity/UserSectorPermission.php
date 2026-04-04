@@ -4,22 +4,28 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity;
 
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIdException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 
 class UserSectorPermission
 {
     private ?Id $id;
-    private Id $userId;
-    private Id $sectorId;
-    private Id $permissionId;
+    private User $user;
+    private Sector $sector;
+    private Permission $permission;
 
-    public function __construct(Id $userId, Id $sectorId, Id $permissionId)
-    {
+    public function __construct(
+        User $user,
+        Sector $sector,
+        Permission $permission
+    ) {
         $this->id = null;
-        $this->userId = $userId;
-        $this->sectorId = $sectorId;
-        $this->permissionId = $permissionId;
+        $this->user = $user;
+        $this->sector = $sector;
+        $this->permission = $permission;
     }
 
     public function setId(Id $id): void
@@ -37,18 +43,18 @@ class UserSectorPermission
         return $this->id;
     }
 
-    public function getUserId(): Id
+    public function getUser(): User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function getSectorId(): Id
+    public function getSector(): Sector
     {
-        return $this->sectorId;
+        return $this->sector;
     }
 
-    public function getPermissionId(): Id
+    public function getPermission(): Permission
     {
-        return $this->permissionId;
+        return $this->permission;
     }
 }

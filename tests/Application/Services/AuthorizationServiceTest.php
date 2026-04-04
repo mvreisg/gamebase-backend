@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 
 use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Entities\Exceptions\EntityException;
+use Mvreisg\GamebaseBackend\Domain\Entities\Exception\EntityException;
 use Mvreisg\GamebaseBackend\Domain\Entities\Id;
 use Mvreisg\GamebaseBackend\Domain\Entities\Name;
 use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
@@ -20,7 +20,7 @@ use Mvreisg\GamebaseBackend\Domain\Entities\User;
 use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exception\RepositoryUnexistantRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
@@ -174,25 +174,25 @@ class AuthorizationServiceTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $user = $this->createUser(
-            Id::make(1),
+            Id::create(1),
             new Username("test"),
             new DecodedPassword("password"),
             true
         );
         $sector = $this->createSector(
-            Id::make(1),
+            Id::create(1),
             new Name("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
         $permission = $this->createPermission(
-            Id::make(1),
+            Id::create(1),
             new Name("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
         $userSectorPermission = $this->createUserSectorPermission(
-            Id::make(1),
+            Id::create(1),
             $user->getId(),
             $sector->getId(),
             $permission->getId()
@@ -221,7 +221,7 @@ class AuthorizationServiceTest extends TestCase
         );
 
         $authorizationService->check(
-            Id::make(1),
+            Id::create(1),
             SectorTypes::User,
             PermissionTypes::Create
         );
@@ -232,25 +232,25 @@ class AuthorizationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             new DecodedPassword("password"),
             true
         );
         $sector = $this->createSector(
-            Id::make(1),
-            Name::make("User"),
+            Id::create(1),
+            Name::create("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
         $permission = $this->createPermission(
-            Id::make(1),
-            Name::make("Create"),
+            Id::create(1),
+            Name::create("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
         $userSectorPermission = $this->createUserSectorPermission(
-            Id::make(1),
+            Id::create(1),
             $user->getId(),
             $sector->getId(),
             $permission->getId()
@@ -290,25 +290,25 @@ class AuthorizationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             new DecodedPassword("password"),
             true
         );
         $sector = $this->createSector(
-            Id::make(1),
-            Name::make("User"),
+            Id::create(1),
+            Name::create("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
         $permission = $this->createPermission(
-            Id::make(1),
-            Name::make("Create"),
+            Id::create(1),
+            Name::create("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
         $userSectorPermission = $this->createUserSectorPermission(
-            Id::make(1),
+            Id::create(1),
             $user->getId(),
             $sector->getId(),
             $permission->getId()
@@ -348,25 +348,25 @@ class AuthorizationServiceTest extends TestCase
         $this->expectException(EntityException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             new DecodedPassword("password"),
             true
         );
         $sector = $this->createSector(
-            Id::make(1),
-            Name::make("User"),
+            Id::create(1),
+            Name::create("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
         $permission = $this->createPermission(
-            Id::make(1),
-            Name::make("Create"),
+            Id::create(1),
+            Name::create("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
         $userSectorPermission = $this->createUserSectorPermission(
-            Id::make(1),
+            Id::create(1),
             $user->getId(),
             $sector->getId(),
             $permission->getId()
@@ -395,7 +395,7 @@ class AuthorizationServiceTest extends TestCase
         );
 
         $authorizationService->check(
-            Id::make(-1),
+            Id::create(-1),
             SectorTypes::User,
             PermissionTypes::List
         );
@@ -406,25 +406,25 @@ class AuthorizationServiceTest extends TestCase
         $this->expectException(RepositoryUnexistantRegisterException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("test"),
+            Id::create(1),
+            Username::create("test"),
             new DecodedPassword("password"),
             true
         );
         $sector = $this->createSector(
-            Id::make(1),
-            Name::make("User"),
+            Id::create(1),
+            Name::create("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
         $permission = $this->createPermission(
-            Id::make(1),
-            Name::make("Create"),
+            Id::create(1),
+            Name::create("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
         $userSectorPermission = $this->createUserSectorPermission(
-            Id::make(1),
+            Id::create(1),
             $user->getId(),
             $sector->getId(),
             $permission->getId()
@@ -453,7 +453,7 @@ class AuthorizationServiceTest extends TestCase
         );
 
         $authorizationService->check(
-            Id::make(2),
+            Id::create(2),
             SectorTypes::User,
             PermissionTypes::List
         );

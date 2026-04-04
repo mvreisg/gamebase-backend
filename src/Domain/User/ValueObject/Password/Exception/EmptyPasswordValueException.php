@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Exception;
 
-class EmptyPasswordValueException extends \DomainException
+class EmptyPasswordValueException extends \Exception
 {
     public function __construct()
     {

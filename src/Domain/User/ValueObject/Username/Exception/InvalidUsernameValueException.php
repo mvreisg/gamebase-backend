@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Exception;
 
-class InvalidUsernameValueException extends \DomainException
+class InvalidUsernameValueException extends \Exception
 {
     public function __construct(string $value)
     {

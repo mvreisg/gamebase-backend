@@ -7,14 +7,14 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
 use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exceptions\AuthenticationTokenDecoderException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\Exception\AuthenticationTokenDecoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Exceptions\AuthenticationTokenEncoderException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\Exception\AuthenticationTokenEncoderException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\Exceptions\AuthenticationTokenValidatorException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\Exception\AuthenticationTokenValidatorException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Exceptions\UnauthorizedException;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
@@ -219,8 +219,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -253,8 +253,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(AuthenticationTokenEncoderException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -342,8 +342,8 @@ class AuthenticationServiceTest extends TestCase
 
     public function testIfAValidTokenGetsValidated(): void
     {
-        $id = Id::make(1);
-        $username = Username::make("marcus");
+        $id = Id::create(1);
+        $username = Username::create("marcus");
         $password = DecodedPassword::make("password");
         $isActive = true;
         $user = $this->createUser(
@@ -409,8 +409,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(AuthenticationTokenValidatorException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -447,8 +447,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(AuthenticationTokenValidatorException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -485,8 +485,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -522,8 +522,8 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -562,15 +562,15 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $firstUser = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
 
         $secondUser = $this->createUser(
-            Id::make(2),
-            Username::make("marcus"),
+            Id::create(2),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -614,15 +614,15 @@ class AuthenticationServiceTest extends TestCase
         $this->expectException(UnauthorizedException::class);
 
         $firstUser = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
 
         $secondUser = $this->createUser(
-            Id::make(1),
-            Username::make("john"),
+            Id::create(1),
+            Username::create("john"),
             DecodedPassword::make("password123"),
             true
         );

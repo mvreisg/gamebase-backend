@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity;
 
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIdException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GamePlatform
 {
     private ?Id $id;
-    private Id $platformId;
-    private Id $gameId;
+    private Game $game;
+    private Platform $platform;
 
-    public function __construct(Id $gameId, Id $platformId)
-    {
+    public function __construct(
+        Game $game,
+        Platform $platform
+    ) {
         $this->id = null;
-        $this->gameId = $gameId;
-        $this->platformId = $platformId;
+        $this->game = $game;
+        $this->platform = $platform;
     }
 
     public function setId(Id $id): void
@@ -35,13 +39,13 @@ class GamePlatform
         return $this->id;
     }
 
-    public function getPlatformId(): Id
+    public function getGame(): Game
     {
-        return $this->platformId;
+        return $this->game;
     }
 
-    public function getGameId(): Id
+    public function getPlatform(): Platform
     {
-        return $this->gameId;
+        return $this->platform;
     }
 }

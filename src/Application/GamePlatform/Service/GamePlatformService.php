@@ -2,64 +2,59 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\GamePlatform;
+namespace Mvreisg\GamebaseBackend\Application\GamePlatform\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Service\GamePlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GamePlatformService
 {
-    private GameRepositoryInterface $gameRepository;
-    private PlatformRepositoryInterface $platformRepository;
-    private GamePlatformRepositoryInterface $gamePlatformRepository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private GameDomainService $gameDomainService;
+    private PlatformDomainService $platformDomainService;
+    private GamePlatformDomainService $gamePlatformDomainService;
+    private GamePlatformRepositoryInterface $repository;
 
     public function __construct(
-        GameRepositoryInterface $gameRepository,
-        PlatformRepositoryInterface $platformRepository,
-        GamePlatformRepositoryInterface $gamePlatformRepository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        GameDomainService $gameDomainService,
+        PlatformDomainService $platformDomainService,
+        GamePlatformDomainService $gamePlatformDomainService,
+        GamePlatformRepositoryInterface $repository
     ) {
-        $this->gameRepository = $gameRepository;
-        $this->platformRepository = $platformRepository;
-        $this->gamePlatformRepository = $gamePlatformRepository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->gameDomainService = $gameDomainService;
+        $this->platformDomainService = $platformDomainService;
+        $this->gamePlatformDomainService = $gamePlatformDomainService;
+        $this->repository = $repository;
     }
 
-    public function insert(GamePlatform $gamePlatform, EncodedAuthenticationToken $token): GamePlatform
+    public function insert(GamePlatform $gamePlatform, string $token): GamePlatform
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GamePlatform,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GamePlatform,
-                PermissionTypes::Create
+            $this->gameDomainService->ensureGameExists(
+                $gamePlatform->getGame()->getId()
             );
 
-            $this->gameRepository->checkIfExists(
-                $gamePlatform->getGameId()
+            $this->platformDomainService->ensurePlatformExists(
+                $gamePlatform->getPlatform()->getId()
             );
 
-            $this->platformRepository->checkIfExists(
-                $gamePlatform->getPlatformId()
-            );
-
-            $insertedGamePlatform = $this->gamePlatformRepository->insert($gamePlatform);
+            $insertedGamePlatform = $this->repository->insert($gamePlatform);
 
             return $insertedGamePlatform;
         } catch (\Throwable $e) {
@@ -67,32 +62,28 @@ class GamePlatformService
         }
     }
 
-    public function update(GamePlatform $gamePlatform, EncodedAuthenticationToken $token): bool
+    public function update(GamePlatform $gamePlatform, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GamePlatform,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GamePlatform,
-                PermissionTypes::Update
+            $this->gameDomainService->ensureGameExists(
+                $gamePlatform->getGame()->getId()
             );
 
-            $this->gamePlatformRepository->checkIfExists(
+            $this->platformDomainService->ensurePlatformExists(
+                $gamePlatform->getPlatform()->getId()
+            );
+
+            $this->gamePlatformDomainService->ensureGamePlatformExists(
                 $gamePlatform->getId()
             );
 
-            $this->gameRepository->checkIfExists(
-                $gamePlatform->getGameId()
-            );
-
-            $this->platformRepository->checkIfExists(
-                $gamePlatform->getPlatformId()
-            );
-
-            $wasUpdated = $this->gamePlatformRepository->update($gamePlatform);
+            $wasUpdated = $this->repository->update($gamePlatform);
 
             return $wasUpdated;
         } catch (\Throwable $e) {
@@ -100,22 +91,16 @@ class GamePlatformService
         }
     }
 
-    public function delete(Id $id, EncodedAuthenticationToken $token): bool
+    public function delete(Id $id, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GamePlatform,
+                PermissionType::Delete
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GamePlatform,
-                PermissionTypes::Delete
-            );
-
-            $this->gamePlatformRepository->checkIfExists($id);
-
-            $wasDeleted = $this->gamePlatformRepository->delete($id);
+            $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;
         } catch (\Throwable $e) {
@@ -123,20 +108,16 @@ class GamePlatformService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): GamePlatform
+    public function findById(Id $id, string $token): ?GamePlatform
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GamePlatform,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GamePlatform,
-                PermissionTypes::List
-            );
-
-            $fetchedGamePlatform = $this->gamePlatformRepository->findById(
+            $fetchedGamePlatform = $this->repository->findById(
                 $id
             );
 
@@ -146,20 +127,16 @@ class GamePlatformService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): GamePlatformCollection
+    public function findAll(string $token): ?GamePlatformCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GamePlatform,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GamePlatform,
-                PermissionTypes::List
-            );
-
-            return $this->gamePlatformRepository->findAll();
+            return $this->repository->findAll();
         } catch (\Throwable $e) {
             throw $e;
         }

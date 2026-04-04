@@ -2,48 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Sector;
+namespace Mvreisg\GamebaseBackend\Application\Sector\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class SectorService
 {
     private SectorRepositoryInterface $repository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private SectorDomainService $sectorDomainService;
 
     public function __construct(
         SectorRepositoryInterface $repository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService,
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        SectorDomainService $sectorDomainService
     ) {
         $this->repository = $repository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->sectorDomainService = $sectorDomainService;
     }
 
-    public function insert(Sector $sector, EncodedAuthenticationToken $token): Sector
+    public function insert(Sector $sector, string $token): Sector
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Sector,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Create
-            );
-
-            $this->repository->checkDuplicatedNames(
+            $this->sectorDomainService->ensureNameIsUnique(
                 $sector->getName()
             );
 
@@ -55,24 +50,20 @@ class SectorService
         }
     }
 
-    public function update(Sector $sector, EncodedAuthenticationToken $token): bool
+    public function update(Sector $sector, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Sector,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Update
-            );
-
-            $this->repository->checkIfExists(
+            $this->sectorDomainService->ensureSectorExists(
                 $sector->getId()
             );
 
-            $this->repository->checkDuplicatedNames(
+            $this->sectorDomainService->ensureNameIsUnique(
                 $sector->getName()
             );
 
@@ -84,20 +75,18 @@ class SectorService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
+    public function setIsActive(Id $id, bool $isActive, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Sector,
+                PermissionType::Activate
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::Activate
+            $this->sectorDomainService->ensureSectorExists(
+                $id
             );
-
-            $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
                 $id,
@@ -110,17 +99,13 @@ class SectorService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): Sector
+    public function findById(Id $id, string $token): ?Sector
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Sector,
+                PermissionType::List
             );
 
             $fetchedSector = $this->repository->findById($id);
@@ -131,17 +116,13 @@ class SectorService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): SectorCollection
+    public function findAll(string $token): ?SectorCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Sector,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Sector,
+                PermissionType::List
             );
 
             return $this->repository->findAll();

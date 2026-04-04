@@ -73,7 +73,8 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
             $this->connection->commit();
 
             $return = new Genre(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -81,7 +82,6 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -182,7 +182,8 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
             }
 
             $return = new Genre(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -190,7 +191,6 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -217,7 +217,8 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
             $genres = new GenreCollection();
             foreach ($fetchResult as $row) {
                 $value = new Genre(
-                    Name::make($row["name"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -225,7 +226,6 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $value->setId(Id::make($row["id"]));
                 $genres->add($value);
             }
             return $genres;

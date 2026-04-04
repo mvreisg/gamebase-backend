@@ -79,8 +79,9 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $this->connection->commit();
 
             $return = new Sector(
-                Name::make($fetchResult["name"]),
-                SectorValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                SectorValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -88,7 +89,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -193,8 +193,9 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             }
 
             $return = new Sector(
-                Name::make($fetchResult["name"]),
-                SectorValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                SectorValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -202,7 +203,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -230,8 +230,9 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $sectors = new SectorCollection();
             foreach ($fetchResult as $row) {
                 $value = new Sector(
-                    Name::make($row["name"]),
-                    SectorValue::make($row["value"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
+                    SectorValue::create($row["value"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -239,7 +240,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $value->setId(Id::make($row["id"]));
                 $sectors->add($value);
             }
             return $sectors;

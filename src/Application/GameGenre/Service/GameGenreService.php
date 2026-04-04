@@ -2,64 +2,59 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\GameGenre;
+namespace Mvreisg\GamebaseBackend\Application\GameGenre\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameGenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\Collection\GameGenreCollection;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Service\GameGenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GameGenreService
 {
-    private GameGenreRepositoryInterface $gameGenreRepository;
-    private GameRepositoryInterface $gameRepository;
-    private GenreRepositoryInterface $genreRepository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private GameDomainService $gameDomainService;
+    private GenreDomainService $genreDomainService;
+    private GameGenreDomainService $gameGenreDomainService;
+    private GameGenreRepositoryInterface $repository;
 
     public function __construct(
-        GameGenreRepositoryInterface $gameGenreRepository,
-        GameRepositoryInterface $gameRepository,
-        GenreRepositoryInterface $genreRepository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        GameDomainService $gameDomainService,
+        GenreDomainService $genreDomainService,
+        GameGenreDomainService $gameGenreDomainService,
+        GameGenreRepositoryInterface $repository
     ) {
-        $this->gameGenreRepository = $gameGenreRepository;
-        $this->gameRepository = $gameRepository;
-        $this->genreRepository = $genreRepository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->gameDomainService = $gameDomainService;
+        $this->genreDomainService = $genreDomainService;
+        $this->gameGenreDomainService = $gameGenreDomainService;
+        $this->repository = $repository;
     }
 
-    public function insert(GameGenre $gameGenre, EncodedAuthenticationToken $token): GameGenre
+    public function insert(GameGenre $gameGenre, string $token): GameGenre
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GameGenre,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GameGenre,
-                PermissionTypes::Create
+            $this->gameDomainService->ensureGameExists(
+                $gameGenre->getGame()->getId()
             );
 
-            $this->gameRepository->checkIfExists(
-                $gameGenre->getGameId()
+            $this->genreDomainService->ensureGenreExists(
+                $gameGenre->getGenre()->getId()
             );
 
-            $this->genreRepository->checkIfExists(
-                $gameGenre->getGenreId()
-            );
-
-            $insertedGameGenre = $this->gameGenreRepository->insert($gameGenre);
+            $insertedGameGenre = $this->repository->insert($gameGenre);
 
             return $insertedGameGenre;
         } catch (\Throwable $e) {
@@ -67,32 +62,28 @@ class GameGenreService
         }
     }
 
-    public function update(GameGenre $gameGenre, EncodedAuthenticationToken $token): bool
+    public function update(GameGenre $gameGenre, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GameGenre,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GameGenre,
-                PermissionTypes::Update
-            );
-
-            $this->gameGenreRepository->checkIfExists(
+            $this->gameGenreDomainService->ensureGameGenreExists(
                 $gameGenre->getId()
             );
 
-            $this->gameRepository->checkIfExists(
-                $gameGenre->getGameId()
+            $this->gameDomainService->ensureGameExists(
+                $gameGenre->getGame()->getId()
             );
 
-            $this->genreRepository->checkIfExists(
-                $gameGenre->getGenreId()
+            $this->genreDomainService->ensureGenreExists(
+                $gameGenre->getGenre()->getId()
             );
 
-            $wasUpdated = $this->gameGenreRepository->update($gameGenre);
+            $wasUpdated = $this->repository->update($gameGenre);
 
             return $wasUpdated;
         } catch (\Throwable $e) {
@@ -100,22 +91,16 @@ class GameGenreService
         }
     }
 
-    public function delete(Id $id, EncodedAuthenticationToken $token): bool
+    public function delete(Id $id, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GameGenre,
+                PermissionType::Delete
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GameGenre,
-                PermissionTypes::Delete
-            );
-
-            $this->gameGenreRepository->checkIfExists($id);
-
-            $wasDeleted = $this->gameGenreRepository->delete($id);
+            $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;
         } catch (\Throwable $e) {
@@ -123,20 +108,16 @@ class GameGenreService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): GameGenre
+    public function findById(Id $id, string $token): ?GameGenre
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GameGenre,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GameGenre,
-                PermissionTypes::List
-            );
-
-            $fetchedGameGenre = $this->gameGenreRepository->findById(
+            $fetchedGameGenre = $this->repository->findById(
                 $id
             );
 
@@ -146,20 +127,16 @@ class GameGenreService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): GameGenreCollection
+    public function findAll(string $token): ?GameGenreCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::GameGenre,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::GameGenre,
-                PermissionTypes::List
-            );
-
-            return $this->gameGenreRepository->findAll();
+            return $this->repository->findAll();
         } catch (\Throwable $e) {
             throw $e;
         }

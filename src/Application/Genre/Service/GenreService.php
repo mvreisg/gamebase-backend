@@ -2,48 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Genre;
+namespace Mvreisg\GamebaseBackend\Application\Genre\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\Genre;
-use Mvreisg\GamebaseBackend\Domain\Entities\GenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GenreService
 {
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private GenreDomainService $genreDomainService;
     private GenreRepositoryInterface $repository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
 
     public function __construct(
-        GenreRepositoryInterface $repository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        GenreDomainService $genreDomainService,
+        GenreRepositoryInterface $repository
     ) {
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->genreDomainService = $genreDomainService;
         $this->repository = $repository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
     }
 
-    public function insert(Genre $genre, EncodedAuthenticationToken $token): Genre
+    public function insert(Genre $genre, string $token): Genre
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Genre,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Genre,
-                PermissionTypes::Create
-            );
-
-            $this->repository->checkDuplicatedNames(
+            $this->genreDomainService->ensureNameIsUnique(
                 $genre->getName()
             );
 
@@ -55,24 +50,20 @@ class GenreService
         }
     }
 
-    public function update(Genre $genre, EncodedAuthenticationToken $token): bool
+    public function update(Genre $genre, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Genre,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Genre,
-                PermissionTypes::Update
-            );
-
-            $this->repository->checkIfExists(
+            $this->genreDomainService->ensureGenreExists(
                 $genre->getId()
             );
 
-            $this->repository->checkDuplicatedNames(
+            $this->genreDomainService->ensureNameIsUnique(
                 $genre->getName()
             );
 
@@ -84,20 +75,18 @@ class GenreService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
+    public function setIsActive(Id $id, bool $isActive, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Genre,
+                PermissionType::Activate
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Genre,
-                PermissionTypes::Activate
+            $this->genreDomainService->ensureGenreExists(
+                $id
             );
-
-            $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
                 $id,
@@ -110,17 +99,13 @@ class GenreService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): Genre
+    public function findById(Id $id, string $token): ?Genre
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Genre,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Genre,
+                PermissionType::List
             );
 
             $fetchedGenreEntity = $this->repository->findById(
@@ -133,17 +118,13 @@ class GenreService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): GenreCollection
+    public function findAll(string $token): ?GenreCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Genre,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Genre,
+                PermissionType::List
             );
 
             return $this->repository->findAll();

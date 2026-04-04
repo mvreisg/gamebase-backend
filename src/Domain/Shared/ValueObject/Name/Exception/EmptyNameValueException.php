@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Exception;
 
-class EmptyNameValueException extends \DomainException
+class EmptyNameValueException extends \Exception
 {
     public function __construct()
     {

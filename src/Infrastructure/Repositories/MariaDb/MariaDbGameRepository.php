@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -72,7 +72,8 @@ class MariaDbGameRepository implements GameRepositoryInterface
             $this->connection->commit();
 
             $return = new Game(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -80,7 +81,6 @@ class MariaDbGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -182,7 +182,8 @@ class MariaDbGameRepository implements GameRepositoryInterface
             }
 
             $return = new Game(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -190,14 +191,13 @@ class MariaDbGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): GameCollection
+    public function findAll(): ?GameCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -211,13 +211,14 @@ class MariaDbGameRepository implements GameRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new GameCollection();
+                return null;
             }
 
             $games = new GameCollection();
             foreach ($fetchResult as $row) {
                 $value = new Game(
-                    Name::make($row["name"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -225,7 +226,6 @@ class MariaDbGameRepository implements GameRepositoryInterface
                         $row["is_active"]
                     ),
                 );
-                $value->setId(Id::make($row["id"]));
                 $games->add($value);
             }
             return $games;

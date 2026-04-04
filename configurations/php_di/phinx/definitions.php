@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\Option\SodiumEncryptionOptions;
 
 try {
     return [
@@ -21,7 +23,10 @@ try {
 
         EncryptionInterface::class => DI\get(DefuseEncryption::class),
 
-        DefuseEncryption::class => DI\autowire()
+        SodiumEncryptionOptions::class => DI\autowire()
+            ->constructorParameter("key", DI\get("encryption.sodium.key")),
+
+        DefuseEncryptionOptions::class => DI\autowire()
             ->constructorParameter("key", DI\get("encryption.defuse.key")),
     ];
 } catch (\Throwable $e) {

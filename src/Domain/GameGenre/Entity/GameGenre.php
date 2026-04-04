@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\GameGenre\Entity;
 
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIdException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GameGenre
 {
     private ?Id $id;
-    private Id $gameId;
-    private Id $genreId;
+    private Game $game;
+    private Genre $genre;
 
-    public function __construct(Id $gameId, Id $genreId)
-    {
+    public function __construct(
+        Game $game,
+        Genre $genre
+    ) {
         $this->id = null;
-        $this->gameId = $gameId;
-        $this->genreId = $genreId;
+        $this->game = $game;
+        $this->genre = $genre;
     }
 
     public function setId(Id $id): void
@@ -35,13 +39,13 @@ class GameGenre
         return $this->id;
     }
 
-    public function getGameId(): Id
+    public function getGame(): Game
     {
-        return $this->gameId;
+        return $this->game;
     }
 
-    public function getGenreId(): Id
+    public function getGenre(): Genre
     {
-        return $this->genreId;
+        return $this->genre;
     }
 }

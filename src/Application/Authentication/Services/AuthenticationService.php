@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Authentication\Services;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exceptions\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -37,9 +37,8 @@ class AuthenticationService
         }
     }
 
-    public function decode(
-        string $token
-    ): AuthenticationToken {
+    public function decode(string $token): AuthenticationToken
+    {
         try {
             return $this->tokenProvider->decode($token);
         } catch (\Throwable $e) {

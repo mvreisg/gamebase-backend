@@ -15,7 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuth
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
 use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Exceptions\EncryptionException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
 use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
@@ -28,7 +28,7 @@ use Mvreisg\GamebaseBackend\Domain\Entities\Username;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
+use Mvreisg\GamebaseBackend\Domain\Repositories\Exception\RepositoryDuplicatedRegisterException;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
@@ -192,11 +192,11 @@ class UserServiceTest extends TestCase
     private function createPermission(): Permission
     {
         $permission = new Permission(
-            Name::make("Create"),
+            Name::create("Create"),
             PermissionTypes::getValue(PermissionTypes::Create),
             true
         );
-        $permission->setId(Id::make(1));
+        $permission->setId(Id::create(1));
         return $permission;
     }
 
@@ -215,11 +215,11 @@ class UserServiceTest extends TestCase
     private function createSector(): Sector
     {
         $sector = new Sector(
-            Name::make("User"),
+            Name::create("User"),
             SectorTypes::getValue(SectorTypes::User),
             true
         );
-        $sector->setId(Id::make(1));
+        $sector->setId(Id::create(1));
         return $sector;
     }
 
@@ -238,9 +238,9 @@ class UserServiceTest extends TestCase
     private function createUserSectorPermission(): UserSectorPermission
     {
         $userSectorPermission = new UserSectorPermission(
-            Id::make(1),
-            Id::make(1),
-            Id::make(1),
+            Id::create(1),
+            Id::create(1),
+            Id::create(1),
         );
         return $userSectorPermission;
     }
@@ -341,8 +341,8 @@ class UserServiceTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -385,8 +385,8 @@ class UserServiceTest extends TestCase
         $this->expectException(RepositoryDuplicatedRegisterException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );
@@ -429,8 +429,8 @@ class UserServiceTest extends TestCase
         $this->expectException(EncryptionException::class);
 
         $user = $this->createUser(
-            Id::make(1),
-            Username::make("marcus"),
+            Id::create(1),
+            Username::create("marcus"),
             DecodedPassword::make("password123"),
             true
         );

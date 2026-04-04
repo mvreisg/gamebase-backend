@@ -2,72 +2,71 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\UserSectorPermission;
+namespace Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
+use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Service\UserSectorPermissionDomainService;
 
 class UserSectorPermissionService
 {
-    private UserRepositoryInterface $userRepository;
-    private SectorRepositoryInterface $sectorRepository;
-    private PermissionRepositoryInterface $permissionRepository;
-    private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private UserDomainService $userDomainService;
+    private SectorDomainService $sectorDomainService;
+    private PermissionDomainService $permissionDomainService;
+    private UserSectorPermissionDomainService $userSectorPermissionDomainService;
+    private UserSectorPermissionRepositoryInterface $repository;
 
     public function __construct(
-        UserRepositoryInterface $userRepository,
-        SectorRepositoryInterface $sectorRepository,
-        PermissionRepositoryInterface $permissionRepository,
-        UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        UserDomainService $userDomainService,
+        SectorDomainService $sectorDomainService,
+        PermissionDomainService $permissionDomainService,
+        UserSectorPermissionDomainService $userSectorPermissionDomainService,
+        UserSectorPermissionRepositoryInterface $repository
     ) {
-        $this->userRepository = $userRepository;
-        $this->sectorRepository = $sectorRepository;
-        $this->permissionRepository = $permissionRepository;
-        $this->userSectorPermissionRepository = $userSectorPermissionRepository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->userDomainService = $userDomainService;
+        $this->sectorDomainService = $sectorDomainService;
+        $this->permissionDomainService = $permissionDomainService;
+        $this->userSectorPermissionDomainService = $userSectorPermissionDomainService;
+        $this->repository = $repository;
     }
 
-    public function insert(UserSectorPermission $new, EncodedAuthenticationToken $token): UserSectorPermission
+    public function insert(UserSectorPermission $new, string $token): UserSectorPermission
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::UserSectorPermission,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::UserSectorPermission,
-                PermissionTypes::Create
+            $this->userDomainService->ensureUserExists(
+                $new->getUser()->getId()
             );
 
-            $this->userRepository->checkIfExists(
-                $new->getUserId()
+            $this->sectorDomainService->ensureSectorExists(
+                $new->getSector()->getId()
             );
 
-            $this->sectorRepository->checkIfExists(
-                $new->getSectorId()
+            $this->permissionDomainService->ensurePermissionExists(
+                $new->getPermission()->getId()
             );
 
-            $this->permissionRepository->checkIfExists(
-                $new->getPermissionId()
+            $this->userSectorPermissionDomainService->ensureUserSectorPermissionExists(
+                $new->getId()
             );
 
-            $insertedUserSectorPermission = $this->userSectorPermissionRepository->insert($new);
+            $insertedUserSectorPermission = $this->repository->insert($new);
 
             return $insertedUserSectorPermission;
         } catch (\Throwable $e) {
@@ -75,36 +74,32 @@ class UserSectorPermissionService
         }
     }
 
-    public function update(UserSectorPermission $existant, EncodedAuthenticationToken $token): bool
+    public function update(UserSectorPermission $existant, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::UserSectorPermission,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::UserSectorPermission,
-                PermissionTypes::Update
+            $this->userDomainService->ensureUserExists(
+                $existant->getUser()->getId()
             );
 
-            $this->userSectorPermissionRepository->checkIfExists(
+            $this->sectorDomainService->ensureSectorExists(
+                $existant->getSector()->getId()
+            );
+
+            $this->permissionDomainService->ensurePermissionExists(
+                $existant->getPermission()->getId()
+            );
+
+            $this->userSectorPermissionDomainService->ensureUserSectorPermissionExists(
                 $existant->getId()
             );
 
-            $this->userRepository->checkIfExists(
-                $existant->getUserId()
-            );
-
-            $this->sectorRepository->checkIfExists(
-                $existant->getSectorId()
-            );
-
-            $this->permissionRepository->checkIfExists(
-                $existant->getPermissionId()
-            );
-
-            $wasUpdated = $this->userSectorPermissionRepository->update($existant);
+            $wasUpdated = $this->repository->update($existant);
 
             return $wasUpdated;
         } catch (\Throwable $e) {
@@ -112,22 +107,16 @@ class UserSectorPermissionService
         }
     }
 
-    public function delete(Id $id, EncodedAuthenticationToken $token): bool
+    public function delete(Id $id, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::UserSectorPermission,
+                PermissionType::Delete
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::UserSectorPermission,
-                PermissionTypes::Delete
-            );
-
-            $this->userSectorPermissionRepository->checkIfExists($id);
-
-            $wasDeleted = $this->userSectorPermissionRepository->delete($id);
+            $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;
         } catch (\Throwable $e) {
@@ -135,20 +124,16 @@ class UserSectorPermissionService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): UserSectorPermission
+    public function findById(Id $id, string $token): ?UserSectorPermission
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::UserSectorPermission,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::UserSectorPermission,
-                PermissionTypes::List
-            );
-
-            $fetchedUserPermission = $this->userSectorPermissionRepository->findById(
+            $fetchedUserPermission = $this->repository->findById(
                 $id
             );
 
@@ -158,20 +143,16 @@ class UserSectorPermissionService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): UserSectorPermissionCollection
+    public function findAll(string $token): ?UserSectorPermissionCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::UserSectorPermission,
+                PermissionType::List
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::UserSectorPermission,
-                PermissionTypes::List
-            );
-
-            return $this->userSectorPermissionRepository->findAll();
+            return $this->repository->findAll();
         } catch (\Throwable $e) {
             throw $e;
         }

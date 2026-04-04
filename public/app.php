@@ -1,19 +1,19 @@
 <?php
 
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpAuthenticationController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGameGenreController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGamePlatformController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpGenreController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpPermissionController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpPlatformController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpSectorController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpSessionController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpUserController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controllers\HttpUserSectorPermissionController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions\HttpMethodNotAllowedExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handlers\Exceptions\HttpNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Middlewares\Authentication\Token\HttpAuthenticationTokenRetrieverMiddleware;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpAuthenticationController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGameController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGameGenreController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGamePlatformController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGenreController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpPermissionController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpPlatformController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpSectorController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpSessionController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserSectorPermissionController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpMethodNotAllowedExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpNotFoundExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Middleware\Authentication\Token\HttpAuthenticationTokenRetrieverMiddleware;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;

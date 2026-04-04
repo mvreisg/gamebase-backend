@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\Exception;
 
-class InvalidPermissionValueValueException extends \DomainException
+class InvalidPermissionValueValueException extends \Exception
 {
     public function __construct(string $value)
     {

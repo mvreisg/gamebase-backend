@@ -2,48 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Game;
+namespace Mvreisg\GamebaseBackend\Application\Game\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GameService
 {
     private GameRepositoryInterface $repository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private GameDomainService $gameDomainService;
 
     public function __construct(
         GameRepositoryInterface $repository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        GameDomainService $gameDomainService,
     ) {
         $this->repository = $repository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->gameDomainService = $gameDomainService;
     }
 
-    public function insert(Game $game, EncodedAuthenticationToken $token): Game
+    public function insert(Game $game, string $token): Game
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Game,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Game,
-                PermissionTypes::Create
-            );
-
-            $this->repository->checkDuplicatedNames(
+            $this->gameDomainService->ensureNameIsUnique(
                 $game->getName()
             );
 
@@ -55,24 +50,20 @@ class GameService
         }
     }
 
-    public function update(Game $game, EncodedAuthenticationToken $token): bool
+    public function update(Game $game, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Game,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Game,
-                PermissionTypes::Update
-            );
-
-            $this->repository->checkIfExists(
+            $this->gameDomainService->ensureGameExists(
                 $game->getId()
             );
 
-            $this->repository->checkDuplicatedNames(
+            $this->gameDomainService->ensureNameIsUnique(
                 $game->getName()
             );
 
@@ -84,20 +75,18 @@ class GameService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
+    public function setIsActive(Id $id, bool $isActive, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Game,
+                PermissionType::Activate
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Game,
-                PermissionTypes::Activate
+            $this->gameDomainService->ensureGameExists(
+                $id
             );
-
-            $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
                 $id,
@@ -110,17 +99,13 @@ class GameService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): Game
+    public function findById(Id $id, string $token): ?Game
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Game,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Game,
+                PermissionType::Activate
             );
 
             $foundGame = $this->repository->findById(
@@ -133,17 +118,13 @@ class GameService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): GameCollection
+    public function findAll(string $token): ?GameCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Game,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Game,
+                PermissionType::Activate
             );
 
             return $this->repository->findAll();

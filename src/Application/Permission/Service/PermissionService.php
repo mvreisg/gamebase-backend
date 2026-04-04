@@ -2,48 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Services\Permission;
+namespace Mvreisg\GamebaseBackend\Application\Permission\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class PermissionService
 {
     private PermissionRepositoryInterface $repository;
-    private AuthenticationService $authenticationService;
-    private AuthorizationService $authorizationService;
+    private CheckAuthorizationUseCase $checkAuthorizationUseCase;
+    private PermissionDomainService $permissionDomainService;
 
     public function __construct(
         PermissionRepositoryInterface $repository,
-        AuthenticationService $authenticationService,
-        AuthorizationService $authorizationService,
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        PermissionDomainService $permissionDomainService
     ) {
         $this->repository = $repository;
-        $this->authenticationService = $authenticationService;
-        $this->authorizationService = $authorizationService;
+        $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
+        $this->permissionDomainService = $permissionDomainService;
     }
 
-    public function insert(Permission $permission, EncodedAuthenticationToken $token): Permission
+    public function insert(Permission $permission, string $token): Permission
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Permission,
+                PermissionType::Create
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Create
-            );
-
-            $this->repository->checkDuplicatedNames(
+            $this->permissionDomainService->ensureNameIsUnique(
                 $permission->getName()
             );
 
@@ -55,24 +50,20 @@ class PermissionService
         }
     }
 
-    public function update(Permission $permission, EncodedAuthenticationToken $token): bool
+    public function update(Permission $permission, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Permission,
+                PermissionType::Update
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Update
-            );
-
-            $this->repository->checkIfExists(
+            $this->permissionDomainService->ensurePermissionExists(
                 $permission->getId()
             );
 
-            $this->repository->checkDuplicatedNames(
+            $this->permissionDomainService->ensureNameIsUnique(
                 $permission->getName()
             );
 
@@ -84,20 +75,18 @@ class PermissionService
         }
     }
 
-    public function setIsActive(Id $id, bool $isActive, EncodedAuthenticationToken $token): bool
+    public function setIsActive(Id $id, bool $isActive, string $token): bool
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Permission,
+                PermissionType::Activate
             );
 
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::Activate
+            $this->permissionDomainService->ensurePermissionExists(
+                $id
             );
-
-            $this->repository->checkIfExists($id);
 
             $wasUpdated = $this->repository->setIsActive(
                 $id,
@@ -110,17 +99,13 @@ class PermissionService
         }
     }
 
-    public function findById(Id $id, EncodedAuthenticationToken $token): Permission
+    public function findById(Id $id, string $token): ?Permission
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Permission,
+                PermissionType::List
             );
 
             $fetchedPermission = $this->repository->findById($id);
@@ -131,17 +116,13 @@ class PermissionService
         }
     }
 
-    public function findAll(EncodedAuthenticationToken $token): PermissionCollection
+    public function findAll(string $token): ?PermissionCollection
     {
         try {
-            $decodedToken = $this->authenticationService->validate(
-                $token
-            );
-
-            $this->authorizationService->check(
-                $decodedToken->getUserId(),
-                SectorTypes::Permission,
-                PermissionTypes::List
+            $this->checkAuthorizationUseCase->execute(
+                $token,
+                SectorType::Permission,
+                PermissionType::List
             );
 
             return $this->repository->findAll();

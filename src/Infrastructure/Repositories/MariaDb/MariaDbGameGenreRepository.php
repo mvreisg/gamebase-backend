@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\Collection\GameGenreCollection;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
 {
@@ -23,8 +26,8 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
         try {
             $this->connection->beginTransaction();
 
-            $genreId = $gameGenre->getGenreId()->getValue();
-            $gameId = $gameGenre->getGameId()->getValue();
+            $genreId = $gameGenre->getGenre()->getId()->getValue();
+            $gameId = $gameGenre->getGame()->getId()->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO game_genre (
@@ -48,11 +51,27 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
 
             $selectStatement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    gage.id AS gage_id,
+                    gage.game_id AS gage_game_id,
+                    gage.genre_id AS gage_genre_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    ge.id AS ge_id,
+                    ge.name AS ge_name,
+                    ge.is_active AS ge_is_active
                 FROM 
-                    game_genre 
+                    game_genre gage
+                JOIN
+                    game gm
+                ON
+                    gage.game_id = gm.id
+                JOIN
+                    genre ge
+                ON
+                    gage.genre_id = ge.id
                 WHERE 
-                    id = :id;"
+                    gage.id = :id;"
             );
 
             $selectStatement->execute([
@@ -64,10 +83,30 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
             $this->connection->commit();
 
             $return = new GameGenre(
-                Id::make($fetchResult["game_id"]),
-                Id::make($fetchResult["genre_id"])
+                new Game(
+                    Id::create(
+                        $fetchResult["gm_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["gm_name"]
+                    ),
+                    $fetchResult["gm_is_active"]
+                ),
+                new Genre(
+                    Id::create(
+                        $fetchResult["ge_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["ge_name"]
+                    ),
+                    $fetchResult["ge_is_active"]
+                ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
+            $return->setId(
+                Id::create(
+                    $fetchResult["gage_id"]
+                )
+            );
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -79,8 +118,8 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
     {
         try {
             $id = $gameGenre->getId()->getValue();
-            $gameId = $gameGenre->getGameId()->getValue();
-            $genreId = $gameGenre->getGenreId()->getValue();
+            $gameId = $gameGenre->getGame()->getId()->getValue();
+            $genreId = $gameGenre->getGenre()->getId()->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 
@@ -135,11 +174,27 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
 
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    gage.id AS gage_id,
+                    gage.game_id AS gage_game_id,
+                    gage.genre_id AS gage_genre_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    ge.id AS ge_id,
+                    ge.name AS ge_name,
+                    ge.is_active AS ge_is_active
                 FROM 
-                    game_genre 
+                    game_genre gage
+                JOIN
+                    game gm
+                ON
+                    gage.game_id = gm.id
+                JOIN
+                    genre ge
+                ON
+                    gage.genre_id = ge.id
                 WHERE 
-                    id = :id"
+                    gage.id = :id;"
             );
 
             $statement->execute([
@@ -152,10 +207,30 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
             }
 
             $return = new GameGenre(
-                Id::make($fetchResult["game_id"]),
-                Id::make($fetchResult["genre_id"])
+                new Game(
+                    Id::create(
+                        $fetchResult["gm_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["gm_name"]
+                    ),
+                    $fetchResult["gm_is_active"]
+                ),
+                new Genre(
+                    Id::create(
+                        $fetchResult["ge_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["ge_name"]
+                    ),
+                    $fetchResult["ge_is_active"]
+                ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
+            $return->setId(
+                Id::create(
+                    $fetchResult["gage_id"]
+                )
+            );
             return $return;
         } catch (\Throwable $e) {
             throw $e;
@@ -167,9 +242,25 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
         try {
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    gage.id AS gage_id,
+                    gage.game_id AS gage_game_id,
+                    gage.genre_id AS gage_genre_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    ge.id AS ge_id,
+                    ge.name AS ge_name,
+                    ge.is_active AS ge_is_active
                 FROM 
-                    game_genre"
+                    game_genre gage
+                JOIN
+                    game gm
+                ON
+                    gage.game_id = gm.id
+                JOIN
+                    genre ge
+                ON
+                    gage.genre_id = ge.id;"
             );
 
             $statement->execute();
@@ -182,10 +273,30 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
             $gameGenres = new GameGenreCollection();
             foreach ($fetchResult as $row) {
                 $value = new GameGenre(
-                    Id::make($row["game_id"]),
-                    Id::make($row["genre_id"])
+                    new Game(
+                        Id::create(
+                            $fetchResult["gm_id"]
+                        ),
+                        Name::create(
+                            $fetchResult["gm_name"]
+                        ),
+                        $fetchResult["gm_is_active"]
+                    ),
+                    new Genre(
+                        Id::create(
+                            $fetchResult["ge_id"]
+                        ),
+                        Name::create(
+                            $fetchResult["ge_name"]
+                        ),
+                        $fetchResult["ge_is_active"]
+                    ),
                 );
-                $value->setId(Id::make($row["id"]));
+                $value->setId(
+                    Id::create(
+                        $fetchResult["gage_id"]
+                    )
+                );
                 $gameGenres->add($value);
             }
 

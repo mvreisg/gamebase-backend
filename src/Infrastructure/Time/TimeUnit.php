@@ -26,7 +26,7 @@ enum TimeUnit
             case TimeUnit::Week:
                 return "week";
             default:
-                throw new \DomainException("Untreated time unit: $timeUnit");
+                throw new \Exception("Untreated time unit: $timeUnit");
         }
     }
 }

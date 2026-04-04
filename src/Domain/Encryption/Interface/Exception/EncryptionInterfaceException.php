@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception;
 
-class EncryptionInterfaceException extends \DomainException
+class EncryptionInterfaceException extends \Exception
 {
     public function __construct(string $message)
     {
