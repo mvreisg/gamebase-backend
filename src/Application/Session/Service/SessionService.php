@@ -9,10 +9,12 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationSe
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 
 class SessionService
@@ -46,17 +48,21 @@ class SessionService
                 $username
             );
 
+            if ($fetchedUser === null) {
+                throw new UnexistantUserException(
+                    $username
+                );
+            }
+
             $id = $fetchedUser->getId();
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
                 $id
             );
 
-            $sessionData = new SessionData(
-                $id,
-                $username,
-                $userSectorPermissions
-            );
+            if ($userSectorPermissions === null) {
+                $userSectorPermissions = new UserSectorPermissionCollection();
+            }
 
             $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
@@ -70,30 +76,47 @@ class SessionService
                 throw new InvalidCredentialsException();
             }
 
-            $interval = null;
-            $oneWeekLogin = $parameters->getOneWeekLogin();
-            if ($oneWeekLogin === true) {
-                $interval = new \DateInterval("P7D");
+            $exists = $this->authenticationTokenCache->exists(
+                $username->getValue()
+            );
+
+            $token = null;
+            if ($exists) {
+                $token = $this->authenticationTokenCache->get(
+                    $username->getValue()
+                );
             } else {
-                $interval = new \DateInterval("P1D");
+                $interval = null;
+                $oneWeekLogin = $parameters->getOneWeekLogin();
+                if ($oneWeekLogin === true) {
+                    $interval = new \DateInterval("P7D");
+                } else {
+                    $interval = new \DateInterval("P1D");
+                }
+
+                $token = $this->authenticationService->encode(
+                    new AuthenticationData(
+                        $id,
+                        $username
+                    ),
+                    $interval
+                );
+
+                $this->authenticationTokenCache->set(
+                    $username->getValue(),
+                    $token
+                );
+
+                $this->authenticationTokenCache->expire(
+                    $username->getValue(),
+                    $interval
+                );
             }
 
-            $token = $this->authenticationService->encode(
-                new AuthenticationData(
-                    $id,
-                    $username
-                ),
-                $interval
-            );
-
-            $this->authenticationTokenCache->set(
-                $username->getValue(),
-                $token
-            );
-
-            $this->authenticationTokenCache->expire(
-                $username->getValue(),
-                $interval
+            $sessionData = new SessionData(
+                $id,
+                $username,
+                $userSectorPermissions
             );
 
             return new SessionLoginReturn(
