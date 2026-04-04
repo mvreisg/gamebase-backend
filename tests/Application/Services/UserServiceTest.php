@@ -343,7 +343,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("marcus"),
-            DecodedPassword::make("password123"),
+            DecodedPassword::create("password123"),
             true
         );
         $encodedToken = $this->createEncodedToken("potato");
@@ -387,7 +387,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("marcus"),
-            DecodedPassword::make("password123"),
+            DecodedPassword::create("password123"),
             true
         );
         $encodedToken = $this->createEncodedToken("potato");
@@ -431,7 +431,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("marcus"),
-            DecodedPassword::make("password123"),
+            DecodedPassword::create("password123"),
             true
         );
         $encodedToken = $this->createEncodedToken("potato");

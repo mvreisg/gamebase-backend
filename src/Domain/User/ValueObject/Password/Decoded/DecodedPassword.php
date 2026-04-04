@@ -15,7 +15,7 @@ class DecodedPassword extends Password
         parent::__construct($value);
     }
 
-    public static function make(string $value): self
+    public static function create(string $value): self
     {
         return new self($value);
     }

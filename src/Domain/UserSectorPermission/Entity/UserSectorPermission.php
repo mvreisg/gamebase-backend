@@ -18,11 +18,12 @@ class UserSectorPermission
     private Permission $permission;
 
     public function __construct(
+        ?Id $id,
         User $user,
         Sector $sector,
         Permission $permission
     ) {
-        $this->id = null;
+        $this->id = $id;
         $this->user = $user;
         $this->sector = $sector;
         $this->permission = $permission;

@@ -148,14 +148,12 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
             );
 
             $return = new UserSectorPermission(
+                Id::create(
+                    $fetchResult["usp_id"]
+                ),
                 $user,
                 $sector,
                 $permission
-            );
-            $return->setId(
-                Id::create(
-                    $fetchResult["usp_id"]
-                )
             );
             return $return;
         } catch (\Throwable $e) {
@@ -316,14 +314,12 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
             );
 
             $return = new UserSectorPermission(
+                Id::create(
+                    $fetchResult["usp_id"]
+                ),
                 $user,
                 $sector,
                 $permission
-            );
-            $return->setId(
-                Id::create(
-                    $fetchResult["usp_id"]
-                )
             );
             return $return;
         } catch (\Throwable $e) {
@@ -429,14 +425,12 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 );
 
                 $value = new UserSectorPermission(
+                    Id::create(
+                        $row["usp_id"]
+                    ),
                     $user,
                     $sector,
                     $permission
-                );
-                $value->setId(
-                    Id::create(
-                        $row["usp_id"]
-                    )
                 );
                 $userSectorPermissions->add($value);
             }
@@ -538,6 +532,9 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 );
 
                 $value = new UserSectorPermission(
+                    Id::create(
+                        $row["usp_id"]
+                    ),
                     $user,
                     $sector,
                     $permission

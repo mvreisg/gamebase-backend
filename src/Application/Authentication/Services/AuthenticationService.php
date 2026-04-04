@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Application\Authentication\Services;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantTokenException;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -61,7 +62,7 @@ class AuthenticationService
             );
 
             if ($exists === false) {
-                throw new InvalidTokenException();
+                throw new UnexistantTokenException();
             }
 
             $cachedToken = $this->tokenCache->get(

@@ -54,7 +54,7 @@ class HttpUserController
                 User::create(
                     null,
                     Username::create($username),
-                    DecodedPassword::make($password),
+                    DecodedPassword::create($password),
                     $isActive
                 ),
                 $token
@@ -111,7 +111,7 @@ class HttpUserController
             $user = new User(
                 Id::create($id),
                 Username::create($username),
-                DecodedPassword::make($password),
+                DecodedPassword::create($password),
                 $isActive
             );
 

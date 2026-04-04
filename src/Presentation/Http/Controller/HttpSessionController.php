@@ -46,7 +46,7 @@ class HttpSessionController
             $result = $this->sessionService->login(
                 new SessionLoginParameters(
                     Username::create($username),
-                    DecodedPassword::make($password),
+                    DecodedPassword::create($password),
                     $oneWeekLogin
                 )
             );
