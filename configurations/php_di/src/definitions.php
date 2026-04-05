@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use DI\Container;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
@@ -87,7 +88,7 @@ try {
 
         AuthenticationTokenCacheInterface::class => DI\get(PredisAuthenticationTokenCache::class),
 
-        \PDO::class => DI\factory(function (ContainerInterface $container) {
+        \PDO::class => DI\factory(function (Container $container) {
             $adapter = $container->get("repository.adapter");
             $host = $container->get("repository.host");
             $database = $container->get("repository.database");
