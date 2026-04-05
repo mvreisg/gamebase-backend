@@ -29,6 +29,20 @@ class UserSectorPermission
         $this->permission = $permission;
     }
 
+    public static function create(
+        ?Id $id,
+        User $user,
+        Sector $sector,
+        Permission $permission
+    ): self {
+        return new self(
+            $id,
+            $user,
+            $sector,
+            $permission
+        );
+    }
+
     public function setId(Id $id): void
     {
         $this->id = $id;

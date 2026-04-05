@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 
 class CheckAuthorizationUseCase
@@ -46,6 +47,10 @@ class CheckAuthorizationUseCase
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
                 $userId
             );
+
+            if ($userSectorPermissions === null) {
+                $userSectorPermissions = new UserSectorPermissionCollection();
+            }
 
             $this->authorizationDomainService->ensureHasPermission(
                 $userSectorPermissions,

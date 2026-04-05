@@ -2,37 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Tests\Application\Services;
+namespace Mvreisg\GamebaseBackend\Tests\Application\User\Service;
 
-use Mvreisg\GamebaseBackend\Application\Services\Authentication\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Services\Authorization\AuthorizationService;
-use Mvreisg\GamebaseBackend\Application\Services\User\UserService;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Validate\AuthenticationTokenValidator;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
-use Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Exception\EncryptionException;
+use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Entities\Clock;
-use Mvreisg\GamebaseBackend\Domain\Entities\DecodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Entities\Username;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Interfaces\ClockInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exception\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\Exception\DuplicatedUsernameException;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -48,284 +47,171 @@ class UserServiceTest extends TestCase
         return $clock;
     }
 
-    private function createEncodedToken(
-        string $token
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken {
-        $encodedToken = $this->createMock(EncodedAuthenticationToken::class);
-        $encodedToken
-            ->method("getToken")
-            ->willReturn($token);
-        return $encodedToken;
-    }
-
-    private function createDecodedToken(
-        User $user,
-        \DateTimeImmutable $issuedAt,
-        \DateTimeImmutable $expiredAt,
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken {
-        $decodedToken = $this->createMock(DecodedAuthenticationToken::class);
-
-        $decodedToken
-            ->method("getUserId")
-            ->willReturn($user->getId());
-
-        $decodedToken
-            ->method("getUsername")
-            ->willReturn($user->getUsername());
-
-        $decodedToken
-            ->method("getIssuedAt")
-            ->willReturn($issuedAt);
-
-        $decodedToken
-            ->method("getExpiresAt")
-            ->willReturn($expiredAt);
-
-        return $decodedToken;
-    }
-
-    private function createEmptyTokenCache(
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface {
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        return $tokenCache;
-    }
-
-    private function createTokenCache(
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Encoded\EncodedAuthenticationToken $token
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface {
-        $tokenCache = $this->createMock(TokenCacheInterface::class);
-        $tokenCache
-            ->method("exists")
-            ->willReturn(true);
-        $tokenCache
-            ->method("get")
-            ->willReturn(
-                $token
-            );
-        return $tokenCache;
-    }
-
-    private function createAuthenticationTokenDecoder(): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder
-    {
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        return $authenticationTokenDecoder;
-    }
-
-    private function createAuthenticationTokenDecoderWithReturn(
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Data\Decoded\DecodedAuthenticationToken $decodedToken
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder {
-        $authenticationTokenDecoder = $this->createMock(AuthenticationTokenDecoder::class);
-        $authenticationTokenDecoder
-            ->method("decode")
-            ->willReturn(
-                $decodedToken
-            );
-        return $authenticationTokenDecoder;
-    }
-
-    private function createAuthenticationTokenEncoder(): MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Encoder\AuthenticationTokenEncoder
-    {
-        $authenticationTokenEncoder = $this->createMock(AuthenticationTokenEncoder::class);
-        return $authenticationTokenEncoder;
-    }
-
-
-    private function createAuthenticationTokenValidator(
-        ClockInterface $clock
-    ): AuthenticationTokenValidator {
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
-        );
-        return $authenticationTokenValidator;
-    }
-
-    private function createAuthenticationService(
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface $tokenCache,
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder $authenticationTokenDecoder,
-        AuthenticationTokenValidator $authenticationTokenValidator
-    ): AuthenticationService {
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder();
-        return new AuthenticationService(
-            $tokenCache,
-            $authenticationTokenDecoder,
-            $authenticationTokenEncoder,
-            $authenticationTokenValidator
-        );
-    }
-
     private function createUser(
         Id $id,
         Username $username,
-        DecodedPassword $password,
+        Password $password,
         bool $isActive
     ): User {
-        $user = new User(
+        return User::create(
+            $id,
             $username,
             $password,
             $isActive
         );
-        $user->setId($id);
-        return $user;
     }
 
     private function createUserRepository(
+        bool $exists,
+        bool $duplicatedUsernames,
         User $user
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        return $userRepository;
-    }
-
-    private function createUserRepositoryThatThrowsDuplicatedUsernameException(
-        User $user
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $userRepository
+    ): MockObject&UserRepositoryInterface {
+        $repository = $this->createMock(UserRepositoryInterface::class);
+        $repository
+            ->method("checkIfExists")
+            ->willReturn(
+                $exists
+            );
+        $repository
+            ->method("insert")
+            ->willReturn($user);
+        $repository
             ->method("checkDuplicatedUsernames")
-            ->willThrowException(
-                new RepositoryDuplicatedRegisterException(
-                    "{$user->getUsername()->getValue()}"
-                )
-            );
-        return $userRepository;
+            ->willReturn($duplicatedUsernames);
+
+        return $repository;
     }
 
-    private function createPermission(): Permission
-    {
-        $permission = new Permission(
-            Name::create("Create"),
-            PermissionTypes::getValue(PermissionTypes::Create),
-            true
+    private function createSector(
+        Id $id,
+        Name $name,
+        SectorValue $value,
+        bool $isActive
+    ): Sector {
+        return Sector::create(
+            $id,
+            $name,
+            $value,
+            $isActive
         );
-        $permission->setId(Id::create(1));
-        return $permission;
     }
 
-    private function createPermissionRepository(
-        Permission $permission
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface {
-        $permissionRepository = $this->createMock(PermissionRepositoryInterface::class);
-        $permissionRepository
-            ->method("findById")
-            ->willReturn(
-                $permission
-            );
-        return $permissionRepository;
-    }
-
-    private function createSector(): Sector
-    {
-        $sector = new Sector(
-            Name::create("User"),
-            SectorTypes::getValue(SectorTypes::User),
-            true
+    private function createPermission(
+        Id $id,
+        Name $name,
+        PermissionValue $value,
+        bool $isActive
+    ): Permission {
+        return Permission::create(
+            $id,
+            $name,
+            $value,
+            $isActive
         );
-        $sector->setId(Id::create(1));
-        return $sector;
-    }
-
-    private function createSectorRepository(
-        Sector $sector
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface {
-        $sectorRepository = $this->createMock(SectorRepositoryInterface::class);
-        $sectorRepository
-            ->method("findById")
-            ->willReturn(
-                $sector
-            );
-        return $sectorRepository;
-    }
-
-    private function createUserSectorPermission(): UserSectorPermission
-    {
-        $userSectorPermission = new UserSectorPermission(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1),
-        );
-        return $userSectorPermission;
     }
 
     private function createUserSectorPermissionRepository(
-        UserSectorPermission $userSectorPermission
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface {
-        $userSectorPermissionRepository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
-        $userSectorPermissionRepository
+        UserSectorPermissionCollection $collection
+    ): MockObject&UserSectorPermissionRepositoryInterface {
+        $repository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
+        $repository
             ->method("findAllByUserId")
             ->willReturn(
-                new UserSectorPermissionCollection([
-                    $userSectorPermission
-                ])
+                $collection
             );
-        return $userSectorPermissionRepository;
-    }
-
-    private function createAuthorizationService(
-        Permission $permission,
-        Sector $sector,
-        UserSectorPermission $userSectorPermission,
-        UserRepositoryInterface $userRepository
-    ): AuthorizationService {
-        $permissionRepository = $this->createPermissionRepository($permission);
-        $sectorRepository = $this->createSectorRepository($sector);
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository($userSectorPermission);
-        return new AuthorizationService(
-            $userRepository,
-            $permissionRepository,
-            $sectorRepository,
-            $userSectorPermissionRepository
-        );
+        return $repository;
     }
 
     private function createEncrypter(
-        string $encryptedPassword
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface {
+        string $encryptedMessage
+    ): MockObject&EncryptionInterface {
         $encrypter = $this->createMock(EncryptionInterface::class);
         $encrypter
             ->method("encrypt")
-            ->willReturn($encryptedPassword);
+            ->willReturn(
+                $encryptedMessage
+            );
+
         return $encrypter;
     }
 
-    private function createEncrypterThatThrowsExceptionOnEncrypt(
-        string $decryptedPassword
-    ): MockObject&\Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface {
-        $encrypter = $this->createMock(EncryptionInterface::class);
-        $encrypter
-            ->method("encrypt")
-            ->willThrowException(
-                new EncryptionException(
-                    "Encryption failed for password: {$decryptedPassword}"
-                )
+    private function createTokenCacheInterface(
+        bool $exists,
+        string $encodedToken
+    ): MockObject&AuthenticationTokenCacheInterface {
+        $tokenCache = $this->createMock(AuthenticationTokenCacheInterface::class);
+        $tokenCache
+            ->method("exists")
+            ->willReturn(
+                $exists
             );
-        return $encrypter;
+        $tokenCache
+            ->method("get")
+            ->willReturn(
+                $encodedToken
+            );
+
+        return $tokenCache;
+    }
+
+    private function createTokenProvider(): MockObject&AuthenticationTokenProvider
+    {
+        $tokenProvider = $this->createMock(AuthenticationTokenProvider::class);
+        return $tokenProvider;
+    }
+
+    private function createAuthenticationService(
+        MockObject&AuthenticationTokenCacheInterface $tokenCache,
+        MockObject&AuthenticationTokenProvider $tokenProvider
+    ): AuthenticationService {
+        $service = new AuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        return $service;
+    }
+
+    private function createUserDomainService(
+        MockObject&UserRepositoryInterface $userRepository
+    ): UserDomainService {
+        $service = new UserDomainService(
+            $userRepository
+        );
+        return $service;
+    }
+
+    private function createAuthorizationDomainService(): AuthorizationDomainService
+    {
+        $service = new AuthorizationDomainService();
+        return $service;
+    }
+
+    private function createCheckAuthorizationUseCase(
+        UserDomainService $userDomainService,
+        MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
+        AuthenticationService $authenticationService,
+        AuthorizationDomainService $authorizationDomainService
+    ): CheckAuthorizationUseCase {
+        $useCase = new CheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        return $useCase;
     }
 
     private function createUserService(
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface $userRepository,
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Cache\Token\Interface\TokenCacheInterface $tokenCache,
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Authentication\Token\Action\Decoder\AuthenticationTokenDecoder $authenticationTokenDecoder,
-        MockObject&\Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface $encrypter,
-        AuthenticationTokenValidator $authenticationTokenValidator
+        MockObject&UserRepositoryInterface $userRepository,
+        MockObject&EncryptionInterface $encrypter,
+        CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        UserDomainService $userDomainService
     ): UserService {
-        $permission = $this->createPermission();
-        $sector = $this->createSector();
-        $userSectorPermission = $this->createUserSectorPermission();
-        $authenticationService = $this->createAuthenticationService(
-            $tokenCache,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator
-        );
-        $authorizationService = $this->createAuthorizationService(
-            $permission,
-            $sector,
-            $userSectorPermission,
-            $userRepository
-        );
         $userService = new UserService(
             $userRepository,
-            $authenticationService,
-            $authorizationService,
-            $encrypter
+            $encrypter,
+            $checkAuthorizationUseCase,
+            $userDomainService
         );
         return $userService;
     }
@@ -338,86 +224,162 @@ class UserServiceTest extends TestCase
 
     public function testIfAValidUserWithValidTokenIsInserted(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
-            Username::create("marcus"),
-            DecodedPassword::create("password123"),
+            Username::create("test"),
+            DecodedPassword::create("test"),
             true
         );
-        $encodedToken = $this->createEncodedToken("potato");
-        $tokenCache = $this->createTokenCache(
-            $encodedToken
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("User"),
+            SectorValue::from(SectorType::User),
+            true
         );
-        $clock = $this->createClock("UTC");
-        $now = $clock->now();
-        $decodedToken = $this->createDecodedToken(
-            $user,
-            $now,
-            $now->modify("+1 hour")
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
+            true
         );
+        $encodedToken = "potato";
         $userRepository = $this->createUserRepository(
+            true,
+            false,
             $user
         );
         $encrypter = $this->createEncrypter(
-            "potato"
+            "test"
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
         );
         $userService = $this->createUserService(
             $userRepository,
-            $tokenCache,
-            $this->createAuthenticationTokenDecoderWithReturn(
-                $decodedToken
-            ),
             $encrypter,
-            $this->createAuthenticationTokenValidator(
-                $clock
-            )
+            $checkAuthorizationUseCase,
+            $userDomainService
         );
-        $userService->insert(
+
+        $insertedUser = $userService->insert(
             $user,
             $encodedToken
+        );
+
+        $this->assertEquals(
+            $user->getId()->getValue(),
+            $insertedUser->getId()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getPassword()->getValue(),
+            $insertedUser->getPassword()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getIsActive(),
+            $insertedUser->getIsActive()
         );
     }
 
     public function testIfAValidUserWithValidTokenFailsOnInsertionBecauseOfDuplicatedUsernameOnRepository(): void
     {
-        $this->expectException(RepositoryDuplicatedRegisterException::class);
+        $this->expectException(DuplicatedUsernameException::class);
 
         $user = $this->createUser(
             Id::create(1),
-            Username::create("marcus"),
-            DecodedPassword::create("password123"),
+            Username::create("test"),
+            DecodedPassword::create("test"),
             true
         );
-        $encodedToken = $this->createEncodedToken("potato");
-        $tokenCache = $this->createTokenCache(
-            $encodedToken
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("User"),
+            SectorValue::from(SectorType::User),
+            true
         );
-        $clock = $this->createClock("UTC");
-        $now = $clock->now();
-        $decodedToken = $this->createDecodedToken(
-            $user,
-            $now,
-            $now->modify("+1 hour")
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
+            true
         );
-        $userRepository = $this->createUserRepositoryThatThrowsDuplicatedUsernameException(
+        $encodedToken = "potato";
+        $userRepository = $this->createUserRepository(
+            true,
+            true,
             $user
         );
         $encrypter = $this->createEncrypter(
-            "potato"
+            "test"
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
         );
         $userService = $this->createUserService(
             $userRepository,
-            $tokenCache,
-            $this->createAuthenticationTokenDecoderWithReturn(
-                $decodedToken
-            ),
             $encrypter,
-            $this->createAuthenticationTokenValidator(
-                $clock
-            )
+            $checkAuthorizationUseCase,
+            $userDomainService
         );
+
         $userService->insert(
             $user,
             $encodedToken
@@ -426,43 +388,72 @@ class UserServiceTest extends TestCase
 
     public function testIfAValidUserWithValidTokenFailsOnInsertionBecauseOfEncryptionError(): void
     {
-        $this->expectException(EncryptionException::class);
+        $this->expectException(EncryptionInterfaceException::class);
 
         $user = $this->createUser(
             Id::create(1),
-            Username::create("marcus"),
-            DecodedPassword::create("password123"),
+            Username::create("test"),
+            DecodedPassword::create("test"),
             true
         );
-        $encodedToken = $this->createEncodedToken("potato");
-        $tokenCache = $this->createTokenCache(
-            $encodedToken
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("User"),
+            SectorValue::from(SectorType::User),
+            true
         );
-        $clock = $this->createClock("UTC");
-        $now = $clock->now();
-        $decodedToken = $this->createDecodedToken(
-            $user,
-            $now,
-            $now->modify("+1 hour")
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
+            true
         );
+        $encodedToken = "potato";
         $userRepository = $this->createUserRepository(
+            true,
+            false,
             $user
         );
-        $encrypter = $this->createEncrypterThatThrowsExceptionOnEncrypt(
-            "potato"
+        $encrypter = $this->createEncrypter(
+            "test"
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
         );
         $userService = $this->createUserService(
             $userRepository,
-            $tokenCache,
-            $this->createAuthenticationTokenDecoderWithReturn(
-                $decodedToken
-            ),
             $encrypter,
-            $this->createAuthenticationTokenValidator(
-                $clock
-            )
+            $checkAuthorizationUseCase,
+            $userDomainService
         );
-        $userService->insert(
+
+        $insertedUser = $userService->insert(
             $user,
             $encodedToken
         );
