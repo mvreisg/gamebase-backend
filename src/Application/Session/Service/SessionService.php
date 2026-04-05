@@ -56,14 +56,6 @@ class SessionService
 
             $id = $fetchedUser->getId();
 
-            $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
-                $id
-            );
-
-            if ($userSectorPermissions === null) {
-                $userSectorPermissions = new UserSectorPermissionCollection();
-            }
-
             $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
 
@@ -113,10 +105,8 @@ class SessionService
                 );
             }
 
-            $sessionData = new SessionData(
-                $id,
-                $username,
-                $userSectorPermissions
+            $sessionData = $this->retrieveData(
+                $token
             );
 
             return new SessionLoginReturn(
@@ -154,6 +144,10 @@ class SessionService
             $userSectorPermissions = $this->userSectorPermissionRepository->findAllByUserId(
                 $id
             );
+
+            if ($userSectorPermissions === null) {
+                $userSectorPermissions = new UserSectorPermissionCollection();
+            }
 
             $sessionData = new SessionData(
                 $id,

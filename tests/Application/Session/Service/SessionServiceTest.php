@@ -84,7 +84,6 @@ class SessionServiceTest extends TestCase
             $password,
             $isActive
         );
-        $user->setId($id);
         return $user;
     }
 
@@ -145,16 +144,25 @@ class SessionServiceTest extends TestCase
     }
 
     private function createAuthenticationTokenCache(
-        string $token
+        bool $exists,
+        string $token,
+        bool $delete
     ): MockObject&AuthenticationTokenCacheInterface {
         $cache = $this->createMock(AuthenticationTokenCacheInterface::class);
         $cache
             ->method("exists")
-            ->willReturn(true);
+            ->willReturn(
+                $exists
+            );
         $cache
             ->method("get")
             ->willReturn(
                 $token
+            );
+        $cache
+            ->method("delete")
+            ->willReturn(
+                $delete
             );
         return $cache;
     }
@@ -237,7 +245,7 @@ class SessionServiceTest extends TestCase
     ---------------
     */
 
-    public function testIfLoginSucceds(): void
+    public function testIfLoginSucceeds(): void
     {
         $user = $this->createUser(
             Id::create(1),
@@ -252,11 +260,26 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
+        );
+        $clock = $this->createClock("UTC");
+        $issuedAt = $clock->now();
+        $expiresAt = $issuedAt->modify("+1 day");
+        $authenticationData = $this->createAuthenticationData(
+            $user->getId(),
+            $user->getUsername()
+        );
+        $decodedToken = $this->createAuthenticationToken(
+            $authenticationData,
+            $issuedAt,
+            $expiresAt
         );
         $encrypter = $this->createEncrypter();
-        $tokenProvider = $this->createAuthenticationTokenProvider(
-            $encodedToken
+        $tokenProvider = $this->createAuthenticationTokenProviderWithDecodeReturn(
+            $encodedToken,
+            $decodedToken
         );
         $authenticationService = $this->createAuthenticationService(
             $tokenCache,
@@ -316,11 +339,26 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
         );
         $encrypter = $this->createEncrypter();
-        $tokenProvider = $this->createAuthenticationTokenProvider(
-            $encodedToken
+        $clock = $this->createClock("UTC");
+        $issuedAt = $clock->now();
+        $expiresAt = $issuedAt->modify("+1 day");
+        $authenticationData = $this->createAuthenticationData(
+            $user->getId(),
+            $user->getUsername()
+        );
+        $decodedToken = $this->createAuthenticationToken(
+            $authenticationData,
+            $issuedAt,
+            $expiresAt
+        );
+        $tokenProvider = $this->createAuthenticationTokenProviderWithDecodeReturn(
+            $encodedToken,
+            $decodedToken
         );
         $authenticationService = $this->createAuthenticationService(
             $tokenCache,
@@ -404,7 +442,9 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
         );
         $encrypter = $this->createEncrypter();
         $tokenProvider = $this->createAuthenticationTokenProvider(
@@ -450,7 +490,9 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
         );
         $encrypter = $this->createEncrypterWithDecryptionException();
         $tokenProvider = $this->createAuthenticationTokenProvider(
@@ -496,7 +538,9 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
         );
         $encrypter = $this->createEncrypter();
         $tokenProvider = $this->createAuthenticationTokenProvider(
@@ -531,10 +575,8 @@ class SessionServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfLogoffSucceds(): void
+    public function testIfLogoffSucceeds(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -548,7 +590,9 @@ class SessionServiceTest extends TestCase
         $encodedToken = "potato";
         $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
         $tokenCache = $this->createAuthenticationTokenCache(
-            $encodedToken
+            true,
+            $encodedToken,
+            true,
         );
         $encrypter = $this->createEncrypter();
         $authenticationData = $this->createAuthenticationData(
@@ -600,55 +644,49 @@ class SessionServiceTest extends TestCase
         $userRepository = $this->createUserRepository(
             $user
         );
-        $encodedToken = $this->createEncodedToken("potato");
-        $clock = $this->createClock("UTC");
-        $now = $clock->now();
-        $issuedAt = $now;
-        $expiredAt = $now->modify("+1 hour");
-        $decodedToken = $this->createDecodedToken(
-            $user,
-            $issuedAt,
-            $expiredAt
-        );
-
-        $tokenCache = $this->createTokenCacheThatDoesNotDelete(
-            $encodedToken
-        );
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
-            $decodedToken
+        $encodedToken = "potato";
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
+        $tokenCache = $this->createAuthenticationTokenCache(
+            true,
+            $encodedToken,
+            false,
         );
         $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
+        $authenticationData = $this->createAuthenticationData(
+            $user->getId(),
+            $user->getUsername()
         );
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
-            $encodedToken
+        $clock = $this->createClock("UTC");
+        $issuedAt = $clock->now();
+        $expiresAt = $issuedAt->modify("+1 day");
+        $decodedToken = $this->createAuthenticationToken(
+            $authenticationData,
+            $issuedAt,
+            $expiresAt
         );
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
+        $tokenProvider = $this->createAuthenticationTokenProviderWithDecodeReturn(
+            $encodedToken,
+            $decodedToken
         );
-
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
         $sessionService = $this->createSessionService(
             $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
             $userSectorPermissionRepository,
-            $clock
+            $encrypter,
+            $authenticationService,
+            $tokenCache
         );
 
-        $hasLoggedOut = $sessionService->logoff(
+        $loggedOut = $sessionService->logoff(
             $encodedToken
         );
 
-        $this->assertFalse($hasLoggedOut);
+        $this->assertFalse(
+            $loggedOut
+        );
     }
 
     /*
@@ -669,48 +707,40 @@ class SessionServiceTest extends TestCase
         $userRepository = $this->createUserRepository(
             $user
         );
-        $encodedToken = $this->createEncodedToken("potato");
-        $clock = $this->createClock("UTC");
-        $now = $clock->now();
-        $issuedAt = $now;
-        $expiredAt = $now->modify("+1 hour");
-        $decodedToken = $this->createDecodedToken(
-            $user,
-            $issuedAt,
-            $expiredAt
-        );
-
-        $tokenCache = $this->createTokenCache(
-            $encodedToken
-        );
-        $authenticationTokenDecoder = $this->createAuthenticationTokenDecoder(
-            $decodedToken
+        $encodedToken = "potato";
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository();
+        $tokenCache = $this->createAuthenticationTokenCache(
+            true,
+            $encodedToken,
+            false,
         );
         $encrypter = $this->createEncrypter();
-
-        $userSectorPermissionCollection = $this->createUserSectorPermissionCollection();
-
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            $userSectorPermissionCollection
+        $authenticationData = $this->createAuthenticationData(
+            $user->getId(),
+            $user->getUsername()
         );
-
-        $authenticationTokenEncoder = $this->createAuthenticationTokenEncoder(
-            $encodedToken
+        $clock = $this->createClock("UTC");
+        $issuedAt = $clock->now();
+        $expiresAt = $issuedAt->modify("+1 day");
+        $decodedToken = $this->createAuthenticationToken(
+            $authenticationData,
+            $issuedAt,
+            $expiresAt
         );
-
-        $authenticationTokenValidator = new AuthenticationTokenValidator(
-            $clock
+        $tokenProvider = $this->createAuthenticationTokenProviderWithDecodeReturn(
+            $encodedToken,
+            $decodedToken
         );
-
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
         $sessionService = $this->createSessionService(
             $userRepository,
-            $tokenCache,
-            $encrypter,
-            $authenticationTokenEncoder,
-            $authenticationTokenDecoder,
-            $authenticationTokenValidator,
             $userSectorPermissionRepository,
-            $clock
+            $encrypter,
+            $authenticationService,
+            $tokenCache
         );
 
         $sessionData = $sessionService->retrieveData(
@@ -721,12 +751,14 @@ class SessionServiceTest extends TestCase
             $user->getId()->getValue(),
             $sessionData->getUserId()->getValue()
         );
+
         $this->assertEquals(
             $user->getUsername()->getValue(),
             $sessionData->getUsername()->getValue()
         );
+
         $this->assertCount(
-            $userSectorPermissionCollection->count(),
+            0,
             $sessionData->getUserSectorPermissionCollection()->fetchAll()
         );
     }
