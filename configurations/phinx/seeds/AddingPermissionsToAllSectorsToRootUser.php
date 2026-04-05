@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Phinx\Seed\AbstractSeed;
 
 class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
@@ -20,21 +20,21 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
         $userResult = $this->fetchRow("SELECT * FROM user WHERE username = '{$container->get("repository.root.username")}'");
 
         $data = [];
-        foreach (SectorTypes::cases() as $sectorKey => $sectorValue) {
+        foreach (SectorType::cases() as $sectorKey => $sectorValue) {
             $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
 
-            foreach (PermissionTypes::cases() as $permissionKey => $permissionValue) {
+            foreach (PermissionType::cases() as $permissionKey => $permissionValue) {
                 $mustIgnore = false;
                 switch ($sectorValue) {
-                    case SectorTypes::GameGenre:
-                    case SectorTypes::GamePlatform:
-                    case SectorTypes::UserSectorPermission:
-                        if ($permissionValue === PermissionTypes::Activate) {
+                    case SectorType::GameGenre:
+                    case SectorType::GamePlatform:
+                    case SectorType::UserSectorPermission:
+                        if ($permissionValue === PermissionType::Activate) {
                             $mustIgnore = true;
                         }
                         break;
                     default:
-                        if ($permissionValue === PermissionTypes::Delete) {
+                        if ($permissionValue === PermissionType::Delete) {
                             $mustIgnore = true;
                         }
                         break;

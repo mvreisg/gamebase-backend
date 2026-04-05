@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Sector\SectorTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Phinx\Seed\AbstractSeed;
 
 class AddingSectors extends AbstractSeed
@@ -10,7 +10,7 @@ class AddingSectors extends AbstractSeed
     public function run(): void
     {
         $data = [];
-        foreach (SectorTypes::cases() as $key => $value) {
+        foreach (SectorType::cases() as $key => $value) {
             $result = $this->fetchRow(
                 "SELECT COUNT(*) AS count FROM sector WHERE name = '{$value->name}'",
             );
