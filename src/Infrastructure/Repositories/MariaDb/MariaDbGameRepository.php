@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Game;
-use Mvreisg\GamebaseBackend\Domain\Entities\GameCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbGameRepository implements GameRepositoryInterface
 {
@@ -74,7 +72,8 @@ class MariaDbGameRepository implements GameRepositoryInterface
             $this->connection->commit();
 
             $return = new Game(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -82,7 +81,6 @@ class MariaDbGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -159,7 +157,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Game
+    public function findById(Id $id): ?Game
     {
         try {
             $idValue = $id->getValue();
@@ -180,13 +178,12 @@ class MariaDbGameRepository implements GameRepositoryInterface
             $fetchResult = $statement->fetch();
 
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Game(
-                Name::make($fetchResult["name"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -194,14 +191,13 @@ class MariaDbGameRepository implements GameRepositoryInterface
                     $fetchResult["is_active"]
                 ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): GameCollection
+    public function findAll(): ?GameCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -215,13 +211,14 @@ class MariaDbGameRepository implements GameRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new GameCollection();
+                return null;
             }
 
             $games = new GameCollection();
             foreach ($fetchResult as $row) {
                 $value = new Game(
-                    Name::make($row["name"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -229,7 +226,6 @@ class MariaDbGameRepository implements GameRepositoryInterface
                         $row["is_active"]
                     ),
                 );
-                $value->setId(Id::make($row["id"]));
                 $games->add($value);
             }
             return $games;
@@ -238,7 +234,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -266,17 +262,13 @@ class MariaDbGameRepository implements GameRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -304,11 +296,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
                 ]
             );
 
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

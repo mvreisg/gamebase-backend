@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermission;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserSectorPermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 
 class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
 {
@@ -24,9 +31,9 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         try {
             $this->connection->beginTransaction();
 
-            $userId = $userSectorPermission->getUserId()->getValue();
-            $sectorId = $userSectorPermission->getSectorId()->getValue();
-            $permissionId = $userSectorPermission->getPermissionId()->getValue();
+            $userId = $userSectorPermission->getUser()->getId()->getValue();
+            $sectorId = $userSectorPermission->getSector()->getId()->getValue();
+            $permissionId = $userSectorPermission->getPermission()->getId()->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO user_sector_permission (
@@ -53,27 +60,101 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $selectStatement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    usp.id AS usp_id, 
+                    usp.user_id AS usp_user_id,
+                    usp.sector_id AS usp_sector_id,
+                    usp.permission_id AS usp_permission_id,
+                    u.id AS u_id,
+                    u.username AS u_username,
+                    u.password AS u_password,
+                    u.is_active AS u_is_active,
+                    s.id AS s_id,
+                    s.name AS s_name,
+                    s.is_active AS s_is_active,                    
+                    s.value AS s_value,
+                    p.id AS p_id,
+                    p.name AS p_name,
+                    p.is_active AS p_is_active,                    
+                    p.value AS p_value                    
                 FROM 
-                    user_sector_permission 
+                    user_sector_permission usp
+                JOIN
+                    user u
+                ON 
+                    usp.user_id = u.id
+                JOIN
+                    sector s
+                ON 
+                    usp.sector_id = s.id
+                JOIN
+                    permission p
+                ON 
+                    usp.permission_id = p.id
                 WHERE 
-                    id = :id;"
+                    usp.id = :id;"
             );
 
             $selectStatement->execute([
-                ":id" => $lastInsertedId
+                ":id" => $lastInsertedId,
             ]);
 
             $fetchResult = $selectStatement->fetch();
 
             $this->connection->commit();
 
-            $return = new UserSectorPermission(
-                Id::make($fetchResult["user_id"]),
-                Id::make($fetchResult["sector_id"]),
-                Id::make($fetchResult["permission_id"])
+            $user = User::create(
+                Id::create(
+                    $fetchResult["u_id"]
+                ),
+                Username::create(
+                    $fetchResult["u_username"]
+                ),
+                EncodedPassword::create(
+                    $fetchResult["u_password"]
+                ),
+                boolval(
+                    $fetchResult["u_is_active"]
+                )
             );
-            $return->setId(Id::make($fetchResult["id"]));
+
+            $sector = Sector::create(
+                Id::create(
+                    $fetchResult["s_id"]
+                ),
+                Name::create(
+                    $fetchResult["s_name"]
+                ),
+                SectorValue::create(
+                    $fetchResult["s_value"]
+                ),
+                boolval(
+                    $fetchResult["s_is_active"]
+                )
+            );
+
+            $permission = Permission::create(
+                Id::create(
+                    $fetchResult["p_id"]
+                ),
+                Name::create(
+                    $fetchResult["p_name"]
+                ),
+                PermissionValue::create(
+                    $fetchResult["p_value"]
+                ),
+                boolval(
+                    $fetchResult["p_is_active"]
+                )
+            );
+
+            $return = new UserSectorPermission(
+                Id::create(
+                    $fetchResult["usp_id"]
+                ),
+                $user,
+                $sector,
+                $permission
+            );
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -85,9 +166,9 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
     {
         try {
             $id = $userSectorPermission->getId()->getValue();
-            $userId = $userSectorPermission->getUserId()->getValue();
-            $sectorId = $userSectorPermission->getSectorId()->getValue();
-            $permissionId = $userSectorPermission->getPermissionId()->getValue();
+            $userId = $userSectorPermission->getUser()->getId()->getValue();
+            $sectorId = $userSectorPermission->getSector()->getId()->getValue();
+            $permissionId = $userSectorPermission->getPermission()->getId()->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 
@@ -137,18 +218,45 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function findById(Id $id): UserSectorPermission
+    public function findById(Id $id): ?UserSectorPermission
     {
         try {
             $idValue = $id->getValue();
 
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    usp.id AS usp_id, 
+                    usp.user_id AS usp_user_id,
+                    usp.sector_id AS usp_sector_id,
+                    usp.permission_id AS usp_permission_id,
+                    u.id AS u_id,
+                    u.username AS u_username,
+                    u.password AS u_password,
+                    u.is_active AS u_is_active,
+                    s.id AS s_id,
+                    s.name AS s_name,
+                    s.is_active AS s_is_active,                    
+                    s.value AS s_value,
+                    p.id AS p_id,
+                    p.name AS p_name,
+                    p.is_active AS p_is_active,                    
+                    p.value AS p_value                    
                 FROM 
-                    user_sector_permission 
+                    user_sector_permission usp
+                JOIN
+                    user u
+                ON 
+                    usp.user_id = u.id
+                JOIN
+                    sector s
+                ON 
+                    usp.sector_id = s.id
+                JOIN
+                    permission p
+                ON 
+                    usp.permission_id = p.id
                 WHERE 
-                    id = :id;"
+                    usp.id = :id;"
             );
 
             $statement->execute([
@@ -157,35 +265,107 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
-            $return = new UserSectorPermission(
-                Id::make($fetchResult["user_id"]),
-                Id::make($fetchResult["sector_id"]),
-                Id::make($fetchResult["permission_id"])
+            $user = User::create(
+                Id::create(
+                    $fetchResult["u_id"]
+                ),
+                Username::create(
+                    $fetchResult["u_username"]
+                ),
+                EncodedPassword::create(
+                    $fetchResult["u_password"]
+                ),
+                boolval(
+                    $fetchResult["u_is_active"]
+                )
             );
-            $return->setId(Id::make($fetchResult["id"]));
+
+            $sector = Sector::create(
+                Id::create(
+                    $fetchResult["s_id"]
+                ),
+                Name::create(
+                    $fetchResult["s_name"]
+                ),
+                SectorValue::create(
+                    $fetchResult["s_value"]
+                ),
+                boolval(
+                    $fetchResult["s_is_active"]
+                )
+            );
+
+            $permission = Permission::create(
+                Id::create(
+                    $fetchResult["p_id"]
+                ),
+                Name::create(
+                    $fetchResult["p_name"]
+                ),
+                PermissionValue::create(
+                    $fetchResult["p_value"]
+                ),
+                boolval(
+                    $fetchResult["p_is_active"]
+                )
+            );
+
+            $return = new UserSectorPermission(
+                Id::create(
+                    $fetchResult["usp_id"]
+                ),
+                $user,
+                $sector,
+                $permission
+            );
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAllByUserId(Id $userId): UserSectorPermissionCollection
+    public function findAllByUserId(Id $userId): ?UserSectorPermissionCollection
     {
         try {
             $userIdValue = $userId->getValue();
 
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    usp.id AS usp_id, 
+                    usp.user_id AS usp_user_id,
+                    usp.sector_id AS usp_sector_id,
+                    usp.permission_id AS usp_permission_id,
+                    u.id AS u_id,
+                    u.username AS u_username,
+                    u.password AS u_password,
+                    u.is_active AS u_is_active,
+                    s.id AS s_id,
+                    s.name AS s_name,
+                    s.is_active AS s_is_active,                    
+                    s.value AS s_value,
+                    p.id AS p_id,
+                    p.name AS p_name,
+                    p.is_active AS p_is_active,                    
+                    p.value AS p_value                    
                 FROM 
-                    user_sector_permission
-                WHERE
-                    user_id = :userId;"
+                    user_sector_permission usp
+                JOIN
+                    user u
+                ON 
+                    usp.user_id = u.id
+                JOIN
+                    sector s
+                ON 
+                    usp.sector_id = s.id
+                JOIN
+                    permission p
+                ON 
+                    usp.permission_id = p.id
+                WHERE 
+                    usp.user_id = :userId;"
             );
 
             $statement->execute([
@@ -194,17 +374,64 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection();
+                return null;
             }
 
             $userSectorPermissions = new UserSectorPermissionCollection();
             foreach ($fetchResult as $row) {
-                $value = new UserSectorPermission(
-                    Id::make($row["user_id"]),
-                    Id::make($row["sector_id"]),
-                    Id::make($row["permission_id"])
+                $user = User::create(
+                    Id::create(
+                        $row["u_id"]
+                    ),
+                    Username::create(
+                        $row["u_username"]
+                    ),
+                    EncodedPassword::create(
+                        $row["u_password"]
+                    ),
+                    boolval(
+                        $row["u_is_active"]
+                    )
                 );
-                $value->setId(Id::make($row["id"]));
+
+                $sector = Sector::create(
+                    Id::create(
+                        $row["s_id"]
+                    ),
+                    Name::create(
+                        $row["s_name"]
+                    ),
+                    SectorValue::create(
+                        $row["s_value"]
+                    ),
+                    boolval(
+                        $row["s_is_active"]
+                    )
+                );
+
+                $permission = Permission::create(
+                    Id::create(
+                        $row["p_id"]
+                    ),
+                    Name::create(
+                        $row["p_name"]
+                    ),
+                    PermissionValue::create(
+                        $row["p_value"]
+                    ),
+                    boolval(
+                        $row["p_is_active"]
+                    )
+                );
+
+                $value = new UserSectorPermission(
+                    Id::create(
+                        $row["usp_id"]
+                    ),
+                    $user,
+                    $sector,
+                    $permission
+                );
                 $userSectorPermissions->add($value);
             }
             return $userSectorPermissions;
@@ -213,31 +440,110 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function findAll(): UserSectorPermissionCollection
+    public function findAll(): ?UserSectorPermissionCollection
     {
         try {
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    usp.id AS usp_id, 
+                    usp.user_id AS usp_user_id,
+                    usp.sector_id AS usp_sector_id,
+                    usp.permission_id AS usp_permission_id,
+                    u.id AS u_id,
+                    u.username AS u_username,
+                    u.password AS u_password,
+                    u.is_active AS u_is_active,
+                    s.id AS s_id,
+                    s.name AS s_name,
+                    s.is_active AS s_is_active,                    
+                    s.value AS s_value,
+                    p.id AS p_id,
+                    p.name AS p_name,
+                    p.is_active AS p_is_active,                    
+                    p.value AS p_value                    
                 FROM 
-                    user_sector_permission;"
+                    user_sector_permission usp
+                JOIN
+                    user u
+                ON 
+                    usp.user_id = u.id
+                JOIN
+                    sector s
+                ON 
+                    usp.sector_id = s.id
+                JOIN
+                    permission p
+                ON 
+                    usp.permission_id = p.id;"
             );
 
             $statement->execute();
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserSectorPermissionCollection();
+                return null;
             }
 
             $userSectorPermissions = new UserSectorPermissionCollection();
             foreach ($fetchResult as $row) {
-                $value = new UserSectorPermission(
-                    Id::make($row["user_id"]),
-                    Id::make($row["sector_id"]),
-                    Id::make($row["permission_id"])
+                $user = User::create(
+                    Id::create(
+                        $row["u_id"]
+                    ),
+                    Username::create(
+                        $row["u_username"]
+                    ),
+                    EncodedPassword::create(
+                        $row["u_password"]
+                    ),
+                    boolval(
+                        $row["u_is_active"]
+                    )
                 );
-                $value->setId(Id::make($row["id"]));
+
+                $sector = Sector::create(
+                    Id::create(
+                        $row["s_id"]
+                    ),
+                    Name::create(
+                        $row["s_name"]
+                    ),
+                    SectorValue::create(
+                        $row["s_value"]
+                    ),
+                    boolval(
+                        $row["s_is_active"]
+                    )
+                );
+
+                $permission = Permission::create(
+                    Id::create(
+                        $row["p_id"]
+                    ),
+                    Name::create(
+                        $row["p_name"]
+                    ),
+                    PermissionValue::create(
+                        $row["p_value"]
+                    ),
+                    boolval(
+                        $row["p_is_active"]
+                    )
+                );
+
+                $value = new UserSectorPermission(
+                    Id::create(
+                        $row["usp_id"]
+                    ),
+                    $user,
+                    $sector,
+                    $permission
+                );
+                $value->setId(
+                    Id::create(
+                        $row["usp_id"]
+                    )
+                );
                 $userSectorPermissions->add($value);
             }
             return $userSectorPermissions;
@@ -246,7 +552,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -274,11 +580,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

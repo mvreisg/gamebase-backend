@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Entities\GamePlatformCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 {
@@ -24,8 +26,8 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         try {
             $this->connection->beginTransaction();
 
-            $platformId = $gamePlatform->getPlatformId()->getValue();
-            $gameId = $gamePlatform->getGameId()->getValue();
+            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
+            $gameId = $gamePlatform->getGame()->getId()->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO game_platform (
@@ -49,11 +51,27 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $selectStatement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    gmpl.id AS gmpl_id,
+                    gmpl.game_id AS gmpl_game_id,
+                    gmpl.platform_id AS gmpl_platform_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    pl.id AS pl_id,
+                    pl.name AS pl_name,
+                    pl.is_active AS pl_is_active
                 FROM 
-                    game_platform 
+                    game_platform gmpl
+                JOIN
+                    game gm
+                ON
+                    gmpl.game_id = gm.id
+                JOIN
+                    platform pl
+                ON
+                    gmpl.platform_id = pl.id
                 WHERE 
-                    id = :id;"
+                    gmpl.id = :id;"
             );
 
             $selectStatement->execute([
@@ -65,10 +83,30 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
             $this->connection->commit();
 
             $return = new GamePlatform(
-                Id::make($fetchResult["game_id"]),
-                Id::make($fetchResult["platform_id"])
+                new Game(
+                    Id::create(
+                        $fetchResult["gm_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["gm_name"]
+                    ),
+                    $fetchResult["gm_is_active"]
+                ),
+                new Platform(
+                    Id::create(
+                        $fetchResult["pl_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["pl_name"]
+                    ),
+                    $fetchResult["pl_is_active"]
+                ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
+            $return->setId(
+                Id::create(
+                    $fetchResult["gmpl_id"]
+                )
+            );
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -80,8 +118,8 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
     {
         try {
             $id = $gamePlatform->getId()->getValue();
-            $platformId = $gamePlatform->getPlatformId()->getValue();
-            $gameId = $gamePlatform->getGameId()->getValue();
+            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
+            $gameId = $gamePlatform->getGame()->getId()->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 
@@ -129,18 +167,34 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function findById(Id $id): GamePlatform
+    public function findById(Id $id): ?GamePlatform
     {
         try {
             $idValue = $id->getValue();
 
             $statement = $this->connection->prepare(
                 "SELECT 
-                    *
-                FROM
-                    game_platform
-                WHERE
-                    id = :id;"
+                    gmpl.id AS gmpl_id,
+                    gmpl.game_id AS gmpl_game_id,
+                    gmpl.platform_id AS gmpl_platform_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    pl.id AS pl_id,
+                    pl.name AS pl_name,
+                    pl.is_active AS pl_is_active
+                FROM 
+                    game_platform gmpl
+                JOIN
+                    game gm
+                ON
+                    gmpl.game_id = gm.id
+                JOIN
+                    platform pl
+                ON
+                    gmpl.platform_id = pl.id
+                WHERE 
+                    gmpl.id = :id;"
             );
 
             $statement->execute([
@@ -149,46 +203,100 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new GamePlatform(
-                Id::make($fetchResult["game_id"]),
-                Id::make($fetchResult["platform_id"])
+                new Game(
+                    Id::create(
+                        $fetchResult["gm_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["gm_name"]
+                    ),
+                    $fetchResult["gm_is_active"]
+                ),
+                new Platform(
+                    Id::create(
+                        $fetchResult["pl_id"]
+                    ),
+                    Name::create(
+                        $fetchResult["pl_name"]
+                    ),
+                    $fetchResult["pl_is_active"]
+                ),
             );
-            $return->setId(Id::make($fetchResult["id"]));
+            $return->setId(
+                Id::create(
+                    $fetchResult["gmpl_id"]
+                )
+            );
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): GamePlatformCollection
+    public function findAll(): ?GamePlatformCollection
     {
         try {
             $statement = $this->connection->prepare(
                 "SELECT 
-                    * 
+                    gmpl.id AS gmpl_id,
+                    gmpl.game_id AS gmpl_game_id,
+                    gmpl.platform_id AS gmpl_platform_id,
+                    gm.id AS gm_id,
+                    gm.name AS gm_name,
+                    gm.is_active AS gm_is_active,
+                    pl.id AS pl_id,
+                    pl.name AS pl_name,
+                    pl.is_active AS pl_is_active
                 FROM 
-                    game_platform;"
+                    game_platform gmpl
+                JOIN
+                    game gm
+                ON
+                    gmpl.game_id = gm.id
+                JOIN
+                    platform pl
+                ON
+                    gmpl.platform_id = pl.id;"
             );
 
             $statement->execute();
 
             $result = $statement->fetchAll();
             if (count($result) === 0) {
-                return new GamePlatformCollection();
+                return null;
             }
 
             $gamePlatforms = new GamePlatformCollection();
             foreach ($result as $row) {
                 $value = new GamePlatform(
-                    Id::make($row["game_id"]),
-                    Id::make($row["platform_id"])
+                    new Game(
+                        Id::create(
+                            $row["gm_id"]
+                        ),
+                        Name::create(
+                            $row["gm_name"]
+                        ),
+                        $row["gm_is_active"]
+                    ),
+                    new Platform(
+                        Id::create(
+                            $row["pl_id"]
+                        ),
+                        Name::create(
+                            $row["pl_name"]
+                        ),
+                        $row["pl_is_active"]
+                    ),
                 );
-                $value->setId(Id::make($row["id"]));
+                $value->setId(
+                    Id::create(
+                        $row["gmpl_id"]
+                    )
+                );
                 $gamePlatforms->add($value);
             }
             return $gamePlatforms;
@@ -197,7 +305,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $alias = "number_of_ids";
@@ -225,11 +333,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

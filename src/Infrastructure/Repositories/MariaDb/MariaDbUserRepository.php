@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\EncodedPassword;
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\User;
-use Mvreisg\GamebaseBackend\Domain\Entities\UserCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\Username;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 
 class MariaDbUserRepository implements UserRepositoryInterface
 {
@@ -79,8 +77,9 @@ class MariaDbUserRepository implements UserRepositoryInterface
             $this->connection->commit();
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -88,7 +87,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -170,7 +168,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function findById(Id $id): User
+    public function findById(Id $id): ?User
     {
         try {
             $idValue = $id->getValue();
@@ -190,14 +188,13 @@ class MariaDbUserRepository implements UserRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -205,14 +202,13 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findByUsername(Username $username): User
+    public function findByUsername(Username $username): ?User
     {
         try {
             $usernameValue = $username->getValue();
@@ -232,14 +228,13 @@ class MariaDbUserRepository implements UserRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $usernameValue
-                );
+                return null;
             }
 
             $return = new User(
-                Username::make($fetchResult["username"]),
-                EncodedPassword::make($fetchResult["password"]),
+                Id::create($fetchResult["id"]),
+                Username::create($fetchResult["username"]),
+                EncodedPassword::create($fetchResult["password"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -247,14 +242,13 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): UserCollection
+    public function findAll(): ?UserCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -268,14 +262,15 @@ class MariaDbUserRepository implements UserRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new UserCollection();
+                return null;
             }
 
             $users = new UserCollection();
             foreach ($fetchResult as $row) {
                 $user = new User(
-                    Username::make($row["username"]),
-                    EncodedPassword::make($row["password"]),
+                    Id::create($row["id"]),
+                    Username::create($row["username"]),
+                    EncodedPassword::create($row["password"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -283,7 +278,6 @@ class MariaDbUserRepository implements UserRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $user->setId(Id::make($row["id"]));
                 $users->add(
                     $user
                 );
@@ -294,7 +288,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -322,17 +316,13 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedUsernames(Username $username): void
+    public function checkDuplicatedUsernames(Username $username): bool
     {
         try {
             $usernameValue = $username->getValue();
@@ -359,11 +349,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $usernameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

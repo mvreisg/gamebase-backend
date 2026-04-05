@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Entities\Permission;
-use Mvreisg\GamebaseBackend\Domain\Entities\PermissionCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\PermissionValue;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbPermissionRepository implements PermissionRepositoryInterface
 {
@@ -81,8 +79,9 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             $this->connection->commit();
 
             $return = new Permission(
-                Name::make($fetchResult["name"]),
-                PermissionValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                PermissionValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -90,7 +89,6 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -169,7 +167,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Permission
+    public function findById(Id $id): ?Permission
     {
         try {
             $idValue = $id->getValue();
@@ -189,14 +187,13 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Permission(
-                Name::make($fetchResult["name"]),
-                PermissionValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                PermissionValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -204,14 +201,13 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): PermissionCollection
+    public function findAll(): ?PermissionCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -225,14 +221,15 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $fetchResult = $statement->fetchAll();
             if (count($fetchResult) === 0) {
-                return new PermissionCollection();
+                return null;
             }
 
             $permissions = new PermissionCollection();
             foreach ($fetchResult as $row) {
                 $value = new Permission(
-                    Name::make($row["name"]),
-                    PermissionValue::make($row["value"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
+                    PermissionValue::create($row["value"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -240,7 +237,6 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $value->setId(Id::make($row["id"]));
                 $permissions->add($value);
             }
 
@@ -250,7 +246,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -278,17 +274,13 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -315,11 +307,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

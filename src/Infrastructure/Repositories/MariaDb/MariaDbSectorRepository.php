@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
-use Mvreisg\GamebaseBackend\Domain\Entities\Id;
-use Mvreisg\GamebaseBackend\Domain\Entities\Name;
-use Mvreisg\GamebaseBackend\Domain\Entities\Sector;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorCollection;
-use Mvreisg\GamebaseBackend\Domain\Entities\SectorValue;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryDuplicatedRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Exceptions\RepositoryUnexistantRegisterException;
-use Mvreisg\GamebaseBackend\Domain\Repositories\Interface\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 class MariaDbSectorRepository implements SectorRepositoryInterface
 {
@@ -81,8 +79,9 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $this->connection->commit();
 
             $return = new Sector(
-                Name::make($fetchResult["name"]),
-                SectorValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                SectorValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -90,7 +89,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
@@ -171,7 +169,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function findById(Id $id): Sector
+    public function findById(Id $id): ?Sector
     {
         try {
             $idValue = $id->getValue();
@@ -191,14 +189,13 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
 
             $fetchResult = $statement->fetch();
             if ($fetchResult === false) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
+                return null;
             }
 
             $return = new Sector(
-                Name::make($fetchResult["name"]),
-                SectorValue::make($fetchResult["value"]),
+                Id::create($fetchResult["id"]),
+                Name::create($fetchResult["name"]),
+                SectorValue::create($fetchResult["value"]),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -206,14 +203,13 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            $return->setId(Id::make($fetchResult["id"]));
             return $return;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function findAll(): SectorCollection
+    public function findAll(): ?SectorCollection
     {
         try {
             $statement = $this->connection->prepare(
@@ -228,14 +224,15 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $fetchResult = $statement->fetchAll();
 
             if ($fetchResult === false) {
-                return new SectorCollection();
+                return null;
             }
 
             $sectors = new SectorCollection();
             foreach ($fetchResult as $row) {
                 $value = new Sector(
-                    Name::make($row["name"]),
-                    SectorValue::make($row["value"]),
+                    Id::create($row["id"]),
+                    Name::create($row["name"]),
+                    SectorValue::create($row["value"]),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -243,7 +240,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $value->setId(Id::make($row["id"]));
                 $sectors->add($value);
             }
             return $sectors;
@@ -252,7 +248,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function checkIfExists(Id $id): void
+    public function checkIfExists(Id $id): bool
     {
         try {
             $idValue = $id->getValue();
@@ -280,17 +276,13 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 ]
             );
 
-            if ($numberOfIds === 0) {
-                throw new RepositoryUnexistantRegisterException(
-                    $idValue
-                );
-            }
+            return $numberOfIds > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedNames(Name $name): void
+    public function checkDuplicatedNames(Name $name): bool
     {
         try {
             $nameValue = $name->getValue();
@@ -317,11 +309,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $alias
                 ]
             );
-            if ($numberOfNames > 0) {
-                throw new RepositoryDuplicatedRegisterException(
-                    $nameValue
-                );
-            }
+            return $numberOfNames > 0;
         } catch (\Throwable $e) {
             throw $e;
         }
