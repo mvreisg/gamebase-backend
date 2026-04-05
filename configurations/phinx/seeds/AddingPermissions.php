@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Types\Permission\PermissionTypes;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Phinx\Seed\AbstractSeed;
 
 class AddingPermissions extends AbstractSeed
@@ -10,7 +10,7 @@ class AddingPermissions extends AbstractSeed
     public function run(): void
     {
         $data = [];
-        foreach (PermissionTypes::cases() as $key => $value) {
+        foreach (PermissionType::cases() as $key => $value) {
             $result = $this->fetchRow(
                 "SELECT COUNT(*) AS count FROM permission WHERE name = '{$value->name}'",
             );
