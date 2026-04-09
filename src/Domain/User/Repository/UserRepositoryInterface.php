@@ -25,5 +25,5 @@ interface UserRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedUsernames(Username $username): bool;
+    public function checkDuplicatedUsernames(?Id $id = null, Username $username): bool;
 }

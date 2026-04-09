@@ -20,9 +20,10 @@ class SectorDomainService
         $this->repository = $repository;
     }
 
-    public function ensureNameIsUnique(Name $name): void
+    public function ensureNameIsUnique(?Id $id = null, Name $name): void
     {
         $hasDuplicatedNames = $this->repository->checkDuplicatedNames(
+            $id,
             $name
         );
 

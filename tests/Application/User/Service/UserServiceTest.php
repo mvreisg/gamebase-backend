@@ -135,6 +135,20 @@ class UserServiceTest extends TestCase
         return $encrypter;
     }
 
+    private function createEncrypterWithEncryptionError(): MockObject&EncryptionInterface
+    {
+        $encrypter = $this->createMock(EncryptionInterface::class);
+        $encrypter
+            ->method("encrypt")
+            ->willThrowException(
+                new EncryptionInterfaceException(
+                    "ecryption error"
+                )
+            );
+
+        return $encrypter;
+    }
+
     private function createTokenCacheInterface(
         bool $exists,
         string $encodedToken
@@ -414,9 +428,7 @@ class UserServiceTest extends TestCase
             false,
             $user
         );
-        $encrypter = $this->createEncrypter(
-            "test"
-        );
+        $encrypter = $this->createEncrypterWithEncryptionError();
         $userDomainService = $this->createUserDomainService(
             $userRepository
         );
@@ -453,9 +465,15 @@ class UserServiceTest extends TestCase
             $userDomainService
         );
 
-        $insertedUser = $userService->insert(
+        $userService->insert(
             $user,
             $encodedToken
         );
     }
+
+    /*
+    ----------------
+    | Update Tests |
+    ----------------
+    */
 }

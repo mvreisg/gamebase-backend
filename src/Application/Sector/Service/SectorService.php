@@ -39,6 +39,7 @@ class SectorService
             );
 
             $this->sectorDomainService->ensureNameIsUnique(
+                null,
                 $sector->getName()
             );
 
@@ -64,6 +65,7 @@ class SectorService
             );
 
             $this->sectorDomainService->ensureNameIsUnique(
+                $sector->getId(),
                 $sector->getName()
             );
 

@@ -55,8 +55,8 @@ class AuthenticationServiceTest extends TestCase
         return $token;
     }
 
-    private function createEmptyAuthenticationTokenCache(
-    ): MockObject&AuthenticationTokenCacheInterface {
+    private function createEmptyAuthenticationTokenCache(): MockObject&AuthenticationTokenCacheInterface
+    {
         $cache = $this->createMock(AuthenticationTokenCacheInterface::class);
         $cache
             ->method("exists")

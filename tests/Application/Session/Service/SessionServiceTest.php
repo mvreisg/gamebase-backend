@@ -112,9 +112,8 @@ class SessionServiceTest extends TestCase
         return $repository;
     }
 
-    private function createUserSectorPermissionRepository(
-
-    ): MockObject&UserSectorPermissionRepositoryInterface {
+    private function createUserSectorPermissionRepository(): MockObject&UserSectorPermissionRepositoryInterface
+    {
         $repository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
         return $repository;
     }

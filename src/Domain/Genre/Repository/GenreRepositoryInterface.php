@@ -23,5 +23,5 @@ interface GenreRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(Name $name): bool;
+    public function checkDuplicatedNames(?Id $id = null, Name $name): bool;
 }

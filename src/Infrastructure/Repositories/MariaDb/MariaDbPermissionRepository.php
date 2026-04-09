@@ -26,6 +26,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             $this->connection->beginTransaction();
 
             $name = $permission->getName()->getValue();
+            $value = $permission->getPermissionValue()->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -33,8 +34,6 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             $isActive = intval(
                 $permission->getIsActive()
             );
-
-            $value = $permission->getPermissionValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
@@ -101,6 +100,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         try {
             $id = $permission->getId()->getValue();
             $name = $permission->getName()->getValue();
+            $value = $permission->getPermissionValue()->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -108,8 +108,6 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             $isActive = intval(
                 $permission->getIsActive()
             );
-
-            $value = $permission->getPermissionValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE
@@ -280,26 +278,45 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(Name $name): bool
+    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
     {
         try {
+            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
             $alias = "number_of_names";
-            $statement = $this->connection->prepare(
-                "SELECT 
-                    COUNT(*)
-                    AS
-                    $alias
-                FROM 
-                    permission 
-                WHERE 
-                    name = :name;"
-            );
-
-            $statement->execute([
-                ":name" => $nameValue
-            ]);
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        permission 
+                    WHERE 
+                        name = :name;"
+                );
+                $statement->execute([
+                    ":name" => $nameValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        permission 
+                    WHERE 
+                        name = :name
+                    AND
+                        id != :id;"
+                );
+                $statement->execute([
+                    ":name" => $nameValue,
+                    ":id" => $idValue
+                ]);
+            }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(

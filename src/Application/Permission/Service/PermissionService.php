@@ -39,6 +39,7 @@ class PermissionService
             );
 
             $this->permissionDomainService->ensureNameIsUnique(
+                null,
                 $permission->getName()
             );
 
@@ -64,6 +65,7 @@ class PermissionService
             );
 
             $this->permissionDomainService->ensureNameIsUnique(
+                $permission->getId(),
                 $permission->getName()
             );
 
