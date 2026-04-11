@@ -329,4 +329,56 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             throw $e;
         }
     }
+
+    public function checkDuplicatedValues(?Id $id = null, PermissionValue $value): bool
+    {
+        try {
+            $idValue = $id ? $id->getValue() : null;
+            $valueValue = $value->getValue()->value;
+
+            $alias = "number_of_values";
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        permission 
+                    WHERE 
+                        value = :value;"
+                );
+                $statement->execute([
+                    ":value" => $valueValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        permission 
+                    WHERE 
+                        value = :value
+                    AND
+                        id != :id;"
+                );
+                $statement->execute([
+                    ":id" => $idValue,
+                    ":value" => $valueValue
+                ]);
+            }
+
+            $fetchResult = $statement->fetch();
+            $numberOfValues = intval(
+                $fetchResult[
+                    $alias
+                ]
+            );
+            return $numberOfValues > 0;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
 }

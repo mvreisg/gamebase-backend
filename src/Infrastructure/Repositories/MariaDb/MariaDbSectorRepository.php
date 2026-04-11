@@ -288,7 +288,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $nameValue = $name->getValue();
             $alias = "number_of_names";
 
-            if ($idValue) {
+            if ($idValue === null) {
                 $statement = $this->connection->prepare(
                     "SELECT 
                         COUNT(*)
@@ -330,6 +330,60 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 ]
             );
             return $numberOfNames > 0;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function checkDuplicatedValues(?Id $id = null, SectorValue $value): bool
+    {
+        try {
+            $idValue = $id ? $id->getValue() : null;
+            $valueValue = $value->getValue()->value;
+            $alias = "number_of_values";
+
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        value = :value;"
+                );
+
+                $statement->execute([
+                    ":value" => $valueValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        value = :value
+                    AND
+                        id != :id;"
+                );
+
+                $statement->execute([
+                    ":value" => $valueValue,
+                    ":id" => $idValue
+                ]);
+            }
+
+            $fetchResult = $statement->fetch();
+            $numberOfValues = intval(
+                $fetchResult[
+                    $alias
+                ]
+            );
+            return $numberOfValues > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

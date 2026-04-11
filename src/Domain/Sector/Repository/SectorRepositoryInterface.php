@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Sector\Repository;
 
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
@@ -24,4 +25,6 @@ interface SectorRepositoryInterface
     public function checkIfExists(Id $id): bool;
 
     public function checkDuplicatedNames(?Id $id = null, Name $name): bool;
+
+    public function checkDuplicatedValues(?Id $id = null, SectorValue $value): bool;
 }

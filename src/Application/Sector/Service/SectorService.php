@@ -43,6 +43,11 @@ class SectorService
                 $sector->getName()
             );
 
+            $this->sectorDomainService->ensureValueIsUnique(
+                null,
+                $sector->getSectorValue()
+            );
+
             $insertedSector = $this->repository->insert($sector);
 
             return $insertedSector;
@@ -67,6 +72,11 @@ class SectorService
             $this->sectorDomainService->ensureNameIsUnique(
                 $sector->getId(),
                 $sector->getName()
+            );
+
+            $this->sectorDomainService->ensureValueIsUnique(
+                $sector->getId(),
+                $sector->getSectorValue()
             );
 
             $wasUpdated = $this->repository->update($sector);
