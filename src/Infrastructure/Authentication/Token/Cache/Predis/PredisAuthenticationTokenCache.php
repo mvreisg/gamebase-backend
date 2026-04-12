@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis\Exception\PredisAuthenticationTokenCacheException;
+use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Duration;
 use Predis\Client;
 
@@ -32,7 +32,7 @@ class PredisAuthenticationTokenCache implements AuthenticationTokenCacheInterfac
             $key
         );
         if ($value === null) {
-            throw new PredisAuthenticationTokenCacheException(
+            throw new AuthenticationTokenCacheException(
                 "Unexistant value."
             );
         }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id;
 
-use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Exception\InvalidIdIncrementAmountException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Exception\InvalidIdValueException;
 
 class Id
@@ -34,15 +33,5 @@ class Id
                 $value
             );
         }
-    }
-
-    public function increment(int $amount)
-    {
-        if ($amount <= 0) {
-            throw new InvalidIdIncrementAmountException(
-                $amount
-            );
-        }
-        $this->value += $amount;
     }
 }
