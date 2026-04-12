@@ -322,7 +322,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function checkDuplicatedUsernames(?Id $id = null, Username $username): bool
+    public function checkDuplicatedUsernames(?Id $id, Username $username): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

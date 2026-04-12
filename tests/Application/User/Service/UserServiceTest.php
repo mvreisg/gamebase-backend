@@ -78,6 +78,9 @@ class UserServiceTest extends TestCase
         $repository
             ->method("checkDuplicatedUsernames")
             ->willReturn($duplicatedUsernames);
+        $repository
+            ->method("findById")
+            ->willReturn($user);
 
         return $repository;
     }
@@ -476,4 +479,77 @@ class UserServiceTest extends TestCase
     | Update Tests |
     ----------------
     */
+
+    public function testIfAValidUserGetsUpdated(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("User"),
+            SectorValue::from(SectorType::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $encodedToken = "potato";
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $encrypter = $this->createEncrypter(
+            "test"
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $userService = $this->createUserService(
+            $userRepository,
+            $encrypter,
+            $checkAuthorizationUseCase,
+            $userDomainService
+        );
+
+        $userService->update(
+            $user,
+            $encodedToken
+        );
+    }
 }

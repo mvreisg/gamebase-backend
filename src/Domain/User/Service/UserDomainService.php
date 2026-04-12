@@ -20,7 +20,7 @@ class UserDomainService
         $this->repository = $repository;
     }
 
-    public function ensureUsernameIsUnique(?Id $id = null, Username $username): void
+    public function ensureUsernameIsUnique(?Id $id, Username $username): void
     {
         $hasDuplicatedUsernames = $this->repository->checkDuplicatedUsernames(
             $id,
