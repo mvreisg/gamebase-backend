@@ -66,6 +66,10 @@ class UserSectorPermissionService
                 $new->getId()
             );
 
+            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+                $new
+            );
+
             $insertedUserSectorPermission = $this->repository->insert($new);
 
             return $insertedUserSectorPermission;
@@ -97,6 +101,10 @@ class UserSectorPermissionService
 
             $this->userSectorPermissionDomainService->ensureUserSectorPermissionExists(
                 $existant->getId()
+            );
+
+            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+                $existant
             );
 
             $wasUpdated = $this->repository->update($existant);

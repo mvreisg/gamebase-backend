@@ -39,6 +39,7 @@ class GameService
             );
 
             $this->gameDomainService->ensureNameIsUnique(
+                null,
                 $game->getName()
             );
 
@@ -64,6 +65,7 @@ class GameService
             );
 
             $this->gameDomainService->ensureNameIsUnique(
+                $game->getId(),
                 $game->getName()
             );
 

@@ -40,8 +40,8 @@
     },
     "scripts": {
         "lint:fix": "vendor/bin/php-cs-fixer fix .",
-        "format": "vendor/bin/phpcs --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
-        "format:fix": "vendor/bin/phpcbf --ignore=*/vendor/*,*/db/*,*/scripts/* --standard=psr12 ./",
+        "format": "vendor/bin/phpcs --ignore=*/vendor/* --standard=psr12 ./",
+        "format:fix": "vendor/bin/phpcbf --ignore=*/vendor/* --standard=psr12 ./",
         "phinx": "vendor/bin/phinx",
         "phpunit:test": "vendor/bin/phpunit",
         "phpunit:test:all": "vendor/bin/phpunit ./tests --testdox"        

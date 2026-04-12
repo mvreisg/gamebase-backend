@@ -34,7 +34,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 $sector->getIsActive()
             );
 
-            $value = $sector->getSectorValue();
+            $value = $sector->getSectorValue()->getValue()->value;
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
@@ -101,6 +101,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         try {
             $id = $sector->getId()->getValue();
             $name = $sector->getName()->getValue();
+            $value = $sector->getSectorValue()->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -108,8 +109,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             $isActive = intval(
                 $sector->getIsActive()
             );
-
-            $value = $sector->getSectorValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE
@@ -282,26 +281,47 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(Name $name): bool
+    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
     {
         try {
+            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
             $alias = "number_of_names";
 
-            $statement = $this->connection->prepare(
-                "SELECT 
-                    COUNT(*)
-                    AS
-                    $alias
-                FROM 
-                    sector 
-                WHERE 
-                    name = :name;"
-            );
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        name = :name;"
+                );
 
-            $statement->execute([
-                ":name" => $nameValue
-            ]);
+                $statement->execute([
+                    ":name" => $nameValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        name = :name
+                    AND
+                        id != :id;"
+                );
+
+                $statement->execute([
+                    ":name" => $nameValue,
+                    ":id" => $idValue
+                ]);
+            }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(
@@ -310,6 +330,60 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 ]
             );
             return $numberOfNames > 0;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    public function checkDuplicatedValues(?Id $id = null, SectorValue $value): bool
+    {
+        try {
+            $idValue = $id ? $id->getValue() : null;
+            $valueValue = $value->getValue()->value;
+            $alias = "number_of_values";
+
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        value = :value;"
+                );
+
+                $statement->execute([
+                    ":value" => $valueValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        sector 
+                    WHERE 
+                        value = :value
+                    AND
+                        id != :id;"
+                );
+
+                $statement->execute([
+                    ":value" => $valueValue,
+                    ":id" => $idValue
+                ]);
+            }
+
+            $fetchResult = $statement->fetch();
+            $numberOfValues = intval(
+                $fetchResult[
+                    $alias
+                ]
+            );
+            return $numberOfValues > 0;
         } catch (\Throwable $e) {
             throw $e;
         }

@@ -63,7 +63,7 @@ class HttpUserController
             $data = [
                 "id" => $user->getId()->getValue(),
                 "username" => $user->getUsername()->getValue(),
-                "isActive" => $user->getIsActive()
+                "is_active" => $user->getIsActive()
             ];
 
             if ($showPassword) {

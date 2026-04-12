@@ -268,26 +268,47 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(Name $name): bool
+    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
     {
         try {
+            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
             $alias = "number_of_names";
-            $statement = $this->connection->prepare(
-                "SELECT 
-                    COUNT(*)
-                    AS
-                    $alias
-                FROM 
-                    game 
-                WHERE 
-                    name = :name;"
-            );
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        game 
+                    WHERE 
+                        name = :name;"
+                );
 
-            $statement->execute([
-                ":name" => $nameValue
-            ]);
+                $statement->execute([
+                    ":name" => $nameValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        game 
+                    WHERE 
+                        name = :name
+                    AND
+                        id <> :id;"
+                );
+
+                $statement->execute([
+                    ":name" => $nameValue,
+                    ":id" => $idValue
+                ]);
+            }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(

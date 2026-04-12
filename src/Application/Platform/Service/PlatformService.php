@@ -39,6 +39,7 @@ class PlatformService
             );
 
             $this->platformDomainService->ensureNameIsUnique(
+                null,
                 $platform->getName()
             );
 
@@ -64,6 +65,7 @@ class PlatformService
             );
 
             $this->platformDomainService->ensureNameIsUnique(
+                $platform->getId(),
                 $platform->getName()
             );
 

@@ -39,6 +39,7 @@ class GenreService
             );
 
             $this->genreDomainService->ensureNameIsUnique(
+                null,
                 $genre->getName()
             );
 
@@ -64,6 +65,7 @@ class GenreService
             );
 
             $this->genreDomainService->ensureNameIsUnique(
+                $genre->getId(),
                 $genre->getName()
             );
 

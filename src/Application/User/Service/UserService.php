@@ -45,6 +45,7 @@ class UserService
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
+                null,
                 $new->getUsername()
             );
 
@@ -81,12 +82,30 @@ class UserService
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
+                $existant->getId(),
                 $existant->getUsername()
             );
 
-            $encodedPassword = $this->encrypter->encrypt(
-                $existant->getPassword()->getValue()
+            $fetched = $this->repository->findById(
+                $existant->getId()
             );
+
+            $encodedPassword = $fetched->getPassword()->getValue();
+
+            $decodedPassword = $this->encrypter->decrypt(
+                $fetched->getPassword()->getValue()
+            );
+
+            $isHashEqual = strcmp(
+                $existant->getPassword()->getValue(),
+                $decodedPassword
+            ) === 0;
+
+            if ($isHashEqual === false) {
+                $encodedPassword = $this->encrypter->encrypt(
+                    $existant->getPassword()->getValue()
+                );
+            }
 
             $user = User::create(
                 $existant->getId(),

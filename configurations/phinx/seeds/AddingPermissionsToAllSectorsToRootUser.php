@@ -24,22 +24,8 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
             $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
 
             foreach (PermissionType::cases() as $permissionKey => $permissionValue) {
-                $mustIgnore = false;
-                switch ($sectorValue) {
-                    case SectorType::GameGenre:
-                    case SectorType::GamePlatform:
-                    case SectorType::UserSectorPermission:
-                        if ($permissionValue === PermissionType::Activate) {
-                            $mustIgnore = true;
-                        }
-                        break;
-                    default:
-                        if ($permissionValue === PermissionType::Delete) {
-                            $mustIgnore = true;
-                        }
-                        break;
-                }
-                if ($mustIgnore) {
+                $isValid = $sectorValue->allow($permissionValue);
+                if ($isValid === false) {
                     continue;
                 }
                 $permissionResult = $this->fetchRow("SELECT * FROM permission WHERE value = '{$permissionValue->value}'");

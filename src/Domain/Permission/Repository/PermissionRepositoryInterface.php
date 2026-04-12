@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Permission\Repository;
 
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
@@ -23,5 +24,7 @@ interface PermissionRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(Name $name): bool;
+    public function checkDuplicatedNames(?Id $id = null, Name $name): bool;
+
+    public function checkDuplicatedValues(?Id $id = null, PermissionValue $value): bool;
 }

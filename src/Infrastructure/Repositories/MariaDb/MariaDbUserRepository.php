@@ -322,26 +322,46 @@ class MariaDbUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function checkDuplicatedUsernames(Username $username): bool
+    public function checkDuplicatedUsernames(?Id $id = null, Username $username): bool
     {
         try {
+            $idValue = $id ? $id->getValue() : null;
             $usernameValue = $username->getValue();
             $alias = "number_of_names";
 
-            $statement = $this->connection->prepare(
-                "SELECT 
-                    COUNT(*)
-                    AS
-                    $alias
-                FROM 
-                    user 
-                WHERE 
-                    username = :username;"
-            );
-
-            $statement->execute([
-                ":username" => $usernameValue
-            ]);
+            $statement = null;
+            if ($idValue === null) {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        user 
+                    WHERE 
+                        username = :username;"
+                );
+                $statement->execute([
+                    ":username" => $usernameValue
+                ]);
+            } else {
+                $statement = $this->connection->prepare(
+                    "SELECT 
+                        COUNT(*)
+                        AS
+                        $alias
+                    FROM 
+                        user 
+                    WHERE 
+                        username = :username
+                    AND
+                        id <> :id;"
+                );
+                $statement->execute([
+                    ":username" => $usernameValue,
+                    ":id" => $idValue
+                ]);
+            }
 
             $fetchResult = $statement->fetch();
             $numberOfNames = intval(

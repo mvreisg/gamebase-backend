@@ -39,7 +39,13 @@ class PermissionService
             );
 
             $this->permissionDomainService->ensureNameIsUnique(
+                null,
                 $permission->getName()
+            );
+
+            $this->permissionDomainService->ensureValueIsUnique(
+                null,
+                $permission->getPermissionValue()
             );
 
             $insertedPermission = $this->repository->insert($permission);
@@ -64,7 +70,13 @@ class PermissionService
             );
 
             $this->permissionDomainService->ensureNameIsUnique(
+                $permission->getId(),
                 $permission->getName()
+            );
+
+            $this->permissionDomainService->ensureValueIsUnique(
+                $permission->getId(),
+                $permission->getPermissionValue()
             );
 
             $wasUpdated = $this->repository->update($permission);
