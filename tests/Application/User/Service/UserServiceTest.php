@@ -9,6 +9,7 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Authenticatio
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
@@ -239,7 +240,7 @@ class UserServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfAValidUserWithValidTokenIsInserted(): void
+    public function testIfAUserGetsInserted(): void
     {
         $user = $this->createUser(
             Id::create(1),
@@ -330,7 +331,100 @@ class UserServiceTest extends TestCase
         );
     }
 
-    public function testIfAValidUserWithValidTokenFailsOnInsertionBecauseOfDuplicatedUsernameOnRepository(): void
+    public function testIfUserInsertionFailsBecauseOfMissingPermissions(): void
+    {
+        $this->expectException(UnauthorizedException::class);
+
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("User"),
+            SectorValue::from(SectorType::User),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Update"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $encodedToken = "potato";
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $encrypter = $this->createEncrypter(
+            "test"
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $userService = $this->createUserService(
+            $userRepository,
+            $encrypter,
+            $checkAuthorizationUseCase,
+            $userDomainService
+        );
+
+        $insertedUser = $userService->insert(
+            $user,
+            $encodedToken
+        );
+
+        $this->assertEquals(
+            $user->getId()->getValue(),
+            $insertedUser->getId()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getUsername()->getValue(),
+            $insertedUser->getUsername()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getPassword()->getValue(),
+            $insertedUser->getPassword()->getValue()
+        );
+
+        $this->assertEquals(
+            $user->getIsActive(),
+            $insertedUser->getIsActive()
+        );
+    }
+
+    public function testIfUserInsertionFailsBecauseOfDuplicatedUsernameOnRepository(): void
     {
         $this->expectException(DuplicatedUsernameException::class);
 
@@ -403,7 +497,7 @@ class UserServiceTest extends TestCase
         );
     }
 
-    public function testIfAValidUserWithValidTokenFailsOnInsertionBecauseOfEncryptionError(): void
+    public function testIfUserInsertionFailsBecauseOfEncryptionError(): void
     {
         $this->expectException(EncryptionInterfaceException::class);
 
