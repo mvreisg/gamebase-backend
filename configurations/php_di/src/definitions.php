@@ -77,6 +77,24 @@ try {
             ->constructorParameter("timezone", DI\get("timezone")),
 
         DatabaseRepositoryInterface::class => DI\get(MariaDbRepository::class),
+        MariaDbRepository::class => DI\autowire()
+            ->constructorParameter("connection", DI\factory(function (Container $container) {
+                $adapter = $container->get("repository.adapter");
+                $host = $container->get("repository.host");
+                $username = $container->get("repository.username");
+                $password = $container->get("repository.password");
+                $dsn = "$adapter:host=$host;";
+                return new \PDO(
+                    $dsn,
+                    $username,
+                    $password,
+                    [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]
+                );
+            })),
+
         UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
         PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),
         SectorRepositoryInterface::class => DI\get(MariaDbSectorRepository::class),

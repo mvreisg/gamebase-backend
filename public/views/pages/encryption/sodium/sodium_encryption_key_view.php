@@ -2,15 +2,9 @@
 
 declare(strict_types=1);
 
-use Defuse\Crypto\Key;
-
 try {
-    require_once dirname(__DIR__, 4) . "/constants.php";
-    require_once PROJECT_ROOT . "/bootstrap.php";
-
-    $key = Key::createNewRandomKey();
-
-    $key = $key->saveToAsciiSafeString();
+    require_once dirname(__DIR__, 5) . "/constants.php";
+    require_once PROJECT_ROOT . "/public/controllers/encryption/sodium/sodium_encryption_key_controller.php";
 } catch (\Throwable $e) {
     print_r($e);
 }
@@ -19,13 +13,13 @@ try {
 <html lang="en">
 <head>
 <?php
-require_once PROJECT_ROOT . "/public/components/head.php";
+require_once PROJECT_ROOT . "/public/views/components/head.php";
 ?>
 </head>
 <body>
-    <h1 class="m-1">PHP Defuse Encryption Key</h1>
+    <h1 class="m-1">Sodium Encryption Key</h1>
 <?php
-require_once PROJECT_ROOT . "/public/components/nav.php";
+require_once PROJECT_ROOT . "/public/views/components/nav.php";
 ?>
 <div class="m-1">
     <span class="fw-semibold">Key:</span>
@@ -35,7 +29,7 @@ require_once PROJECT_ROOT . "/public/components/nav.php";
 </div>
 <button id="key-button">Copy to clipboard</button>
 <?php
-require_once PROJECT_ROOT . "/public/components/js.php";
+require_once PROJECT_ROOT . "/public/views/components/js.php";
 ?>
 <script type="text/javascript" src="./../../../js/clipboard.js"></script>
 </body>

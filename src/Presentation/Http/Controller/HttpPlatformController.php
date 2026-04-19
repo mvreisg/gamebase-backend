@@ -121,8 +121,11 @@ class HttpPlatformController
         }
     }
 
-    public function setIsActive(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function setIsActive(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         try {
             $response = $response->withHeader("Content-Type", "application/json");
 
@@ -166,8 +169,11 @@ class HttpPlatformController
         }
     }
 
-    public function findById(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function findById(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         try {
             $response = $response->withHeader("Content-Type", "application/json");
 
@@ -215,8 +221,11 @@ class HttpPlatformController
         }
     }
 
-    public function findAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function findAll(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         try {
             $response = $response->withHeader("Content-Type", "application/json");
 

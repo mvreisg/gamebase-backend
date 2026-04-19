@@ -125,8 +125,11 @@ class HttpSessionController
         }
     }
 
-    public function retrieveData(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function retrieveData(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         try {
             $response = $response->withHeader("Content-Type", "application/json");
 

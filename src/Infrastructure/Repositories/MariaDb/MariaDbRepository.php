@@ -18,11 +18,11 @@ class MariaDbRepository implements DatabaseRepositoryInterface
     public function exists(string $databaseName): bool
     {
         $statement = $this->connection->prepare("
-            SELECT COUNT(SCHEMA_NAME) AS count FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME =
+            SELECT COUNT(SCHEMA_NAME) AS count FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :databaseName
         ");
 
         $statement->execute([
-            "databaseName" => $databaseName
+            ":databaseName" => $databaseName
         ]);
 
         $fetchResult = $statement->fetch();
