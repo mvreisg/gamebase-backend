@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use DI\Container;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\DatabaseRepositoryInterface;
 
 try {
     require_once dirname(__DIR__, 4) . "/constants.php";
@@ -14,35 +15,9 @@ try {
     $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
 
     $database = $container->get("repository.database");
-    $adapter = $container->get("repository.adapter");
-    $host = $container->get("repository.host");
-    $username = $container->get("repository.username");
-    $password = $container->get("repository.password");
-    $dsn = "$adapter:host=$host;";
-    $pdo = new \PDO(
-        $dsn,
-        $username,
-        $password,
-        [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-        ]
-    );
+    $repository = $container->get(DatabaseRepositoryInterface::class);
 
-    function exists($pdo, $database)
-    {
-        $stmt = $pdo->prepare("
-            SELECT SCHEMA_NAME
-            FROM INFORMATION_SCHEMA.SCHEMATA
-            WHERE SCHEMA_NAME = :dbname
-        ");
-
-        $stmt->execute(["dbname" => $database]);
-
-        return (bool) $stmt->fetch();
-    }
-
-    $exists = exists($pdo, $database);
+    $exists = $repository->exists($database);
     //$result = $pdo->exec("DROP DATABASE $database;");
     $rawQueries = $_SERVER["QUERY_STRING"];
     if ($rawQueries !== "") {
@@ -57,18 +32,18 @@ try {
             switch ($action) {
                 case "drop":
                     if ($exists) {
-                        $pdo->exec("DROP DATABASE `$database`");
+                        $repository->drop($database);
                     }
                     break;
                 case "create":
                     if ($exists === false) {
-                        $pdo->exec("CREATE DATABASE `$database`");
+                        $repository->create($database);
                     }
                     break;
                 default:
                     break;
             }
-            $exists = exists($pdo, $database);
+            $exists = $repository->exists($database);
         }
     }
 } catch (\Throwable $e) {

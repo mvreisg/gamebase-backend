@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInt
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\DatabaseRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis\PredisAuthenticationTokenCache;
@@ -28,6 +29,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameRepos
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
@@ -74,6 +76,7 @@ try {
         \DateTimeZone::class => DI\autowire()
             ->constructorParameter("timezone", DI\get("timezone")),
 
+        DatabaseRepositoryInterface::class => DI\get(MariaDbRepository::class),
         UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
         PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),
         SectorRepositoryInterface::class => DI\get(MariaDbSectorRepository::class),
