@@ -23,5 +23,5 @@ interface GameRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool;
+    public function checkDuplicatedNames(?Id $id, Name $name): bool;
 }

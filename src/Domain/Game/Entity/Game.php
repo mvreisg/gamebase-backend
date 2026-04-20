@@ -26,6 +26,18 @@ class Game
         $this->isActive = $isActive;
     }
 
+    public static function create(
+        Id $id,
+        Name $name,
+        bool $isActive
+    ): Game {
+        return new self(
+            $id,
+            $name,
+            $isActive
+        );
+    }
+
     public function setId(Id $id): void
     {
         $this->id = $id;
