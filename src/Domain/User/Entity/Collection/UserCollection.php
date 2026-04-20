@@ -15,9 +15,9 @@ class UserCollection
      */
     private array $values;
 
-    public function __construct()
+    public function __construct(?array $values = null)
     {
-        $this->values = [];
+        $this->values = $values ?? [];
     }
 
     public function add(User $value): bool

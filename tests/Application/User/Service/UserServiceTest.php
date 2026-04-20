@@ -22,6 +22,7 @@ use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\DuplicatedUsernameException;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\UserNotFoundException;
@@ -78,11 +79,27 @@ class UserServiceTest extends TestCase
             ->method("insert")
             ->willReturn($user);
         $repository
+            ->method("update")
+            ->willReturn(true);
+        $repository
+            ->method("setIsActive")
+            ->willReturn(true);
+        $repository
             ->method("checkDuplicatedUsernames")
             ->willReturn($duplicatedUsernames);
         $repository
             ->method("findById")
             ->willReturn($user);
+        $repository
+            ->method("findByUsername")
+            ->willReturn($user);
+        $repository
+            ->method("findAll")
+            ->willReturn(
+                new UserCollection([
+                    $user
+                ])
+            );
 
         return $repository;
     }
@@ -591,8 +608,6 @@ class UserServiceTest extends TestCase
 
     public function testIfAValidUserGetsUpdated(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -656,9 +671,13 @@ class UserServiceTest extends TestCase
             $userDomainService
         );
 
-        $userService->update(
+        $wasUpdated = $userService->update(
             $user,
             $encodedToken
+        );
+
+        $this->assertTrue(
+            $wasUpdated
         );
     }
 
@@ -1031,8 +1050,6 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsSetToActive(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1097,17 +1114,19 @@ class UserServiceTest extends TestCase
         );
 
         $isActive = true;
-        $userService->setIsActive(
+        $wasUpdated = $userService->setIsActive(
             $user->getId(),
             $isActive,
             $encodedToken
+        );
+
+        $this->assertTrue(
+            $wasUpdated
         );
     }
 
     public function testIfUserGetsSetToInactive(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1172,10 +1191,14 @@ class UserServiceTest extends TestCase
         );
 
         $isActive = false;
-        $userService->setIsActive(
+        $wasUpdated = $userService->setIsActive(
             $user->getId(),
             $isActive,
             $encodedToken
+        );
+
+        $this->assertTrue(
+            $wasUpdated
         );
     }
 
@@ -1337,8 +1360,6 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsFoundById(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1402,9 +1423,29 @@ class UserServiceTest extends TestCase
             $userDomainService
         );
 
-        $userService->findById(
+        $foundUser = $userService->findById(
             $user->getId(),
             $encodedToken
+        );
+
+        $this->assertEquals(
+            $user->getId(),
+            $foundUser->getId()
+        );
+
+        $this->assertEquals(
+            $user->getUsername(),
+            $foundUser->getUsername()
+        );
+
+        $this->assertEquals(
+            $user->getPassword(),
+            $foundUser->getPassword()
+        );
+
+        $this->assertEquals(
+            $user->getIsActive(),
+            $foundUser->getIsActive()
         );
     }
 
@@ -1489,8 +1530,6 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsFoundByUsername(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1554,9 +1593,29 @@ class UserServiceTest extends TestCase
             $userDomainService
         );
 
-        $userService->findByUsername(
+        $foundUser = $userService->findByUsername(
             $user->getUsername(),
             $encodedToken
+        );
+
+        $this->assertEquals(
+            $user->getId(),
+            $foundUser->getId()
+        );
+
+        $this->assertEquals(
+            $user->getUsername(),
+            $foundUser->getUsername()
+        );
+
+        $this->assertEquals(
+            $user->getPassword(),
+            $foundUser->getPassword()
+        );
+
+        $this->assertEquals(
+            $user->getIsActive(),
+            $foundUser->getIsActive()
         );
     }
 
@@ -1641,8 +1700,6 @@ class UserServiceTest extends TestCase
 
     public function testIfAllUsersGetsFound(): void
     {
-        $this->expectNotToPerformAssertions();
-
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1706,8 +1763,13 @@ class UserServiceTest extends TestCase
             $userDomainService
         );
 
-        $userService->findAll(
+        $users = $userService->findAll(
             $encodedToken
+        );
+
+        $this->assertCount(
+            1,
+            $users->fetchAll()
         );
     }
 
