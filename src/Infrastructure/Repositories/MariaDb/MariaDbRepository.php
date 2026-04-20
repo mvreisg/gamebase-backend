@@ -15,28 +15,30 @@ class MariaDbRepository implements DatabaseRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function exists(string $databaseName): bool
+    public function exists(string $database): bool
     {
         $statement = $this->connection->prepare("
-            SELECT COUNT(SCHEMA_NAME) AS count FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :databaseName
+            SELECT COUNT(SCHEMA_NAME) AS count FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :database
         ");
 
         $statement->execute([
-            ":databaseName" => $databaseName
+            ":database" => $database
         ]);
 
         $fetchResult = $statement->fetch();
 
-        return $fetchResult["count"] > 0;
+        $count = intval($fetchResult["count"]);
+
+        return $count > 0;
     }
 
-    public function create(string $databaseName): void
+    public function create(string $database): void
     {
-        $this->connection->exec("CREATE DATABASE `$databaseName`");
+        $this->connection->exec("CREATE DATABASE `$database`");
     }
 
-    public function drop(string $databaseName): void
+    public function drop(string $database): void
     {
-        $this->connection->exec("DROP DATABASE `$databaseName`");
+        $this->connection->exec("DROP DATABASE `$database`");
     }
 }

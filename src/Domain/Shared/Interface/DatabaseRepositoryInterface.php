@@ -6,9 +6,9 @@ namespace Mvreisg\GamebaseBackend\Domain\Shared\Interface;
 
 interface DatabaseRepositoryInterface
 {
-    public function exists(string $databaseName): bool;
+    public function exists(string $database): bool;
 
-    public function create(string $databaseName): void;
+    public function create(string $database): void;
 
-    public function drop(string $databaseName): void;
+    public function drop(string $database): void;
 }
