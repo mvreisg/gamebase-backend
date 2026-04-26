@@ -3,19 +3,20 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__, 4) . "/constants.php";
+require_once PROJECT_ROOT . "/public/views/components/Head.php";
+require_once PROJECT_ROOT . "/public/views/components/Nav.php";
+require_once PROJECT_ROOT . "/public/views/components/JavaScript.php";
 require_once PROJECT_ROOT . "/public/controllers/phinx/phinx_startup_controller.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
 <?php
-require_once PROJECT_ROOT . "/public/views/components/head.php";
+echo Head::get("Gamebase-Backend");
 ?>
-</head>
 <body>
     <h1 class="m-1">PDO Database</h1>
 <?php
-require_once PROJECT_ROOT . "/public/views/components/nav.php";
+echo Nav::get(Nav::$ITEMS);
 ?>
 <div class="m-1">  
     Status:   
@@ -31,7 +32,7 @@ echo "</pre>";
 ?>
 </div>
 <?php
-require_once PROJECT_ROOT . "/public/views/components/js.php";
+echo JavaScript::get();
 ?>
 </body>
 </html>

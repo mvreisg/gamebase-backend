@@ -41,7 +41,6 @@ try {
     }
 
     $exists = $service->exists($database);
-
 } catch (\Throwable $e) {
     print_r($e);
 }

@@ -51,6 +51,9 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpSectorController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpSessionController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserSectorPermissionController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Pdo\HttpPdoDatabaseDashboardViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDashboardHomeViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpInvalidTokenExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpUnexistantTokenExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\Token\Cache\HttpAuthenticationTokenCacheExceptionHandler;
@@ -244,7 +247,6 @@ try {
             NullNameException::class,
             HttpNullNameExceptionHandler::class
         )
-        //
         ->setErrorHandler(
             EmptyPasswordValueException::class,
             HttpEmptyPasswordValueExceptionHandler::class
@@ -368,6 +370,18 @@ try {
         $userSectorPermissionGroup->get("/{id:[0-9]+}", [HttpUserSectorPermissionController::class, "findById"]);
         $userSectorPermissionGroup->get("", [HttpUserSectorPermissionController::class, "findAll"]);
     })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
+
+    $app->group("/pages", function (RouteCollectorProxy $pagesGroup) {
+        $pagesGroup->get("/login", HttpLoginViewPageController::class);
+        $pagesGroup->group("/dashboard", function (RouteCollectorProxy $dashboardGroup) {
+            $dashboardGroup->get("/home", HttpDashboardHomeViewPageController::class);
+            $dashboardGroup->group("/database", function (RouteCollectorProxy $databaseGroup) {
+                $databaseGroup->group("/pdo", function (RouteCollectorProxy $pdoGroup) {
+                    $pdoGroup->get("/pdo_database_view", HttpPdoDatabaseDashboardViewPageController::class);
+                });
+            });
+        });
+    });
 
     $app->run();
 } catch (\Throwable $e) {

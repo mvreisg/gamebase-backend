@@ -33,6 +33,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbRepositor
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\Option\MariaDbRepositoryOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use Psr\Container\ContainerInterface;
 use Predis\Client;
@@ -94,6 +95,9 @@ try {
                     ]
                 );
             })),
+
+        MariaDbRepositoryOptions::class => DI\autowire()
+            ->constructorParameter("database", DI\get("repository.database")),
 
         UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
         PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),
