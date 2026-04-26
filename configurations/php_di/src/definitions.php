@@ -35,12 +35,13 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepos
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\Option\MariaDbRepositoryOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
+use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Psr\Container\ContainerInterface;
 use Predis\Client;
 
 try {
     return [
-        "timezone" => fn () => $_ENV["TIME_ZONE"],
+        "time.timezone" => fn () => $_ENV["TIME_ZONE"],
 
         "encryption.defuse.key" => fn () => $_ENV["DEFUSE_PHP_ENCRYPTION_KEY"],
         "encryption.sodium.key" => fn () => $_ENV["SODIUM_CRYPTO_SECRETBOX_KEY"],
@@ -61,6 +62,9 @@ try {
         "cache.redis.host" => fn () => $_ENV["REDIS_HOST"],
         "cache.redis.port" => fn () => $_ENV["REDIS_PORT"],
 
+        "http.host" => fn () => "http://{$_SERVER["HTTP_HOST"]}",
+        "http.title" => fn () => "Gamebase-Backend",
+
         ClockInterface::class => DI\get(Clock::class),
 
         EncryptionInterface::class => DI\get(DefuseEncryption::class),
@@ -75,7 +79,7 @@ try {
             ->constructorParameter("key", DI\get("authentication.jwt.key")),
 
         \DateTimeZone::class => DI\autowire()
-            ->constructorParameter("timezone", DI\get("timezone")),
+            ->constructorParameter("timezone", DI\get("time.timezone")),
 
         DatabaseRepositoryInterface::class => DI\get(MariaDbRepository::class),
         MariaDbRepository::class => DI\autowire()
@@ -98,6 +102,10 @@ try {
 
         MariaDbRepositoryOptions::class => DI\autowire()
             ->constructorParameter("database", DI\get("repository.database")),
+
+        HttpOptions::class => DI\autowire()
+            ->constructorParameter("host", DI\get("http.host"))
+            ->constructorParameter("title", DI\get("http.title")),
 
         UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
         PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),

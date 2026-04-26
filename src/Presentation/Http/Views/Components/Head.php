@@ -11,13 +11,13 @@ class Head
         return new self();
     }
 
-    public function get(string $title): string
+    public function get(string $host, string $title): string
     {
         return "<head>"
             . $this->getMetaCharset()
             . $this->getMetaViewport()
             . $this->getTitle($title)
-            . $this->getBootstrapCss()
+            . $this->getBootstrapCss($host)
             . $this->getCustomStyles()
         . "</head>";
     }
@@ -37,9 +37,9 @@ class Head
         return "<title>{$title}</title>";
     }
 
-    public function getBootstrapCss(): string
+    public function getBootstrapCss(string $host): string
     {
-        return "<link rel=\"stylesheet\" href=\"" . BASE_URL . "/css/bootstrap.min.css\">";
+        return "<link rel=\"stylesheet\" href=\"$host/css/bootstrap.min.css\">";
     }
 
     public function getCustomStyles(): string

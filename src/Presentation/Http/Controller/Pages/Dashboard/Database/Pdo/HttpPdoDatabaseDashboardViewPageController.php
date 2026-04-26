@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\D
 
 use Mvreisg\GamebaseBackend\Application\Shared\Service\DatabaseService;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\Option\MariaDbRepositoryOptions;
+use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Mvreisg\GamebaseBackend\Presentation\Http\Views\Pages\Dashboard\Database\Pdo\PdoDatabaseDashboardView;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,11 +15,13 @@ class HttpPdoDatabaseDashboardViewPageController
 {
     private DatabaseService $databaseService;
     private MariaDbRepositoryOptions $repositoryOptions;
+    private HttpOptions $options;
 
-    public function __construct(DatabaseService $databaseService, MariaDbRepositoryOptions $repositoryOptions)
+    public function __construct(DatabaseService $databaseService, MariaDbRepositoryOptions $repositoryOptions, HttpOptions $options)
     {
         $this->databaseService = $databaseService;
         $this->repositoryOptions = $repositoryOptions;
+        $this->options = $options;
     }
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -48,11 +51,12 @@ class HttpPdoDatabaseDashboardViewPageController
         $response
             ->getBody()
             ->write(
-                PdoDatabaseDashboardView::create(
-                    TITLE,
+                PdoDatabaseDashboardView::create()->getHtml(
+                    $this->options->getHost(),
+                    $this->options->getTitle(),
                     $this->repositoryOptions->getDatabase(),
                     $exists
-                )->getHtml(BASE_URL)
+                )
             );
         return $response;
     }

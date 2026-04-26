@@ -21,11 +21,11 @@ class Nav
         return new self();
     }
 
-    public function get(): string
+    public function get(string $host): string
     {
         $nav = "<nav>";
         foreach (self::ITEMS as $title => $item) {
-            $nav .= "<a class=\"m-1\" href=\"" . BASE_URL . "{$item}\">{$title}</a>";
+            $nav .= "<a class=\"m-1\" href=\"{$host}{$item}\">{$title}</a>";
         }
         $nav .= "</nav>";
         return $nav;

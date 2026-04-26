@@ -10,23 +10,9 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Views\Components\Nav;
 
 class PdoDatabaseDashboardView
 {
-    private string $title;
-    private string $database;
-    private bool $exists;
-
-    public function __construct(string $title, string $database, bool $exists)
+    public static function create(): self
     {
-        $this->title = $title;
-        $this->database = $database;
-        $this->exists = $exists;
-    }
-
-    public static function create(
-        string $title,
-        string $database,
-        bool $exists
-    ): self {
-        return new self($title, $database, $exists);
+        return new self();
     }
 
     public function getExistsComponent(string $host, bool $exists): string
@@ -44,30 +30,30 @@ class PdoDatabaseDashboardView
         }
     }
 
-    public function getHtml(string $host): string
+    public function getHtml(string $host, string $title, string $database, bool $exists): string
     {
         return "
         <!DOCTYPE html>
         <html lang=\"en\">
-            {$this->getHead()}
-            {$this->getBody($host)}
+            {$this->getHead($host, $title)}
+            {$this->getBody($host, $title, $database, $exists)}
         </html>";
     }
 
-    public function getHead(): string
+    public function getHead(string $host, string $title): string
     {
-        return Head::create()->get($this->title);
+        return Head::create()->get($host, $title);
     }
 
-    public function getBody(string $host): string
+    public function getBody(string $host, string $title, string $database, bool $exists): string
     {
         return "
         <body>
-            <h1 class=\"m-1\">{$this->title}</h1>" .
-            Nav::create()->get() .
+            <h1 class=\"m-1\">{$title}</h1>" .
+            Nav::create()->get($host) .
             "<div class=\"m-1\">" .
-                "<span class=\"fw-semibold\">{$this->database}</span> status:" .
-                $this->getExistsComponent($host, $this->exists) .
+                "<span class=\"fw-semibold\">{$database}</span> status:" .
+                $this->getExistsComponent($host, $exists) .
             "</div>" .
             JavaScript::create()->getBootstrapBundleScript($host) .
             JavaScript::create()->getSessionScript($host) .

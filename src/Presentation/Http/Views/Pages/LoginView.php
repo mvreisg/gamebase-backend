@@ -10,38 +10,31 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Views\Components\Login\LoginForm;
 
 class LoginView
 {
-    private string $title;
-
-    public function __construct(string $title)
+    public static function create(): self
     {
-        $this->title = $title;
+        return new self();
     }
 
-    public static function create(string $title): self
-    {
-        return new self($title);
-    }
-
-    public function getHtml(string $host): string
+    public function getHtml(string $host, string $title): string
     {
         return "
         <!DOCTYPE html>
         <html lang=\"en\">
-            {$this->getHead()}
-            {$this->getBody($host)}
+            {$this->getHead($host, $title)}
+            {$this->getBody($host, $title)}
         </html>";
     }
 
-    public function getHead(): string
+    public function getHead(string $host, string $title): string
     {
-        return Head::create()->get($this->title);
+        return Head::create()->get($host, $title);
     }
 
-    public function getBody(string $host): string
+    public function getBody(string $host, string $title): string
     {
         return "
         <body>
-            <h1 class=\"m-1\">{$this->title}</h1>" .
+            <h1 class=\"m-1\">{$title}</h1>" .
             JavaScript::create()->getBootstrapBundleScript($host) .
             JavaScript::create()->getSessionScript($host) .
             JavaScript::create()->getSessionValidationScript($host) .
