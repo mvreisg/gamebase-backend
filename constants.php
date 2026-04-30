@@ -1,3 +1,4 @@
 <?php
 
-const PROJECT_ROOT = __DIR__;
+declare(strict_types=1);
+define("PROJECT_ROOT", __DIR__);

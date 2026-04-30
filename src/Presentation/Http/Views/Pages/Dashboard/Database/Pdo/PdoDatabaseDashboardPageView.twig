@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "Components/Head.twig" with { 
+    host: host,
+    title: title,
+} %}       
+<body>
+    <h1 class="m-1">{{ title }}</h1>
+    {% include "Components/Nav.twig" with { 
+        host: host 
+    } %}    
+    <div class="m-1">
+        <span class="fw-semibold">{{ database.name }}</span> status:
+        {% if database.exists %}
+            <span class="fw-semibold" style="color: lime">exists.</span>
+            <a style="color: red" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/view?action=drop">
+                Drop
+            </a>
+        {% else %}
+            <span class="fw-semibold" style="color: red">unexistant.</span>
+            <a style="color: lime" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/view?action=create">
+                Create
+            </a>
+        {% endif %}     
+    </div>
+    {% include "Components/Scripts/BootstrapScript.twig" %}
+    {% include "Components/Scripts/SessionScript.twig" with { 
+        host: host
+    } %}    
+</body>
+</html>

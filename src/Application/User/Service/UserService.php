@@ -93,7 +93,7 @@ class UserService
             $encodedPassword = $fetched->getPassword()->getValue();
 
             $decodedPassword = $this->encrypter->decrypt(
-                $fetched->getPassword()->getValue()
+                $encodedPassword
             );
 
             $isHashEqual = strcmp(

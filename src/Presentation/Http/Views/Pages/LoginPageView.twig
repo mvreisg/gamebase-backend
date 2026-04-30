@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "Components/Head.twig" with { 
+    host: host,
+    title: title,
+} %}    
+</html>
+<body>
+    <h1 class="m-1">{{ title }}</h1> 
+    {% include "Components/Login/LoginForm.twig" with { 
+        host: host 
+    } %}
+    {% if database.exists %}
+        <div class="m-1">  
+            Database exists and is ready to use.
+        </div>
+    {% else %}
+        {% include "Components/Database/Phinx/PhinxDatabase.twig" with { 
+            returnCode: phinx.returnCode,
+            output: phinx.output
+        } %}
+    {% endif %}
+    {% include "Components/Scripts/BootstrapScript.twig" %}
+    {% include "Components/Scripts/SessionScript.twig" with { 
+        host: host
+    } %}
+</body>

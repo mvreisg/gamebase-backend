@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInt
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\DatabaseRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis\PredisAuthenticationTokenCache;
@@ -28,16 +29,21 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameRepos
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPermissionRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbPlatformRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Option\RepositoryOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
+use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Psr\Container\ContainerInterface;
 use Predis\Client;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 try {
     return [
-        "timezone" => fn () => $_ENV["TIME_ZONE"],
+        "time.timezone" => fn () => $_ENV["TIME_ZONE"],
 
         "encryption.defuse.key" => fn () => $_ENV["DEFUSE_PHP_ENCRYPTION_KEY"],
         "encryption.sodium.key" => fn () => $_ENV["SODIUM_CRYPTO_SECRETBOX_KEY"],
@@ -58,6 +64,9 @@ try {
         "cache.redis.host" => fn () => $_ENV["REDIS_HOST"],
         "cache.redis.port" => fn () => $_ENV["REDIS_PORT"],
 
+        "http.host" => fn () => "http://{$_SERVER["HTTP_HOST"]}",
+        "http.title" => fn () => "Gamebase-Backend",
+
         ClockInterface::class => DI\get(Clock::class),
 
         EncryptionInterface::class => DI\get(DefuseEncryption::class),
@@ -72,7 +81,33 @@ try {
             ->constructorParameter("key", DI\get("authentication.jwt.key")),
 
         \DateTimeZone::class => DI\autowire()
-            ->constructorParameter("timezone", DI\get("timezone")),
+            ->constructorParameter("timezone", DI\get("time.timezone")),
+
+        DatabaseRepositoryInterface::class => DI\get(MariaDbRepository::class),
+        MariaDbRepository::class => DI\autowire()
+            ->constructorParameter("connection", DI\factory(function (Container $container) {
+                $adapter = $container->get("repository.adapter");
+                $host = $container->get("repository.host");
+                $username = $container->get("repository.username");
+                $password = $container->get("repository.password");
+                $dsn = "$adapter:host=$host;";
+                return new \PDO(
+                    $dsn,
+                    $username,
+                    $password,
+                    [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]
+                );
+            })),
+
+        RepositoryOptions::class => DI\autowire()
+            ->constructorParameter("database", DI\get("repository.database")),
+
+        HttpOptions::class => DI\autowire()
+            ->constructorParameter("host", DI\get("http.host"))
+            ->constructorParameter("title", DI\get("http.title")),
 
         UserRepositoryInterface::class => DI\get(MariaDbUserRepository::class),
         PermissionRepositoryInterface::class => DI\get(MariaDbPermissionRepository::class),
@@ -115,7 +150,16 @@ try {
                 "host" => $host,
                 "port" => $port,
             ]);
-        })
+        }),
+
+        FilesystemLoader::class => DI\factory(function () {
+            return new FilesystemLoader(__DIR__ . "/../../../src/Presentation/Http/Views");
+        }),
+
+        Environment::class => DI\factory(function (ContainerInterface $container) {
+            $loader = $container->get(FilesystemLoader::class);
+            return new Environment($loader);
+        }),
     ];
 } catch (\Throwable $e) {
     throw $e;

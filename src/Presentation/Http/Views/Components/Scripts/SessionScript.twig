@@ -1,0 +1,48 @@
+<script type="module">     
+    import session from '{{host}}/javascript/session.js';       
+
+    const logoff = () => {
+        session.deleteToken();
+        if (window.location.pathname !== '/pages/login'){
+            alert("Redirecting to login page...");
+            window.location.href = `{{host}}/pages/login`;
+        }
+    }
+
+    const validate = async () => {
+        const isValid = await session.validate("{{host}}");
+
+        if (isValid === false){
+            logoff();
+        }
+    }
+
+    if (window.location.pathname === '/pages/login') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        if (action !== null){
+            if (action === 'logoff') {
+                const response = await session.logoff("{{host}}");
+                switch(response.status){
+                    case "invalid_token":
+                        alert("Invalid token!");
+                        break;
+                    case "error":
+                    default:
+                        alert("Error!");
+                        break;
+                    case "success":
+                        alert("Logged off!");
+                        break;
+                }
+                logoff();
+            } 
+        }        
+        else {
+            
+        }
+    }
+    else if (window.location.pathname.includes("/pages/dashboard")) {
+        validate();
+    }
+</script>

@@ -28,15 +28,15 @@ This project is designed as a study and portfolio application focusing on:
 
 - PHP 8.4
 - Nginx
+- Composer
 - Slim Framework
 - PHP-DI
-- MariaDB
-- Redis
-- Docker
-- Composer
 - PHPUnit
 - Phinx
+- Docker
 - Dotenv
+- Redis
+- MariaDB
 
 ---
 
@@ -53,19 +53,19 @@ The project loosely follows DDD principles:
 
 ## Project Status
 
-🚧 Active development.
+🚧 Active development
+
+### TODO List:
+
+- Full Unit Tests coverage
+- Logger implementation
+- API Documentation
 
 ---
 
 ## License
 
 GPL-3.0
-
----
-
-### Documentation
-
-🚧 *In the future with Swagger*
 
 ---
 
@@ -191,7 +191,7 @@ Steps:
 
 ---
 
-### Composer Commands
+## Composer Commands
 
 All commands are defined in the `scripts` section of `composer.json`.
 

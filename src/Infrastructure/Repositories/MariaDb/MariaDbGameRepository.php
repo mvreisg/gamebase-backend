@@ -268,7 +268,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
+    public function checkDuplicatedNames(?Id $id, Name $name): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

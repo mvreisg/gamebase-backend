@@ -107,7 +107,7 @@ class GameService
             $this->checkAuthorizationUseCase->execute(
                 $token,
                 SectorType::Game,
-                PermissionType::Activate
+                PermissionType::List
             );
 
             $foundGame = $this->repository->findById(
@@ -126,7 +126,7 @@ class GameService
             $this->checkAuthorizationUseCase->execute(
                 $token,
                 SectorType::Game,
-                PermissionType::Activate
+                PermissionType::List
             );
 
             return $this->repository->findAll();

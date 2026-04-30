@@ -19,8 +19,11 @@ class HttpAuthenticationController
         $this->authenticationService = $authenticationService;
     }
 
-    public function validate(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function validate(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         try {
             $response = $response->withHeader("Content-Type", "application/json");
 
