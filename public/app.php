@@ -104,17 +104,12 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
-use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
 
 try {
     require_once dirname(__DIR__) . "/constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
 
     $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
-
-    $loader = new FilesystemLoader(PROJECT_ROOT . "/src/Presentation/Http/Views");
-    $twig = new Environment($loader);
 
     AppFactory::setContainer($container);
     $app = AppFactory::create();
