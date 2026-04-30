@@ -13,12 +13,12 @@
         <span class="fw-semibold">{{ database.name }}</span> status:
         {% if database.exists %}
             <span class="fw-semibold" style="color: lime">exists.</span>
-            <a style="color: red" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/pdo_database_view?action=drop">
+            <a style="color: red" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/view?action=drop">
                 Drop
             </a>
         {% else %}
             <span class="fw-semibold" style="color: red">unexistant.</span>
-            <a style="color: lime" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/pdo_database_view?action=create">
+            <a style="color: lime" class="fw-semibold mt-1 ms-1" href="{{host}}/pages/dashboard/database/pdo/view?action=create">
                 Create
             </a>
         {% endif %}     
