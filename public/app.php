@@ -52,6 +52,9 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpSessionController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserSectorPermissionController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Pdo\HttpPdoDatabaseDashboardViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Phinx\HttpPhinxDatabaseDashboardViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Defuse\HttpDashboardDefuseEncryptionPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Sodium\HttpDashboardSodiumEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDashboardHomeViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpInvalidTokenExceptionHandler;
@@ -101,12 +104,17 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 try {
     require_once dirname(__DIR__) . "/constants.php";
     require_once PROJECT_ROOT . "/bootstrap.php";
 
     $container = require PROJECT_ROOT . "/configurations/php_di/src/container_bootstrap.php";
+
+    $loader = new FilesystemLoader(PROJECT_ROOT . "/src/Presentation/Http/Views");
+    $twig = new Environment($loader);
 
     AppFactory::setContainer($container);
     $app = AppFactory::create();
@@ -377,7 +385,18 @@ try {
             $dashboardGroup->get("/home", HttpDashboardHomeViewPageController::class);
             $dashboardGroup->group("/database", function (RouteCollectorProxy $databaseGroup) {
                 $databaseGroup->group("/pdo", function (RouteCollectorProxy $pdoGroup) {
-                    $pdoGroup->get("/pdo_database_view", HttpPdoDatabaseDashboardViewPageController::class);
+                    $pdoGroup->get("/view", HttpPdoDatabaseDashboardViewPageController::class);
+                });
+                $databaseGroup->group("/phinx", function (RouteCollectorProxy $phinxGroup) {
+                    $phinxGroup->get("/view", HttpPhinxDatabaseDashboardViewPageController::class);
+                });
+            });
+            $dashboardGroup->group("/encryption", function (RouteCollectorProxy $encryptionGroup) {
+                $encryptionGroup->group("/defuse", function (RouteCollectorProxy $defuseGroup) {
+                    $defuseGroup->get("/view", HttpDashboardDefuseEncryptionPageController::class);
+                });
+                $encryptionGroup->group("/sodium", function (RouteCollectorProxy $sodiumGroup) {
+                    $sodiumGroup->get("/view", HttpDashboardSodiumEncryptionPageController::class);
                 });
             });
         });

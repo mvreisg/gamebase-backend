@@ -5,23 +5,29 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Pdo;
 
 use Mvreisg\GamebaseBackend\Application\Shared\Service\DatabaseService;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\Option\MariaDbRepositoryOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Option\RepositoryOptions;
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
-use Mvreisg\GamebaseBackend\Presentation\Http\Views\Pages\Dashboard\Database\Pdo\PdoDatabaseDashboardView;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Twig\Environment;
 
 class HttpPdoDatabaseDashboardViewPageController
 {
     private DatabaseService $databaseService;
-    private MariaDbRepositoryOptions $repositoryOptions;
+    private RepositoryOptions $repositoryOptions;
     private HttpOptions $options;
+    private Environment $environment;
 
-    public function __construct(DatabaseService $databaseService, MariaDbRepositoryOptions $repositoryOptions, HttpOptions $options)
-    {
+    public function __construct(
+        DatabaseService $databaseService,
+        RepositoryOptions $repositoryOptions,
+        HttpOptions $options,
+        Environment $environment
+    ) {
         $this->databaseService = $databaseService;
         $this->repositoryOptions = $repositoryOptions;
         $this->options = $options;
+        $this->environment = $environment;
     }
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -48,16 +54,15 @@ class HttpPdoDatabaseDashboardViewPageController
         $exists = $this->databaseService->exists(
             $this->repositoryOptions->getDatabase()
         );
-        $response
-            ->getBody()
-            ->write(
-                PdoDatabaseDashboardView::create()->getHtml(
-                    $this->options->getHost(),
-                    $this->options->getTitle(),
-                    $this->repositoryOptions->getDatabase(),
-                    $exists
-                )
-            );
+        $html = $this->environment->render("Pages/Dashboard/Database/Pdo/PdoDatabaseDashboardPageView.twig", [
+            "title" => $this->options->getTitle(),
+            "host" => $this->options->getHost(),
+            "database" => [
+                "name" => $this->repositoryOptions->getDatabase(),
+                "exists" => $exists
+            ]
+        ]);
+        $response->getBody()->write($html);
         return $response;
     }
 }

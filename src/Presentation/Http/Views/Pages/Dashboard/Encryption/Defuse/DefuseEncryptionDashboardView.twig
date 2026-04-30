@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "Components/Head.twig" with { 
+    host: host,
+    title: title,
+} %}        
+<body>
+    <h1 class="m-1">{{ title }}</h1>
+    {% include "Components/Nav.twig" with { 
+        host: host 
+    } %}
+    <div class="m-1">
+        <span class="fw-semibold">Key:</span>
+        <pre id="key-text" style="background-color: gray;" class="d-inline-flex">{{ defuse.key }}</pre>
+    </div>
+    <button id="key-button">Copy to clipboard</button>
+    {% include "Components/Scripts/ClipboardScript.twig" %}    
+    {% include "Components/Scripts/BootstrapScript.twig" %}
+    {% include "Components/Scripts/SessionScript.twig" with { 
+        host: host
+    } %}    
+</body>
+</html>

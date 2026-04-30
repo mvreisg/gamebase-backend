@@ -1,10 +1,19 @@
+const data = {
+  token: {
+    name: "token",
+  },
+};
+
 const getToken = () => {
-  return localStorage.getItem("token");
+  return localStorage.getItem(data.token.name);
 };
 
 const setToken = (token) => {
-  console.log("Setting token:", token);
-  localStorage.setItem("token", token);
+  localStorage.setItem(data.token.name, token);
+};
+
+const deleteToken = () => {
+  localStorage.removeItem(data.token.name);
 };
 
 const validate = async (host) => {
@@ -52,7 +61,32 @@ const login = async (user, host) => {
   };
 };
 
+const logoff = async (host) => {
+  const token = getToken();
+  if (token === null) {
+    return {
+      status: "invalid_token",
+    };
+  }
+  const response = await fetch(`${host}/session/logoff`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (response.status !== 200) {
+    return {
+      status: "error",
+    };
+  }
+  return {
+    status: "success",
+  };
+};
+
 export default {
   login,
+  logoff,
   validate,
+  deleteToken,
 };

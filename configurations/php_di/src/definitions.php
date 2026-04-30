@@ -33,11 +33,13 @@ use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbRepositor
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbSectorRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbUserSectorPermissionRepository;
-use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\Option\MariaDbRepositoryOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Option\RepositoryOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Psr\Container\ContainerInterface;
 use Predis\Client;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 try {
     return [
@@ -100,7 +102,7 @@ try {
                 );
             })),
 
-        MariaDbRepositoryOptions::class => DI\autowire()
+        RepositoryOptions::class => DI\autowire()
             ->constructorParameter("database", DI\get("repository.database")),
 
         HttpOptions::class => DI\autowire()
@@ -148,7 +150,16 @@ try {
                 "host" => $host,
                 "port" => $port,
             ]);
-        })
+        }),
+
+        FilesystemLoader::class => DI\factory(function () {
+            return new FilesystemLoader(__DIR__ . "/../../../src/Presentation/Http/Views");
+        }),
+
+        Environment::class => DI\factory(function (ContainerInterface $container) {
+            $loader = $container->get(FilesystemLoader::class);
+            return new Environment($loader);
+        }),
     ];
 } catch (\Throwable $e) {
     throw $e;

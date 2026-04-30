@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Phinx;
 
 use Mvreisg\GamebaseBackend\Application\Shared\Service\DatabaseService;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\Option\RepositoryOptions;
@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Twig\Environment;
 
-class HttpLoginViewPageController
+class HttpPhinxDatabaseDashboardViewPageController
 {
     private HttpOptions $options;
     private Environment $environment;
@@ -48,7 +48,7 @@ class HttpLoginViewPageController
                 $this->repositoryOptions->getDatabase()
             );
         }
-        $html = $this->environment->render("Pages/LoginPageView.twig", [
+        $html = $this->environment->render("Pages/Dashboard/Database/Phinx/PhinxDatabaseDashboardPageView.twig", [
             "host" => $this->options->getHost(),
             "title" => $this->options->getTitle(),
             "phinx" => [

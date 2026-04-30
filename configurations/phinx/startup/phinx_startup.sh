@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ../../../
+cd "$(dirname "$0")/../../../"
 ./vendor/bin/phinx migrate -e development
 ./vendor/bin/phinx seed:run -e development -s AddingFirstUser
 ./vendor/bin/phinx seed:run -e development -s AddingSectors

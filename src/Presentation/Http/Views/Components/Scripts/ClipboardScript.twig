@@ -1,0 +1,12 @@
+<script type="module">
+    import clipboard from '{{host}}/javascript/clipboard.js';
+
+    const button = document.getElementById("key-button");
+    const pre = document.getElementById("key-text");
+    if (button && pre) {
+        button.addEventListener("click", async (event) => {
+            const ok = await clipboard.copy(pre.innerText);
+            alert(ok ? "Copied!" : "Error");
+        });
+    }
+</script>
