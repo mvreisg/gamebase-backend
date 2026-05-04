@@ -26,8 +26,11 @@ class HttpDashboardDefuseEncryptionPageController
         $this->environment = $environment;
     }
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         $html = $this->environment->render("Pages/Dashboard/Encryption/Defuse/DefuseEncryptionDashboardView.twig", [
             "host" => $this->options->getHost(),
             "title" => $this->options->getTitle(),

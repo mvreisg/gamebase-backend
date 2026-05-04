@@ -26,6 +26,18 @@ class Genre
         $this->isActive = $isActive;
     }
 
+    public static function create(
+        ?Id $id = null,
+        ?Name $name = null,
+        ?bool $isActive = null
+    ): self {
+        return new self(
+            $id,
+            $name,
+            $isActive
+        );
+    }
+
     public function setId(Id $id): void
     {
         $this->id = $id;

@@ -34,8 +34,11 @@ class HttpPhinxDatabaseDashboardViewPageController
         $this->repositoryOptions = $repositoryOptions;
     }
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         $doesDatabaseExist = $this->databaseService->exists(
             $this->repositoryOptions->getDatabase()
         );
