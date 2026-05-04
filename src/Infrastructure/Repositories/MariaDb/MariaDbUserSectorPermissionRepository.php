@@ -147,7 +147,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 )
             );
 
-            $return = new UserSectorPermission(
+            $value = UserSectorPermission::create(
                 Id::create(
                     $fetchResult["usp_id"]
                 ),
@@ -155,7 +155,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 $sector,
                 $permission
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -313,7 +313,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 )
             );
 
-            $return = new UserSectorPermission(
+            $value = UserSectorPermission::create(
                 Id::create(
                     $fetchResult["usp_id"]
                 ),
@@ -321,7 +321,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 $sector,
                 $permission
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -424,7 +424,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                     )
                 );
 
-                $value = new UserSectorPermission(
+                $value = UserSectorPermission::create(
                     Id::create(
                         $row["usp_id"]
                     ),
@@ -531,7 +531,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                     )
                 );
 
-                $value = new UserSectorPermission(
+                $value = UserSectorPermission::create(
                     Id::create(
                         $row["usp_id"]
                     ),

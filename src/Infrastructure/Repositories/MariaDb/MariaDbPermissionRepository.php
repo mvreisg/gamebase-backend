@@ -77,10 +77,16 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new Permission(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
-                PermissionValue::create($fetchResult["value"]),
+            $value = Permission::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
+                PermissionValue::create(
+                    $fetchResult["value"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -88,7 +94,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -188,10 +194,16 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                 return null;
             }
 
-            $return = new Permission(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
-                PermissionValue::create($fetchResult["value"]),
+            $value = Permission::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
+                PermissionValue::create(
+                    $fetchResult["value"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -199,7 +211,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -224,10 +236,16 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
 
             $permissions = new PermissionCollection();
             foreach ($fetchResult as $row) {
-                $value = new Permission(
-                    Id::create($row["id"]),
-                    Name::create($row["name"]),
-                    PermissionValue::create($row["value"]),
+                $value = Permission::create(
+                    Id::create(
+                        $row["id"]
+                    ),
+                    Name::create(
+                        $row["name"]
+                    ),
+                    PermissionValue::create(
+                        $row["value"]
+                    ),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -278,7 +296,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
+    public function checkDuplicatedNames(?Id $id, Name $name): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;
@@ -330,7 +348,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkDuplicatedValues(?Id $id = null, PermissionValue $value): bool
+    public function checkDuplicatedValues(?Id $id, PermissionValue $value): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

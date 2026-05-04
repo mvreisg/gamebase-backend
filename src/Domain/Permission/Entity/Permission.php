@@ -21,10 +21,10 @@ class Permission
     private bool $isActive;
 
     public function __construct(
-        ?Id $id = null,
-        ?Name $name = null,
-        ?PermissionValue $value = null,
-        ?bool $isActive = null
+        ?Id $id,
+        ?Name $name,
+        ?PermissionValue $value,
+        ?bool $isActive
     ) {
         $this->id = $id;
         $this->name = $name;
@@ -33,16 +33,27 @@ class Permission
     }
 
     public static function create(
-        ?Id $id = null,
-        ?Name $name = null,
-        ?PermissionValue $value = null,
-        ?bool $isActive = null
+        ?Id $id,
+        ?Name $name,
+        ?PermissionValue $value,
+        ?bool $isActive
     ): self {
         return new self(
             $id,
             $name,
             $value,
             $isActive
+        );
+    }
+
+    public static function createFromIdOnly(
+        Id $id
+    ): self {
+        return self::create(
+            $id,
+            null,
+            null,
+            null
         );
     }
 

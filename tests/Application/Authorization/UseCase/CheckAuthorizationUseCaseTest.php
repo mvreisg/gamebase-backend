@@ -76,7 +76,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        $user = new User(
+        $user = User::create(
             $id,
             $username,
             $password,
@@ -91,7 +91,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         SectorValue $value,
         bool $isActive,
     ): Sector {
-        $sector = new Sector(
+        $sector = Sector::create(
             $id,
             $name,
             $value,
@@ -106,7 +106,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         PermissionValue $value,
         bool $isActive,
     ): Permission {
-        $permission = new Permission(
+        $permission = Permission::create(
             $id,
             $name,
             $value,
@@ -176,7 +176,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         Sector $sector,
         Permission $permission
     ): UserSectorPermission {
-        return new UserSectorPermission(
+        return UserSectorPermission::create(
             $id,
             $user,
             $sector,

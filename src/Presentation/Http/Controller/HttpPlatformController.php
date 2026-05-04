@@ -43,7 +43,7 @@ class HttpPlatformController
             $isActive = $body["is_active"];
 
             $platform = $this->platformService->insert(
-                new Platform(
+                Platform::create(
                     null,
                     Name::create($name),
                     $isActive
@@ -96,7 +96,7 @@ class HttpPlatformController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $platform = new Platform(
+            $platform = Platform::create(
                 Id::create($id),
                 Name::create($name),
                 $isActive
@@ -246,6 +246,7 @@ class HttpPlatformController
                 return $response->withStatus(404);
             }
 
+            $data = [];
             foreach ($platforms->fetchAll() as $platform) {
                 $data[] = [
                     "id" => $platform->getId()->getValue(),

@@ -46,7 +46,7 @@ class HttpPermissionController
             $value = $body["value"];
 
             $permission = $this->permissionService->insert(
-                new Permission(
+                Permission::create(
                     null,
                     Name::create($name),
                     PermissionValue::create($value),
@@ -102,7 +102,7 @@ class HttpPermissionController
             $isActive = $body["is_active"];
             $value = $body["value"];
 
-            $permission = new Permission(
+            $permission = Permission::create(
                 Id::create($id),
                 Name::create($name),
                 PermissionValue::create($value),
@@ -254,6 +254,7 @@ class HttpPermissionController
                 return $response->withStatus(404);
             }
 
+            $data = [];
             foreach ($permissions->fetchAll() as $permission) {
                 $data[] = [
                     "id" => $permission->getId()->getValue(),

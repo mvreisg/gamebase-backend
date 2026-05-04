@@ -78,7 +78,7 @@ class SessionServiceTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        $user = new User(
+        $user = User::create(
             $id,
             $username,
             $password,

@@ -108,7 +108,7 @@ class HttpUserController
             $password = $body["password"];
             $isActive = $body["is_active"];
 
-            $user = new User(
+            $user = User::create(
                 Id::create($id),
                 Username::create($username),
                 DecodedPassword::create($password),

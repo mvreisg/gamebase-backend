@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Tests\Application\Genre\Service;
+namespace Mvreisg\GamebaseBackend\Tests\Application\Permission\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
-use Mvreisg\GamebaseBackend\Application\Genre\Service\GenreService;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\PermissionService;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -16,11 +16,10 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
-use Mvreisg\GamebaseBackend\Domain\Genre\Exception\GenreNotFoundException;
-use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
+use Mvreisg\GamebaseBackend\Domain\Permission\Exception\PermissionNotFoundException;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
@@ -43,7 +42,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class GenreServiceTest extends TestCase
+class PermissionServiceTest extends TestCase
 {
     private function createClock(string $timezone): ClockInterface
     {
@@ -55,24 +54,26 @@ class GenreServiceTest extends TestCase
         return $clock;
     }
 
-    private function createGenre(
+    private function createPermission(
         Id $id,
         Name $name,
+        PermissionValue $value,
         bool $isActive
-    ): Genre {
-        return Genre::create(
+    ): Permission {
+        return Permission::create(
             $id,
             $name,
+            $value,
             $isActive
         );
     }
 
-    private function createGenreRepository(
+    private function createPermissionRepository(
         bool $exists,
         bool $duplicatedGameNames,
-        Genre $genre
-    ): MockObject&GenreRepositoryInterface {
-        $repository = $this->createMock(GenreRepositoryInterface::class);
+        Permission $permission
+    ): MockObject&PermissionRepositoryInterface {
+        $repository = $this->createMock(PermissionRepositoryInterface::class);
         $repository
             ->method("checkIfExists")
             ->willReturn(
@@ -80,7 +81,7 @@ class GenreServiceTest extends TestCase
             );
         $repository
             ->method("insert")
-            ->willReturn($genre);
+            ->willReturn($permission);
         $repository
             ->method("update")
             ->willReturn(true);
@@ -89,12 +90,12 @@ class GenreServiceTest extends TestCase
             ->willReturn(true);
         $repository
             ->method("findById")
-            ->willReturn($genre);
+            ->willReturn($permission);
         $repository
             ->method("findAll")
             ->willReturn(
-                new GenreCollection([
-                    $genre
+                new PermissionCollection([
+                    $permission
                 ])
             );
         $repository
@@ -165,20 +166,6 @@ class GenreServiceTest extends TestCase
         bool $isActive
     ): Sector {
         return Sector::create(
-            $id,
-            $name,
-            $value,
-            $isActive
-        );
-    }
-
-    private function createPermission(
-        Id $id,
-        Name $name,
-        PermissionValue $value,
-        bool $isActive
-    ): Permission {
-        return Permission::create(
             $id,
             $name,
             $value,
@@ -305,11 +292,11 @@ class GenreServiceTest extends TestCase
         return $useCase;
     }
 
-    private function createGenreDomainService(
-        MockObject&GenreRepositoryInterface $genreRepository
-    ): GenreDomainService {
-        $service = new GenreDomainService(
-            $genreRepository
+    private function createPermissionDomainService(
+        MockObject&PermissionRepositoryInterface $permissionRepository
+    ): PermissionDomainService {
+        $service = new PermissionDomainService(
+            $permissionRepository
         );
         return $service;
     }
@@ -329,17 +316,17 @@ class GenreServiceTest extends TestCase
         return $userService;
     }
 
-    private function createGenreService(
-        MockObject&GenreRepositoryInterface $genreRepository,
+    private function createPermissionService(
+        MockObject&PermissionRepositoryInterface $permissionRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        GenreDomainService $genreDomainService
-    ): GenreService {
-        $genreService = new GenreService(
-            $genreRepository,
+        PermissionDomainService $permissionDomainService
+    ): PermissionService {
+        $permissionService = new PermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
-        return $genreService;
+        return $permissionService;
     }
 
     /*
@@ -348,18 +335,19 @@ class GenreServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfAGenreGetsInserted(): void
+    public function testIfAPermissionGetsInserted(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
-            Name::create("test"),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -370,7 +358,7 @@ class GenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::Genre),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -413,50 +401,51 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $insertedGenre = $genreService->insert(
-            $genre,
+        $insertedPermission = $permissionService->insert(
+            $permission,
             $encodedToken
         );
 
         $this->assertEquals(
-            $genre->getId()->getValue(),
-            $insertedGenre->getId()->getValue()
+            $permission->getId()->getValue(),
+            $insertedPermission->getId()->getValue()
         );
 
         $this->assertEquals(
-            $genre->getName()->getValue(),
-            $insertedGenre->getName()->getValue()
+            $permission->getName()->getValue(),
+            $insertedPermission->getName()->getValue()
         );
 
         $this->assertEquals(
-            $genre->getIsActive(),
-            $insertedGenre->getIsActive()
+            $permission->getIsActive(),
+            $insertedPermission->getIsActive()
         );
     }
 
-    public function testIfGenreInsertionFailsBecauseOfMissingPermissions(): void
+    public function testIfPermissionInsertionFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -510,35 +499,36 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->insert(
-            $genre,
+        $permissionService->insert(
+            $permission,
             $encodedToken
         );
     }
 
-    public function testIfGenreInsertionFailsBecauseOfDuplicatedNameOnRepository(): void
+    public function testIfPermissionInsertionFailsBecauseOfDuplicatedNameOnRepository(): void
     {
         $this->expectException(DuplicatedNameException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             true,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -548,8 +538,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -592,17 +582,17 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->insert(
-            $genre,
+        $permissionService->insert(
+            $permission,
             $encodedToken
         );
     }
@@ -613,18 +603,19 @@ class GenreServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfAValidGenreGetsUpdated(): void
+    public function testIfAValidPermissionGetsUpdated(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -634,8 +625,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -678,17 +669,17 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $wasUpdated = $genreService->update(
-            $genre,
+        $wasUpdated = $permissionService->update(
+            $permission,
             $encodedToken
         );
 
@@ -697,20 +688,21 @@ class GenreServiceTest extends TestCase
         );
     }
 
-    public function testIfGenreUpdateFailsBecauseOfMissingPermissions(): void
+    public function testIfPermissionUpdateFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -720,8 +712,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -764,35 +756,36 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->update(
-            $genre,
+        $permissionService->update(
+            $permission,
             $encodedToken
         );
     }
 
-    public function testIfGenreUpdateFailsBecauseOfUnexistantGenreOnRepository(): void
+    public function testIfPermissionUpdateFailsBecauseOfUnexistantPermissionOnRepository(): void
     {
-        $this->expectException(GenreNotFoundException::class);
+        $this->expectException(PermissionNotFoundException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             false,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -802,8 +795,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -846,35 +839,36 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->update(
-            $genre,
+        $permissionService->update(
+            $permission,
             $encodedToken
         );
     }
 
-    public function testIfGenreUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
+    public function testIfPermissionUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
     {
         $this->expectException(DuplicatedNameException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             true,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -884,8 +878,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -928,17 +922,17 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->update(
-            $genre,
+        $permissionService->update(
+            $permission,
             $encodedToken
         );
     }
@@ -949,18 +943,19 @@ class GenreServiceTest extends TestCase
     -----------------------
     */
 
-    public function testIfGenreGetsSetToActive(): void
+    public function testIfPermissionGetsSetToActive(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             false
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -970,8 +965,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1014,18 +1009,18 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
         $isActive = true;
-        $wasUpdated = $genreService->setIsActive(
-            $genre->getId(),
+        $wasUpdated = $permissionService->setIsActive(
+            $permission->getId(),
             $isActive,
             $encodedToken
         );
@@ -1035,18 +1030,19 @@ class GenreServiceTest extends TestCase
         );
     }
 
-    public function testIfGenreGetsSetToInactive(): void
+    public function testIfPermissionGetsSetToInactive(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1056,8 +1052,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1100,18 +1096,18 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
         $isActive = false;
-        $wasUpdated = $genreService->setIsActive(
-            $genre->getId(),
+        $wasUpdated = $permissionService->setIsActive(
+            $permission->getId(),
             $isActive,
             $encodedToken
         );
@@ -1121,20 +1117,21 @@ class GenreServiceTest extends TestCase
         );
     }
 
-    public function testIfGenreActivationFailsBecauseOfMissingPermissions(): void
+    public function testIfPermissionActivationFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             false
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1144,8 +1141,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1188,37 +1185,38 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
         $isActive = true;
-        $genreService->setIsActive(
-            $genre->getId(),
+        $permissionService->setIsActive(
+            $permission->getId(),
             $isActive,
             $encodedToken
         );
     }
 
-    public function testIfGenreActivationFailsBecauseOfUnexistantGenreOnRepository(): void
+    public function testIfPermissionActivationFailsBecauseOfUnexistantPermissionOnRepository(): void
     {
-        $this->expectException(GenreNotFoundException::class);
+        $this->expectException(PermissionNotFoundException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             false
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             false,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1228,8 +1226,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1272,18 +1270,18 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
         $isActive = true;
-        $genreService->setIsActive(
-            $genre->getId(),
+        $permissionService->setIsActive(
+            $permission->getId(),
             $isActive,
             $encodedToken
         );
@@ -1295,18 +1293,19 @@ class GenreServiceTest extends TestCase
     --------------------
     */
 
-    public function testIfGenreGetsFoundById(): void
+    public function testIfPermissionGetsFoundById(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
-            Name::create("test"),
+            Name::create("List"),
+            PermissionValue::from(PermissionType::List),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1316,14 +1315,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
-            true
-        );
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("List"),
-            PermissionValue::from(PermissionType::List),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $userRepository = $this->createUserRepository(
@@ -1360,50 +1353,51 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $foundGenre = $genreService->findById(
-            $genre->getId(),
+        $foundPermission = $permissionService->findById(
+            $permission->getId(),
             $encodedToken
         );
 
         $this->assertEquals(
-            $genre->getId(),
-            $foundGenre->getId()
+            $permission->getId(),
+            $foundPermission->getId()
         );
 
         $this->assertEquals(
-            $genre->getName(),
-            $foundGenre->getName()
+            $permission->getName(),
+            $foundPermission->getName()
         );
 
         $this->assertEquals(
-            $genre->getIsActive(),
-            $foundGenre->getIsActive()
+            $permission->getIsActive(),
+            $foundPermission->getIsActive()
         );
     }
 
-    public function testIfGenreFindByIdFailsBecauseOfMissingPermissions(): void
+    public function testIfPermissionFindByIdFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1413,8 +1407,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1457,17 +1451,17 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->findById(
-            $genre->getId(),
+        $permissionService->findById(
+            $permission->getId(),
             $encodedToken
         );
     }
@@ -1478,18 +1472,19 @@ class GenreServiceTest extends TestCase
     ------------------
     */
 
-    public function testIfAllGenresGetsFound(): void
+    public function testIfAllPermissionsGetsFound(): void
     {
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1499,8 +1494,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1543,39 +1538,40 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genres = $genreService->findAll(
+        $permissions = $permissionService->findAll(
             $encodedToken
         );
 
         $this->assertCount(
             1,
-            $genres->fetchAll()
+            $permissions->fetchAll()
         );
     }
 
-    public function testIfAllGenresFindFailsBecauseOfMissingPermissions(): void
+    public function testIfAllPermissionsFindFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $genre = $this->createGenre(
+        $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
+        $permissionRepository = $this->createPermissionRepository(
             true,
             false,
-            $genre
+            $permission
         );
         $user = $this->createUser(
             Id::create(1),
@@ -1585,8 +1581,8 @@ class GenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
             true
         );
         $permission = $this->createPermission(
@@ -1629,16 +1625,16 @@ class GenreServiceTest extends TestCase
             $authenticationService,
             $authorizationDomainService
         );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
         );
-        $genreService = $this->createGenreService(
-            $genreRepository,
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $permissionDomainService
         );
 
-        $genreService->findAll(
+        $permissionService->findAll(
             $encodedToken
         );
     }

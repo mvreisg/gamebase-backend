@@ -82,8 +82,11 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new GameGenre(
-                new Game(
+            $value = GameGenre::create(
+                Id::create(
+                    $fetchResult["gage_id"]
+                ),
+                Game::create(
                     Id::create(
                         $fetchResult["gm_id"]
                     ),
@@ -92,7 +95,7 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     ),
                     $fetchResult["gm_is_active"]
                 ),
-                new Genre(
+                Genre::create(
                     Id::create(
                         $fetchResult["ge_id"]
                     ),
@@ -102,12 +105,7 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     $fetchResult["ge_is_active"]
                 ),
             );
-            $return->setId(
-                Id::create(
-                    $fetchResult["gage_id"]
-                )
-            );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -206,8 +204,11 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                 return null;
             }
 
-            $return = new GameGenre(
-                new Game(
+            $value = GameGenre::create(
+                Id::create(
+                    $fetchResult["gage_id"]
+                ),
+                Game::create(
                     Id::create(
                         $fetchResult["gm_id"]
                     ),
@@ -216,7 +217,7 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     ),
                     $fetchResult["gm_is_active"]
                 ),
-                new Genre(
+                Genre::create(
                     Id::create(
                         $fetchResult["ge_id"]
                     ),
@@ -226,12 +227,7 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     $fetchResult["ge_is_active"]
                 ),
             );
-            $return->setId(
-                Id::create(
-                    $fetchResult["gage_id"]
-                )
-            );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -272,8 +268,11 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
 
             $gameGenres = new GameGenreCollection();
             foreach ($fetchResult as $row) {
-                $value = new GameGenre(
-                    new Game(
+                $value = GameGenre::create(
+                    Id::create(
+                        $fetchResult["gage_id"]
+                    ),
+                    Game::create(
                         Id::create(
                             $fetchResult["gm_id"]
                         ),
@@ -282,7 +281,7 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                         ),
                         $fetchResult["gm_is_active"]
                     ),
-                    new Genre(
+                    Genre::create(
                         Id::create(
                             $fetchResult["ge_id"]
                         ),
@@ -291,11 +290,6 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                         ),
                         $fetchResult["ge_is_active"]
                     ),
-                );
-                $value->setId(
-                    Id::create(
-                        $fetchResult["gage_id"]
-                    )
                 );
                 $gameGenres->add($value);
             }

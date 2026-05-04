@@ -15,18 +15,18 @@ use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GenreService
 {
+    private GenreRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private GenreDomainService $genreDomainService;
-    private GenreRepositoryInterface $repository;
 
     public function __construct(
+        GenreRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GenreDomainService $genreDomainService,
-        GenreRepositoryInterface $repository
     ) {
+        $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->genreDomainService = $genreDomainService;
-        $this->repository = $repository;
     }
 
     public function insert(Genre $genre, string $token): Genre

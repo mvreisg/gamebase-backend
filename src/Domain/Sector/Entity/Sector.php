@@ -20,11 +20,23 @@ class Sector
     private SectorValue $value;
     private bool $isActive;
 
+    public function __construct(
+        ?Id $id,
+        ?Name $name,
+        ?SectorValue $value,
+        ?bool $isActive
+    ) {
+        $this->id = $id;
+        $this->name = $name;
+        $this->value = $value;
+        $this->isActive = $isActive;
+    }
+
     public static function create(
-        ?Id $id = null,
-        ?Name $name = null,
-        ?SectorValue $value = null,
-        ?bool $isActive = null
+        ?Id $id,
+        ?Name $name,
+        ?SectorValue $value,
+        ?bool $isActive
     ): self {
         return new self(
             $id,
@@ -34,16 +46,15 @@ class Sector
         );
     }
 
-    public function __construct(
-        ?Id $id = null,
-        ?Name $name = null,
-        ?SectorValue $value = null,
-        ?bool $isActive = null
-    ) {
-        $this->id = $id;
-        $this->name = $name;
-        $this->value = $value;
-        $this->isActive = $isActive;
+    public static function createFromIdOnly(
+        Id $id
+    ): self {
+        return self::create(
+            $id,
+            null,
+            null,
+            null
+        );
     }
 
     public function setId(Id $id): void

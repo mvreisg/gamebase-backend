@@ -44,13 +44,14 @@ class HttpGameGenreController
             $genreId = $body["genre_id"];
 
             $gameGenre = $this->gameGenreService->insert(
-                new GameGenre(
-                    new Game(
+                GameGenre::create(
+                    null,
+                    Game::createFromIdOnly(
                         Id::create(
                             $gameId
                         )
                     ),
-                    new Genre(
+                    Genre::createFromIdOnly(
                         Id::create(
                             $genreId
                         )
@@ -112,19 +113,19 @@ class HttpGameGenreController
             $gameId = $body["game_id"];
             $genreId = $body["genre_id"];
 
-            $gameGenre = new GameGenre(
-                new Game(
+            $gameGenre = GameGenre::create(
+                Id::create($id),
+                Game::createFromIdOnly(
                     Id::create(
                         $gameId
                     )
                 ),
-                new Genre(
+                Genre::createFromIdOnly(
                     Id::create(
                         $genreId
                     )
                 )
             );
-            $gameGenre->setId(Id::create($id));
 
             $wasUpdated = $this->gameGenreService->update(
                 $gameGenre,

@@ -43,7 +43,7 @@ class HttpGenreController
             $isActive = $body["is_active"];
 
             $genre = $this->genreService->insert(
-                new Genre(
+                Genre::create(
                     null,
                     Name::create($name),
                     $isActive
@@ -96,7 +96,7 @@ class HttpGenreController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $genre = new Genre(
+            $genre = Genre::create(
                 Id::create($id),
                 Name::create($name),
                 $isActive
@@ -247,6 +247,7 @@ class HttpGenreController
                 return $response->withStatus(404);
             }
 
+            $data = [];
             foreach ($genres->fetchAll() as $genre) {
                 $data[] = [
                     "id" => $genre->getId()->getValue(),

@@ -163,7 +163,7 @@ class AuthenticationServiceTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        return new User(
+        return User::create(
             $id,
             $username,
             $password,

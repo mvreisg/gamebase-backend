@@ -44,13 +44,14 @@ class HttpGamePlatformController
             $platformId = $body["platform_id"];
 
             $gamePlatform = $this->gamePlatformService->insert(
-                new GamePlatform(
-                    new Game(
+                GamePlatform::create(
+                    null,
+                    Game::createFromIdOnly(
                         Id::create(
                             $gameId
                         )
                     ),
-                    new Platform(
+                    Platform::createFromIdOnly(
                         Id::create(
                             $platformId
                         )
@@ -112,21 +113,19 @@ class HttpGamePlatformController
             $gameId = $body["game_id"];
             $platformId = $body["platform_id"];
 
-            $gamePlatform = new GamePlatform(
-                new Game(
+            $gamePlatform = GamePlatform::create(
+                Id::create(
+                    $id
+                ),
+                Game::createFromIdOnly(
                     Id::create(
                         $gameId
                     )
                 ),
-                new Platform(
+                Platform::createFromIdOnly(
                     Id::create(
                         $platformId
                     )
-                )
-            );
-            $gamePlatform->setId(
-                Id::create(
-                    $id
                 )
             );
 
