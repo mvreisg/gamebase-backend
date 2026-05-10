@@ -9,13 +9,10 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Authenticatio
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
 use Mvreisg\GamebaseBackend\Application\Permission\Service\PermissionService;
-use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Exception\PermissionNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
@@ -25,7 +22,6 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\Permis
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -38,22 +34,11 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
-use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class PermissionServiceTest extends TestCase
 {
-    private function createClock(string $timezone): ClockInterface
-    {
-        $clock = new Clock(
-            new \DateTimeZone(
-                $timezone
-            )
-        );
-        return $clock;
-    }
-
     private function createPermission(
         Id $id,
         Name $name,
@@ -185,47 +170,6 @@ class PermissionServiceTest extends TestCase
         return $repository;
     }
 
-    private function createEncrypter(
-        string $encryptedMessage
-    ): MockObject&EncryptionInterface {
-        $encrypter = $this->createMock(EncryptionInterface::class);
-        $encrypter
-            ->method("encrypt")
-            ->willReturn(
-                $encryptedMessage
-            );
-
-        return $encrypter;
-    }
-
-    private function createEncrypterWithDecryptionError(): MockObject&EncryptionInterface
-    {
-        $encrypter = $this->createMock(EncryptionInterface::class);
-        $encrypter
-            ->method("decrypt")
-            ->willThrowException(
-                new EncryptionInterfaceException(
-                    "decryption error"
-                )
-            );
-
-        return $encrypter;
-    }
-
-    private function createEncrypterWithEncryptionError(): MockObject&EncryptionInterface
-    {
-        $encrypter = $this->createMock(EncryptionInterface::class);
-        $encrypter
-            ->method("encrypt")
-            ->willThrowException(
-                new EncryptionInterfaceException(
-                    "ecryption error"
-                )
-            );
-
-        return $encrypter;
-    }
-
     private function createTokenCacheInterface(
         bool $exists,
         string $encodedToken
@@ -299,21 +243,6 @@ class PermissionServiceTest extends TestCase
             $permissionRepository
         );
         return $service;
-    }
-
-    private function createUserService(
-        MockObject&UserRepositoryInterface $userRepository,
-        MockObject&EncryptionInterface $encrypter,
-        CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        UserDomainService $userDomainService
-    ): UserService {
-        $userService = new UserService(
-            $userRepository,
-            $encrypter,
-            $checkAuthorizationUseCase,
-            $userDomainService
-        );
-        return $userService;
     }
 
     private function createPermissionService(

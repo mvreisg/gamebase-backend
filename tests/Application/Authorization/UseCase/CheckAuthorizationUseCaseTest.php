@@ -15,10 +15,8 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
-use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
-use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -144,30 +142,6 @@ class CheckAuthorizationUseCaseTest extends TestCase
             );
 
         return $repository;
-    }
-
-    private function createPermissionRepository(
-        Permission $permission
-    ): MockObject&PermissionRepositoryInterface {
-        $permissionRepository = $this->createMock(PermissionRepositoryInterface::class);
-        $permissionRepository
-            ->method("findById")
-            ->willReturn(
-                $permission
-            );
-        return $permissionRepository;
-    }
-
-    private function createSectorRepository(
-        Sector $sector
-    ): MockObject&SectorRepositoryInterface {
-        $sectorRepository = $this->createMock(SectorRepositoryInterface::class);
-        $sectorRepository
-            ->method("findById")
-            ->willReturn(
-                $sector
-            );
-        return $sectorRepository;
     }
 
     private function createUserSectorPermission(
