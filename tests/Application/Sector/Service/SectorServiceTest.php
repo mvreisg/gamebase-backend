@@ -356,7 +356,7 @@ class SectorServiceTest extends TestCase
         );
     }
 
-    public function testIfSectorInsertionFailsBecauseOfMissingSectors(): void
+    public function testIfSectorInsertionFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
@@ -438,12 +438,6 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(DuplicatedNameException::class);
 
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("test"),
-            PermissionValue::from(PermissionType::Create),
-            true
-        );
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -457,10 +451,10 @@ class SectorServiceTest extends TestCase
             SectorValue::from(SectorType::Sector),
             true
         );
-        $sector = $this->createSector(
+        $permission = $this->createPermission(
             Id::create(1),
-            Name::create("Update"),
-            SectorValue::from(SectorType::Sector),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $sectorRepository = $this->createSectorRepository(
@@ -604,16 +598,10 @@ class SectorServiceTest extends TestCase
         );
     }
 
-    public function testIfSectorUpdateFailsBecauseOfMissingSectors(): void
+    public function testIfSectorUpdateFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("test"),
-            PermissionValue::from(PermissionType::Create),
-            true
-        );
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -627,10 +615,10 @@ class SectorServiceTest extends TestCase
             SectorValue::from(SectorType::Sector),
             true
         );
-        $sector = $this->createSector(
+        $permission = $this->createPermission(
             Id::create(1),
-            Name::create("Update"),
-            SectorValue::from(SectorType::Sector),
+            Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $sectorRepository = $this->createSectorRepository(
@@ -1014,16 +1002,10 @@ class SectorServiceTest extends TestCase
         );
     }
 
-    public function testIfSectorActivationFailsBecauseOfMissingSectors(): void
+    public function testIfSectorActivationFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("test"),
-            PermissionValue::from(PermissionType::Create),
-            true
-        );
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1031,15 +1013,15 @@ class SectorServiceTest extends TestCase
             DecodedPassword::create("test"),
             true
         );
-        $sector = $this->createSector(
+        $permission = $this->createPermission(
             Id::create(1),
-            Name::create("Sector"),
-            SectorValue::from(SectorType::Sector),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("Update"),
+            Name::create("Sector"),
             SectorValue::from(SectorType::Sector),
             true
         );
@@ -1277,14 +1259,10 @@ class SectorServiceTest extends TestCase
         );
     }
 
-    public function testIfSectorFindByIdFailsBecauseOfMissingSectors(): void
+    public function testIfSectorFindByIdFailsBecauseOfMissingPermissions(): void
     {
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("List"),
-            PermissionValue::from(PermissionType::List),
-            true
-        );
+        $this->expectException(UnauthorizedException::class);
+
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1296,6 +1274,12 @@ class SectorServiceTest extends TestCase
             Id::create(1),
             Name::create("Sector"),
             SectorValue::from(SectorType::Sector),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $sectorRepository = $this->createSectorRepository(
@@ -1350,10 +1334,6 @@ class SectorServiceTest extends TestCase
         $sector = $sectorService->findById(
             Id::create(2),
             $encodedToken
-        );
-
-        $this->assertNull(
-            $sector
         );
     }
 
@@ -1443,14 +1423,10 @@ class SectorServiceTest extends TestCase
         );
     }
 
-    public function testIfAllSectorsFindFailsBecauseOfMissingSectors(): void
+    public function testIfAllSectorsFindFailsBecauseOfMissingPermissions(): void
     {
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("List"),
-            PermissionValue::from(PermissionType::List),
-            true
-        );
+        $this->expectException(UnauthorizedException::class);
+
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1462,6 +1438,12 @@ class SectorServiceTest extends TestCase
             Id::create(1),
             Name::create("Sector"),
             SectorValue::from(SectorType::Sector),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Create"),
+            PermissionValue::from(PermissionType::Create),
             true
         );
         $sectorRepository = $this->createSectorRepository(
@@ -1513,12 +1495,8 @@ class SectorServiceTest extends TestCase
             $sectorDomainService
         );
 
-        $sectors = $sectorService->findAll(
+        $sectorService->findAll(
             $encodedToken
-        );
-
-        $this->assertNull(
-            $sectors
         );
     }
 }
