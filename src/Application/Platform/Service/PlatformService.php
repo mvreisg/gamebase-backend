@@ -15,18 +15,18 @@ use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class PlatformService
 {
+    private PlatformRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private PlatformDomainService $platformDomainService;
-    private PlatformRepositoryInterface $repository;
 
     public function __construct(
+        PlatformRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        PlatformDomainService $platformDomainService,
-        PlatformRepositoryInterface $repository
+        PlatformDomainService $platformDomainService
     ) {
+        $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->platformDomainService = $platformDomainService;
-        $this->repository = $repository;
     }
 
     public function insert(Platform $platform, string $token): Platform
