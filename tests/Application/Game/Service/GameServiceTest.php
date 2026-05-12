@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Tests\Application\User\Service;
+namespace Mvreisg\GamebaseBackend\Tests\Application\Game\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;

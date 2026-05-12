@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Tests\Application\GameGenre\Service;
+namespace Mvreisg\GamebaseBackend\Tests\Application\GamePlatform\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
-use Mvreisg\GamebaseBackend\Application\GameGenre\Service\GameGenreService;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\GamePlatformService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
@@ -18,17 +18,17 @@ use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Game\Exception\GameNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\Collection\GameGenreCollection;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Exception\GameGenreNotFoundException;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Service\GameGenreDomainService;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
-use Mvreisg\GamebaseBackend\Domain\Genre\Exception\GenreNotFoundException;
-use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Exception\GamePlatformNotFoundException;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Service\GamePlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Platform\Exception\PlatformNotFoundException;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -46,7 +46,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPer
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class GameGenreServiceTest extends TestCase
+class GamePlatformServiceTest extends TestCase
 {
     private function createGame(
         Id $id,
@@ -60,18 +60,18 @@ class GameGenreServiceTest extends TestCase
         );
     }
 
-    private function createGameGenre(
+    private function createGamePlatform(
         Id $id,
         Id $gameId,
-        Id $genreId,
-    ): GameGenre {
-        return GameGenre::create(
+        Id $platformId,
+    ): GamePlatform {
+        return GamePlatform::create(
             $id,
             Game::createFromIdOnly(
                 $gameId
             ),
-            Genre::createFromIdOnly(
-                $genreId
+            Platform::createFromIdOnly(
+                $platformId
             ),
         );
     }
@@ -273,10 +273,10 @@ class GameGenreServiceTest extends TestCase
         return $useCase;
     }
 
-    private function createGenreRepository(
+    private function createPlatformRepository(
         bool $exists
-    ): MockObject&GenreRepositoryInterface {
-        $repository = $this->createMock(GenreRepositoryInterface::class);
+    ): MockObject&PlatformRepositoryInterface {
+        $repository = $this->createMock(PlatformRepositoryInterface::class);
         $repository
             ->method("checkIfExists")
             ->willReturn($exists);
@@ -284,15 +284,15 @@ class GameGenreServiceTest extends TestCase
         return $repository;
     }
 
-    private function createGameGenreRepository(
+    private function createGamePlatformRepository(
         bool $exists,
         bool $isDeleting,
-        GameGenre $gameGenre
-    ): MockObject&GameGenreRepositoryInterface {
-        $repository = $this->createMock(GameGenreRepositoryInterface::class);
+        GamePlatform $gamePlatform
+    ): MockObject&GamePlatformRepositoryInterface {
+        $repository = $this->createMock(GamePlatformRepositoryInterface::class);
         $repository
             ->method("insert")
-            ->willReturn($gameGenre);
+            ->willReturn($gamePlatform);
         $repository
             ->method("update")
             ->willReturn(true);
@@ -301,12 +301,12 @@ class GameGenreServiceTest extends TestCase
             ->willReturn($isDeleting);
         $repository
             ->method("findById")
-            ->willReturn($gameGenre);
+            ->willReturn($gamePlatform);
         $repository
             ->method("findAll")
             ->willReturn(
-                new GameGenreCollection([
-                    $gameGenre
+                new GamePlatformCollection([
+                    $gamePlatform
                 ])
             );
         $repository
@@ -324,37 +324,37 @@ class GameGenreServiceTest extends TestCase
         return $service;
     }
 
-    private function createGenreDomainService(
-        MockObject&GenreRepositoryInterface $genreRepository
-    ): GenreDomainService {
-        $service = new GenreDomainService(
+    private function createPlatformDomainService(
+        MockObject&PlatformRepositoryInterface $genreRepository
+    ): PlatformDomainService {
+        $service = new PlatformDomainService(
             $genreRepository
         );
         return $service;
     }
 
-    private function createGameGenreDomainService(
-        MockObject&GameGenreRepositoryInterface $gameGenreRepository
-    ): GameGenreDomainService {
-        $service = new GameGenreDomainService(
-            $gameGenreRepository
+    private function createGamePlatformDomainService(
+        MockObject&GamePlatformRepositoryInterface $gamePlatformRepository
+    ): GamePlatformDomainService {
+        $service = new GamePlatformDomainService(
+            $gamePlatformRepository
         );
         return $service;
     }
 
-    private function createGameGenreService(
-        MockObject&GameGenreRepositoryInterface $gameGenreRepository,
+    private function createGamePlatformService(
+        MockObject&GamePlatformRepositoryInterface $gamePlatformRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
-        GenreDomainService $genreDomainService,
-        GameGenreDomainService $gameGenreDomainService
-    ): GameGenreService {
-        $service = new GameGenreService(
+        PlatformDomainService $genreDomainService,
+        GamePlatformDomainService $gamePlatformDomainService
+    ): GamePlatformService {
+        $service = new GamePlatformService(
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService,
-            $gameGenreRepository
+            $gamePlatformDomainService,
+            $gamePlatformRepository
         );
         return $service;
     }
@@ -365,10 +365,10 @@ class GameGenreServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfAGameGenreGetsInserted(): void
+    public function testIfAGamePlatformGetsInserted(): void
     {
         $encodedToken = "potato";
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -386,8 +386,8 @@ class GameGenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("GameGenre"),
-            SectorValue::from(SectorType::GameGenre),
+            Name::create("GamePlatform"),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -438,54 +438,54 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $insertedGameGenre = $gameGenreService->insert(
-            $gameGenre,
+        $insertedGamePlatform = $gamePlatformService->insert(
+            $gamePlatform,
             $encodedToken
         );
 
         $this->assertEquals(
-            $gameGenre->getId()->getValue(),
-            $insertedGameGenre->getId()->getValue()
+            $gamePlatform->getId()->getValue(),
+            $insertedGamePlatform->getId()->getValue()
         );
 
         $this->assertEquals(
-            $gameGenre->getGame()->getId()->getValue(),
-            $insertedGameGenre->getGame()->getId()->getValue()
+            $gamePlatform->getGame()->getId()->getValue(),
+            $insertedGamePlatform->getGame()->getId()->getValue()
         );
 
         $this->assertEquals(
-            $gameGenre->getGenre()->getId()->getValue(),
-            $insertedGameGenre->getGenre()->getId()->getValue()
+            $gamePlatform->getPlatform()->getId()->getValue(),
+            $insertedGamePlatform->getPlatform()->getId()->getValue()
         );
     }
 
-    public function testIfGameGenreInsertionFailsBecauseOfMissingPermissions(): void
+    public function testIfGamePlatformInsertionFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -561,39 +561,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->insert(
-            $gameGenre,
+        $gamePlatformService->insert(
+            $gamePlatform,
             $encodedToken
         );
     }
 
-    public function testIfGameGenreInsertionFailsBecauseOfUnexistantGame(): void
+    public function testIfGamePlatformInsertionFailsBecauseOfUnexistantGame(): void
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -617,8 +617,8 @@ class GameGenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("GameGenre"),
-            SectorValue::from(SectorType::GameGenre),
+            Name::create("GamePlatform"),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -669,39 +669,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->insert(
-            $gameGenre,
+        $gamePlatformService->insert(
+            $gamePlatform,
             $encodedToken
         );
     }
 
-    public function testIfGameGenreInsertionFailsBecauseOfUnexistantGenre(): void
+    public function testIfGamePlatformInsertionFailsBecauseOfUnexistantPlatform(): void
     {
-        $this->expectException(GenreNotFoundException::class);
+        $this->expectException(PlatformNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -725,8 +725,8 @@ class GameGenreServiceTest extends TestCase
         );
         $sector = $this->createSector(
             Id::create(1),
-            Name::create("GameGenre"),
-            SectorValue::from(SectorType::GameGenre),
+            Name::create("GamePlatform"),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -777,30 +777,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             false
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->insert(
-            $gameGenre,
+        $gamePlatformService->insert(
+            $gamePlatform,
             $encodedToken
         );
     }
@@ -811,9 +811,9 @@ class GameGenreServiceTest extends TestCase
     ----------------
     */
 
-    public function testIfAValidGameGenreGetsUpdated(): void
+    public function testIfAValidGamePlatformGetsUpdated(): void
     {
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -838,7 +838,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -889,30 +889,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $wasUpdated = $gameGenreService->update(
-            $gameGenre,
+        $wasUpdated = $gamePlatformService->update(
+            $gamePlatform,
             $encodedToken
         );
 
@@ -921,11 +921,11 @@ class GameGenreServiceTest extends TestCase
         );
     }
 
-    public function testIfGameGenreUpdateFailsBecauseOfMissingPermissions(): void
+    public function testIfGamePlatformUpdateFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1001,39 +1001,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->update(
-            $gameGenre,
+        $gamePlatformService->update(
+            $gamePlatform,
             $encodedToken
         );
     }
 
-    public function testIfGameGenreUpdateFailsBecauseOfUnexistantGameOnRepository(): void
+    public function testIfGamePlatformUpdateFailsBecauseOfUnexistantGameOnRepository(): void
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1058,7 +1058,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1109,39 +1109,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->update(
-            $gameGenre,
+        $gamePlatformService->update(
+            $gamePlatform,
             $encodedToken
         );
     }
 
-    public function testIfGameGenreUpdateFailsBecauseOfUnexistantGenreOnRepository(): void
+    public function testIfGamePlatformUpdateFailsBecauseOfUnexistantPlatformOnRepository(): void
     {
-        $this->expectException(GenreNotFoundException::class);
+        $this->expectException(PlatformNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1166,7 +1166,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1217,39 +1217,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             false
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->update(
-            $gameGenre,
+        $gamePlatformService->update(
+            $gamePlatform,
             $encodedToken
         );
     }
 
-    public function testIfGameGenreUpdateFailsBecauseOfUnexistantGameGenreOnRepository(): void
+    public function testIfGamePlatformUpdateFailsBecauseOfUnexistantGamePlatformOnRepository(): void
     {
-        $this->expectException(GameGenreNotFoundException::class);
+        $this->expectException(GamePlatformNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1274,7 +1274,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1325,30 +1325,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             false,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->update(
-            $gameGenre,
+        $gamePlatformService->update(
+            $gamePlatform,
             $encodedToken
         );
     }
@@ -1361,7 +1361,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfGameGetsDeleted(): void
     {
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1386,7 +1386,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1437,30 +1437,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             true,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $wasDeleted = $gameGenreService->delete(
-            $gameGenre->getId(),
+        $wasDeleted = $gamePlatformService->delete(
+            $gamePlatform->getId(),
             $encodedToken
         );
 
@@ -1469,11 +1469,11 @@ class GameGenreServiceTest extends TestCase
         );
     }
 
-    public function testIfGameGenreDeletionFailsBecauseOfMissingPermissions(): void
+    public function testIfGamePlatformDeletionFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1549,39 +1549,39 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->delete(
-            $gameGenre->getId(),
+        $gamePlatformService->delete(
+            $gamePlatform->getId(),
             $encodedToken
         );
     }
 
-    public function testIfGameGenreDeletionFailsBecauseOfUnexistantGameGenreOnRepository(): void
+    public function testIfGamePlatformDeletionFailsBecauseOfUnexistantGamePlatformOnRepository(): void
     {
-        $this->expectException(GameGenreNotFoundException::class);
+        $this->expectException(GamePlatformNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1606,7 +1606,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1657,30 +1657,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->delete(
-            $gameGenre->getId(),
+        $gamePlatformService->delete(
+            $gamePlatform->getId(),
             $encodedToken
         );
     }
@@ -1691,9 +1691,9 @@ class GameGenreServiceTest extends TestCase
     --------------------
     */
 
-    public function testIfGameGenreGetsFoundById(): void
+    public function testIfGamePlatformGetsFoundById(): void
     {
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1718,7 +1718,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -1769,54 +1769,54 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $foundGameGenre = $gameGenreService->findById(
-            $gameGenre->getId(),
+        $foundGamePlatform = $gamePlatformService->findById(
+            $gamePlatform->getId(),
             $encodedToken
         );
 
         $this->assertEquals(
-            $gameGenre->getId(),
-            $foundGameGenre->getId()
+            $gamePlatform->getId(),
+            $foundGamePlatform->getId()
         );
 
         $this->assertEquals(
-            $gameGenre->getGame()->getId(),
-            $foundGameGenre->getGame()->getId()
+            $gamePlatform->getGame()->getId(),
+            $foundGamePlatform->getGame()->getId()
         );
 
         $this->assertEquals(
-            $gameGenre->getGenre()->getId(),
-            $foundGameGenre->getGenre()->getId()
+            $gamePlatform->getPlatform()->getId(),
+            $foundGamePlatform->getPlatform()->getId()
         );
     }
 
-    public function testIfGameGenreFindByIdFailsBecauseOfMissingPermissions(): void
+    public function testIfGamePlatformFindByIdFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1892,30 +1892,30 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->findById(
-            $gameGenre->getId(),
+        $gamePlatformService->findById(
+            $gamePlatform->getId(),
             $encodedToken
         );
     }
@@ -1926,9 +1926,9 @@ class GameGenreServiceTest extends TestCase
     ------------------
     */
 
-    public function testIfAllGameGenresGetsFound(): void
+    public function testIfAllGamePlatformsGetsFound(): void
     {
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -1953,7 +1953,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -2004,35 +2004,35 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenres = $gameGenreService->findAll(
+        $gamePlatforms = $gamePlatformService->findAll(
             $encodedToken
         );
 
         $this->assertCount(
             1,
-            $gameGenres->fetchAll()
+            $gamePlatforms->fetchAll()
         );
     }
 
@@ -2040,7 +2040,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
+        $gamePlatform = $this->createGamePlatform(
             Id::create(1),
             Id::create(1),
             Id::create(1)
@@ -2065,7 +2065,7 @@ class GameGenreServiceTest extends TestCase
         $sector = $this->createSector(
             Id::create(1),
             Name::create("Game"),
-            SectorValue::from(SectorType::GameGenre),
+            SectorValue::from(SectorType::GamePlatform),
             true
         );
         $permission = $this->createPermission(
@@ -2116,29 +2116,29 @@ class GameGenreServiceTest extends TestCase
         $gameDomainService = $this->createGameDomainService(
             $gameRepository
         );
-        $genreRepository = $this->createGenreRepository(
+        $genreRepository = $this->createPlatformRepository(
             true
         );
-        $genreDomainService = $this->createGenreDomainService(
+        $genreDomainService = $this->createPlatformDomainService(
             $genreRepository
         );
-        $gameGenreRepository = $this->createGameGenreRepository(
+        $gamePlatformRepository = $this->createGamePlatformRepository(
             false,
             true,
-            $gameGenre
+            $gamePlatform
         );
-        $gameGenreDomainService = $this->createGameGenreDomainService(
-            $gameGenreRepository
+        $gamePlatformDomainService = $this->createGamePlatformDomainService(
+            $gamePlatformRepository
         );
-        $gameGenreService = $this->createGameGenreService(
-            $gameGenreRepository,
+        $gamePlatformService = $this->createGamePlatformService(
+            $gamePlatformRepository,
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gamePlatformDomainService
         );
 
-        $gameGenreService->findAll(
+        $gamePlatformService->findAll(
             $encodedToken
         );
     }
