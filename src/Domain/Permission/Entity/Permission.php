@@ -102,6 +102,6 @@ class Permission
 
     public function equals(PermissionType $type): bool
     {
-        return $type === $this->getPermissionValue()->getValue();
+        return $type->value === $this->getPermissionValue()->getValue()->value;
     }
 }

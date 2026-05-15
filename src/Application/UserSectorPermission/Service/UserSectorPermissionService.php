@@ -124,6 +124,10 @@ class UserSectorPermissionService
                 PermissionType::Delete
             );
 
+            $this->userSectorPermissionDomainService->ensureUserSectorPermissionExists(
+                $id
+            );
+
             $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;

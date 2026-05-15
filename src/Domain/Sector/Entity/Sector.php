@@ -102,6 +102,6 @@ class Sector
 
     public function equals(SectorType $type): bool
     {
-        return $type === $this->getSectorValue()->getValue();
+        return $type->value === $this->getSectorValue()->getValue()->value;
     }
 }
