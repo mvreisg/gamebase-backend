@@ -71,7 +71,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new Game(
+            $return = Game::create(
                 Id::create($fetchResult["id"]),
                 Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
@@ -181,7 +181,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
                 return null;
             }
 
-            $return = new Game(
+            $return = Game::create(
                 Id::create($fetchResult["id"]),
                 Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
@@ -216,7 +216,7 @@ class MariaDbGameRepository implements GameRepositoryInterface
 
             $games = new GameCollection();
             foreach ($fetchResult as $row) {
-                $value = new Game(
+                $value = Game::create(
                     Id::create($row["id"]),
                     Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting

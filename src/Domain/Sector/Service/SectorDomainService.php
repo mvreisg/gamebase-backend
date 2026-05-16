@@ -22,7 +22,7 @@ class SectorDomainService
         $this->repository = $repository;
     }
 
-    public function ensureNameIsUnique(?Id $id = null, Name $name): void
+    public function ensureNameIsUnique(?Id $id, Name $name): void
     {
         $hasDuplicatedNames = $this->repository->checkDuplicatedNames(
             $id,
@@ -36,7 +36,7 @@ class SectorDomainService
         }
     }
 
-    public function ensureValueIsUnique(?Id $id = null, SectorValue $value): void
+    public function ensureValueIsUnique(?Id $id, SectorValue $value): void
     {
         $hasDuplicatedValues = $this->repository->checkDuplicatedValues(
             $id,

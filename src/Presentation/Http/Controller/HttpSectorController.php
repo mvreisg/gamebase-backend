@@ -45,7 +45,7 @@ class HttpSectorController
             $value = $body["value"];
 
             $sector = $this->sectorService->insert(
-                new Sector(
+                Sector::create(
                     null,
                     Name::create($name),
                     SectorValue::create($value),
@@ -101,7 +101,7 @@ class HttpSectorController
             $isActive = $body["is_active"];
             $value = $body["value"];
 
-            $sector = new Sector(
+            $sector = Sector::create(
                 Id::create($id),
                 Name::create($name),
                 SectorValue::create($value),
@@ -253,6 +253,7 @@ class HttpSectorController
                 return $response->withStatus(404);
             }
 
+            $data = [];
             foreach ($sectors->fetchAll() as $sector) {
                 $data[] = [
                     "id" => $sector->getId()->getValue(),

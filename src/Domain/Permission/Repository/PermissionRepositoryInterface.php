@@ -24,7 +24,7 @@ interface PermissionRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool;
+    public function checkDuplicatedNames(?Id $id, Name $name): bool;
 
-    public function checkDuplicatedValues(?Id $id = null, PermissionValue $value): bool;
+    public function checkDuplicatedValues(?Id $id, PermissionValue $value): bool;
 }

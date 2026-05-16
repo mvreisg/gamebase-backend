@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\Authorization\UseCase;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -15,10 +15,8 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
-use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
-use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -76,7 +74,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        $user = new User(
+        $user = User::create(
             $id,
             $username,
             $password,
@@ -91,7 +89,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         SectorValue $value,
         bool $isActive,
     ): Sector {
-        $sector = new Sector(
+        $sector = Sector::create(
             $id,
             $name,
             $value,
@@ -106,7 +104,7 @@ class CheckAuthorizationUseCaseTest extends TestCase
         PermissionValue $value,
         bool $isActive,
     ): Permission {
-        $permission = new Permission(
+        $permission = Permission::create(
             $id,
             $name,
             $value,
@@ -146,37 +144,13 @@ class CheckAuthorizationUseCaseTest extends TestCase
         return $repository;
     }
 
-    private function createPermissionRepository(
-        Permission $permission
-    ): MockObject&PermissionRepositoryInterface {
-        $permissionRepository = $this->createMock(PermissionRepositoryInterface::class);
-        $permissionRepository
-            ->method("findById")
-            ->willReturn(
-                $permission
-            );
-        return $permissionRepository;
-    }
-
-    private function createSectorRepository(
-        Sector $sector
-    ): MockObject&SectorRepositoryInterface {
-        $sectorRepository = $this->createMock(SectorRepositoryInterface::class);
-        $sectorRepository
-            ->method("findById")
-            ->willReturn(
-                $sector
-            );
-        return $sectorRepository;
-    }
-
     private function createUserSectorPermission(
         ?Id $id,
         User $user,
         Sector $sector,
         Permission $permission
     ): UserSectorPermission {
-        return new UserSectorPermission(
+        return UserSectorPermission::create(
             $id,
             $user,
             $sector,

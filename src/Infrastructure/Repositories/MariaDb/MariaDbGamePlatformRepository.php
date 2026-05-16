@@ -82,8 +82,11 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new GamePlatform(
-                new Game(
+            $value = GamePlatform::create(
+                Id::create(
+                    $fetchResult["gmpl_id"]
+                ),
+                Game::create(
                     Id::create(
                         $fetchResult["gm_id"]
                     ),
@@ -92,7 +95,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     ),
                     $fetchResult["gm_is_active"]
                 ),
-                new Platform(
+                Platform::create(
                     Id::create(
                         $fetchResult["pl_id"]
                     ),
@@ -102,12 +105,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     $fetchResult["pl_is_active"]
                 ),
             );
-            $return->setId(
-                Id::create(
-                    $fetchResult["gmpl_id"]
-                )
-            );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -206,8 +204,11 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                 return null;
             }
 
-            $return = new GamePlatform(
-                new Game(
+            $value = GamePlatform::create(
+                Id::create(
+                    $fetchResult["gmpl_id"]
+                ),
+                Game::create(
                     Id::create(
                         $fetchResult["gm_id"]
                     ),
@@ -216,7 +217,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     ),
                     $fetchResult["gm_is_active"]
                 ),
-                new Platform(
+                Platform::create(
                     Id::create(
                         $fetchResult["pl_id"]
                     ),
@@ -226,12 +227,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     $fetchResult["pl_is_active"]
                 ),
             );
-            $return->setId(
-                Id::create(
-                    $fetchResult["gmpl_id"]
-                )
-            );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -272,8 +268,11 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
 
             $gamePlatforms = new GamePlatformCollection();
             foreach ($result as $row) {
-                $value = new GamePlatform(
-                    new Game(
+                $value = GamePlatform::create(
+                    Id::create(
+                        $row["gmpl_id"]
+                    ),
+                    Game::create(
                         Id::create(
                             $row["gm_id"]
                         ),
@@ -282,7 +281,7 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                         ),
                         $row["gm_is_active"]
                     ),
-                    new Platform(
+                    Platform::create(
                         Id::create(
                             $row["pl_id"]
                         ),
@@ -291,11 +290,6 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                         ),
                         $row["pl_is_active"]
                     ),
-                );
-                $value->setId(
-                    Id::create(
-                        $row["gmpl_id"]
-                    )
                 );
                 $gamePlatforms->add($value);
             }

@@ -32,13 +32,13 @@ class MariaDbRepository implements DatabaseRepositoryInterface
         return $count > 0;
     }
 
-    public function create(string $database): void
+    public function create(string $database): bool
     {
-        $this->connection->exec("CREATE DATABASE `$database`");
+        return $this->connection->exec("CREATE DATABASE `$database`");
     }
 
-    public function drop(string $database): void
+    public function drop(string $database): bool
     {
-        $this->connection->exec("DROP DATABASE `$database`");
+        return $this->connection->exec("DROP DATABASE `$database`");
     }
 }

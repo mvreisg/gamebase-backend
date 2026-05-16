@@ -15,15 +15,27 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 class User
 {
     private ?Id $id;
-    private ?Username $username;
-    private ?Password $password;
-    private ?bool $isActive;
+    private Username $username;
+    private Password $password;
+    private bool $isActive;
+
+    public function __construct(
+        ?Id $id,
+        ?Username $username,
+        ?Password $password,
+        ?bool $isActive
+    ) {
+        $this->id = $id;
+        $this->username = $username;
+        $this->password = $password;
+        $this->isActive = $isActive;
+    }
 
     public static function create(
-        ?Id $id = null,
-        ?Username $username = null,
-        ?Password $password = null,
-        ?bool $isActive = null
+        ?Id $id,
+        ?Username $username,
+        ?Password $password,
+        ?bool $isActive
     ): self {
         return new self(
             $id,
@@ -33,16 +45,15 @@ class User
         );
     }
 
-    public function __construct(
-        ?Id $id = null,
-        ?Username $username = null,
-        ?Password $password = null,
-        ?bool $isActive = null
-    ) {
-        $this->id = $id;
-        $this->username = $username;
-        $this->password = $password;
-        $this->isActive = $isActive;
+    public static function createFromIdOnly(
+        Id $id
+    ): self {
+        return self::create(
+            $id,
+            null,
+            null,
+            null
+        );
     }
 
     public function setId(Id $id): void

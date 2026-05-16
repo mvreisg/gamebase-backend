@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\Session\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -78,7 +78,7 @@ class SessionServiceTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        $user = new User(
+        $user = User::create(
             $id,
             $username,
             $password,

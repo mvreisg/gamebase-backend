@@ -53,11 +53,10 @@ The project loosely follows DDD principles:
 
 ## Project Status
 
-🚧 Active development
+🚧 **Active development**
 
-### TODO List:
+*TODO List:*
 
-- Full Unit Tests coverage
 - Logger implementation
 - API Documentation
 
@@ -140,15 +139,15 @@ You may keep the default values, but generating your own keys is recommended.
 Access:
 
 ```
-http://localhost:${NGINX_EXPOSE_PORT}/pages/index.php
+http://localhost:{$NGINX_EXPOSE_PORT}/pages/dashboard/home
 ```
 
 Then click on:
 
-- `Get PHP Defuse Encryption Key`
-- `Get Sodium Encryption Key`
+- `Defuse Encryption`
+- `Sodium Encryption`
 
-Copy the values into:
+Copy the `Key` values into:
 
 ```
 DEFUSE_PHP_ENCRYPTION_KEY=
@@ -179,14 +178,14 @@ REDIS_EXPOSE_PORT=6380
 Access
 
 ```
-http://localhost:{$NGINX_EXPOSE_PORT}/pages/index.php
+http://localhost:{$NGINX_EXPOSE_PORT}/pages/dashboard/home
 ```
 
 Steps:
 
 1. Click on **PDO Database → Create**
 2. Verify the database was created
-3. Click on **Phinx Startup**
+3. Click on **Phinx**
 4. Ensure the status is **OK**
 
 ---

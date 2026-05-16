@@ -100,6 +100,10 @@ class GamePlatformService
                 PermissionType::Delete
             );
 
+            $this->gamePlatformDomainService->ensureGamePlatformExists(
+                $id
+            );
+
             $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;

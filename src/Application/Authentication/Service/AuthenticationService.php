@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Services;
+namespace Mvreisg\GamebaseBackend\Application\Authentication\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;

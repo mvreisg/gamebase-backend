@@ -30,8 +30,11 @@ class HttpPdoDatabaseDashboardViewPageController
         $this->environment = $environment;
     }
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
-    {
+    public function __invoke(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        array $args
+    ): ResponseInterface {
         $exists = $this->databaseService->exists(
             $this->repositoryOptions->getDatabase()
         );

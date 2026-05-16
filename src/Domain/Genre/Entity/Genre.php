@@ -17,13 +17,35 @@ class Genre
     private ?bool $isActive;
 
     public function __construct(
-        ?Id $id = null,
-        ?Name $name = null,
-        ?bool $isActive = null
+        ?Id $id,
+        ?Name $name,
+        ?bool $isActive
     ) {
         $this->id = $id;
         $this->name = $name;
         $this->isActive = $isActive;
+    }
+
+    public static function create(
+        ?Id $id,
+        ?Name $name,
+        ?bool $isActive
+    ): self {
+        return new self(
+            $id,
+            $name,
+            $isActive
+        );
+    }
+
+    public static function createFromIdOnly(
+        Id $id
+    ): self {
+        return self::create(
+            $id,
+            null,
+            null
+        );
     }
 
     public function setId(Id $id): void

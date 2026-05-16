@@ -46,19 +46,19 @@ class HttpUserSectorPermissionController
             $permissionId = $body["permission_id"];
 
             $userSectorPermission = $this->userSectorPermissionService->insert(
-                new UserSectorPermission(
+                UserSectorPermission::create(
                     null,
-                    User::create(
+                    User::createFromIdOnly(
                         Id::create(
                             $userId
                         )
                     ),
-                    Sector::create(
+                    Sector::createFromIdOnly(
                         Id::create(
                             $sectorId
                         )
                     ),
-                    Permission::create(
+                    Permission::createFromIdOnly(
                         Id::create($permissionId)
                     )
                 ),
@@ -125,21 +125,21 @@ class HttpUserSectorPermissionController
             $sectorId = $body["sector_id"];
             $permissionId = $body["permission_id"];
 
-            $userSectorPermission = new UserSectorPermission(
+            $userSectorPermission = UserSectorPermission::create(
                 Id::create(
                     $id
                 ),
-                User::create(
+                User::createFromIdOnly(
                     Id::create(
                         $userId
                     )
                 ),
-                Sector::create(
+                Sector::createFromIdOnly(
                     Id::create(
                         $sectorId
                     )
                 ),
-                Permission::create(
+                Permission::createFromIdOnly(
                     Id::create($permissionId)
                 )
             );

@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Authentication\Service;
 use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
 use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Services\AuthenticationService;
+use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -163,7 +163,7 @@ class AuthenticationServiceTest extends TestCase
         DecodedPassword $password,
         bool $isActive
     ): User {
-        return new User(
+        return User::create(
             $id,
             $username,
             $password,

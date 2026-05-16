@@ -16,12 +16,25 @@ class GamePlatform
     private Platform $platform;
 
     public function __construct(
+        ?Id $id,
         Game $game,
         Platform $platform
     ) {
-        $this->id = null;
+        $this->id = $id;
         $this->game = $game;
         $this->platform = $platform;
+    }
+
+    public static function create(
+        ?Id $id,
+        Game $game,
+        Platform $platform
+    ): self {
+        return new self(
+            $id,
+            $game,
+            $platform
+        );
     }
 
     public function setId(Id $id): void

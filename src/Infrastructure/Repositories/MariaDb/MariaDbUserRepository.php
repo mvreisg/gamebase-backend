@@ -76,10 +76,16 @@ class MariaDbUserRepository implements UserRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new User(
-                Id::create($fetchResult["id"]),
-                Username::create($fetchResult["username"]),
-                EncodedPassword::create($fetchResult["password"]),
+            $value = User::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Username::create(
+                    $fetchResult["username"]
+                ),
+                EncodedPassword::create(
+                    $fetchResult["password"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -87,7 +93,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -191,10 +197,16 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 return null;
             }
 
-            $return = new User(
-                Id::create($fetchResult["id"]),
-                Username::create($fetchResult["username"]),
-                EncodedPassword::create($fetchResult["password"]),
+            $value = User::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Username::create(
+                    $fetchResult["username"]
+                ),
+                EncodedPassword::create(
+                    $fetchResult["password"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -202,7 +214,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -231,10 +243,16 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 return null;
             }
 
-            $return = new User(
-                Id::create($fetchResult["id"]),
-                Username::create($fetchResult["username"]),
-                EncodedPassword::create($fetchResult["password"]),
+            $value = User::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Username::create(
+                    $fetchResult["username"]
+                ),
+                EncodedPassword::create(
+                    $fetchResult["password"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -242,7 +260,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -267,10 +285,16 @@ class MariaDbUserRepository implements UserRepositoryInterface
 
             $users = new UserCollection();
             foreach ($fetchResult as $row) {
-                $user = new User(
-                    Id::create($row["id"]),
-                    Username::create($row["username"]),
-                    EncodedPassword::create($row["password"]),
+                $user = User::create(
+                    Id::create(
+                        $row["id"]
+                    ),
+                    Username::create(
+                        $row["username"]
+                    ),
+                    EncodedPassword::create(
+                        $row["password"]
+                    ),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */

@@ -43,7 +43,7 @@ class HttpGameController
             $isActive = $body["is_active"];
 
             $game = $this->gameService->insert(
-                new Game(
+                Game::create(
                     null,
                     Name::create($name),
                     $isActive
@@ -96,7 +96,7 @@ class HttpGameController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $game = new Game(
+            $game = Game::create(
                 Id::create($id),
                 Name::create($name),
                 $isActive
@@ -246,6 +246,7 @@ class HttpGameController
                 return $response->withStatus(404);
             }
 
+            $data = [];
             foreach ($games->fetchAll() as $game) {
                 $data[] = [
                     "id" => $game->getId()->getValue(),

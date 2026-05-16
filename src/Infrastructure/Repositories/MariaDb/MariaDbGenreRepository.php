@@ -72,7 +72,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new Genre(
+            $return = Genre::create(
                 Id::create($fetchResult["id"]),
                 Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
@@ -181,7 +181,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
                 return null;
             }
 
-            $return = new Genre(
+            $return = Genre::create(
                 Id::create($fetchResult["id"]),
                 Name::create($fetchResult["name"]),
                 /* MariaDB stores bool as int values so a casting
@@ -216,7 +216,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
 
             $genres = new GenreCollection();
             foreach ($fetchResult as $row) {
-                $value = new Genre(
+                $value = Genre::create(
                     Id::create($row["id"]),
                     Name::create($row["name"]),
                     /* MariaDB stores bool as int values so a casting
@@ -267,7 +267,7 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
+    public function checkDuplicatedNames(?Id $id, Name $name): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

@@ -100,6 +100,10 @@ class GameGenreService
                 PermissionType::Delete
             );
 
+            $this->gameGenreDomainService->ensureGameGenreExists(
+                $id
+            );
+
             $wasDeleted = $this->repository->delete($id);
 
             return $wasDeleted;

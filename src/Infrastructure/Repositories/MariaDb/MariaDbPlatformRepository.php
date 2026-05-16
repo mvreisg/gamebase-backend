@@ -71,9 +71,13 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new Platform(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
+            $value = Platform::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -81,7 +85,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -180,9 +184,13 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                 return null;
             }
 
-            $return = new Platform(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
+            $value = Platform::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -190,7 +198,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -215,9 +223,13 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
 
             $platforms = new PlatformCollection();
             foreach ($fetchResult as $row) {
-                $value = new Platform(
-                    Id::create($row["id"]),
-                    Name::create($row["name"]),
+                $value = Platform::create(
+                    Id::create(
+                        $row["id"]
+                    ),
+                    Name::create(
+                        $row["name"]
+                    ),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -267,7 +279,7 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
+    public function checkDuplicatedNames(?Id $id, Name $name): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

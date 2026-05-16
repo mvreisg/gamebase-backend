@@ -20,7 +20,7 @@ class PlatformDomainService
         $this->repository = $repository;
     }
 
-    public function ensureNameIsUnique(?Id $id = null, Name $name): void
+    public function ensureNameIsUnique(?Id $id, Name $name): void
     {
         $hasDuplicatedNames = $this->repository->checkDuplicatedNames(
             $id,

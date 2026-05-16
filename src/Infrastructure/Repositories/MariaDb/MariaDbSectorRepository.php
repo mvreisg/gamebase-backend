@@ -78,10 +78,16 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
 
             $this->connection->commit();
 
-            $return = new Sector(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
-                SectorValue::create($fetchResult["value"]),
+            $value = Sector::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
+                SectorValue::create(
+                    $fetchResult["value"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -89,7 +95,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             $this->connection->rollBack();
             throw $e;
@@ -191,10 +197,16 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 return null;
             }
 
-            $return = new Sector(
-                Id::create($fetchResult["id"]),
-                Name::create($fetchResult["name"]),
-                SectorValue::create($fetchResult["value"]),
+            $value = Sector::create(
+                Id::create(
+                    $fetchResult["id"]
+                ),
+                Name::create(
+                    $fetchResult["name"]
+                ),
+                SectorValue::create(
+                    $fetchResult["value"]
+                ),
                 /* MariaDB stores bool as int values so a casting
                  * here is needed.
                  */
@@ -202,7 +214,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                     $fetchResult["is_active"]
                 )
             );
-            return $return;
+            return $value;
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -228,10 +240,16 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
 
             $sectors = new SectorCollection();
             foreach ($fetchResult as $row) {
-                $value = new Sector(
-                    Id::create($row["id"]),
-                    Name::create($row["name"]),
-                    SectorValue::create($row["value"]),
+                $value = Sector::create(
+                    Id::create(
+                        $row["id"]
+                    ),
+                    Name::create(
+                        $row["name"]
+                    ),
+                    SectorValue::create(
+                        $row["value"]
+                    ),
                     /* MariaDB stores bool as int values so a casting
                     * here is needed.
                     */
@@ -281,7 +299,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id = null, Name $name): bool
+    public function checkDuplicatedNames(?Id $id, Name $name): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;
@@ -335,7 +353,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function checkDuplicatedValues(?Id $id = null, SectorValue $value): bool
+    public function checkDuplicatedValues(?Id $id, SectorValue $value): bool
     {
         try {
             $idValue = $id ? $id->getValue() : null;

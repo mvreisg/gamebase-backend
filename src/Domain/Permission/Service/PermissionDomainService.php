@@ -22,7 +22,7 @@ class PermissionDomainService
         $this->repository = $repository;
     }
 
-    public function ensureNameIsUnique(?Id $id = null, Name $name): void
+    public function ensureNameIsUnique(?Id $id, Name $name): void
     {
         $hasDuplicatedNames = $this->repository->checkDuplicatedNames(
             $id,
@@ -36,7 +36,7 @@ class PermissionDomainService
         }
     }
 
-    public function ensureValueIsUnique(?Id $id = null, PermissionValue $value): void
+    public function ensureValueIsUnique(?Id $id, PermissionValue $value): void
     {
         $hasDuplicatedValues = $this->repository->checkDuplicatedValues(
             $id,

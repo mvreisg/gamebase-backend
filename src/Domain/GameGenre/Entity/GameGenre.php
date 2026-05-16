@@ -16,12 +16,25 @@ class GameGenre
     private Genre $genre;
 
     public function __construct(
+        ?Id $id,
         Game $game,
         Genre $genre
     ) {
-        $this->id = null;
+        $this->id = $id;
         $this->game = $game;
         $this->genre = $genre;
+    }
+
+    public static function create(
+        ?Id $id,
+        Game $game,
+        Genre $genre
+    ): self {
+        return new self(
+            $id,
+            $game,
+            $genre
+        );
     }
 
     public function setId(Id $id): void
