@@ -2,13 +2,6 @@
 
 RESTful backend for managing a game database, built with modern PHP practices and a DDD-inspired structure.
 
-This project is designed as a study and portfolio application focusing on:
-
-- Layered architecture
-- Secure authentication and encryption
-- Containerized development
-- Scalable environment configuration
-
 ---
 
 ## Features
@@ -21,6 +14,7 @@ This project is designed as a study and portfolio application focusing on:
 - Docker-first development
 - Unit testing with PHPUnit
 - Environment variables with Dotenv
+- Logging system with Monolog
 
 ---
 
@@ -32,22 +26,12 @@ This project is designed as a study and portfolio application focusing on:
 - Slim Framework
 - PHP-DI
 - PHPUnit
+- Monolog
 - Phinx
 - Docker
 - Dotenv
 - Redis
 - MariaDB
-
----
-
-## Project Architecture
-
-The project loosely follows DDD principles:
-
-- **Domain**
-- **Application**
-- **Infrastructure**
-- **Presentation**
 
 ---
 
@@ -57,7 +41,6 @@ The project loosely follows DDD principles:
 
 *TODO List:*
 
-- Logger implementation
 - API Documentation
 
 ---

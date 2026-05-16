@@ -35,6 +35,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class UserServiceTest extends TestCase
 {
@@ -204,7 +205,8 @@ class UserServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -234,7 +236,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -249,7 +252,8 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
-            $userDomainService
+            $userDomainService,
+            new NullLogger()
         );
         return $userService;
     }

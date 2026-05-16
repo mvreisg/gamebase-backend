@@ -12,21 +12,25 @@ use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class SectorService
 {
     private SectorRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private SectorDomainService $sectorDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         SectorRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        SectorDomainService $sectorDomainService
+        SectorDomainService $sectorDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->sectorDomainService = $sectorDomainService;
+        $this->logger = $logger;
     }
 
     public function insert(Sector $sector, string $token): Sector
@@ -52,6 +56,10 @@ class SectorService
 
             return $insertedSector;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting sector", [
+                "exception" => $e,
+                "sector" => $sector,
+            ]);
             throw $e;
         }
     }
@@ -83,6 +91,10 @@ class SectorService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating sector", [
+                "exception" => $e,
+                "sector" => $sector,
+            ]);
             throw $e;
         }
     }
@@ -107,6 +119,11 @@ class SectorService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting sector active status", [
+                "exception" => $e,
+                "sectorId" => $id,
+                "isActive" => $isActive,
+            ]);
             throw $e;
         }
     }
@@ -124,6 +141,10 @@ class SectorService
 
             return $fetchedSector;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding sector by id", [
+                "exception" => $e,
+                "sectorId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -139,6 +160,9 @@ class SectorService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all sectors", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }

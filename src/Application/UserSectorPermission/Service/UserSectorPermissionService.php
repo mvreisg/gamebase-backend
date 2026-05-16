@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSe
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Service\UserSectorPermissionDomainService;
+use Psr\Log\LoggerInterface;
 
 class UserSectorPermissionService
 {
@@ -24,6 +25,7 @@ class UserSectorPermissionService
     private PermissionDomainService $permissionDomainService;
     private UserSectorPermissionDomainService $userSectorPermissionDomainService;
     private UserSectorPermissionRepositoryInterface $repository;
+    private LoggerInterface $logger;
 
     public function __construct(
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
@@ -31,7 +33,8 @@ class UserSectorPermissionService
         SectorDomainService $sectorDomainService,
         PermissionDomainService $permissionDomainService,
         UserSectorPermissionDomainService $userSectorPermissionDomainService,
-        UserSectorPermissionRepositoryInterface $repository
+        UserSectorPermissionRepositoryInterface $repository,
+        LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->userDomainService = $userDomainService;
@@ -39,6 +42,7 @@ class UserSectorPermissionService
         $this->permissionDomainService = $permissionDomainService;
         $this->userSectorPermissionDomainService = $userSectorPermissionDomainService;
         $this->repository = $repository;
+        $this->logger = $logger;
     }
 
     public function insert(UserSectorPermission $new, string $token): UserSectorPermission
@@ -74,6 +78,10 @@ class UserSectorPermissionService
 
             return $insertedUserSectorPermission;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting UserSectorPermission", [
+                "exception" => $e,
+                "userSectorPermission" => $new,
+            ]);
             throw $e;
         }
     }
@@ -111,6 +119,10 @@ class UserSectorPermissionService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating UserSectorPermission", [
+                "exception" => $e,
+                "userSectorPermission" => $existant,
+            ]);
             throw $e;
         }
     }
@@ -132,6 +144,10 @@ class UserSectorPermissionService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
+            $this->logger->error("Error deleting UserSectorPermission", [
+                "exception" => $e,
+                "userSectorPermissionId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -151,6 +167,10 @@ class UserSectorPermissionService
 
             return $fetchedUserPermission;
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching UserSectorPermission by ID", [
+                "exception" => $e,
+                "userSectorPermissionId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -166,6 +186,9 @@ class UserSectorPermissionService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching all UserSectorPermissions", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }

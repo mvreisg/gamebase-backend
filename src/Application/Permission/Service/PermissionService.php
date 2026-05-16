@@ -12,21 +12,25 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class PermissionService
 {
     private PermissionRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private PermissionDomainService $permissionDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         PermissionRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        PermissionDomainService $permissionDomainService
+        PermissionDomainService $permissionDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->permissionDomainService = $permissionDomainService;
+        $this->logger = $logger;
     }
 
     public function insert(Permission $permission, string $token): Permission
@@ -52,6 +56,10 @@ class PermissionService
 
             return $insertedPermission;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting permission", [
+                "error" => $e->getMessage(),
+                "permission" => $permission,
+            ]);
             throw $e;
         }
     }
@@ -83,6 +91,10 @@ class PermissionService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating permission", [
+                "error" => $e->getMessage(),
+                "permission" => $permission,
+            ]);
             throw $e;
         }
     }
@@ -107,6 +119,11 @@ class PermissionService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting permission active status", [
+                "error" => $e->getMessage(),
+                "permissionId" => $id,
+                "isActive" => $isActive,
+            ]);
             throw $e;
         }
     }
@@ -124,6 +141,10 @@ class PermissionService
 
             return $fetchedPermission;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding permission by ID", [
+                "error" => $e->getMessage(),
+                "permissionId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -139,6 +160,9 @@ class PermissionService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all permissions", [
+                "error" => $e->getMessage(),
+            ]);
             throw $e;
         }
     }

@@ -26,6 +26,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPer
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class SessionServiceTest extends TestCase
 {
@@ -173,6 +174,7 @@ class SessionServiceTest extends TestCase
         return new AuthenticationService(
             $tokenCache,
             $tokenProvider,
+            new NullLogger()
         );
     }
 
@@ -221,7 +223,8 @@ class SessionServiceTest extends TestCase
             $userSectorPermissionRepository,
             $encrypter,
             $authenticationService,
-            $authenticationTokenCache
+            $authenticationTokenCache,
+            new NullLogger()
         );
         return $service;
     }

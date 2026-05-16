@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
+use Psr\Log\LoggerInterface;
 
 class UserService
 {
@@ -22,17 +23,20 @@ class UserService
     private EncryptionInterface $encrypter;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private UserDomainService $userDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         UserRepositoryInterface $repository,
         EncryptionInterface $encrypter,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        UserDomainService $userDomainService
+        UserDomainService $userDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->userDomainService = $userDomainService;
+        $this->logger = $logger;
     }
 
     public function insert(User $new, string $token): User
@@ -64,6 +68,10 @@ class UserService
 
             return $insertedUser;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting user", [
+                "exception" => $e,
+                "user" => $new
+            ]);
             throw $e;
         }
     }
@@ -120,6 +128,10 @@ class UserService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating user", [
+                "exception" => $e,
+                "user" => $existant
+            ]);
             throw $e;
         }
     }
@@ -144,6 +156,11 @@ class UserService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting user active status", [
+                "exception" => $e,
+                "userId" => $id,
+                "isActive" => $isActive
+            ]);
             throw $e;
         }
     }
@@ -161,6 +178,10 @@ class UserService
 
             return $fetchedUser;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding user by ID", [
+                "exception" => $e,
+                "userId" => $id
+            ]);
             throw $e;
         }
     }
@@ -178,6 +199,10 @@ class UserService
 
             return $fetchedUser;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding user by username", [
+                "exception" => $e,
+                "username" => $username
+            ]);
             throw $e;
         }
     }
@@ -193,6 +218,9 @@ class UserService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all users", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }

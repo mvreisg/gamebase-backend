@@ -12,21 +12,25 @@ use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GenreService
 {
     private GenreRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private GenreDomainService $genreDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         GenreRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GenreDomainService $genreDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->genreDomainService = $genreDomainService;
+        $this->logger = $logger;
     }
 
     public function insert(Genre $genre, string $token): Genre
@@ -47,6 +51,10 @@ class GenreService
 
             return $insertedGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting genre", [
+                "exception" => $e,
+                "genre" => $genre
+            ]);
             throw $e;
         }
     }
@@ -73,6 +81,10 @@ class GenreService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating genre", [
+                "exception" => $e,
+                "genre" => $genre
+            ]);
             throw $e;
         }
     }
@@ -97,6 +109,11 @@ class GenreService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting genre active status", [
+                "exception" => $e,
+                "genreId" => $id,
+                "isActive" => $isActive
+            ]);
             throw $e;
         }
     }
@@ -116,6 +133,10 @@ class GenreService
 
             return $fetchedGenreEntity;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding genre by id", [
+                "exception" => $e,
+                "genreId" => $id
+            ]);
             throw $e;
         }
     }
@@ -131,6 +152,9 @@ class GenreService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all genres", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }

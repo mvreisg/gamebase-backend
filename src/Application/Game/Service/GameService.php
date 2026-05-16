@@ -12,21 +12,25 @@ use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GameService
 {
     private GameRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private GameDomainService $gameDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         GameRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->gameDomainService = $gameDomainService;
+        $this->logger = $logger;
     }
 
     public function insert(Game $game, string $token): Game
@@ -47,6 +51,10 @@ class GameService
 
             return $insertedGame;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting game", [
+                "exception" => $e,
+                "game" => $game,
+            ]);
             throw $e;
         }
     }
@@ -73,6 +81,10 @@ class GameService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating game", [
+                "exception" => $e,
+                "game" => $game,
+            ]);
             throw $e;
         }
     }
@@ -97,6 +109,11 @@ class GameService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting game active status", [
+                "exception" => $e,
+                "gameId" => $id,
+                "isActive" => $isActive,
+            ]);
             throw $e;
         }
     }
@@ -116,6 +133,10 @@ class GameService
 
             return $foundGame;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding game", [
+                "exception" => $e,
+                "gameId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -131,6 +152,9 @@ class GameService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding games", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }

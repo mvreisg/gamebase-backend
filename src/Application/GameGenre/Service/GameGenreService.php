@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInter
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Service\GameGenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GameGenreService
 {
@@ -22,19 +23,22 @@ class GameGenreService
     private GenreDomainService $genreDomainService;
     private GameGenreDomainService $gameGenreDomainService;
     private GameGenreRepositoryInterface $repository;
+    private LoggerInterface $logger;
 
     public function __construct(
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
         GenreDomainService $genreDomainService,
         GameGenreDomainService $gameGenreDomainService,
-        GameGenreRepositoryInterface $repository
+        GameGenreRepositoryInterface $repository,
+        LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->gameDomainService = $gameDomainService;
         $this->genreDomainService = $genreDomainService;
         $this->gameGenreDomainService = $gameGenreDomainService;
         $this->repository = $repository;
+        $this->logger = $logger;
     }
 
     public function insert(GameGenre $gameGenre, string $token): GameGenre
@@ -58,6 +62,10 @@ class GameGenreService
 
             return $insertedGameGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting GameGenre", [
+                "exception" => $e,
+                "gameGenre" => $gameGenre,
+            ]);
             throw $e;
         }
     }
@@ -87,6 +95,10 @@ class GameGenreService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating GameGenre", [
+                "exception" => $e,
+                "gameGenre" => $gameGenre,
+            ]);
             throw $e;
         }
     }
@@ -108,6 +120,10 @@ class GameGenreService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
+            $this->logger->error("Error deleting GameGenre", [
+                "exception" => $e,
+                "gameGenreId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -127,6 +143,10 @@ class GameGenreService
 
             return $fetchedGameGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching GameGenre by ID", [
+                "exception" => $e,
+                "gameGenreId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -142,6 +162,9 @@ class GameGenreService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching all GameGenres", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }

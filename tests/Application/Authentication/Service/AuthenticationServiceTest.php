@@ -20,6 +20,7 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class AuthenticationServiceTest extends TestCase
 {
@@ -154,6 +155,7 @@ class AuthenticationServiceTest extends TestCase
         return new AuthenticationService(
             $tokenCache,
             $tokenProvider,
+            new NullLogger()
         );
     }
 

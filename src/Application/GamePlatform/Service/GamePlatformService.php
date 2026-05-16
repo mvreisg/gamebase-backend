@@ -14,6 +14,7 @@ use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositor
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Service\GamePlatformDomainService;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GamePlatformService
 {
@@ -22,19 +23,22 @@ class GamePlatformService
     private PlatformDomainService $platformDomainService;
     private GamePlatformDomainService $gamePlatformDomainService;
     private GamePlatformRepositoryInterface $repository;
+    private LoggerInterface $logger;
 
     public function __construct(
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
         PlatformDomainService $platformDomainService,
         GamePlatformDomainService $gamePlatformDomainService,
-        GamePlatformRepositoryInterface $repository
+        GamePlatformRepositoryInterface $repository,
+        LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->gameDomainService = $gameDomainService;
         $this->platformDomainService = $platformDomainService;
         $this->gamePlatformDomainService = $gamePlatformDomainService;
         $this->repository = $repository;
+        $this->logger = $logger;
     }
 
     public function insert(GamePlatform $gamePlatform, string $token): GamePlatform
@@ -58,6 +62,10 @@ class GamePlatformService
 
             return $insertedGamePlatform;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting GamePlatform", [
+                "exception" => $e,
+                "gamePlatform" => $gamePlatform,
+            ]);
             throw $e;
         }
     }
@@ -87,6 +95,10 @@ class GamePlatformService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating GamePlatform", [
+                "exception" => $e,
+                "gamePlatform" => $gamePlatform,
+            ]);
             throw $e;
         }
     }
@@ -108,6 +120,10 @@ class GamePlatformService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
+            $this->logger->error("Error deleting GamePlatform", [
+                "exception" => $e,
+                "gamePlatformId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -127,6 +143,10 @@ class GamePlatformService
 
             return $fetchedGamePlatform;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding GamePlatform by ID", [
+                "exception" => $e,
+                "gamePlatformId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -142,6 +162,9 @@ class GamePlatformService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all GamePlatforms", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }

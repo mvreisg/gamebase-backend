@@ -16,6 +16,7 @@ use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class SessionService
 {
@@ -24,6 +25,7 @@ class SessionService
     private EncryptionInterface $encrypter;
     private AuthenticationService $authenticationService;
     private AuthenticationTokenCacheInterface $authenticationTokenCache;
+    private LoggerInterface $logger;
 
     public function __construct(
         UserRepositoryInterface $userRepository,
@@ -31,12 +33,14 @@ class SessionService
         EncryptionInterface $encrypter,
         AuthenticationService $authenticationService,
         AuthenticationTokenCacheInterface $authenticationTokenCache,
+        LoggerInterface $logger
     ) {
         $this->userRepository = $userRepository;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
         $this->encrypter = $encrypter;
         $this->authenticationService = $authenticationService;
         $this->authenticationTokenCache = $authenticationTokenCache;
+        $this->logger = $logger;
     }
 
     public function login(SessionLoginParameters $parameters): SessionLoginReturn
@@ -114,6 +118,12 @@ class SessionService
                 $sessionData
             );
         } catch (\Throwable $e) {
+            $this->logger->error(
+                "An error occurred during login",
+                [
+                    "exception" => $e
+                ]
+            );
             throw $e;
         }
     }
@@ -129,6 +139,12 @@ class SessionService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
+            $this->logger->error(
+                "An error occurred during logoff",
+                [
+                    "exception" => $e
+                ]
+            );
             throw $e;
         }
     }
@@ -157,6 +173,12 @@ class SessionService
 
             return $sessionData;
         } catch (\Throwable $e) {
+            $this->logger->error(
+                "An error occurred during session data retrieval",
+                [
+                    "exception" => $e
+                ]
+            );
             throw $e;
         }
     }
