@@ -8,7 +8,7 @@ interface DatabaseRepositoryInterface
 {
     public function exists(string $database): bool;
 
-    public function create(string $database): void;
+    public function create(string $database): bool;
 
-    public function drop(string $database): void;
+    public function drop(string $database): bool;
 }

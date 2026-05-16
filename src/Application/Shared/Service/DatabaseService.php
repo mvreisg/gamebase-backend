@@ -20,13 +20,13 @@ class DatabaseService
         return $this->repository->exists($database);
     }
 
-    public function create(string $database): void
+    public function create(string $database): bool
     {
-        $this->repository->create($database);
+        return $this->repository->create($database);
     }
 
-    public function drop(string $database): void
+    public function drop(string $database): bool
     {
-        $this->repository->drop($database);
+        return $this->repository->drop($database);
     }
 }

@@ -53,11 +53,10 @@ The project loosely follows DDD principles:
 
 ## Project Status
 
-🚧 Active development
+🚧 **Active development**
 
-### TODO List:
+*TODO List:*
 
-- Full Unit Tests coverage
 - Logger implementation
 - API Documentation
 
