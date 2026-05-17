@@ -14,7 +14,12 @@ use Mvreisg\GamebaseBackend\Infrastructure\Time\TimeUnit;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(
+    name: "Session",
+    description: "Endpoints related to session management"
+)]
 class HttpSessionController
 {
     private SessionService $sessionService;
@@ -24,6 +29,127 @@ class HttpSessionController
         $this->sessionService = $sessionService;
     }
 
+    #[OA\Post(
+        path: "/session/login",
+        summary: "Login",
+        description:
+            "Receives the user credentials and if valid, creates a session and returns the authentication token",
+        tags: ["Session"]
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "username",
+                    type: "string",
+                    example: "mvreisg"
+                ),
+                new OA\Property(
+                    property: "password",
+                    type: "string",
+                    example: "mg4ing854g48n"
+                ),
+                new OA\Property(
+                    property: "one_week_login",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: "Response if credentials is valid",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "expires",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "unit",
+                                    type: "string",
+                                    example: "seconds"
+                                ),
+                                new OA\Property(
+                                    property: "time",
+                                    type: "integer",
+                                    example: 604800
+                                )
+                            ]
+                        ),
+                        new OA\Property(
+                            property: "token",
+                            type: "string",
+                            example: "Bearer gmeroibmerong98345nh04h45"
+                        ),
+                        new OA\Property(
+                            property: "user",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    type: "integer",
+                                    example: 1
+                                ),
+                                new OA\Property(
+                                    property: "username",
+                                    type: "string",
+                                    example: "mvreisg"
+                                ),
+                                new OA\Property(
+                                    property: "permissions",
+                                    type: "array",
+                                    items: new OA\Items(
+                                        ref: "#/components/schemas/UserSectorPermissionEntity"
+                                    )
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing, if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["username, password"],
+                            items: new OA\Items(
+                                type: "string"
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function login(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {

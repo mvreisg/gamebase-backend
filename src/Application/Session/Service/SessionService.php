@@ -118,12 +118,9 @@ class SessionService
                 $sessionData
             );
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "An error occurred during login",
-                [
-                    "exception" => $e
-                ]
-            );
+            $this->logger->error("An error occurred during login", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }
@@ -139,12 +136,9 @@ class SessionService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "An error occurred during logoff",
-                [
-                    "exception" => $e
-                ]
-            );
+            $this->logger->error("An error occurred during logoff", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }
@@ -173,12 +167,9 @@ class SessionService
 
             return $sessionData;
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "An error occurred during session data retrieval",
-                [
-                    "exception" => $e
-                ]
-            );
+            $this->logger->error("An error occurred during session data retrieval", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }

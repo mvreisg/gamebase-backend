@@ -3,7 +3,7 @@
 
     const logoff = () => {
         session.deleteToken();
-        if (window.location.pathname !== '/pages/login'){
+        if (window.location.pathname.includes('/pages/login') === false) {
             alert("Redirecting to login page...");
             window.location.href = `{{host}}/pages/login`;
         }
@@ -17,32 +17,35 @@
         }
     }
 
-    if (window.location.pathname === '/pages/login') {
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        if (action !== null){
-            if (action === 'logoff') {
-                const response = await session.logoff("{{host}}");
-                switch(response.status){
-                    case "invalid_token":
-                        alert("Invalid token!");
-                        break;
-                    case "error":
-                    default:
-                        alert("Error!");
-                        break;
-                    case "success":
-                        alert("Logged off!");
-                        break;
-                }
-                logoff();
-            } 
-        }        
-        else {
-            
+    const initialize = async () => {
+        if (window.location.pathname.includes('/pages/login')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+            if (action !== null){
+                if (action === 'logoff') {
+                    const response = await session.logoff("{{host}}");
+                    switch(response.status){
+                        case "invalid_token":
+                            alert("Invalid token!");
+                            break;
+                        case "error":
+                        default:
+                            alert("Error!");
+                            break;
+                        case "success":
+                            alert("Logged off!");
+                            break;
+                    }
+                    logoff();
+                } 
+            } else {
+                await validate();
+            }
         }
+        else  {
+            await validate();
+        }        
     }
-    else if (window.location.pathname.includes("/pages/dashboard")) {
-        validate();
-    }
+
+    window.addEventListener('pageshow', initialize);
 </script>

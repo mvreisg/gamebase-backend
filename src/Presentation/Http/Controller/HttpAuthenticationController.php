@@ -8,7 +8,12 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Authentication\Data\AuthenticationDataSerializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(
+    name: "Authentication",
+    description: "Endpoints related to authentication"
+)]
 class HttpAuthenticationController
 {
     private AuthenticationService $authenticationService;
@@ -19,6 +24,32 @@ class HttpAuthenticationController
         $this->authenticationService = $authenticationService;
     }
 
+    #[OA\Get(
+        path: "/authentication/validate",
+        summary: "Validate",
+        description:
+            "Validates the provided authentication token and returns the associated authentication data if valid.",
+        tags: ["Authentication"],
+        security: [["bearerAuth" => []]],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Valid token",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "status",
+                    type: "string",
+                    example: "valid"
+                ),
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    ref: "#/components/schemas/AuthenticationData"
+                )
+            ]
+        )
+    )]
     public function validate(
         ServerRequestInterface $request,
         ResponseInterface $response,

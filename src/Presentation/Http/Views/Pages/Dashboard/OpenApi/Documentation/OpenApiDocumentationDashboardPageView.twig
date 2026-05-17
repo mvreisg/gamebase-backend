@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">      
+{% include "Components/Head.twig" with { 
+    host: host,
+    title: title,
+} %}        
+<body>
+    <h1 class="m-1">{{ title }}</h1>
+    {% include "Components/Nav.twig" with { 
+        host: host 
+    } %}
+    {% include "Components/OpenApi/Documentation/OpenApiDocumentation.twig" with { 
+        returnCode: openApi.returnCode,
+        output: openApi.output
+    } %}    
+    {% include "Components/Scripts/BootstrapScript.twig" %}
+    {% include "Components/Scripts/SessionScript.twig" with { 
+        host: host
+    } %}
+    <a class="m-1" href="{{host}}/pages/api/documentation">
+        Go to API Documentation
+    </a>    
+</body>
+</html>

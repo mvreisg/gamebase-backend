@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Twig\Environment;
 
-class HttpLoginViewPageController
+class HttpLoginPageViewController
 {
     private HttpOptions $options;
     private Environment $environment;

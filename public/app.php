@@ -56,7 +56,9 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Databas
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Defuse\HttpDashboardDefuseEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Sodium\HttpDashboardSodiumEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDashboardHomeViewPageController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Api\Documentation\HttpApiDocumentationPageViewController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\OpenApi\Documentation\HttpOpenApiDocumentationDashboardViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpInvalidTokenExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpUnexistantTokenExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\Token\Cache\HttpAuthenticationTokenCacheExceptionHandler;
@@ -375,9 +377,15 @@ try {
     })->add(HttpAuthenticationTokenRetrieverMiddleware::class);
 
     $app->group("/pages", function (RouteCollectorProxy $pagesGroup) {
-        $pagesGroup->get("/login", HttpLoginViewPageController::class);
+        $pagesGroup->group("/api", function (RouteCollectorProxy $apiGroup) {
+            $apiGroup->get("/documentation", HttpApiDocumentationPageViewController::class);
+        });
+        $pagesGroup->get("/login", HttpLoginPageViewController::class);
         $pagesGroup->group("/dashboard", function (RouteCollectorProxy $dashboardGroup) {
             $dashboardGroup->get("/home", HttpDashboardHomeViewPageController::class);
+            $dashboardGroup->group("/open_api", function (RouteCollectorProxy $openApiGroup) {
+                $openApiGroup->get("/documentation", HttpOpenApiDocumentationDashboardViewPageController::class);
+            });
             $dashboardGroup->group("/database", function (RouteCollectorProxy $databaseGroup) {
                 $databaseGroup->group("/pdo", function (RouteCollectorProxy $pdoGroup) {
                     $pdoGroup->get("/view", HttpPdoDatabaseDashboardViewPageController::class);

@@ -1,0 +1,12 @@
+<div class="m-1">  
+    Status:   
+    {% if returnCode == 0 %}
+        <span class="fw-semibold" style="color: lime">OK</span>
+    {% else %}
+        <span class="fw-semibold" style="color: red">Error!</span>
+    {% endif %}
+    <pre>
+    {{ output|join("\n") }}
+    OpenAPI returned with status code: {{ returnCode }}
+    </pre>
+</div>
