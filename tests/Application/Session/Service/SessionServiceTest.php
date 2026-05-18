@@ -224,7 +224,8 @@ class SessionServiceTest extends TestCase
             $encrypter,
             $authenticationService,
             $authenticationTokenCache,
-            new NullLogger()
+            new NullLogger(),
+            $this->createClock("UTC")
         );
         return $service;
     }

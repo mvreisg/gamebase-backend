@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Infrastructure\Time;
+namespace Mvreisg\GamebaseBackend\Infrastructure\Time\Unit;
+
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Unit\Exception\TimeUnitException;
 
 enum TimeUnit
 {
@@ -26,7 +28,7 @@ enum TimeUnit
             case TimeUnit::Week:
                 return "week";
             default:
-                throw new \Exception("Untreated time unit: $timeUnit");
+                throw new TimeUnitException("Untreated time unit: $timeUnit");
         }
     }
 }

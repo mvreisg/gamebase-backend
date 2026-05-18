@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Casing\SerializationCasingTypes;
+use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Exception\SerializationException;
 
 class AuthenticationDataSerializer
 {
@@ -32,7 +33,7 @@ class AuthenticationDataSerializer
                     Username::create($data->username)
                 );
             default:
-                throw new \Exception(
+                throw new SerializationException(
                     "Untreated authentication data serialization casing type: $serializationCasingType"
                 );
         }
@@ -61,7 +62,7 @@ class AuthenticationDataSerializer
                     "username" => $usernameValue
                 ];
             default:
-                throw new \Exception(
+                throw new SerializationException(
                     "Untreated authentication data serialization casing type: $serializationCasingType"
                 );
         }

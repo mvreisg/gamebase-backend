@@ -38,12 +38,9 @@ class AuthenticationService
                 $interval
             );
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "Error encoding token",
-                [
-                    "error" => $e->getMessage()
-                ]
-            );
+            $this->logger->error("Error encoding token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }
@@ -53,12 +50,9 @@ class AuthenticationService
         try {
             return $this->tokenProvider->decode($token);
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "Error decoding token",
-                [
-                    "error" => $e->getMessage()
-                ]
-            );
+            $this->logger->error("Error decoding token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }
@@ -113,12 +107,9 @@ class AuthenticationService
 
             return $decodedToken;
         } catch (\Throwable $e) {
-            $this->logger->error(
-                "Error validating token",
-                [
-                    "error" => $e->getMessage()
-                ]
-            );
+            $this->logger->error("Error validating token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }

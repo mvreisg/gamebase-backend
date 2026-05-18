@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserExceptio
 use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Session\Login\Return\SessionLoginReturn;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
@@ -26,6 +27,7 @@ class SessionService
     private AuthenticationService $authenticationService;
     private AuthenticationTokenCacheInterface $authenticationTokenCache;
     private LoggerInterface $logger;
+    private ClockInterface $clock;
 
     public function __construct(
         UserRepositoryInterface $userRepository,
@@ -33,7 +35,8 @@ class SessionService
         EncryptionInterface $encrypter,
         AuthenticationService $authenticationService,
         AuthenticationTokenCacheInterface $authenticationTokenCache,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ClockInterface $clock
     ) {
         $this->userRepository = $userRepository;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
@@ -41,6 +44,7 @@ class SessionService
         $this->authenticationService = $authenticationService;
         $this->authenticationTokenCache = $authenticationTokenCache;
         $this->logger = $logger;
+        $this->clock = $clock;
     }
 
     public function login(SessionLoginParameters $parameters): SessionLoginReturn
@@ -69,6 +73,10 @@ class SessionService
             ) === 0;
 
             if ($doTheTwoPasswordsMatchesEqually === false) {
+                $this->logger->warning("Invalid credentials provided for login attempt", [
+                    "username" => $username->getValue(),
+                    "timestamp" => $this->clock->now()->format("Y-m-d H:i:s")
+                ]);
                 throw new InvalidCredentialsException();
             }
 
@@ -113,6 +121,11 @@ class SessionService
                 $token
             );
 
+            $this->logger->info("User logged in successfully", [
+                "username" => $username->getValue(),
+                "timestamp" => $this->clock->now()->format("Y-m-d H:i:s")
+            ]);
+
             return new SessionLoginReturn(
                 $token,
                 $sessionData
@@ -133,6 +146,12 @@ class SessionService
             $wasDeleted = $this->authenticationTokenCache->delete(
                 $decodedToken->getAuthenticationData()->getUsername()->getValue()
             );
+
+            $this->logger->info("User logoff has been tried", [
+                "username" => $decodedToken->getAuthenticationData()->getUsername()->getValue(),
+                "timestamp" => $this->clock->now()->format("Y-m-d H:i:s"),
+                "logoff_successful" => $wasDeleted
+            ]);
 
             return $wasDeleted;
         } catch (\Throwable $e) {

@@ -40,6 +40,8 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Exception\EmptyUser
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Exception\InvalidUsernameValueException;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Exception\InvalidUserSectorPermissionException;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Exception\UserSectorPermissionNotFoundException;
+use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Exception\SerializationException;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Unit\Exception\TimeUnitException;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpAuthenticationController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGameController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpGameGenreController;
@@ -65,6 +67,8 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Auth
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\Token\Provider\HttpAuthenticationTokenProviderExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Session\HttpInvalidCredentialsExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Session\HttpUnexistantUserExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpSerializationExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpTimeUnitExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpUnauthorizedExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Encryption\HttpEncryptionInterfaceExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Game\HttpGameNotFoundExceptionHandler;
@@ -291,6 +295,14 @@ try {
         ->setErrorHandler(
             UserSectorPermissionNotFoundException::class,
             HttpUserSectorPermissionNotFoundExceptionHandler::class
+        )
+        ->setErrorHandler(
+            SerializationException::class,
+            HttpSerializationExceptionHandler::class
+        )
+        ->setErrorHandler(
+            TimeUnitException::class,
+            HttpTimeUnitExceptionHandler::class
         );
 
     $app->group("/session", function (RouteCollectorProxy $sessionGroup) {

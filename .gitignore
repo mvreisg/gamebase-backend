@@ -17,3 +17,6 @@
 
 # logs
 /logs/
+
+#OpenAPI
+/public/docs/*
