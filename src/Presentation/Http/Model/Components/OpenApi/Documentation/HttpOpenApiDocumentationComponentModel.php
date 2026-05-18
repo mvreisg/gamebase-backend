@@ -8,11 +8,13 @@ class HttpOpenApiDocumentationComponentModel
 {
     private array $output;
     private int $returnCode;
+    private bool $isReady;
 
     public function __construct()
     {
         $this->output = [];
         $this->returnCode = 0;
+        $this->isReady = false;
     }
 
     public function execute()
@@ -32,6 +34,8 @@ class HttpOpenApiDocumentationComponentModel
             $this->output,
             $this->returnCode
         );
+
+        $this->isReady = $this->returnCode === 0;
     }
 
     public function getOutput(): array
@@ -42,5 +46,10 @@ class HttpOpenApiDocumentationComponentModel
     public function getReturnCode(): int
     {
         return $this->returnCode;
+    }
+
+    public function isReady(): bool
+    {
+        return $this->isReady;
     }
 }

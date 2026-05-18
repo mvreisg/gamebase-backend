@@ -17,8 +17,10 @@
     {% include "Components/Scripts/SessionScript.twig" with { 
         host: host
     } %}
+    {% if openApi.isReady %}
     <a class="m-1" href="{{host}}/pages/api/documentation">
         Go to API Documentation
     </a>    
+    {% endif %}
 </body>
 </html>

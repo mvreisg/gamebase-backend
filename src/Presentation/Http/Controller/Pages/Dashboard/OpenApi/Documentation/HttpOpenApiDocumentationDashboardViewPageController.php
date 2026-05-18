@@ -41,7 +41,8 @@ class HttpOpenApiDocumentationDashboardViewPageController
                 "title" => $this->options->getTitle(),
                 "openApi" => [
                     "returnCode" => $this->openApiDocumentationComponentModel->getReturnCode(),
-                    "output" => $this->openApiDocumentationComponentModel->getOutput()
+                    "output" => $this->openApiDocumentationComponentModel->getOutput(),
+                    "isReady" => $this->openApiDocumentationComponentModel->isReady()
                 ]
             ]
         );
