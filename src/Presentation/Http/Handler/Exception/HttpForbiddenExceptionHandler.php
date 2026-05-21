@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Interfaces\ErrorHandlerInterface;
 use Slim\Psr7\Response;
 
-class HttpUserNotFoundExceptionHandler implements ErrorHandlerInterface
+class HttpForbiddenExceptionHandler implements ErrorHandlerInterface
 {
     public function __invoke(
         ServerRequestInterface $request,
@@ -23,11 +23,11 @@ class HttpUserNotFoundExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => $exception->getMessage()
+                    "message" => "Access forbidden."
                 ])
             );
         return $response
             ->withHeader("Content-Type", "application/json")
-            ->withStatus(404);
+            ->withStatus(403);
     }
 }

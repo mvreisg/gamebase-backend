@@ -23,7 +23,7 @@ class HttpNotFoundExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Route not found: {$request->getUri()->getPath()}."
+                    "message" => "Resource not found."
                 ])
             );
         return $response

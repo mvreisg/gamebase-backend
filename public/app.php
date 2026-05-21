@@ -61,50 +61,12 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDas
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Api\Documentation\HttpApiDocumentationPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\OpenApi\Documentation\HttpOpenApiDocumentationDashboardViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginPageViewController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpInvalidTokenExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\HttpUnexistantTokenExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\Token\Cache\HttpAuthenticationTokenCacheExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Authentication\Token\Provider\HttpAuthenticationTokenProviderExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Session\HttpInvalidCredentialsExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Application\Session\HttpUnexistantUserExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpSerializationExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpTimeUnitExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Authorization\HttpUnauthorizedExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Encryption\HttpEncryptionInterfaceExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Game\HttpGameNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\GameGenre\HttpGameGenreNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\GamePlatform\HttpGamePlatformNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Genre\HttpGenreNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Permission\HttpDuplicatedPermissionValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Permission\HttpNullPermissionValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Permission\HttpPermissionNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Permission\ValueObject\HttpEmptyPermissionValueValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Permission\ValueObject\HttpInvalidPermissionValueValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Sector\HttpDuplicatedSectorValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Sector\HttpNullSectorValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Sector\HttpSectorNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Sector\ValueObject\HttpEmptySectorValueValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Sector\ValueObject\HttpInvalidSectorValueValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\HttpDuplicatedNameExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\HttpNullIdExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\HttpNullIsActiveExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\HttpNullNameExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\ValueObject\HttpEmptyNameValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\ValueObject\HttpInvalidIdValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\Shared\ValueObject\HttpInvalidNameValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\HttpDuplicatedUsernameExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\HttpNullPasswordExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\HttpNullUsernameExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\HttpUserNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\ValueObject\HttpEmptyPasswordValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\ValueObject\HttpEmptyUsernameValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\ValueObject\HttpInvalidPasswordValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\User\ValueObject\HttpInvalidUsernameValueExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\UserSectorPermission\HttpInvalidUserSectorPermissionExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\Domain\UserSectorPermission\HttpUserSectorPermissionNotFoundExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpUnauthorizedExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpBadRequestExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpForbiddenExceptionHandler;
+use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpInternalServerErrorExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpMethodNotAllowedExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpNotFoundExceptionHandler;
-use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpPlatformNotFoundExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Middleware\Authentication\Token\HttpAuthenticationTokenRetrieverMiddleware;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
@@ -134,27 +96,27 @@ try {
         )
         ->setErrorHandler(
             AuthenticationTokenCacheException::class,
-            HttpAuthenticationTokenCacheExceptionHandler::class
+            HttpInternalServerErrorExceptionHandler::class
         )
         ->setErrorHandler(
             AuthenticationTokenProviderException::class,
-            HttpAuthenticationTokenProviderExceptionHandler::class
+            HttpInternalServerErrorExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidTokenException::class,
-            HttpInvalidTokenExceptionHandler::class
+            HttpForbiddenExceptionHandler::class
         )
         ->setErrorHandler(
             UnexistantTokenException::class,
-            HttpUnexistantTokenExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidCredentialsException::class,
-            HttpInvalidCredentialsExceptionHandler::class
+            HttpUnauthorizedExceptionHandler::class
         )
         ->setErrorHandler(
             UnexistantUserException::class,
-            HttpUnexistantUserExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             UnauthorizedException::class,
@@ -162,147 +124,143 @@ try {
         )
         ->setErrorHandler(
             EncryptionInterfaceException::class,
-            HttpEncryptionInterfaceExceptionHandler::class
+            HttpInternalServerErrorExceptionHandler::class
         )
         ->setErrorHandler(
             GameNotFoundException::class,
-            HttpGameNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             GameGenreNotFoundException::class,
-            HttpGameGenreNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             GamePlatformNotFoundException::class,
-            HttpGamePlatformNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             GenreNotFoundException::class,
-            HttpGenreNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             EmptyPermissionValueValueException::class,
-            HttpEmptyPermissionValueValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidPermissionValueValueException::class,
-            HttpInvalidPermissionValueValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             DuplicatedPermissionValueException::class,
-            HttpDuplicatedPermissionValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullPermissionValueException::class,
-            HttpNullPermissionValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             PermissionNotFoundException::class,
-            HttpPermissionNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             PlatformNotFoundException::class,
-            HttpPlatformNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             EmptySectorValueValueException::class,
-            HttpEmptySectorValueValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidSectorValueValueException::class,
-            HttpInvalidSectorValueValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             DuplicatedSectorValueException::class,
-            HttpDuplicatedSectorValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullSectorValueException::class,
-            HttpNullSectorValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             SectorNotFoundException::class,
-            HttpSectorNotFoundExceptionHandler::class
-        )
-        ->setErrorHandler(
-            SectorNotFoundException::class,
-            HttpSectorNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             EmptyNameValueException::class,
-            HttpEmptyNameValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidIdValueException::class,
-            HttpInvalidIdValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidNameValueException::class,
-            HttpInvalidNameValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             DuplicatedNameException::class,
-            HttpDuplicatedNameExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullIdException::class,
-            HttpNullIdExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullIsActiveException::class,
-            HttpNullIsActiveExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullNameException::class,
-            HttpNullNameExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             EmptyPasswordValueException::class,
-            HttpEmptyPasswordValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             EmptyUsernameValueException::class,
-            HttpEmptyUsernameValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidPasswordValueException::class,
-            HttpInvalidPasswordValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidUsernameValueException::class,
-            HttpInvalidUsernameValueExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             DuplicatedUsernameException::class,
-            HttpDuplicatedUsernameExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullPasswordException::class,
-            HttpNullPasswordExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             NullUsernameException::class,
-            HttpNullUsernameExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             UserNotFoundException::class,
-            HttpUserNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidUserSectorPermissionException::class,
-            HttpInvalidUserSectorPermissionExceptionHandler::class
+            HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
             UserSectorPermissionNotFoundException::class,
-            HttpUserSectorPermissionNotFoundExceptionHandler::class
+            HttpNotFoundExceptionHandler::class
         )
         ->setErrorHandler(
             SerializationException::class,
-            HttpSerializationExceptionHandler::class
+            HttpInternalServerErrorExceptionHandler::class
         )
         ->setErrorHandler(
             TimeUnitException::class,
-            HttpTimeUnitExceptionHandler::class
+            HttpInternalServerErrorExceptionHandler::class
         );
 
     $app->group("/session", function (RouteCollectorProxy $sessionGroup) {
