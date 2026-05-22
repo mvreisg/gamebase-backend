@@ -104,15 +104,15 @@ try {
         )
         ->setErrorHandler(
             InvalidTokenException::class,
-            HttpForbiddenExceptionHandler::class
+            HttpUnauthorizedExceptionHandler::class
         )
         ->setErrorHandler(
             UnexistantTokenException::class,
-            HttpNotFoundExceptionHandler::class
+            HttpForbiddenExceptionHandler::class
         )
         ->setErrorHandler(
             InvalidCredentialsException::class,
-            HttpUnauthorizedExceptionHandler::class
+            HttpForbiddenExceptionHandler::class
         )
         ->setErrorHandler(
             UnexistantUserException::class,
