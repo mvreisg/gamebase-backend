@@ -71,6 +71,18 @@ class HttpAuthenticationController
         )
     )]
     #[OA\Response(
+        response: 403,
+        description: "Response if user does not have a token in cache",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
         response: 404,
         description: "Response if the user does not exist",
         content: new OA\JsonContent(
