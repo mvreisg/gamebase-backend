@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Game\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -33,7 +35,7 @@ class GameService
         $this->logger = $logger;
     }
 
-    public function insert(Game $game, string $token): Game
+    public function insert(GameServiceInsertDto $dto, string $token): Game
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -44,16 +46,21 @@ class GameService
 
             $this->gameDomainService->ensureNameIsUnique(
                 null,
-                $game->getName()
+                $dto->name
             );
 
-            $insertedGame = $this->repository->insert($game);
+            $insertedGame = $this->repository->insert(
+                new GameRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $insertedGame;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting game", [
                 "exception" => $e,
-                "game" => $game,
+                "data" => $dto,
             ]);
             throw $e;
         }

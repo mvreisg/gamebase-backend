@@ -29,11 +29,11 @@ class JwtTokenProvider implements AuthenticationTokenProvider
     {
         try {
             $issuedAt = $this->clock->now();
-            $expireAt = $issuedAt->add($duration)->getTimestamp();
+            $expireAt = $issuedAt->add($duration);
 
             $payload = [
                 "iat" => $issuedAt->getTimestamp(),
-                "exp" => $expireAt,
+                "exp" => $expireAt->getTimestamp(),
                 "sub" => AuthenticationDataSerializer::toArray($data)
             ];
 

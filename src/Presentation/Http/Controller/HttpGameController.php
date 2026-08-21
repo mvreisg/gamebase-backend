@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\Game\Service\GameService;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -43,8 +44,7 @@ class HttpGameController
             $isActive = $body["is_active"];
 
             $game = $this->gameService->insert(
-                Game::create(
-                    null,
+                new GameServiceInsertDto(
                     Name::create($name),
                     $isActive
                 ),
