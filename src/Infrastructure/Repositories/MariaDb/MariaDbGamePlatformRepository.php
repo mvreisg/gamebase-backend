@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
@@ -21,28 +22,28 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(GamePlatform $gamePlatform): GamePlatform
+    public function insert(GamePlatformRepositoryInterfaceInsertDto $dto): GamePlatform
     {
         try {
             $this->connection->beginTransaction();
 
-            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
-            $gameId = $gamePlatform->getGame()->getId()->getValue();
+            $gameId = $dto->gameId->getValue();
+            $platformId = $dto->platformId->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO game_platform (
-                    platform_id, 
-                    game_id
+                    game_id,
+                    platform_id
                 ) 
                 VALUES (
-                    :platformId, 
-                    :gameId
+                    :gameId,
+                    :platformId
                 );"
             );
 
             $insertStatement->execute([
-                ":platformId" => $platformId,
-                ":gameId" => $gameId
+                ":gameId" => $gameId,
+                ":platformId" => $platformId
             ]);
 
             $lastInsertedId = intval(

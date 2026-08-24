@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\Genre\Service\GenreService;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -43,8 +44,7 @@ class HttpGenreController
             $isActive = $body["is_active"];
 
             $genre = $this->genreService->insert(
-                Genre::create(
-                    null,
+                new GenreServiceInsertDto(
                     Name::create($name),
                     $isActive
                 ),

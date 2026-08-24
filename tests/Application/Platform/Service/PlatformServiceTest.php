@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\Platform\Service\PlatformService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -356,7 +357,10 @@ class PlatformServiceTest extends TestCase
         );
 
         $insertedPlatform = $platformService->insert(
-            $platform,
+            new PlatformServiceInsertDto(
+                $platform->getName(),
+                $platform->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -453,7 +457,10 @@ class PlatformServiceTest extends TestCase
         );
 
         $platformService->insert(
-            $platform,
+            new PlatformServiceInsertDto(
+                $platform->getName(),
+                $platform->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -535,7 +542,10 @@ class PlatformServiceTest extends TestCase
         );
 
         $platformService->insert(
-            $platform,
+            new PlatformServiceInsertDto(
+                $platform->getName(),
+                $platform->getIsActive()
+            ),
             $encodedToken
         );
     }

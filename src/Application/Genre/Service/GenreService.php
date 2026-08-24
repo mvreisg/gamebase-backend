@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Genre\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -33,7 +35,7 @@ class GenreService
         $this->logger = $logger;
     }
 
-    public function insert(Genre $genre, string $token): Genre
+    public function insert(GenreServiceInsertDto $dto, string $token): Genre
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -44,16 +46,21 @@ class GenreService
 
             $this->genreDomainService->ensureNameIsUnique(
                 null,
-                $genre->getName()
+                $dto->name
             );
 
-            $insertedGenre = $this->repository->insert($genre);
+            $insertedGenre = $this->repository->insert(
+                new GenreRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $insertedGenre;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting genre", [
                 "exception" => $e,
-                "genre" => $genre
+                "dto" => $dto
             ]);
             throw $e;
         }

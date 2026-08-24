@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\GamePlatform\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Service\GamePlatformDomainService;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
@@ -41,7 +45,7 @@ class GamePlatformService
         $this->logger = $logger;
     }
 
-    public function insert(GamePlatform $gamePlatform, string $token): GamePlatform
+    public function insert(GamePlatformServiceInsertDto $dto, string $token): GamePlatform
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -51,26 +55,31 @@ class GamePlatformService
             );
 
             $this->gameDomainService->ensureGameExists(
-                $gamePlatform->getGame()->getId()
+                $dto->gameId
             );
 
             $this->platformDomainService->ensurePlatformExists(
-                $gamePlatform->getPlatform()->getId()
+                $dto->platformId
             );
 
-            $insertedGamePlatform = $this->repository->insert($gamePlatform);
+            $insertedGamePlatform = $this->repository->insert(
+                new GamePlatformRepositoryInterfaceInsertDto(
+                    $dto->gameId,
+                    $dto->platformId
+                )
+            );
 
             return $insertedGamePlatform;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting GamePlatform", [
                 "exception" => $e,
-                "gamePlatform" => $gamePlatform,
+                "dto" => $dto,
             ]);
             throw $e;
         }
     }
 
-    public function update(GamePlatform $gamePlatform, string $token): bool
+    public function update(GamePlatformServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -80,24 +89,30 @@ class GamePlatformService
             );
 
             $this->gameDomainService->ensureGameExists(
-                $gamePlatform->getGame()->getId()
+                $dto->gameId
             );
 
             $this->platformDomainService->ensurePlatformExists(
-                $gamePlatform->getPlatform()->getId()
+                $dto->platformId
             );
 
             $this->gamePlatformDomainService->ensureGamePlatformExists(
-                $gamePlatform->getId()
+                $dto->id
             );
 
-            $wasUpdated = $this->repository->update($gamePlatform);
+            $wasUpdated = $this->repository->update(
+                new GamePlatformRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->gameId,
+                    $dto->platformId
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating GamePlatform", [
                 "exception" => $e,
-                "gamePlatform" => $gamePlatform,
+                "dto" => $dto,
             ]);
             throw $e;
         }

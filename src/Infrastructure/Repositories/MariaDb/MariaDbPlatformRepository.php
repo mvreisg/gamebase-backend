@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -19,18 +20,18 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Platform $platform): Platform
+    public function insert(PlatformRepositoryInterfaceInsertDto $dto): Platform
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $platform->getName()->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $platform->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(

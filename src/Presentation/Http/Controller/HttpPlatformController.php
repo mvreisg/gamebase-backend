@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\Platform\Service\PlatformService;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -43,8 +44,7 @@ class HttpPlatformController
             $isActive = $body["is_active"];
 
             $platform = $this->platformService->insert(
-                Platform::create(
-                    null,
+                new PlatformServiceInsertDto(
                     Name::create($name),
                     $isActive
                 ),

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\GamePlatformService;
-use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
-use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
-use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
@@ -44,18 +43,9 @@ class HttpGamePlatformController
             $platformId = $body["platform_id"];
 
             $gamePlatform = $this->gamePlatformService->insert(
-                GamePlatform::create(
-                    null,
-                    Game::createFromIdOnly(
-                        Id::create(
-                            $gameId
-                        )
-                    ),
-                    Platform::createFromIdOnly(
-                        Id::create(
-                            $platformId
-                        )
-                    )
+                new GamePlatformServiceInsertDto(
+                    Id::create($gameId),
+                    Id::create($platformId),
                 ),
                 $token
             );
@@ -113,24 +103,12 @@ class HttpGamePlatformController
             $gameId = $body["game_id"];
             $platformId = $body["platform_id"];
 
-            $gamePlatform = GamePlatform::create(
-                Id::create(
-                    $id
-                ),
-                Game::createFromIdOnly(
-                    Id::create(
-                        $gameId
-                    )
-                ),
-                Platform::createFromIdOnly(
-                    Id::create(
-                        $platformId
-                    )
-                )
-            );
-
             $wasUpdated = $this->gamePlatformService->update(
-                $gamePlatform,
+                new GamePlatformServiceUpdateDto(
+                    Id::create($id),
+                    Id::create($gameId),
+                    Id::create($platformId),
+                ),
                 $token
             );
 

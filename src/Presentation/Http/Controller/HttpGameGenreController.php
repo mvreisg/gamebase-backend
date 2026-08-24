@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\GameGenre\Service\GameGenreService;
-use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
-use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
@@ -44,18 +43,9 @@ class HttpGameGenreController
             $genreId = $body["genre_id"];
 
             $gameGenre = $this->gameGenreService->insert(
-                GameGenre::create(
-                    null,
-                    Game::createFromIdOnly(
-                        Id::create(
-                            $gameId
-                        )
-                    ),
-                    Genre::createFromIdOnly(
-                        Id::create(
-                            $genreId
-                        )
-                    )
+                new GameGenreServiceInsertDto(
+                    Id::create($gameId),
+                    Id::create($genreId),
                 ),
                 $token
             );
@@ -113,22 +103,12 @@ class HttpGameGenreController
             $gameId = $body["game_id"];
             $genreId = $body["genre_id"];
 
-            $gameGenre = GameGenre::create(
-                Id::create($id),
-                Game::createFromIdOnly(
-                    Id::create(
-                        $gameId
-                    )
-                ),
-                Genre::createFromIdOnly(
-                    Id::create(
-                        $genreId
-                    )
-                )
-            );
-
             $wasUpdated = $this->gameGenreService->update(
-                $gameGenre,
+                new GameGenreServiceUpdateDto(
+                    Id::create($id),
+                    Id::create($gameId),
+                    Id::create($genreId),
+                ),
                 $token
             );
 

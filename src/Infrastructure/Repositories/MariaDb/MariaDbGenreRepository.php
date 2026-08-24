@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -19,18 +20,18 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Genre $genre): Genre
+    public function insert(GenreRepositoryInterfaceInsertDto $dto): Genre
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $genre->getName()->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $genre->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(

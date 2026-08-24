@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Platform\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -33,7 +35,7 @@ class PlatformService
         $this->logger = $logger;
     }
 
-    public function insert(Platform $platform, string $token): Platform
+    public function insert(PlatformServiceInsertDto $dto, string $token): Platform
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -44,16 +46,21 @@ class PlatformService
 
             $this->platformDomainService->ensureNameIsUnique(
                 null,
-                $platform->getName()
+                $dto->name
             );
 
-            $insertedPlatform = $this->repository->insert($platform);
+            $insertedPlatform = $this->repository->insert(
+                new PlatformRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $insertedPlatform;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting platform", [
                 "error" => $e->getMessage(),
-                "platform" => $platform,
+                "dto" => $dto,
             ]);
             throw $e;
         }

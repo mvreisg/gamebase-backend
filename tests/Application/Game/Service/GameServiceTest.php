@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\Game\Service\GameService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -356,7 +357,10 @@ class GameServiceTest extends TestCase
         );
 
         $insertedGame = $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -453,7 +457,10 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -535,7 +542,10 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }

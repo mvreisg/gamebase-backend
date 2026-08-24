@@ -6,12 +6,13 @@ namespace Mvreisg\GamebaseBackend\Domain\Platform\Repository;
 
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 interface PlatformRepositoryInterface
 {
-    public function insert(Platform $platform): Platform;
+    public function insert(PlatformRepositoryInterfaceInsertDto $platform): Platform;
 
     public function update(Platform $platform): bool;
 
