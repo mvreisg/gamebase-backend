@@ -44,7 +44,7 @@ class SectorServiceTest extends TestCase
 {
     private function createSectorRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         bool $mustFindById,
         Sector $permission
     ): MockObject&SectorRepositoryInterface {
@@ -74,8 +74,8 @@ class SectorServiceTest extends TestCase
                 ]) : null
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -294,7 +294,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            false,
+            null,
             true,
             $sector
         );
@@ -391,7 +391,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            false,
+            null,
             true,
             $sector
         );
@@ -473,7 +473,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -559,7 +559,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            false,
+            $sector->getId(),
             true,
             $sector
         );
@@ -621,6 +621,89 @@ class SectorServiceTest extends TestCase
         );
     }
 
+    public function testIfASectorUpdateSuccedsEvenWithSameName(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $encodedToken = "potato";
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("Sector"),
+            SectorValue::from(SectorType::Sector),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Update"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $sectorRepository = $this->createSectorRepository(
+            true,
+            $sector->getId(),
+            true,
+            $sector
+        );
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $sectorDomainService = $this->createSectorDomainService(
+            $sectorRepository
+        );
+        $sectorService = $this->createSectorService(
+            $sectorRepository,
+            $checkAuthorizationUseCase,
+            $sectorDomainService
+        );
+
+        $sectorService->update(
+            new SectorServiceUpdateDto(
+                $sector->getId(),
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
+            $encodedToken
+        );
+    }
+
     public function testIfSectorUpdateFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
@@ -646,7 +729,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -729,90 +812,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             false,
-            true,
-            true,
-            $sector
-        );
-        $userRepository = $this->createUserRepository(
-            true,
-            false,
-            $user
-        );
-        $userDomainService = $this->createUserDomainService(
-            $userRepository
-        );
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            new UserSectorPermissionCollection([
-                UserSectorPermission::create(
-                    Id::create(1),
-                    $user,
-                    $sector,
-                    $permission
-                )
-            ])
-        );
-        $tokenCache = $this->createTokenCacheInterface(
-            true,
-            $encodedToken
-        );
-        $tokenProvider = $this->createTokenProvider();
-        $authenticationService = $this->createAuthenticationService(
-            $tokenCache,
-            $tokenProvider
-        );
-        $authorizationDomainService = $this->createAuthorizationDomainService();
-        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
-            $userDomainService,
-            $userSectorPermissionRepository,
-            $authenticationService,
-            $authorizationDomainService
-        );
-        $sectorDomainService = $this->createSectorDomainService(
-            $sectorRepository
-        );
-        $sectorService = $this->createSectorService(
-            $sectorRepository,
-            $checkAuthorizationUseCase,
-            $sectorDomainService
-        );
-
-        $sectorService->update(
-            new SectorServiceUpdateDto(
-                $sector->getId(),
-                $sector->getName(),
-                $sector->getSectorValue(),
-                $sector->getIsActive()
-            ),
-            $encodedToken
-        );
-    }
-
-    public function testIfSectorUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
-    {
-        $this->expectException(DuplicatedNameException::class);
-
-        $encodedToken = "potato";
-        $user = $this->createUser(
-            Id::create(1),
-            Username::create("test"),
-            DecodedPassword::create("test"),
-            true
-        );
-        $sector = $this->createSector(
-            Id::create(1),
-            Name::create("Sector"),
-            SectorValue::from(SectorType::Sector),
-            true
-        );
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("Update"),
-            PermissionValue::from(PermissionType::Update),
-            true
-        );
-        $sectorRepository = $this->createSectorRepository(
-            true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -899,7 +899,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -981,7 +981,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -1065,7 +1065,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -1145,7 +1145,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             false,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -1229,7 +1229,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -1322,7 +1322,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             false,
-            true,
+            $sector->getId(),
             false,
             $sector
         );
@@ -1404,7 +1404,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             true,
             $sector
         );
@@ -1486,7 +1486,7 @@ class SectorServiceTest extends TestCase
         );
         $sectorRepository = $this->createSectorRepository(
             true,
-            true,
+            $sector->getId(),
             false,
             $sector
         );

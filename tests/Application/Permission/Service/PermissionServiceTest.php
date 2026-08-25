@@ -58,7 +58,7 @@ class PermissionServiceTest extends TestCase
 
     private function createPermissionRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Permission $permission
     ): MockObject&PermissionRepositoryInterface {
         $repository = $this->createMock(PermissionRepositoryInterface::class);
@@ -87,8 +87,8 @@ class PermissionServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -281,7 +281,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -383,7 +383,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -470,7 +470,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            true,
+            $permission->getId(),
             $permission
         );
         $user = $this->createUser(
@@ -561,7 +561,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            $permission->getId(),
             $permission
         );
         $user = $this->createUser(
@@ -640,6 +640,94 @@ class PermissionServiceTest extends TestCase
         );
     }
 
+    public function testIfAPermissionUpdateSuccedsEvenWithSameName(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("test"),
+            PermissionValue::from(PermissionType::Create),
+            true
+        );
+        $encodedToken = "potato";
+        $permissionRepository = $this->createPermissionRepository(
+            true,
+            $permission->getId(),
+            $permission
+        );
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("Permission"),
+            SectorValue::from(SectorType::Permission),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Update"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $permissionDomainService = $this->createPermissionDomainService(
+            $permissionRepository
+        );
+        $permissionService = $this->createPermissionService(
+            $permissionRepository,
+            $checkAuthorizationUseCase,
+            $permissionDomainService
+        );
+
+        $permissionService->update(
+            new PermissionServiceUpdateDto(
+                $permission->getId(),
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
+            $encodedToken
+        );
+    }
+
     public function testIfPermissionUpdateFailsBecauseOfMissingPermissions(): void
     {
         $this->expectException(UnauthorizedException::class);
@@ -653,7 +741,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -741,95 +829,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             false,
-            false,
-            $permission
-        );
-        $user = $this->createUser(
-            Id::create(1),
-            Username::create("test"),
-            DecodedPassword::create("test"),
-            true
-        );
-        $sector = $this->createSector(
-            Id::create(1),
-            Name::create("Permission"),
-            SectorValue::from(SectorType::Permission),
-            true
-        );
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("Update"),
-            PermissionValue::from(PermissionType::Update),
-            true
-        );
-        $userRepository = $this->createUserRepository(
-            true,
-            false,
-            $user
-        );
-        $userDomainService = $this->createUserDomainService(
-            $userRepository
-        );
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            new UserSectorPermissionCollection([
-                UserSectorPermission::create(
-                    Id::create(1),
-                    $user,
-                    $sector,
-                    $permission
-                )
-            ])
-        );
-        $tokenCache = $this->createTokenCacheInterface(
-            true,
-            $encodedToken
-        );
-        $tokenProvider = $this->createTokenProvider();
-        $authenticationService = $this->createAuthenticationService(
-            $tokenCache,
-            $tokenProvider
-        );
-        $authorizationDomainService = $this->createAuthorizationDomainService();
-        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
-            $userDomainService,
-            $userSectorPermissionRepository,
-            $authenticationService,
-            $authorizationDomainService
-        );
-        $permissionDomainService = $this->createPermissionDomainService(
-            $permissionRepository
-        );
-        $permissionService = $this->createPermissionService(
-            $permissionRepository,
-            $checkAuthorizationUseCase,
-            $permissionDomainService
-        );
-
-        $permissionService->update(
-            new PermissionServiceUpdateDto(
-                $permission->getId(),
-                $permission->getName(),
-                $permission->getPermissionValue(),
-                $permission->getIsActive()
-            ),
-            $encodedToken
-        );
-    }
-
-    public function testIfPermissionUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
-    {
-        $this->expectException(DuplicatedNameException::class);
-
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("test"),
-            PermissionValue::from(PermissionType::Create),
-            true
-        );
-        $encodedToken = "potato";
-        $permissionRepository = $this->createPermissionRepository(
-            true,
-            true,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -921,7 +921,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1008,7 +1008,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1097,7 +1097,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1182,7 +1182,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             false,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1271,7 +1271,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1363,7 +1363,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1450,7 +1450,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(
@@ -1537,7 +1537,7 @@ class PermissionServiceTest extends TestCase
         $encodedToken = "potato";
         $permissionRepository = $this->createPermissionRepository(
             true,
-            false,
+            null,
             $permission
         );
         $user = $this->createUser(

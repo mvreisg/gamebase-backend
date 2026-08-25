@@ -46,13 +46,11 @@ class SectorService
                 PermissionType::Create
             );
 
-            $this->sectorDomainService->ensureNameIsUnique(
-                null,
+            $this->sectorDomainService->ensureNameIsUniqueOnInsert(
                 $dto->name
             );
 
             $this->sectorDomainService->ensureValueIsUnique(
-                null,
                 $dto->value
             );
 
@@ -87,13 +85,12 @@ class SectorService
                 $dto->id
             );
 
-            $this->sectorDomainService->ensureNameIsUnique(
-                $dto->id,
-                $dto->name
+            $this->sectorDomainService->ensureNameIsUniqueOnUpdate(
+                $dto->name,
+                $dto->id
             );
 
             $this->sectorDomainService->ensureValueIsUnique(
-                $dto->id,
                 $dto->value
             );
 

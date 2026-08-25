@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
 use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Game\Service\GameService;
-use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -96,14 +96,12 @@ class HttpGameController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $game = Game::create(
-                Id::create($id),
-                Name::create($name),
-                $isActive
-            );
-
             $wasUpdated = $this->gameService->update(
-                $game,
+                new GameServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    $isActive
+                ),
                 $token
             );
 

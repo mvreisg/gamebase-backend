@@ -20,14 +20,30 @@ class GameDomainService
         $this->repository = $repository;
     }
 
-    public function ensureNameIsUnique(?Id $id, Name $name): void
+    public function ensureNameIsUniqueOnInsert(Name $name): void
     {
-        $hasDuplicatedNames = $this->repository->checkDuplicatedNames(
-            $id,
+        $id = $this->repository->checkIfNameExists(
             $name
         );
 
-        if ($hasDuplicatedNames) {
+        if ($id) {
+            throw new DuplicatedNameException(
+                $name
+            );
+        }
+    }
+
+    public function ensureNameIsUniqueOnUpdate(Name $name, Id $id): void
+    {
+        $existantId = $this->repository->checkIfNameExists(
+            $name
+        );
+
+        if ($existantId === null) {
+            return;
+        }
+
+        if ($existantId->getValue() !== $id->getValue()) {
             throw new DuplicatedNameException(
                 $name
             );

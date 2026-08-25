@@ -26,7 +26,7 @@ interface SectorRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool;
+    public function checkIfNameExists(Name $name): ?Id;
 
-    public function checkDuplicatedValues(?Id $id, SectorValue $value): bool;
+    public function checkIfValueExists(SectorValue $value): ?Id;
 }

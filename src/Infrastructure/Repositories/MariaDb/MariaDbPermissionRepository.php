@@ -298,105 +298,57 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
-            $alias = "number_of_names";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        name = :name;"
-                );
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        name = :name
-                    AND
-                        id != :id;"
-                );
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    permission 
+                WHERE 
+                    name = :name;"
+            );
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfNames > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedValues(?Id $id, PermissionValue $value): bool
+    public function checkIfValueExists(PermissionValue $value): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $valueValue = $value->getValue()->value;
 
-            $alias = "number_of_values";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        value = :value;"
-                );
-                $statement->execute([
-                    ":value" => $valueValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        value = :value
-                    AND
-                        id != :id;"
-                );
-                $statement->execute([
-                    ":id" => $idValue,
-                    ":value" => $valueValue
-                ]);
-            }
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    permission 
+                WHERE 
+                    value = :value;"
+            );
+            $statement->execute([
+                ":value" => $valueValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfValues = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfValues > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

@@ -7,6 +7,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -93,17 +94,17 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function update(Platform $platform): bool
+    public function update(PlatformRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $platform->getId()->getValue();
-            $name = $platform->getName()->getValue();
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $platform->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(
@@ -280,55 +281,30 @@ class MariaDbPlatformRepository implements PlatformRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
-            $alias = "number_of_names";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        platform 
-                    WHERE 
-                        name = :name;"
-                );
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    platform 
+                WHERE 
+                    name = :name;"
+            );
 
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        platform 
-                    WHERE 
-                        name = :name
-                    AND
-                        id != :id;"
-                );
-
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfNames > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

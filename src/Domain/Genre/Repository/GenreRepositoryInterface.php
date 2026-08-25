@@ -7,14 +7,15 @@ namespace Mvreisg\GamebaseBackend\Domain\Genre\Repository;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 interface GenreRepositoryInterface
 {
-    public function insert(GenreRepositoryInterfaceInsertDto $genre): Genre;
+    public function insert(GenreRepositoryInterfaceInsertDto $dto): Genre;
 
-    public function update(Genre $genre): bool;
+    public function update(GenreRepositoryInterfaceUpdateDto $dto): bool;
 
     public function setIsActive(Id $id, bool $isActive): bool;
 
@@ -24,5 +25,5 @@ interface GenreRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool;
+    public function checkIfNameExists(Name $name): ?Id;
 }

@@ -6,11 +6,13 @@ namespace Mvreisg\GamebaseBackend\Application\Game\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
 use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -44,8 +46,7 @@ class GameService
                 PermissionType::Create
             );
 
-            $this->gameDomainService->ensureNameIsUnique(
-                null,
+            $this->gameDomainService->ensureNameIsUniqueOnInsert(
                 $dto->name
             );
 
@@ -66,7 +67,7 @@ class GameService
         }
     }
 
-    public function update(Game $game, string $token): bool
+    public function update(GameServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -76,21 +77,27 @@ class GameService
             );
 
             $this->gameDomainService->ensureGameExists(
-                $game->getId()
+                $dto->id
             );
 
-            $this->gameDomainService->ensureNameIsUnique(
-                $game->getId(),
-                $game->getName()
+            $this->gameDomainService->ensureNameIsUniqueOnUpdate(
+                $dto->name,
+                $dto->id
             );
 
-            $wasUpdated = $this->repository->update($game);
+            $wasUpdated = $this->repository->update(
+                new GameRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating game", [
                 "exception" => $e,
-                "game" => $game,
+                "dto" => $dto,
             ]);
             throw $e;
         }

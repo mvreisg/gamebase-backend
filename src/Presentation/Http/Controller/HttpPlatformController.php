@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
 use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Platform\Service\PlatformService;
-use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -96,14 +96,12 @@ class HttpPlatformController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $platform = Platform::create(
-                Id::create($id),
-                Name::create($name),
-                $isActive
-            );
-
             $wasUpdated = $this->platformService->update(
-                $platform,
+                new PlatformServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    $isActive
+                ),
                 $token
             );
 

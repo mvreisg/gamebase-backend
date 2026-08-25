@@ -6,11 +6,13 @@ namespace Mvreisg\GamebaseBackend\Application\Genre\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
 use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -44,8 +46,7 @@ class GenreService
                 PermissionType::Create
             );
 
-            $this->genreDomainService->ensureNameIsUnique(
-                null,
+            $this->genreDomainService->ensureNameIsUniqueOnInsert(
                 $dto->name
             );
 
@@ -66,7 +67,7 @@ class GenreService
         }
     }
 
-    public function update(Genre $genre, string $token): bool
+    public function update(GenreServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -76,21 +77,27 @@ class GenreService
             );
 
             $this->genreDomainService->ensureGenreExists(
-                $genre->getId()
+                $dto->id
             );
 
-            $this->genreDomainService->ensureNameIsUnique(
-                $genre->getId(),
-                $genre->getName()
+            $this->genreDomainService->ensureNameIsUniqueOnUpdate(
+                $dto->name,
+                $dto->id
             );
 
-            $wasUpdated = $this->repository->update($genre);
+            $wasUpdated = $this->repository->update(
+                new GenreRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating genre", [
                 "exception" => $e,
-                "genre" => $genre
+                "dto" => $dto
             ]);
             throw $e;
         }

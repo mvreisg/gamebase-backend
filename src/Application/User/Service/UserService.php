@@ -53,7 +53,6 @@ class UserService
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
-                null,
                 $dto->username
             );
 
@@ -93,7 +92,6 @@ class UserService
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
-                $dto->id,
                 $dto->username
             );
 

@@ -46,13 +46,11 @@ class PermissionService
                 PermissionType::Create
             );
 
-            $this->permissionDomainService->ensureNameIsUnique(
-                null,
+            $this->permissionDomainService->ensureNameIsUniqueOnInsert(
                 $dto->name
             );
 
             $this->permissionDomainService->ensureValueIsUnique(
-                null,
                 $dto->value
             );
 
@@ -87,13 +85,12 @@ class PermissionService
                 $dto->id
             );
 
-            $this->permissionDomainService->ensureNameIsUnique(
-                $dto->id,
-                $dto->name
+            $this->permissionDomainService->ensureNameIsUniqueOnUpdate(
+                $dto->name,
+                $dto->id
             );
 
             $this->permissionDomainService->ensureValueIsUnique(
-                $dto->id,
                 $dto->value
             );
 

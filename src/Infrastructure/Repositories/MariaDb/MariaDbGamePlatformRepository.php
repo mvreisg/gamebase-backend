@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -113,12 +114,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function update(GamePlatform $gamePlatform): bool
+    public function update(GamePlatformRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $gamePlatform->getId()->getValue();
-            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
-            $gameId = $gamePlatform->getGame()->getId()->getValue();
+            $id = $dto->id->getValue();
+            $platformId = $dto->platformId->getValue();
+            $gameId = $dto->gameId->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 

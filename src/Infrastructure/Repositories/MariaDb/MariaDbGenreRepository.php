@@ -7,6 +7,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -90,17 +91,17 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function update(Genre $genre): bool
+    public function update(GenreRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $genre->getId()->getValue();
-            $name = $genre->getName()->getValue();
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $genre->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(
@@ -268,55 +269,30 @@ class MariaDbGenreRepository implements GenreRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
-            $alias = "number_of_names";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        genre 
-                    WHERE 
-                        name = :name;"
-                );
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    genre 
+                WHERE 
+                    name = :name;"
+            );
 
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        genre 
-                    WHERE 
-                        name = :name
-                    AND
-                        id != :id;"
-                );
-
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfNames > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

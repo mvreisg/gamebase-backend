@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
 use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Genre\Service\GenreService;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -96,14 +96,12 @@ class HttpGenreController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $genre = Genre::create(
-                Id::create($id),
-                Name::create($name),
-                $isActive
-            );
-
             $wasUpdated = $this->genreService->update(
-                $genre,
+                new GenreServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    $isActive
+                ),
                 $token
             );
 

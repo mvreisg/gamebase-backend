@@ -7,6 +7,7 @@ namespace Mvreisg\GamebaseBackend\Domain\Game\Repository;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
@@ -14,7 +15,7 @@ interface GameRepositoryInterface
 {
     public function insert(GameRepositoryInterfaceInsertDto $dto): Game;
 
-    public function update(Game $game): bool;
+    public function update(GameRepositoryInterfaceUpdateDto $dto): bool;
 
     public function setIsActive(Id $id, bool $isActive): bool;
 
@@ -24,5 +25,5 @@ interface GameRepositoryInterface
 
     public function checkIfExists(Id $id): bool;
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool;
+    public function checkIfNameExists(Name $name): ?Id;
 }

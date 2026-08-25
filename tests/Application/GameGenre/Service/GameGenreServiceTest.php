@@ -89,7 +89,7 @@ class GameGenreServiceTest extends TestCase
 
     private function createGameRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Game $game
     ): MockObject&GameRepositoryInterface {
         $repository = $this->createMock(GameRepositoryInterface::class);
@@ -118,8 +118,8 @@ class GameGenreServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -451,7 +451,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -525,7 +525,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -582,7 +582,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -641,7 +641,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -698,7 +698,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -757,7 +757,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -814,7 +814,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -877,7 +877,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -934,7 +934,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -998,7 +998,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1055,7 +1055,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1115,7 +1115,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1172,7 +1172,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1232,7 +1232,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1289,7 +1289,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1349,7 +1349,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1406,7 +1406,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1470,7 +1470,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1527,7 +1527,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1587,7 +1587,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1644,7 +1644,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1700,7 +1700,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1757,7 +1757,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1817,7 +1817,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1874,7 +1874,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1945,7 +1945,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -2002,7 +2002,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -2062,7 +2062,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -2119,7 +2119,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -2179,7 +2179,7 @@ class GameGenreServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -2236,7 +2236,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
