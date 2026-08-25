@@ -7,13 +7,15 @@ namespace Mvreisg\GamebaseBackend\Domain\User\Repository;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 
 interface UserRepositoryInterface
 {
-    public function insert(User $user): User;
+    public function insert(UserRepositoryInterfaceInsertDto $dto): User;
 
-    public function update(User $user): bool;
+    public function update(UserRepositoryInterfaceUpdateDto $dto): bool;
 
     public function setIsActive(Id $id, bool $isActive): bool;
 

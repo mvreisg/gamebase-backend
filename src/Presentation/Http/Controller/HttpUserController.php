@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
-use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -51,8 +52,7 @@ class HttpUserController
             $isActive = $body["is_active"];
 
             $user = $this->userService->insert(
-                User::create(
-                    null,
+                new UserServiceInsertDto(
                     Username::create($username),
                     DecodedPassword::create($password),
                     $isActive
@@ -108,15 +108,14 @@ class HttpUserController
             $password = $body["password"];
             $isActive = $body["is_active"];
 
-            $user = User::create(
-                Id::create($id),
-                Username::create($username),
-                DecodedPassword::create($password),
-                $isActive
-            );
 
             $wasUpdated = $this->userService->update(
-                $user,
+                new UserServiceUpdateDto(
+                    Id::create($id),
+                    Username::create($username),
+                    DecodedPassword::create($password),
+                    $isActive
+                ),
                 $token
             );
 

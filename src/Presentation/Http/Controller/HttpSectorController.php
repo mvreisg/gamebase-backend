@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Sector\Service\SectorService;
-use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -45,8 +46,7 @@ class HttpSectorController
             $value = $body["value"];
 
             $sector = $this->sectorService->insert(
-                Sector::create(
-                    null,
+                new SectorServiceInsertDto(
                     Name::create($name),
                     SectorValue::create($value),
                     $isActive
@@ -101,15 +101,13 @@ class HttpSectorController
             $isActive = $body["is_active"];
             $value = $body["value"];
 
-            $sector = Sector::create(
-                Id::create($id),
-                Name::create($name),
-                SectorValue::create($value),
-                $isActive
-            );
-
             $wasUpdated = $this->sectorService->update(
-                $sector,
+                new SectorServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    SectorValue::create($value),
+                    $isActive
+                ),
                 $token
             );
 

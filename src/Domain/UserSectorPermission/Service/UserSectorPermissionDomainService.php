@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Service;
 
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
-use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Exception\InvalidUserSectorPermissionException;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Exception\UserSectorPermissionNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
@@ -32,14 +34,16 @@ class UserSectorPermissionDomainService
     }
 
     public function assertSectorPermissionIsValid(
-        UserSectorPermission $userSectorPermission
+        User $user,
+        Sector $sector,
+        Permission $permission
     ): void {
-        $sectorType = $userSectorPermission->getSector()->getSectorValue()->getValue();
-        $permissionType = $userSectorPermission->getPermission()->getPermissionValue()->getValue();
-        $isValid = $sectorType->allow($permissionType);
+        $isValid = $sector->getSectorValue()->getValue()->allow($permission->getPermissionValue()->getValue());
         if ($isValid === false) {
             throw new InvalidUserSectorPermissionException(
-                $userSectorPermission
+                $user,
+                $sector,
+                $permission
             );
         }
     }

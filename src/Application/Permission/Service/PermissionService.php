@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Permission\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -33,7 +37,7 @@ class PermissionService
         $this->logger = $logger;
     }
 
-    public function insert(Permission $permission, string $token): Permission
+    public function insert(PermissionServiceInsertDto $dto, string $token): Permission
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -44,27 +48,33 @@ class PermissionService
 
             $this->permissionDomainService->ensureNameIsUnique(
                 null,
-                $permission->getName()
+                $dto->name
             );
 
             $this->permissionDomainService->ensureValueIsUnique(
                 null,
-                $permission->getPermissionValue()
+                $dto->value
             );
 
-            $insertedPermission = $this->repository->insert($permission);
+            $insertedPermission = $this->repository->insert(
+                new PermissionRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->value,
+                    $dto->isActive
+                )
+            );
 
             return $insertedPermission;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting permission", [
                 "error" => $e->getMessage(),
-                "permission" => $permission,
+                "dto" => $dto,
             ]);
             throw $e;
         }
     }
 
-    public function update(Permission $permission, string $token): bool
+    public function update(PermissionServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -74,26 +84,33 @@ class PermissionService
             );
 
             $this->permissionDomainService->ensurePermissionExists(
-                $permission->getId()
+                $dto->id
             );
 
             $this->permissionDomainService->ensureNameIsUnique(
-                $permission->getId(),
-                $permission->getName()
+                $dto->id,
+                $dto->name
             );
 
             $this->permissionDomainService->ensureValueIsUnique(
-                $permission->getId(),
-                $permission->getPermissionValue()
+                $dto->id,
+                $dto->value
             );
 
-            $wasUpdated = $this->repository->update($permission);
+            $wasUpdated = $this->repository->update(
+                new PermissionRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->name,
+                    $dto->value,
+                    $dto->isActive
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating permission", [
                 "error" => $e->getMessage(),
-                "permission" => $permission,
+                "dto" => $dto,
             ]);
             throw $e;
         }

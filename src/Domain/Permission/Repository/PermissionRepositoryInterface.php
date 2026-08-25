@@ -6,15 +6,17 @@ namespace Mvreisg\GamebaseBackend\Domain\Permission\Repository;
 
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
 interface PermissionRepositoryInterface
 {
-    public function insert(Permission $permission): Permission;
+    public function insert(PermissionRepositoryInterfaceInsertDto $dto): Permission;
 
-    public function update(Permission $permission): bool;
+    public function update(PermissionRepositoryInterfaceUpdateDto $dto): bool;
 
     public function findById(Id $id): ?Permission;
 

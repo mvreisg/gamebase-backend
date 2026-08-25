@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Permission\Service\PermissionService;
-use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -46,8 +47,7 @@ class HttpPermissionController
             $value = $body["value"];
 
             $permission = $this->permissionService->insert(
-                Permission::create(
-                    null,
+                new PermissionServiceInsertDto(
                     Name::create($name),
                     PermissionValue::create($value),
                     $isActive
@@ -102,15 +102,13 @@ class HttpPermissionController
             $isActive = $body["is_active"];
             $value = $body["value"];
 
-            $permission = Permission::create(
-                Id::create($id),
-                Name::create($name),
-                PermissionValue::create($value),
-                $isActive
-            );
-
             $wasUpdated = $this->permissionService->update(
-                $permission,
+                new PermissionServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    PermissionValue::create($value),
+                    $isActive
+                ),
                 $token
             );
 

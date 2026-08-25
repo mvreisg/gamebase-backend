@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Permission\Service\PermissionService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -344,7 +346,11 @@ class PermissionServiceTest extends TestCase
         );
 
         $insertedPermission = $permissionService->insert(
-            $permission,
+            new PermissionServiceInsertDto(
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -442,7 +448,11 @@ class PermissionServiceTest extends TestCase
         );
 
         $permissionService->insert(
-            $permission,
+            new PermissionServiceInsertDto(
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -525,7 +535,11 @@ class PermissionServiceTest extends TestCase
         );
 
         $permissionService->insert(
-            $permission,
+            new PermissionServiceInsertDto(
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -612,7 +626,12 @@ class PermissionServiceTest extends TestCase
         );
 
         $wasUpdated = $permissionService->update(
-            $permission,
+            new PermissionServiceUpdateDto(
+                $permission->getId(),
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -699,7 +718,12 @@ class PermissionServiceTest extends TestCase
         );
 
         $permissionService->update(
-            $permission,
+            new PermissionServiceUpdateDto(
+                $permission->getId(),
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -782,7 +806,12 @@ class PermissionServiceTest extends TestCase
         );
 
         $permissionService->update(
-            $permission,
+            new PermissionServiceUpdateDto(
+                $permission->getId(),
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -865,7 +894,12 @@ class PermissionServiceTest extends TestCase
         );
 
         $permissionService->update(
-            $permission,
+            new PermissionServiceUpdateDto(
+                $permission->getId(),
+                $permission->getName(),
+                $permission->getPermissionValue(),
+                $permission->getIsActive()
+            ),
             $encodedToken
         );
     }

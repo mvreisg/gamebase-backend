@@ -6,6 +6,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -20,19 +22,19 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Permission $permission): Permission
+    public function insert(PermissionRepositoryInterfaceInsertDto $dto): Permission
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $permission->getName()->getValue();
-            $value = $permission->getPermissionValue()->getValue()->value;
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $permission->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(
@@ -101,18 +103,18 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function update(Permission $permission): bool
+    public function update(PermissionRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $permission->getId()->getValue();
-            $name = $permission->getName()->getValue();
-            $value = $permission->getPermissionValue()->getValue()->value;
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $permission->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(

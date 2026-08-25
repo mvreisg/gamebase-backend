@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Sector\Service\SectorService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -340,7 +342,11 @@ class SectorServiceTest extends TestCase
         );
 
         $insertedSector = $sectorService->insert(
-            $sector,
+            new SectorServiceInsertDto(
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -433,7 +439,11 @@ class SectorServiceTest extends TestCase
         );
 
         $sectorService->insert(
-            $sector,
+            new SectorServiceInsertDto(
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -511,7 +521,11 @@ class SectorServiceTest extends TestCase
         );
 
         $sectorService->insert(
-            $sector,
+            new SectorServiceInsertDto(
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -593,7 +607,12 @@ class SectorServiceTest extends TestCase
         );
 
         $wasUpdated = $sectorService->update(
-            $sector,
+            new SectorServiceUpdateDto(
+                $sector->getId(),
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -675,7 +694,12 @@ class SectorServiceTest extends TestCase
         );
 
         $sectorService->update(
-            $sector,
+            new SectorServiceUpdateDto(
+                $sector->getId(),
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -753,7 +777,12 @@ class SectorServiceTest extends TestCase
         );
 
         $sectorService->update(
-            $sector,
+            new SectorServiceUpdateDto(
+                $sector->getId(),
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -831,7 +860,12 @@ class SectorServiceTest extends TestCase
         );
 
         $sectorService->update(
-            $sector,
+            new SectorServiceUpdateDto(
+                $sector->getId(),
+                $sector->getName(),
+                $sector->getSectorValue(),
+                $sector->getIsActive()
+            ),
             $encodedToken
         );
     }

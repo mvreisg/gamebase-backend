@@ -7,6 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
@@ -20,19 +22,19 @@ class MariaDbUserRepository implements UserRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(User $user): User
+    public function insert(UserRepositoryInterfaceInsertDto $dto): User
     {
         try {
             $this->connection->beginTransaction();
 
-            $username = $user->getUsername()->getValue();
-            $password = $user->getPassword()->getValue();
+            $username = $dto->username->getValue();
+            $password = $dto->password->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $user->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(
@@ -100,18 +102,18 @@ class MariaDbUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function update(User $user): bool
+    public function update(UserRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $user->getId()->getValue();
-            $username = $user->getUsername()->getValue();
-            $password = $user->getPassword()->getValue();
+            $id = $dto->id->getValue();
+            $username = $dto->username->getValue();
+            $password = $dto->password->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $user->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(

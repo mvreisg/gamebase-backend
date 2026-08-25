@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Exception;
 
-use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 
 class InvalidUserSectorPermissionException extends \Exception
 {
     public function __construct(
-        UserSectorPermission $userSectorPermission
+        User $user,
+        Sector $sector,
+        Permission $permission
     ) {
-        $username = $userSectorPermission->getUser()->getUsername()->getValue();
-        $sectorName = $userSectorPermission->getSector()->getName()->getValue();
-        $permissionName = $userSectorPermission->getPermission()->getName()->getValue();
+        $username = $user->getUsername()->getValue();
+        $sectorName = $sector->getName()->getValue();
+        $permissionName = $permission->getName()->getValue();
         parent::__construct(
             "The user {$username} with the sector {$sectorName} and permission {$permissionName} is invalid!"
         );

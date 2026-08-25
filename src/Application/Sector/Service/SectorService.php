@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Sector\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -33,7 +37,7 @@ class SectorService
         $this->logger = $logger;
     }
 
-    public function insert(Sector $sector, string $token): Sector
+    public function insert(SectorServiceInsertDto $dto, string $token): Sector
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -44,27 +48,33 @@ class SectorService
 
             $this->sectorDomainService->ensureNameIsUnique(
                 null,
-                $sector->getName()
+                $dto->name
             );
 
             $this->sectorDomainService->ensureValueIsUnique(
                 null,
-                $sector->getSectorValue()
+                $dto->value
             );
 
-            $insertedSector = $this->repository->insert($sector);
+            $insertedSector = $this->repository->insert(
+                new SectorRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->value,
+                    $dto->isActive
+                )
+            );
 
             return $insertedSector;
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting sector", [
                 "exception" => $e,
-                "sector" => $sector,
+                "dto" => $dto,
             ]);
             throw $e;
         }
     }
 
-    public function update(Sector $sector, string $token): bool
+    public function update(SectorServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -74,26 +84,33 @@ class SectorService
             );
 
             $this->sectorDomainService->ensureSectorExists(
-                $sector->getId()
+                $dto->id
             );
 
             $this->sectorDomainService->ensureNameIsUnique(
-                $sector->getId(),
-                $sector->getName()
+                $dto->id,
+                $dto->name
             );
 
             $this->sectorDomainService->ensureValueIsUnique(
-                $sector->getId(),
-                $sector->getSectorValue()
+                $dto->id,
+                $dto->value
             );
 
-            $wasUpdated = $this->repository->update($sector);
+            $wasUpdated = $this->repository->update(
+                new SectorRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->name,
+                    $dto->value,
+                    $dto->isActive
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating sector", [
                 "exception" => $e,
-                "sector" => $sector,
+                "dto" => $dto,
             ]);
             throw $e;
         }

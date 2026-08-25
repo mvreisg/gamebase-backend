@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\Dto\UserSectorPermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\Dto\UserSectorPermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\UserSectorPermissionService;
-use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
-use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
-use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
-use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -46,21 +44,10 @@ class HttpUserSectorPermissionController
             $permissionId = $body["permission_id"];
 
             $userSectorPermission = $this->userSectorPermissionService->insert(
-                UserSectorPermission::create(
-                    null,
-                    User::createFromIdOnly(
-                        Id::create(
-                            $userId
-                        )
-                    ),
-                    Sector::createFromIdOnly(
-                        Id::create(
-                            $sectorId
-                        )
-                    ),
-                    Permission::createFromIdOnly(
-                        Id::create($permissionId)
-                    )
+                new UserSectorPermissionServiceInsertDto(
+                    Id::create($userId),
+                    Id::create($sectorId),
+                    Id::create($permissionId)
                 ),
                 $token
             );
@@ -125,28 +112,13 @@ class HttpUserSectorPermissionController
             $sectorId = $body["sector_id"];
             $permissionId = $body["permission_id"];
 
-            $userSectorPermission = UserSectorPermission::create(
-                Id::create(
-                    $id
-                ),
-                User::createFromIdOnly(
-                    Id::create(
-                        $userId
-                    )
-                ),
-                Sector::createFromIdOnly(
-                    Id::create(
-                        $sectorId
-                    )
-                ),
-                Permission::createFromIdOnly(
-                    Id::create($permissionId)
-                )
-            );
-            $userSectorPermission->setId(Id::create($id));
-
             $wasUpdated = $this->userSectorPermissionService->update(
-                $userSectorPermission,
+                new UserSectorPermissionServiceUpdateDto(
+                    Id::create($id),
+                    Id::create($userId),
+                    Id::create($sectorId),
+                    Id::create($permissionId)
+                ),
                 $token
             );
 

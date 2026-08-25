@@ -6,6 +6,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -20,21 +22,21 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Sector $sector): Sector
+    public function insert(SectorRepositoryInterfaceInsertDto $dto): Sector
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $sector->getName()->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $sector->getIsActive()
+                $dto->isActive
             );
 
-            $value = $sector->getSectorValue()->getValue()->value;
+            $value = $dto->value->getValue()->value;
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
@@ -102,18 +104,18 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function update(Sector $sector): bool
+    public function update(SectorRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $sector->getId()->getValue();
-            $name = $sector->getName()->getValue();
-            $value = $sector->getSectorValue()->getValue()->value;
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $sector->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(

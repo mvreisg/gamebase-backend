@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\User\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
@@ -39,7 +43,7 @@ class UserService
         $this->logger = $logger;
     }
 
-    public function insert(User $new, string $token): User
+    public function insert(UserServiceInsertDto $dto, string $token): User
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -50,19 +54,18 @@ class UserService
 
             $this->userDomainService->ensureUsernameIsUnique(
                 null,
-                $new->getUsername()
+                $dto->username
             );
 
             $encodedPassword = $this->encrypter->encrypt(
-                $new->getPassword()->getValue()
+                $dto->password->getValue()
             );
 
             $insertedUser = $this->repository->insert(
-                User::create(
-                    null,
-                    $new->getUsername(),
+                new UserRepositoryInterfaceInsertDto(
+                    $dto->username,
                     EncodedPassword::create($encodedPassword),
-                    $new->getIsActive()
+                    $dto->isActive
                 )
             );
 
@@ -70,13 +73,13 @@ class UserService
         } catch (\Throwable $e) {
             $this->logger->error("Error inserting user", [
                 "exception" => $e,
-                "user" => $new
+                "dto" => $dto
             ]);
             throw $e;
         }
     }
 
-    public function update(User $existant, string $token): bool
+    public function update(UserServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -86,16 +89,16 @@ class UserService
             );
 
             $this->userDomainService->ensureUserExists(
-                $existant->getId()
+                $dto->id
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
-                $existant->getId(),
-                $existant->getUsername()
+                $dto->id,
+                $dto->username
             );
 
             $fetched = $this->repository->findById(
-                $existant->getId()
+                $dto->id
             );
 
             $encodedPassword = $fetched->getPassword()->getValue();
@@ -105,32 +108,30 @@ class UserService
             );
 
             $isHashEqual = strcmp(
-                $existant->getPassword()->getValue(),
+                $dto->password->getValue(),
                 $decodedPassword
             ) === 0;
 
             if ($isHashEqual === false) {
                 $encodedPassword = $this->encrypter->encrypt(
-                    $existant->getPassword()->getValue()
+                    $dto->password->getValue()
                 );
             }
 
-            $user = User::create(
-                $existant->getId(),
-                $existant->getUsername(),
-                EncodedPassword::create($encodedPassword),
-                $existant->getIsActive()
-            );
-
             $wasUpdated = $this->repository->update(
-                $user
+                new UserRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->username,
+                    EncodedPassword::create($encodedPassword),
+                    $dto->isActive
+                )
             );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
             $this->logger->error("Error updating user", [
                 "exception" => $e,
-                "user" => $existant
+                "dto" => $dto
             ]);
             throw $e;
         }
