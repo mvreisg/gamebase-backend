@@ -23,7 +23,7 @@ class HttpBadRequestExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Bad request. {$exception->getMessage()}"
+                    "message" => $exception->getMessage()
                 ])
             );
         return $response

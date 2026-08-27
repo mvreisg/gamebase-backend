@@ -23,7 +23,7 @@ class HttpMethodNotAllowedExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Method not allowed."
+                    "message" => $exception->getMessage()
                 ])
             );
         return $response

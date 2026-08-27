@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\Permission\Entity;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\User;
 
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: "PermissionEntity",
+    schema: "User",
     type: "object",
     properties: [
         new OA\Property(
@@ -16,14 +16,14 @@ use OpenApi\Attributes as OA;
             example: 1
         ),
         new OA\Property(
-            property: "name",
+            property: "username",
             type: "string",
-            example: "create"
+            example: "mvreisg"
         ),
         new OA\Property(
-            property: "value",
+            property: "password",
             type: "string",
-            example: "create"
+            example: "f03jg9j043g"
         ),
         new OA\Property(
             property: "is_active",
@@ -32,6 +32,6 @@ use OpenApi\Attributes as OA;
         )
     ]
 )]
-class HttpOpenApiPermissionEntitySchema
+class HttpOpenApiUserSchema
 {
 }

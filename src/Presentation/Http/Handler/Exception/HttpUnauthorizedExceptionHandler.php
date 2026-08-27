@@ -23,7 +23,7 @@ class HttpUnauthorizedExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Unauthorized."
+                    "message" => $exception->getMessage()
                 ])
             );
         return $response

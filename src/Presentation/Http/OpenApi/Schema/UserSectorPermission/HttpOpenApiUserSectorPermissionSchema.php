@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\UserSectorPermission\Entity;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\UserSectorPermission;
 
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: "UserSectorPermissionEntity",
+    schema: "UserSectorPermission",
     type: "object",
     properties: [
         new OA\Property(
@@ -17,18 +17,18 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(
             property: "user",
-            ref: "#/components/schemas/UserEntity"
+            ref: "#/components/schemas/User"
         ),
         new OA\Property(
             property: "sector",
-            ref: "#/components/schemas/SectorEntity"
+            ref: "#/components/schemas/Sector"
         ),
         new OA\Property(
             property: "permission",
-            ref: "#/components/schemas/PermissionEntity"
+            ref: "#/components/schemas/Permission"
         )
     ]
 )]
-class HttpOpenApiUserSectorPermissionEntitySchema
+class HttpOpenApiUserSectorPermissionSchema
 {
 }

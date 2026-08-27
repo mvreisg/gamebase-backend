@@ -27,9 +27,8 @@ class HttpAuthenticationController
     #[OA\Get(
         path: "/authentication/validate",
         summary: "Validate",
-        description:
-            "Validates the provided authentication token and returns the associated authentication data if valid.",
-        tags: ["Authentication"]
+        description: "Validates the provided authentication token and returns the associated authentication data if valid.",
+        tags: ["Validate"]
     )]
     #[OA\Parameter(
         name: "Authorization",

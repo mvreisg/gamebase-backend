@@ -32,9 +32,8 @@ class HttpSessionController
     #[OA\Post(
         path: "/session/login",
         summary: "Login",
-        description:
-            "Receives the user credentials and if valid, creates a session and returns the authentication token",
-        tags: ["Session"]
+        description: "Receives the user credentials and if valid, creates a session and returns the authentication token",
+        tags: ["Login"]
     )]
     #[OA\RequestBody(
         content: new OA\JsonContent(
@@ -85,7 +84,7 @@ class HttpSessionController
                         new OA\Property(
                             property: "token",
                             type: "string",
-                            example: "Bearer gmeroibmerong98345nh04h45"
+                            example: "Bearer ey33...432"
                         ),
                         new OA\Property(
                             property: "user",
@@ -105,7 +104,7 @@ class HttpSessionController
                                     property: "permissions",
                                     type: "array",
                                     items: new OA\Items(
-                                        ref: "#/components/schemas/UserSectorPermissionEntity"
+                                        ref: "#/components/schemas/UserSectorPermission"
                                     )
                                 )
                             ]
@@ -129,7 +128,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing, if the user does not exist",
+        description: "Response if a body value is missing or if the user does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -279,7 +278,7 @@ class HttpSessionController
         summary: "Logoff",
         description:
             "Invalidates the user's authentication token and removes it from the cache",
-        tags: ["Session"]
+        tags: ["Logoff"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -382,7 +381,7 @@ class HttpSessionController
         summary: "Get User Information",
         description:
             "Returns the information of the currently logged-in user",
-        tags: ["Session"]
+        tags: ["Me", "Get", "Information"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -416,7 +415,7 @@ class HttpSessionController
                             property: "permissions",
                             type: "array",
                             items: new OA\Items(
-                                ref: "#/components/schemas/UserSectorPermissionEntity"
+                                ref: "#/components/schemas/UserSectorPermission"
                             )
                         )
                     ]

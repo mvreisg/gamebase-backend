@@ -23,7 +23,7 @@ class HttpForbiddenExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Access forbidden."
+                    "message" => $exception->getMessage()
                 ])
             );
         return $response

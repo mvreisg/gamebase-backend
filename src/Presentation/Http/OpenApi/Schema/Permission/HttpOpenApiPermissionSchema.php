@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\Sector\Entity;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\OpenApi\Schema\Permission;
 
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: "SectorEntity",
+    schema: "Permission",
     type: "object",
     properties: [
         new OA\Property(
@@ -18,12 +18,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: "name",
             type: "string",
-            example: "game"
+            example: "create"
         ),
         new OA\Property(
             property: "value",
             type: "string",
-            example: "game"
+            example: "create"
         ),
         new OA\Property(
             property: "is_active",
@@ -32,6 +32,6 @@ use OpenApi\Attributes as OA;
         )
     ]
 )]
-class HttpOpenApiSectorEntitySchema
+class HttpOpenApiPermissionSchema
 {
 }

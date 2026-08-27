@@ -23,7 +23,7 @@ class HttpInternalServerErrorExceptionHandler implements ErrorHandlerInterface
             ->getBody()
             ->write(
                 json_encode([
-                    "message" => "Internal server error occurred."
+                    "message" => $exception->getMessage()
                 ])
             );
         return $response
