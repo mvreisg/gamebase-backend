@@ -31,7 +31,7 @@ class HttpGameController
     #[OA\Post(
         path: "/game",
         summary: "Inserts a new Game",
-        description: "Receives the user credentials and if valid, inserts a Game and returns a copy of the inserted Game data.",
+        description: "Receives the user credentials and if valid, inserts a Game and returns a copy of the inserted Game.",
         tags: ["Insert"]
     )]
     #[OA\Parameter(
@@ -100,7 +100,7 @@ class HttpGameController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["name, is_active"],
+                            example: ["name", "is_active"],
                             items: new OA\Items(
                                 type: "string",
                             )
@@ -282,7 +282,7 @@ class HttpGameController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["name, is_active"],
+                            example: ["name", "is_active"],
                             items: new OA\Items(
                                 type: "string",
                             )
@@ -461,7 +461,7 @@ class HttpGameController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["name, is_active"],
+                            example: ["is_active"],
                             items: new OA\Items(
                                 type: "string",
                             )
