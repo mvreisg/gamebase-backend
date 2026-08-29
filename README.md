@@ -15,6 +15,7 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Unit testing with PHPUnit
 - Environment variables with Dotenv
 - Logging system with Monolog
+- OpenAPI Documentation
 
 ---
 
@@ -29,6 +30,7 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Monolog
 - Phinx
 - Docker
+- OpenAPI
 - Dotenv
 - Redis
 - MariaDB
@@ -41,7 +43,7 @@ RESTful backend for managing a game database, built with modern PHP practices an
 
 *TODO List:*
 
-- API Documentation
+- Empty
 
 ---
 
