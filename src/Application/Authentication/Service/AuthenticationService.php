@@ -10,18 +10,22 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantToken
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Psr\Log\LoggerInterface;
 
 class AuthenticationService
 {
     private AuthenticationTokenCacheInterface $tokenCache;
     private AuthenticationTokenProvider $tokenProvider;
+    private LoggerInterface $logger;
 
     public function __construct(
         AuthenticationTokenCacheInterface $tokenCache,
         AuthenticationTokenProvider $tokenProvider,
+        LoggerInterface $logger
     ) {
         $this->tokenCache = $tokenCache;
         $this->tokenProvider = $tokenProvider;
+        $this->logger = $logger;
     }
 
     public function encode(
@@ -34,6 +38,9 @@ class AuthenticationService
                 $interval
             );
         } catch (\Throwable $e) {
+            $this->logger->error("Error encoding token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }
@@ -43,6 +50,9 @@ class AuthenticationService
         try {
             return $this->tokenProvider->decode($token);
         } catch (\Throwable $e) {
+            $this->logger->error("Error decoding token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }
@@ -97,6 +107,9 @@ class AuthenticationService
 
             return $decodedToken;
         } catch (\Throwable $e) {
+            $this->logger->error("Error validating token", [
+                "error" => $e->getMessage()
+            ]);
             throw $e;
         }
     }

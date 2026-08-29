@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Application\Shared\Service\DatabaseService;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\DatabaseRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class DatabaseServiceTest extends TestCase
 {
@@ -39,7 +40,8 @@ class DatabaseServiceTest extends TestCase
         MockObject&DatabaseRepositoryInterface $repository
     ): DatabaseService {
         return new DatabaseService(
-            $repository
+            $repository,
+            new NullLogger()
         );
     }
 

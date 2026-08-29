@@ -6,6 +6,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Collection\PermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -20,19 +22,19 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Permission $permission): Permission
+    public function insert(PermissionRepositoryInterfaceInsertDto $dto): Permission
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $permission->getName()->getValue();
-            $value = $permission->getPermissionValue()->getValue()->value;
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $permission->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(
@@ -101,18 +103,18 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function update(Permission $permission): bool
+    public function update(PermissionRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $permission->getId()->getValue();
-            $name = $permission->getName()->getValue();
-            $value = $permission->getPermissionValue()->getValue()->value;
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $permission->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(
@@ -296,105 +298,57 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
-            $alias = "number_of_names";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        name = :name;"
-                );
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        name = :name
-                    AND
-                        id != :id;"
-                );
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    permission 
+                WHERE 
+                    name = :name;"
+            );
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfNames > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedValues(?Id $id, PermissionValue $value): bool
+    public function checkIfValueExists(PermissionValue $value): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $valueValue = $value->getValue()->value;
 
-            $alias = "number_of_values";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        value = :value;"
-                );
-                $statement->execute([
-                    ":value" => $valueValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        permission 
-                    WHERE 
-                        value = :value
-                    AND
-                        id != :id;"
-                );
-                $statement->execute([
-                    ":id" => $idValue,
-                    ":value" => $valueValue
-                ]);
-            }
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    permission 
+                WHERE 
+                    value = :value;"
+            );
+            $statement->execute([
+                ":value" => $valueValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfValues = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfValues > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

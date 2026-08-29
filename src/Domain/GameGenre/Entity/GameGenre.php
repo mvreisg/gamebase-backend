@@ -6,17 +6,16 @@ namespace Mvreisg\GamebaseBackend\Domain\GameGenre\Entity;
 
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
-use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIdException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 
 class GameGenre
 {
-    private ?Id $id;
+    private Id $id;
     private Game $game;
     private Genre $genre;
 
     public function __construct(
-        ?Id $id,
+        Id $id,
         Game $game,
         Genre $genre
     ) {
@@ -26,7 +25,7 @@ class GameGenre
     }
 
     public static function create(
-        ?Id $id,
+        Id $id,
         Game $game,
         Genre $genre
     ): self {
@@ -37,18 +36,8 @@ class GameGenre
         );
     }
 
-    public function setId(Id $id): void
-    {
-        $this->id = $id;
-    }
-
     public function getId(): Id
     {
-        if ($this->id === null) {
-            throw new NullIdException(
-                GameGenre::class
-            );
-        }
         return $this->id;
     }
 

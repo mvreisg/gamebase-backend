@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -35,6 +37,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class UserServiceTest extends TestCase
 {
@@ -204,7 +207,8 @@ class UserServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -234,7 +238,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -249,7 +254,8 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
-            $userDomainService
+            $userDomainService,
+            new NullLogger()
         );
         return $userService;
     }
@@ -326,7 +332,11 @@ class UserServiceTest extends TestCase
         );
 
         $insertedUser = $userService->insert(
-            $user,
+            new UserServiceInsertDto(
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -419,7 +429,11 @@ class UserServiceTest extends TestCase
         );
 
         $insertedUser = $userService->insert(
-            $user,
+            new UserServiceInsertDto(
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -512,7 +526,11 @@ class UserServiceTest extends TestCase
         );
 
         $userService->insert(
-            $user,
+            new UserServiceInsertDto(
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -583,7 +601,11 @@ class UserServiceTest extends TestCase
         );
 
         $userService->insert(
-            $user,
+            new UserServiceInsertDto(
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -660,7 +682,12 @@ class UserServiceTest extends TestCase
         );
 
         $wasUpdated = $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -737,7 +764,12 @@ class UserServiceTest extends TestCase
         );
 
         $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -810,7 +842,12 @@ class UserServiceTest extends TestCase
         );
 
         $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -883,7 +920,12 @@ class UserServiceTest extends TestCase
         );
 
         $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -954,7 +996,12 @@ class UserServiceTest extends TestCase
         );
 
         $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -1025,7 +1072,12 @@ class UserServiceTest extends TestCase
         );
 
         $userService->update(
-            $user,
+            new UserServiceUpdateDto(
+                $user->getId(),
+                $user->getUsername(),
+                $user->getPassword(),
+                $user->getIsActive()
+            ),
             $encodedToken
         );
     }

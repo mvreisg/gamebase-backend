@@ -7,12 +7,14 @@ namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\Dto\UserSectorPermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\Dto\UserSectorPermissionRepositoryInterfaceUpdateDto;
 
 interface UserSectorPermissionRepositoryInterface
 {
-    public function insert(UserSectorPermission $userSectorPermission): UserSectorPermission;
+    public function insert(UserSectorPermissionRepositoryInterfaceInsertDto $dto): UserSectorPermission;
 
-    public function update(UserSectorPermission $userSectorPermission): bool;
+    public function update(UserSectorPermissionRepositoryInterfaceUpdateDto $dto): bool;
 
     public function delete(Id $id): bool;
 

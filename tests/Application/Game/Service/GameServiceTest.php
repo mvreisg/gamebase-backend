@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Game\Service\Dto\GameServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Game\Service\GameService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -37,6 +39,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class GameServiceTest extends TestCase
 {
@@ -54,7 +57,7 @@ class GameServiceTest extends TestCase
 
     private function createGameRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Game $game
     ): MockObject&GameRepositoryInterface {
         $repository = $this->createMock(GameRepositoryInterface::class);
@@ -83,8 +86,8 @@ class GameServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -214,7 +217,8 @@ class GameServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -244,7 +248,8 @@ class GameServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -266,7 +271,8 @@ class GameServiceTest extends TestCase
         $gameService = new GameService(
             $gameRepository,
             $checkAuthorizationUseCase,
-            $gameDomainService
+            $gameDomainService,
+            new NullLogger()
         );
         return $gameService;
     }
@@ -287,7 +293,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -352,7 +358,10 @@ class GameServiceTest extends TestCase
         );
 
         $insertedGame = $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -384,7 +393,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -449,7 +458,10 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -466,7 +478,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -531,7 +543,10 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->insert(
-            $game,
+            new GameServiceInsertDto(
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -552,7 +567,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -617,12 +632,102 @@ class GameServiceTest extends TestCase
         );
 
         $wasUpdated = $gameService->update(
-            $game,
+            new GameServiceUpdateDto(
+                $game->getId(),
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
 
         $this->assertTrue(
             $wasUpdated
+        );
+    }
+
+    public function testIfAGameUpdateSuccedsEvenWithSameName(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $game = $this->createGame(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $encodedToken = "potato";
+        $gameRepository = $this->createGameRepository(
+            true,
+            $game->getId(),
+            $game
+        );
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("Game"),
+            SectorValue::from(SectorType::Game),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Update"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $gameDomainService = $this->createGameDomainService(
+            $gameRepository
+        );
+        $gameService = $this->createGameService(
+            $gameRepository,
+            $checkAuthorizationUseCase,
+            $gameDomainService
+        );
+
+        $gameService->update(
+            new GameServiceUpdateDto(
+                $game->getId(),
+                $game->getName(),
+                $game->getIsActive()
+            ),
+            $encodedToken
         );
     }
 
@@ -638,7 +743,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -703,7 +808,11 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->update(
-            $game,
+            new GameServiceUpdateDto(
+                $game->getId(),
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -720,7 +829,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -785,89 +894,11 @@ class GameServiceTest extends TestCase
         );
 
         $gameService->update(
-            $game,
-            $encodedToken
-        );
-    }
-
-    public function testIfGameUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
-    {
-        $this->expectException(DuplicatedNameException::class);
-
-        $game = $this->createGame(
-            Id::create(1),
-            Name::create("test"),
-            true
-        );
-        $encodedToken = "potato";
-        $gameRepository = $this->createGameRepository(
-            true,
-            true,
-            $game
-        );
-        $user = $this->createUser(
-            Id::create(1),
-            Username::create("test"),
-            DecodedPassword::create("test"),
-            true
-        );
-        $sector = $this->createSector(
-            Id::create(1),
-            Name::create("Game"),
-            SectorValue::from(SectorType::Game),
-            true
-        );
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("Update"),
-            PermissionValue::from(PermissionType::Update),
-            true
-        );
-        $userRepository = $this->createUserRepository(
-            true,
-            false,
-            $user
-        );
-        $userDomainService = $this->createUserDomainService(
-            $userRepository
-        );
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            new UserSectorPermissionCollection([
-                UserSectorPermission::create(
-                    Id::create(1),
-                    $user,
-                    $sector,
-                    $permission
-                )
-            ])
-        );
-        $tokenCache = $this->createTokenCacheInterface(
-            true,
-            $encodedToken
-        );
-        $tokenProvider = $this->createTokenProvider();
-        $authenticationService = $this->createAuthenticationService(
-            $tokenCache,
-            $tokenProvider
-        );
-        $authorizationDomainService = $this->createAuthorizationDomainService();
-        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
-            $userDomainService,
-            $userSectorPermissionRepository,
-            $authenticationService,
-            $authorizationDomainService
-        );
-        $gameDomainService = $this->createGameDomainService(
-            $gameRepository
-        );
-        $gameService = $this->createGameService(
-            $gameRepository,
-            $checkAuthorizationUseCase,
-            $gameDomainService
-        );
-
-        $gameService->update(
-            $game,
+            new GameServiceUpdateDto(
+                $game->getId(),
+                $game->getName(),
+                $game->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -888,7 +919,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -974,7 +1005,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1062,7 +1093,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1146,7 +1177,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1234,7 +1265,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1331,7 +1362,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1417,7 +1448,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1503,7 +1534,7 @@ class GameServiceTest extends TestCase
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(

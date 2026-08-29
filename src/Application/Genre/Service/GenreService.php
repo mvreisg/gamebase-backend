@@ -5,31 +5,39 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Genre\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Collection\GenreCollection;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GenreService
 {
     private GenreRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private GenreDomainService $genreDomainService;
+    private LoggerInterface $logger;
 
     public function __construct(
         GenreRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GenreDomainService $genreDomainService,
+        LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->genreDomainService = $genreDomainService;
+        $this->logger = $logger;
     }
 
-    public function insert(Genre $genre, string $token): Genre
+    public function insert(GenreServiceInsertDto $dto, string $token): Genre
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -38,20 +46,28 @@ class GenreService
                 PermissionType::Create
             );
 
-            $this->genreDomainService->ensureNameIsUnique(
-                null,
-                $genre->getName()
+            $this->genreDomainService->ensureNameIsUniqueOnInsert(
+                $dto->name
             );
 
-            $insertedGenre = $this->repository->insert($genre);
+            $insertedGenre = $this->repository->insert(
+                new GenreRepositoryInterfaceInsertDto(
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $insertedGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting genre", [
+                "exception" => $e,
+                "dto" => $dto
+            ]);
             throw $e;
         }
     }
 
-    public function update(Genre $genre, string $token): bool
+    public function update(GenreServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -61,18 +77,28 @@ class GenreService
             );
 
             $this->genreDomainService->ensureGenreExists(
-                $genre->getId()
+                $dto->id
             );
 
-            $this->genreDomainService->ensureNameIsUnique(
-                $genre->getId(),
-                $genre->getName()
+            $this->genreDomainService->ensureNameIsUniqueOnUpdate(
+                $dto->name,
+                $dto->id
             );
 
-            $wasUpdated = $this->repository->update($genre);
+            $wasUpdated = $this->repository->update(
+                new GenreRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->name,
+                    $dto->isActive
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating genre", [
+                "exception" => $e,
+                "dto" => $dto
+            ]);
             throw $e;
         }
     }
@@ -97,6 +123,11 @@ class GenreService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error setting genre active status", [
+                "exception" => $e,
+                "genreId" => $id,
+                "isActive" => $isActive
+            ]);
             throw $e;
         }
     }
@@ -116,6 +147,10 @@ class GenreService
 
             return $fetchedGenreEntity;
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding genre by id", [
+                "exception" => $e,
+                "genreId" => $id
+            ]);
             throw $e;
         }
     }
@@ -131,6 +166,9 @@ class GenreService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error finding all genres", [
+                "exception" => $e
+            ]);
             throw $e;
         }
     }

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\Collection\GamePlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
+use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -21,28 +23,28 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(GamePlatform $gamePlatform): GamePlatform
+    public function insert(GamePlatformRepositoryInterfaceInsertDto $dto): GamePlatform
     {
         try {
             $this->connection->beginTransaction();
 
-            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
-            $gameId = $gamePlatform->getGame()->getId()->getValue();
+            $gameId = $dto->gameId->getValue();
+            $platformId = $dto->platformId->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO game_platform (
-                    platform_id, 
-                    game_id
+                    game_id,
+                    platform_id
                 ) 
                 VALUES (
-                    :platformId, 
-                    :gameId
+                    :gameId,
+                    :platformId
                 );"
             );
 
             $insertStatement->execute([
-                ":platformId" => $platformId,
-                ":gameId" => $gameId
+                ":gameId" => $gameId,
+                ":platformId" => $platformId
             ]);
 
             $lastInsertedId = intval(
@@ -112,12 +114,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
         }
     }
 
-    public function update(GamePlatform $gamePlatform): bool
+    public function update(GamePlatformRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $gamePlatform->getId()->getValue();
-            $platformId = $gamePlatform->getPlatform()->getId()->getValue();
-            $gameId = $gamePlatform->getGame()->getId()->getValue();
+            $id = $dto->id->getValue();
+            $platformId = $dto->platformId->getValue();
+            $gameId = $dto->gameId->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 

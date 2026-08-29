@@ -7,6 +7,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\Collection\GameGenreCollection;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\Dto\GameGenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\Dto\GameGenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -21,28 +23,28 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(GameGenre $gameGenre): GameGenre
+    public function insert(GameGenreRepositoryInterfaceInsertDto $dto): GameGenre
     {
         try {
             $this->connection->beginTransaction();
 
-            $genreId = $gameGenre->getGenre()->getId()->getValue();
-            $gameId = $gameGenre->getGame()->getId()->getValue();
+            $gameId = $dto->gameId->getValue();
+            $genreId = $dto->genreId->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO game_genre (
-                    genre_id, 
-                    game_id
+                    game_id,
+                    genre_id
                 ) 
                 VALUES (
-                    :genreId, 
-                    :gameId
+                    :gameId,
+                    :genreId
                 );"
             );
 
             $insertStatement->execute([
-                ":genreId" => $genreId,
-                ":gameId" => $gameId
+                ":gameId" => $gameId,
+                ":genreId" => $genreId
             ]);
 
             $lastInsertedId = intval(
@@ -112,12 +114,12 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
         }
     }
 
-    public function update(GameGenre $gameGenre): bool
+    public function update(GameGenreRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $gameGenre->getId()->getValue();
-            $gameId = $gameGenre->getGame()->getId()->getValue();
-            $genreId = $gameGenre->getGenre()->getId()->getValue();
+            $id = $dto->id->getValue();
+            $gameId = $dto->gameId->getValue();
+            $genreId = $dto->genreId->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 

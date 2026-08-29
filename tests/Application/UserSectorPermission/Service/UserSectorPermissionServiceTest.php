@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\Dto\UserSectorPermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\Dto\UserSectorPermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\UserSectorPermission\Service\UserSectorPermissionService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -44,6 +46,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Service\UserSectorPermis
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class UserSectorPermissionServiceTest extends TestCase
 {
@@ -265,7 +268,8 @@ class UserSectorPermissionServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -295,13 +299,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
 
     private function createSectorRepository(
-        bool $exists
+        bool $exists,
+        Sector $sector
     ): MockObject&SectorRepositoryInterface {
         $repository = $this->createMock(SectorRepositoryInterface::class);
         $repository
@@ -309,6 +315,9 @@ class UserSectorPermissionServiceTest extends TestCase
             ->willReturn(
                 $exists
             );
+        $repository
+            ->method("findById")
+            ->willReturn($sector);
         return $repository;
     }
 
@@ -322,7 +331,8 @@ class UserSectorPermissionServiceTest extends TestCase
     }
 
     private function createPermissionRepository(
-        bool $exists
+        bool $exists,
+        Permission $permission
     ): MockObject&PermissionRepositoryInterface {
         $repository = $this->createMock(PermissionRepositoryInterface::class);
         $repository
@@ -330,6 +340,9 @@ class UserSectorPermissionServiceTest extends TestCase
             ->willReturn(
                 $exists
             );
+        $repository
+            ->method("findById")
+            ->willReturn($permission);
         return $repository;
     }
 
@@ -348,6 +361,9 @@ class UserSectorPermissionServiceTest extends TestCase
         SectorDomainService $sectorDomainService,
         PermissionDomainService $permissionDomainService,
         UserSectorPermissionDomainService $userSectorPermissionDomainService,
+        UserRepositoryInterface $userRepository,
+        SectorRepositoryInterface $sectorRepository,
+        PermissionRepositoryInterface $permissionRepository,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository
     ): UserSectorPermissionService {
         $service = new UserSectorPermissionService(
@@ -356,7 +372,11 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
-            $userSectorPermissionRepository
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
+            $userSectorPermissionRepository,
+            new NullLogger()
         );
         return $service;
     }
@@ -432,13 +452,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -452,11 +474,18 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $insertedUserSectorPermission = $userSectorPermissionService->insert(
-            $userSectorPermission,
+            new UserSectorPermissionServiceInsertDto(
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
 
@@ -548,13 +577,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -568,11 +599,18 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->insert(
-            $userSectorPermission,
+            new UserSectorPermissionServiceInsertDto(
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -644,13 +682,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -664,11 +704,18 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->insert(
-            $userSectorPermission,
+            new UserSectorPermissionServiceInsertDto(
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -740,13 +787,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            false
+            false,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -760,11 +809,18 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->insert(
-            $userSectorPermission,
+            new UserSectorPermissionServiceInsertDto(
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -836,13 +892,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            false
+            false,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -856,11 +914,18 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->insert(
-            $userSectorPermission,
+            new UserSectorPermissionServiceInsertDto(
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -936,13 +1001,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -956,11 +1023,19 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $wasUpdated = $userSectorPermissionService->update(
-            $userSectorPermission,
+            new UserSectorPermissionServiceUpdateDto(
+                $userSectorPermission->getId(),
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
 
@@ -1036,13 +1111,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1056,11 +1133,19 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->update(
-            $userSectorPermission,
+            new UserSectorPermissionServiceUpdateDto(
+                $userSectorPermission->getId(),
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -1132,13 +1217,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1152,11 +1239,19 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->update(
-            $userSectorPermission,
+            new UserSectorPermissionServiceUpdateDto(
+                $userSectorPermission->getId(),
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -1228,13 +1323,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            false
+            false,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1248,11 +1345,19 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->update(
-            $userSectorPermission,
+            new UserSectorPermissionServiceUpdateDto(
+                $userSectorPermission->getId(),
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -1324,13 +1429,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            false
+            false,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1344,11 +1451,19 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
         $userSectorPermissionService->update(
-            $userSectorPermission,
+            new UserSectorPermissionServiceUpdateDto(
+                $userSectorPermission->getId(),
+                $userSectorPermission->getUser()->getId(),
+                $userSectorPermission->getSector()->getId(),
+                $userSectorPermission->getPermission()->getId(),
+            ),
             $encodedToken
         );
     }
@@ -1424,13 +1539,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1444,6 +1561,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -1524,13 +1644,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1544,6 +1666,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -1620,13 +1745,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1640,6 +1767,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -1720,13 +1850,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1740,6 +1872,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -1836,13 +1971,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1856,6 +1993,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -1936,13 +2076,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1956,6 +2098,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 
@@ -2036,13 +2181,15 @@ class UserSectorPermissionServiceTest extends TestCase
             $authorizationDomainService
         );
         $sectorRepository = $this->createSectorRepository(
-            true
+            true,
+            $sector
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
         );
         $permissionRepository = $this->createPermissionRepository(
-            true
+            true,
+            $permission
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -2056,6 +2203,9 @@ class UserSectorPermissionServiceTest extends TestCase
             $sectorDomainService,
             $permissionDomainService,
             $userSectorPermissionDomainService,
+            $userRepository,
+            $sectorRepository,
+            $permissionRepository,
             $userSectorPermissionRepository
         );
 

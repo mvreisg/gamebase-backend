@@ -6,6 +6,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Collection\GameCollection;
 use Mvreisg\GamebaseBackend\Domain\Game\Entity\Game;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -19,18 +21,18 @@ class MariaDbGameRepository implements GameRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Game $game): Game
+    public function insert(GameRepositoryInterfaceInsertDto $dto): Game
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $game->getName()->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $game->getIsActive()
+                $dto->isActive
             );
 
             $insertStatement = $this->connection->prepare(
@@ -88,17 +90,17 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function update(Game $game): bool
+    public function update(GameRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $game->getId()->getValue();
-            $name = $game->getName()->getValue();
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $game->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(
@@ -268,56 +270,30 @@ class MariaDbGameRepository implements GameRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
 
-            $alias = "number_of_names";
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        game 
-                    WHERE 
-                        name = :name;"
-                );
-
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        game 
-                    WHERE 
-                        name = :name
-                    AND
-                        id <> :id;"
-                );
-
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
-
-            $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    game 
+                WHERE 
+                    name = :name;"
             );
 
-            return $numberOfNames > 0;
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
+
+            $fetchResult = $statement->fetch();
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

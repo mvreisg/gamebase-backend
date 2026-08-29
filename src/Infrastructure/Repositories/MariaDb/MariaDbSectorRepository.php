@@ -6,6 +6,8 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb;
 
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -20,21 +22,21 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         $this->connection = $connection;
     }
 
-    public function insert(Sector $sector): Sector
+    public function insert(SectorRepositoryInterfaceInsertDto $dto): Sector
     {
         try {
             $this->connection->beginTransaction();
 
-            $name = $sector->getName()->getValue();
+            $name = $dto->name->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $sector->getIsActive()
+                $dto->isActive
             );
 
-            $value = $sector->getSectorValue()->getValue()->value;
+            $value = $dto->value->getValue()->value;
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
@@ -102,18 +104,18 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function update(Sector $sector): bool
+    public function update(SectorRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $sector->getId()->getValue();
-            $name = $sector->getName()->getValue();
-            $value = $sector->getSectorValue()->getValue()->value;
+            $id = $dto->id->getValue();
+            $name = $dto->name->getValue();
+            $value = $dto->value->getValue()->value;
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
              */
             $isActive = intval(
-                $sector->getIsActive()
+                $dto->isActive
             );
 
             $statement = $this->connection->prepare(
@@ -299,109 +301,59 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         }
     }
 
-    public function checkDuplicatedNames(?Id $id, Name $name): bool
+    public function checkIfNameExists(Name $name): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $nameValue = $name->getValue();
-            $alias = "number_of_names";
 
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        sector 
-                    WHERE 
-                        name = :name;"
-                );
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    sector 
+                WHERE 
+                    name = :name;"
+            );
 
-                $statement->execute([
-                    ":name" => $nameValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        sector 
-                    WHERE 
-                        name = :name
-                    AND
-                        id != :id;"
-                );
-
-                $statement->execute([
-                    ":name" => $nameValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement->execute([
+                ":name" => $nameValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfNames = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfNames > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
-    public function checkDuplicatedValues(?Id $id, SectorValue $value): bool
+    public function checkIfValueExists(SectorValue $value): ?Id
     {
         try {
-            $idValue = $id ? $id->getValue() : null;
             $valueValue = $value->getValue()->value;
-            $alias = "number_of_values";
 
-            if ($idValue === null) {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        sector 
-                    WHERE 
-                        value = :value;"
-                );
+            $statement = $this->connection->prepare(
+                "SELECT 
+                    *
+                FROM 
+                    sector 
+                WHERE 
+                    value = :value;"
+            );
 
-                $statement->execute([
-                    ":value" => $valueValue
-                ]);
-            } else {
-                $statement = $this->connection->prepare(
-                    "SELECT 
-                        COUNT(*)
-                        AS
-                        $alias
-                    FROM 
-                        sector 
-                    WHERE 
-                        value = :value
-                    AND
-                        id != :id;"
-                );
-
-                $statement->execute([
-                    ":value" => $valueValue,
-                    ":id" => $idValue
-                ]);
-            }
+            $statement->execute([
+                ":value" => $valueValue
+            ]);
 
             $fetchResult = $statement->fetch();
-            $numberOfValues = intval(
-                $fetchResult[
-                    $alias
-                ]
-            );
-            return $numberOfValues > 0;
+            if ($fetchResult === false) {
+                return null;
+            }
+
+            return Id::create($fetchResult["id"]);
         } catch (\Throwable $e) {
             throw $e;
         }

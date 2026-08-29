@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Genre\Service\GenreService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -37,6 +39,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class GenreServiceTest extends TestCase
 {
@@ -54,7 +57,7 @@ class GenreServiceTest extends TestCase
 
     private function createGenreRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Genre $genre
     ): MockObject&GenreRepositoryInterface {
         $repository = $this->createMock(GenreRepositoryInterface::class);
@@ -83,8 +86,8 @@ class GenreServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -214,7 +217,8 @@ class GenreServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -244,7 +248,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -266,7 +271,8 @@ class GenreServiceTest extends TestCase
         $genreService = new GenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            new NullLogger()
         );
         return $genreService;
     }
@@ -287,7 +293,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -352,7 +358,10 @@ class GenreServiceTest extends TestCase
         );
 
         $insertedGenre = $genreService->insert(
-            $genre,
+            new GenreServiceInsertDto(
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
 
@@ -384,7 +393,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -449,7 +458,10 @@ class GenreServiceTest extends TestCase
         );
 
         $genreService->insert(
-            $genre,
+            new GenreServiceInsertDto(
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -466,7 +478,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            true,
+            $genre->getId(),
             $genre
         );
         $user = $this->createUser(
@@ -531,7 +543,10 @@ class GenreServiceTest extends TestCase
         );
 
         $genreService->insert(
-            $genre,
+            new GenreServiceInsertDto(
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -552,7 +567,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            $genre->getId(),
             $genre
         );
         $user = $this->createUser(
@@ -617,12 +632,102 @@ class GenreServiceTest extends TestCase
         );
 
         $wasUpdated = $genreService->update(
-            $genre,
+            new GenreServiceUpdateDto(
+                $genre->getId(),
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
 
         $this->assertTrue(
             $wasUpdated
+        );
+    }
+
+    public function testIfAGenreUpdateSuccedsEvenWithSameName(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $encodedToken = "potato";
+        $genreRepository = $this->createGenreRepository(
+            true,
+            $genre->getId(),
+            $genre
+        );
+        $user = $this->createUser(
+            Id::create(1),
+            Username::create("test"),
+            DecodedPassword::create("test"),
+            true
+        );
+        $sector = $this->createSector(
+            Id::create(1),
+            Name::create("Genre"),
+            SectorValue::from(SectorType::Genre),
+            true
+        );
+        $permission = $this->createPermission(
+            Id::create(1),
+            Name::create("Update"),
+            PermissionValue::from(PermissionType::Update),
+            true
+        );
+        $userRepository = $this->createUserRepository(
+            true,
+            false,
+            $user
+        );
+        $userDomainService = $this->createUserDomainService(
+            $userRepository
+        );
+        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
+            new UserSectorPermissionCollection([
+                UserSectorPermission::create(
+                    Id::create(1),
+                    $user,
+                    $sector,
+                    $permission
+                )
+            ])
+        );
+        $tokenCache = $this->createTokenCacheInterface(
+            true,
+            $encodedToken
+        );
+        $tokenProvider = $this->createTokenProvider();
+        $authenticationService = $this->createAuthenticationService(
+            $tokenCache,
+            $tokenProvider
+        );
+        $authorizationDomainService = $this->createAuthorizationDomainService();
+        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
+            $userDomainService,
+            $userSectorPermissionRepository,
+            $authenticationService,
+            $authorizationDomainService
+        );
+        $genreDomainService = $this->createGenreDomainService(
+            $genreRepository
+        );
+        $genreService = $this->createGenreService(
+            $genreRepository,
+            $checkAuthorizationUseCase,
+            $genreDomainService
+        );
+
+        $genreService->update(
+            new GenreServiceUpdateDto(
+                $genre->getId(),
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
+            $encodedToken
         );
     }
 
@@ -638,7 +743,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -703,7 +808,11 @@ class GenreServiceTest extends TestCase
         );
 
         $genreService->update(
-            $genre,
+            new GenreServiceUpdateDto(
+                $genre->getId(),
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -720,7 +829,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             false,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -785,89 +894,11 @@ class GenreServiceTest extends TestCase
         );
 
         $genreService->update(
-            $genre,
-            $encodedToken
-        );
-    }
-
-    public function testIfGenreUpdateFailsBecauseOfDuplicatedNameOnRepository(): void
-    {
-        $this->expectException(DuplicatedNameException::class);
-
-        $genre = $this->createGenre(
-            Id::create(1),
-            Name::create("test"),
-            true
-        );
-        $encodedToken = "potato";
-        $genreRepository = $this->createGenreRepository(
-            true,
-            true,
-            $genre
-        );
-        $user = $this->createUser(
-            Id::create(1),
-            Username::create("test"),
-            DecodedPassword::create("test"),
-            true
-        );
-        $sector = $this->createSector(
-            Id::create(1),
-            Name::create("Genre"),
-            SectorValue::from(SectorType::Genre),
-            true
-        );
-        $permission = $this->createPermission(
-            Id::create(1),
-            Name::create("Update"),
-            PermissionValue::from(PermissionType::Update),
-            true
-        );
-        $userRepository = $this->createUserRepository(
-            true,
-            false,
-            $user
-        );
-        $userDomainService = $this->createUserDomainService(
-            $userRepository
-        );
-        $userSectorPermissionRepository = $this->createUserSectorPermissionRepository(
-            new UserSectorPermissionCollection([
-                UserSectorPermission::create(
-                    Id::create(1),
-                    $user,
-                    $sector,
-                    $permission
-                )
-            ])
-        );
-        $tokenCache = $this->createTokenCacheInterface(
-            true,
-            $encodedToken
-        );
-        $tokenProvider = $this->createTokenProvider();
-        $authenticationService = $this->createAuthenticationService(
-            $tokenCache,
-            $tokenProvider
-        );
-        $authorizationDomainService = $this->createAuthorizationDomainService();
-        $checkAuthorizationUseCase = $this->createCheckAuthorizationUseCase(
-            $userDomainService,
-            $userSectorPermissionRepository,
-            $authenticationService,
-            $authorizationDomainService
-        );
-        $genreDomainService = $this->createGenreDomainService(
-            $genreRepository
-        );
-        $genreService = $this->createGenreService(
-            $genreRepository,
-            $checkAuthorizationUseCase,
-            $genreDomainService
-        );
-
-        $genreService->update(
-            $genre,
+            new GenreServiceUpdateDto(
+                $genre->getId(),
+                $genre->getName(),
+                $genre->getIsActive()
+            ),
             $encodedToken
         );
     }
@@ -888,7 +919,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -974,7 +1005,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1062,7 +1093,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1146,7 +1177,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             false,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1234,7 +1265,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1331,7 +1362,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1417,7 +1448,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(
@@ -1503,7 +1534,7 @@ class GenreServiceTest extends TestCase
         $encodedToken = "potato";
         $genreRepository = $this->createGenreRepository(
             true,
-            false,
+            null,
             $genre
         );
         $user = $this->createUser(

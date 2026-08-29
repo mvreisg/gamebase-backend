@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\GamePlatformService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -45,6 +47,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class GamePlatformServiceTest extends TestCase
 {
@@ -60,25 +63,33 @@ class GamePlatformServiceTest extends TestCase
         );
     }
 
+    private function createPlatform(
+        Id $id,
+        Name $name,
+        bool $isActive
+    ): Platform {
+        return Platform::create(
+            $id,
+            $name,
+            $isActive
+        );
+    }
+
     private function createGamePlatform(
         Id $id,
-        Id $gameId,
-        Id $platformId,
+        Game $game,
+        Platform $platform,
     ): GamePlatform {
         return GamePlatform::create(
             $id,
-            Game::createFromIdOnly(
-                $gameId
-            ),
-            Platform::createFromIdOnly(
-                $platformId
-            ),
+            $game,
+            $platform,
         );
     }
 
     private function createGameRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Game $game
     ): MockObject&GameRepositoryInterface {
         $repository = $this->createMock(GameRepositoryInterface::class);
@@ -107,8 +118,8 @@ class GamePlatformServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -238,7 +249,8 @@ class GamePlatformServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -268,7 +280,8 @@ class GamePlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -354,7 +367,8 @@ class GamePlatformServiceTest extends TestCase
             $gameDomainService,
             $genreDomainService,
             $gamePlatformDomainService,
-            $gamePlatformRepository
+            $gamePlatformRepository,
+            new NullLogger()
         );
         return $service;
     }
@@ -368,15 +382,20 @@ class GamePlatformServiceTest extends TestCase
     public function testIfAGamePlatformGetsInserted(): void
     {
         $encodedToken = "potato";
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
+        );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
         );
         $user = $this->createUser(
             Id::create(1),
@@ -432,7 +451,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -461,7 +480,10 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $insertedGamePlatform = $gamePlatformService->insert(
-            $gamePlatform,
+            new GamePlatformServiceInsertDto(
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
 
@@ -485,20 +507,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -555,7 +582,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -584,7 +611,10 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->insert(
-            $gamePlatform,
+            new GamePlatformServiceInsertDto(
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -593,20 +623,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -663,7 +698,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -692,7 +727,10 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->insert(
-            $gamePlatform,
+            new GamePlatformServiceInsertDto(
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -701,20 +739,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(PlatformNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -771,7 +814,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -800,7 +843,10 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->insert(
-            $gamePlatform,
+            new GamePlatformServiceInsertDto(
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -813,20 +859,25 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfAValidGamePlatformGetsUpdated(): void
     {
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -883,7 +934,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -912,7 +963,11 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $wasUpdated = $gamePlatformService->update(
-            $gamePlatform,
+            new GamePlatformServiceUpdateDto(
+                $gamePlatform->getId(),
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
 
@@ -925,20 +980,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -995,7 +1055,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1024,7 +1084,11 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->update(
-            $gamePlatform,
+            new GamePlatformServiceUpdateDto(
+                $gamePlatform->getId(),
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -1033,20 +1097,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1103,7 +1172,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1132,7 +1201,11 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->update(
-            $gamePlatform,
+            new GamePlatformServiceUpdateDto(
+                $gamePlatform->getId(),
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -1141,20 +1214,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(PlatformNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1211,7 +1289,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1240,7 +1318,11 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->update(
-            $gamePlatform,
+            new GamePlatformServiceUpdateDto(
+                $gamePlatform->getId(),
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -1249,20 +1331,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(GamePlatformNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1319,7 +1406,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1348,7 +1435,11 @@ class GamePlatformServiceTest extends TestCase
         );
 
         $gamePlatformService->update(
-            $gamePlatform,
+            new GamePlatformServiceUpdateDto(
+                $gamePlatform->getId(),
+                $game->getId(),
+                $platform->getId()
+            ),
             $encodedToken
         );
     }
@@ -1361,20 +1452,25 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfGameGetsDeleted(): void
     {
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1431,7 +1527,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1473,20 +1569,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1543,7 +1644,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1581,20 +1682,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(GamePlatformNotFoundException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1651,7 +1757,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1693,20 +1799,25 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfGamePlatformGetsFoundById(): void
     {
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1763,7 +1874,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1816,20 +1927,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1886,7 +2002,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1928,20 +2044,25 @@ class GamePlatformServiceTest extends TestCase
 
     public function testIfAllGamePlatformsGetsFound(): void
     {
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1998,7 +2119,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -2040,20 +2161,25 @@ class GamePlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gamePlatform = $this->createGamePlatform(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $platform = $this->createPlatform(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gamePlatform = $this->createGamePlatform(
+            Id::create(1),
+            $game,
+            $platform
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -2110,7 +2236,7 @@ class GamePlatformServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(

@@ -15,6 +15,8 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPass
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\Dto\UserSectorPermissionRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\Dto\UserSectorPermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 
 class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepositoryInterface
@@ -26,14 +28,14 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         $this->connection = $connection;
     }
 
-    public function insert(UserSectorPermission $userSectorPermission): UserSectorPermission
+    public function insert(UserSectorPermissionRepositoryInterfaceInsertDto $dto): UserSectorPermission
     {
         try {
             $this->connection->beginTransaction();
 
-            $userId = $userSectorPermission->getUser()->getId()->getValue();
-            $sectorId = $userSectorPermission->getSector()->getId()->getValue();
-            $permissionId = $userSectorPermission->getPermission()->getId()->getValue();
+            $userId = $dto->userId->getValue();
+            $sectorId = $dto->sectorId->getValue();
+            $permissionId = $dto->permissionId->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO user_sector_permission (
@@ -162,13 +164,13 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
         }
     }
 
-    public function update(UserSectorPermission $userSectorPermission): bool
+    public function update(UserSectorPermissionRepositoryInterfaceUpdateDto $dto): bool
     {
         try {
-            $id = $userSectorPermission->getId()->getValue();
-            $userId = $userSectorPermission->getUser()->getId()->getValue();
-            $sectorId = $userSectorPermission->getSector()->getId()->getValue();
-            $permissionId = $userSectorPermission->getPermission()->getId()->getValue();
+            $id = $dto->id->getValue();
+            $userId = $dto->userId->getValue();
+            $sectorId = $dto->sectorId->getValue();
+            $permissionId = $dto->permissionId->getValue();
 
             $statement = $this->connection->prepare(
                 "UPDATE 
@@ -538,11 +540,6 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                     $user,
                     $sector,
                     $permission
-                );
-                $value->setId(
-                    Id::create(
-                        $row["usp_id"]
-                    )
                 );
                 $userSectorPermissions->add($value);
             }

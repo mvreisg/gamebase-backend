@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Genre\Service\Dto\GenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Genre\Service\GenreService;
-use Mvreisg\GamebaseBackend\Domain\Genre\Entity\Genre;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(
+    name: "Genre",
+    description: "Endpoints related to genre management"
+)]
 class HttpGenreController
 {
     private GenreService $genreService;
@@ -22,6 +28,132 @@ class HttpGenreController
         $this->genreService = $genreService;
     }
 
+    #[OA\Post(
+        path: "/genre",
+        summary: "Inserts a new Genre",
+        description: "Receives the user credentials and if valid, inserts a Genre and returns a copy of the inserted Genre.",
+        tags: ["Insert"]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "name",
+                    type: "string",
+                    example: "RPG (Role-playing game)"
+                ),
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: "Response if credentials is valid and the Genre is inserted on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    ref: "#/components/schemas/Genre"
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["name", "is_active"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
@@ -43,8 +175,7 @@ class HttpGenreController
             $isActive = $body["is_active"];
 
             $genre = $this->genreService->insert(
-                Genre::create(
-                    null,
+                new GenreServiceInsertDto(
                     Name::create($name),
                     $isActive
                 ),
@@ -70,6 +201,141 @@ class HttpGenreController
         }
     }
 
+    #[OA\Put(
+        path: "/genre/{id}",
+        summary: "Update a Genre",
+        description: "Receives the user credentials and if valid, tries to update a Genre and returns the update status.",
+        tags: ["Update"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Genre to be updated.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "name",
+                    type: "string",
+                    example: "RPG (Role-playing game)"
+                ),
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Genre is inserted on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "status",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["name", "is_active"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
@@ -96,14 +362,12 @@ class HttpGenreController
             $name = $body["name"];
             $isActive = $body["is_active"];
 
-            $genre = Genre::create(
-                Id::create($id),
-                Name::create($name),
-                $isActive
-            );
-
             $wasUpdated = $this->genreService->update(
-                $genre,
+                new GenreServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    $isActive
+                ),
                 $token
             );
 
@@ -114,13 +378,142 @@ class HttpGenreController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
+    #[OA\Patch(
+        path: "/genre/{id}",
+        summary: "Activates/Deactivates a Genre by its ID",
+        description: "Receives the user credentials and if valid, tries to activate/deactivate a Genre and returns the activation status.",
+        tags: ["Activate", "Deactivate"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Genre to be activated/deactivated.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Genre is updated on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "status",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["is_active"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function setIsActive(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -162,13 +555,110 @@ class HttpGenreController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
+    #[OA\Get(
+        path: "/genre/{id}",
+        summary: "Returns a Genre by its ID",
+        description: "Receives the user credentials and if valid, searches for the Genre with the ID, and if the Genre exists, returns it.",
+        tags: ["Get"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Genre to be searched.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Genre with the informed ID exists",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    ref: "#/components/schemas/Genre"
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "found",
+                    type: "boolean",
+                    example: false
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function findById(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -214,14 +704,106 @@ class HttpGenreController
                         ]
                     ])
                 );
-            return $response
-                ->withStatus(200);
-            return $response;
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
+    #[OA\Get(
+        path: "/genre",
+        summary: "Returns all the Genres on the repository",
+        description: "Receives the user credentials and if valid, returns all the existant Genres.",
+        tags: ["Get", "All"],
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Genre with the informed ID exists",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "number_found",
+                    type: "integer",
+                ),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        ref: "#/components/schemas/Genre"
+                    )
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "number_found",
+                    type: "integer",
+                    example: 0
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function findAll(
         ServerRequestInterface $request,
         ResponseInterface $response,

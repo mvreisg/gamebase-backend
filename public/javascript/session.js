@@ -16,6 +16,10 @@ const deleteToken = () => {
   localStorage.removeItem(data.token.name);
 };
 
+const existsToken = () => {
+  return getToken() !== null;
+};
+
 const validate = async (host) => {
   const token = getToken();
   if (token === null) {
@@ -89,4 +93,5 @@ export default {
   logoff,
   validate,
   deleteToken,
+  existsToken,
 };

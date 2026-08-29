@@ -23,6 +23,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\Opt
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\Option\SodiumEncryptionOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Logger\Monolog\MonologLoggerFactory;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGamePlatformRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameRepository;
@@ -38,6 +39,7 @@ use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Psr\Container\ContainerInterface;
 use Predis\Client;
+use Psr\Log\LoggerInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -66,6 +68,11 @@ try {
 
         "http.host" => fn () => "http://{$_SERVER["HTTP_HOST"]}",
         "http.title" => fn () => "Gamebase-Backend",
+
+        LoggerInterface::class => DI\factory([
+            MonologLoggerFactory::class,
+            "create"
+        ]),
 
         ClockInterface::class => DI\get(Clock::class),
 

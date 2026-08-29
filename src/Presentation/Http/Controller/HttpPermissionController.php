@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\Permission\Service\Dto\PermissionServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\Permission\Service\PermissionService;
-use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -13,7 +14,12 @@ use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(
+    name: "Permission",
+    description: "Endpoints related to permission management"
+)]
 class HttpPermissionController
 {
     private PermissionService $permissionService;
@@ -24,6 +30,132 @@ class HttpPermissionController
         $this->permissionService = $permissionService;
     }
 
+    #[OA\Post(
+        path: "/permission",
+        summary: "Inserts a new Permission",
+        description: "Receives the user credentials and if valid, inserts a Permission and returns a copy of the inserted Permission.",
+        tags: ["Insert"]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "name",
+                    type: "string",
+                    example: "Palworld"
+                ),
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: "Response if credentials is valid and the Permission is inserted on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    ref: "#/components/schemas/Permission"
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["name", "is_active", "value"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function insert(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
@@ -46,8 +178,7 @@ class HttpPermissionController
             $value = $body["value"];
 
             $permission = $this->permissionService->insert(
-                Permission::create(
-                    null,
+                new PermissionServiceInsertDto(
                     Name::create($name),
                     PermissionValue::create($value),
                     $isActive
@@ -75,6 +206,141 @@ class HttpPermissionController
         }
     }
 
+    #[OA\Put(
+        path: "/permission/{id}",
+        summary: "Update a Permission",
+        description: "Receives the user credentials and if valid, tries to update a Permission and returns the update status.",
+        tags: ["Update"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Permission to be updated.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "name",
+                    type: "string",
+                    example: "Palworld"
+                ),
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Permission is inserted on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "status",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["name", "is_active", "value"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
@@ -102,15 +368,13 @@ class HttpPermissionController
             $isActive = $body["is_active"];
             $value = $body["value"];
 
-            $permission = Permission::create(
-                Id::create($id),
-                Name::create($name),
-                PermissionValue::create($value),
-                $isActive
-            );
-
             $wasUpdated = $this->permissionService->update(
-                $permission,
+                new PermissionServiceUpdateDto(
+                    Id::create($id),
+                    Name::create($name),
+                    PermissionValue::create($value),
+                    $isActive
+                ),
                 $token
             );
 
@@ -128,6 +392,136 @@ class HttpPermissionController
         }
     }
 
+    #[OA\Patch(
+        path: "/permission/{id}",
+        summary: "Activates/Deactivates a Permission by its ID",
+        description: "Receives the user credentials and if valid, tries to activate/deactivate a Permission and returns the activation status.",
+        tags: ["Activate", "Deactivate"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Permission to be activated/deactivated.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "is_active",
+                    type: "boolean",
+                    example: true
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Permission is updated on the repository",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "status",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Missing keys",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Missing body keys: "
+                        ),
+                        new OA\Property(
+                            property: "body",
+                            type: "array",
+                            example: ["is_active"],
+                            items: new OA\Items(
+                                type: "string",
+                            )
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "User not found",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function setIsActive(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -176,6 +570,104 @@ class HttpPermissionController
         }
     }
 
+    #[OA\Get(
+        path: "/permission/{id}",
+        summary: "Returns a Permission by its ID",
+        description: "Receives the user credentials and if valid, searches for the Permission with the ID, and if the Permission exists, returns it.",
+        tags: ["Get"],
+        parameters: [
+            new OA\PathParameter(
+                name: "id",
+                description: "The id of the Permission to be searched.",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ]
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Permission with the informed ID exists",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "data",
+                    type: "object",
+                    ref: "#/components/schemas/Permission"
+                )
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "found",
+                    type: "boolean",
+                    example: false
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function findById(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -223,12 +715,105 @@ class HttpPermissionController
                 );
             return $response
                 ->withStatus(200);
-            return $response;
         } catch (\Throwable $e) {
             throw $e;
         }
     }
 
+    #[OA\Get(
+        path: "/permission",
+        summary: "Returns all the Games on the repository",
+        description: "Receives the user credentials and if valid, returns all the existant Games.",
+        tags: ["Get", "All"],
+    )]
+    #[OA\Parameter(
+        name: "Authorization",
+        in: "header",
+        required: true,
+        description: "Bearer token",
+        schema: new OA\Schema(
+            type: "string"
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: "Response if credentials is valid and the Permission with the informed ID exists",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "number_found",
+                    type: "integer",
+                ),
+                new OA\Property(
+                    property: "data",
+                    type: "array",
+                    items: new OA\Items(
+                        ref: "#/components/schemas/Permission"
+                    )
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: "Response if user does not have credentials",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: "Response if a body value is missing or if the user does not exist",
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: "number_found",
+                    type: "integer",
+                    example: 0
+                ),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 500,
+        description: "Response if a internal server error occurs",
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    title: "Encryption error",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        ),
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token cache exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                ),
+                new OA\Schema(
+                    title: "Authentication token provider exception",
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                        )
+                    ]
+                )
+            ]
+        )
+    )]
     public function findAll(
         ServerRequestInterface $request,
         ResponseInterface $response,

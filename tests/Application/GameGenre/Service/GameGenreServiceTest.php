@@ -8,6 +8,8 @@ use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationSer
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\GameGenre\Service\GameGenreService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
@@ -45,6 +47,7 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermiss
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class GameGenreServiceTest extends TestCase
 {
@@ -60,25 +63,33 @@ class GameGenreServiceTest extends TestCase
         );
     }
 
+    private function createGenre(
+        Id $id,
+        Name $name,
+        bool $isActive
+    ): Genre {
+        return Genre::create(
+            $id,
+            $name,
+            $isActive,
+        );
+    }
+
     private function createGameGenre(
         Id $id,
-        Id $gameId,
-        Id $genreId,
+        Game $game,
+        Genre $genre
     ): GameGenre {
         return GameGenre::create(
             $id,
-            Game::createFromIdOnly(
-                $gameId
-            ),
-            Genre::createFromIdOnly(
-                $genreId
-            ),
+            $game,
+            $genre
         );
     }
 
     private function createGameRepository(
         bool $exists,
-        bool $duplicatedGameNames,
+        ?Id $id,
         Game $game
     ): MockObject&GameRepositoryInterface {
         $repository = $this->createMock(GameRepositoryInterface::class);
@@ -107,8 +118,8 @@ class GameGenreServiceTest extends TestCase
                 ])
             );
         $repository
-            ->method("checkDuplicatedNames")
-            ->willReturn($duplicatedGameNames);
+            ->method("checkIfNameExists")
+            ->willReturn($id);
 
         return $repository;
     }
@@ -238,7 +249,8 @@ class GameGenreServiceTest extends TestCase
     ): AuthenticationService {
         $service = new AuthenticationService(
             $tokenCache,
-            $tokenProvider
+            $tokenProvider,
+            new NullLogger()
         );
         return $service;
     }
@@ -268,7 +280,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            new NullLogger()
         );
         return $useCase;
     }
@@ -354,7 +367,8 @@ class GameGenreServiceTest extends TestCase
             $gameDomainService,
             $genreDomainService,
             $gameGenreDomainService,
-            $gameGenreRepository
+            $gameGenreRepository,
+            new NullLogger()
         );
         return $service;
     }
@@ -368,15 +382,20 @@ class GameGenreServiceTest extends TestCase
     public function testIfAGameGenreGetsInserted(): void
     {
         $encodedToken = "potato";
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
+        );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
         );
         $user = $this->createUser(
             Id::create(1),
@@ -432,7 +451,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -461,7 +480,10 @@ class GameGenreServiceTest extends TestCase
         );
 
         $insertedGameGenre = $gameGenreService->insert(
-            $gameGenre,
+            new GameGenreServiceInsertDto(
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
 
@@ -485,20 +507,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -555,7 +582,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -584,7 +611,10 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->insert(
-            $gameGenre,
+            new GameGenreServiceInsertDto(
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -593,20 +623,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -663,7 +698,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -692,7 +727,10 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->insert(
-            $gameGenre,
+            new GameGenreServiceInsertDto(
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -701,20 +739,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            true,
+            $game->getId(),
             $game
         );
         $user = $this->createUser(
@@ -771,7 +814,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -800,7 +843,10 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->insert(
-            $gameGenre,
+            new GameGenreServiceInsertDto(
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -813,20 +859,25 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfAValidGameGenreGetsUpdated(): void
     {
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -883,7 +934,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -912,7 +963,11 @@ class GameGenreServiceTest extends TestCase
         );
 
         $wasUpdated = $gameGenreService->update(
-            $gameGenre,
+            new GameGenreServiceUpdateDto(
+                $gameGenre->getId(),
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
 
@@ -925,20 +980,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -995,7 +1055,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1024,7 +1084,11 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->update(
-            $gameGenre,
+            new GameGenreServiceUpdateDto(
+                $gameGenre->getId(),
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -1033,20 +1097,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1103,7 +1172,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1132,7 +1201,11 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->update(
-            $gameGenre,
+            new GameGenreServiceUpdateDto(
+                $gameGenre->getId(),
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -1141,20 +1214,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1211,7 +1289,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1240,7 +1318,11 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->update(
-            $gameGenre,
+            new GameGenreServiceUpdateDto(
+                $gameGenre->getId(),
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -1249,20 +1331,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameGenreNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1319,7 +1406,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1348,7 +1435,11 @@ class GameGenreServiceTest extends TestCase
         );
 
         $gameGenreService->update(
-            $gameGenre,
+            new GameGenreServiceUpdateDto(
+                $gameGenre->getId(),
+                $game->getId(),
+                $genre->getId()
+            ),
             $encodedToken
         );
     }
@@ -1361,20 +1452,25 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfGameGetsDeleted(): void
     {
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1431,7 +1527,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1473,20 +1569,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1543,7 +1644,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1581,20 +1682,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameGenreNotFoundException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
-            false
+            true
+        );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
         );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             false,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1651,7 +1757,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1693,20 +1799,25 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfGameGenreGetsFoundById(): void
     {
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1763,7 +1874,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1816,20 +1927,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1886,7 +2002,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -1928,20 +2044,25 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfAllGameGenresGetsFound(): void
     {
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -1998,7 +2119,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(
@@ -2040,20 +2161,25 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
-        $gameGenre = $this->createGameGenre(
-            Id::create(1),
-            Id::create(1),
-            Id::create(1)
-        );
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
             true
         );
+        $genre = $this->createGenre(
+            Id::create(1),
+            Name::create("test"),
+            true
+        );
+        $gameGenre = $this->createGameGenre(
+            Id::create(1),
+            $game,
+            $genre
+        );
         $encodedToken = "potato";
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $user = $this->createUser(
@@ -2110,7 +2236,7 @@ class GameGenreServiceTest extends TestCase
         );
         $gameRepository = $this->createGameRepository(
             true,
-            false,
+            null,
             $game
         );
         $gameDomainService = $this->createGameDomainService(

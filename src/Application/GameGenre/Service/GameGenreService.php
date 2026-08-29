@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\GameGenre\Service;
 
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceInsertDto;
+use Mvreisg\GamebaseBackend\Application\GameGenre\Service\Dto\GameGenreServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\Collection\GameGenreCollection;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Entity\GameGenre;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\Dto\GameGenreRepositoryInterfaceInsertDto;
+use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\Dto\GameGenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Service\GameGenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Psr\Log\LoggerInterface;
 
 class GameGenreService
 {
@@ -22,22 +27,25 @@ class GameGenreService
     private GenreDomainService $genreDomainService;
     private GameGenreDomainService $gameGenreDomainService;
     private GameGenreRepositoryInterface $repository;
+    private LoggerInterface $logger;
 
     public function __construct(
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
         GenreDomainService $genreDomainService,
         GameGenreDomainService $gameGenreDomainService,
-        GameGenreRepositoryInterface $repository
+        GameGenreRepositoryInterface $repository,
+        LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->gameDomainService = $gameDomainService;
         $this->genreDomainService = $genreDomainService;
         $this->gameGenreDomainService = $gameGenreDomainService;
         $this->repository = $repository;
+        $this->logger = $logger;
     }
 
-    public function insert(GameGenre $gameGenre, string $token): GameGenre
+    public function insert(GameGenreServiceInsertDto $dto, string $token): GameGenre
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -47,22 +55,31 @@ class GameGenreService
             );
 
             $this->gameDomainService->ensureGameExists(
-                $gameGenre->getGame()->getId()
+                $dto->gameId
             );
 
             $this->genreDomainService->ensureGenreExists(
-                $gameGenre->getGenre()->getId()
+                $dto->genreId
             );
 
-            $insertedGameGenre = $this->repository->insert($gameGenre);
+            $insertedGameGenre = $this->repository->insert(
+                new GameGenreRepositoryInterfaceInsertDto(
+                    $dto->gameId,
+                    $dto->genreId
+                )
+            );
 
             return $insertedGameGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error inserting GameGenre", [
+                "exception" => $e,
+                "dto" => $dto,
+            ]);
             throw $e;
         }
     }
 
-    public function update(GameGenre $gameGenre, string $token): bool
+    public function update(GameGenreServiceUpdateDto $dto, string $token): bool
     {
         try {
             $this->checkAuthorizationUseCase->execute(
@@ -72,21 +89,31 @@ class GameGenreService
             );
 
             $this->gameGenreDomainService->ensureGameGenreExists(
-                $gameGenre->getId()
+                $dto->id
             );
 
             $this->gameDomainService->ensureGameExists(
-                $gameGenre->getGame()->getId()
+                $dto->gameId
             );
 
             $this->genreDomainService->ensureGenreExists(
-                $gameGenre->getGenre()->getId()
+                $dto->genreId
             );
 
-            $wasUpdated = $this->repository->update($gameGenre);
+            $wasUpdated = $this->repository->update(
+                new GameGenreRepositoryInterfaceUpdateDto(
+                    $dto->id,
+                    $dto->gameId,
+                    $dto->genreId
+                )
+            );
 
             return $wasUpdated;
         } catch (\Throwable $e) {
+            $this->logger->error("Error updating GameGenre", [
+                "exception" => $e,
+                "dto" => $dto,
+            ]);
             throw $e;
         }
     }
@@ -108,6 +135,10 @@ class GameGenreService
 
             return $wasDeleted;
         } catch (\Throwable $e) {
+            $this->logger->error("Error deleting GameGenre", [
+                "exception" => $e,
+                "gameGenreId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -127,6 +158,10 @@ class GameGenreService
 
             return $fetchedGameGenre;
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching GameGenre by ID", [
+                "exception" => $e,
+                "gameGenreId" => $id,
+            ]);
             throw $e;
         }
     }
@@ -142,6 +177,9 @@ class GameGenreService
 
             return $this->repository->findAll();
         } catch (\Throwable $e) {
+            $this->logger->error("Error fetching all GameGenres", [
+                "exception" => $e,
+            ]);
             throw $e;
         }
     }
