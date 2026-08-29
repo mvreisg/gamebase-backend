@@ -16,15 +16,13 @@ use OpenApi\Attributes as OA;
             example: 1
         ),
         new OA\Property(
-            property: "game_id",
-            type: "integer",
-            example: 1
+            property: "game",
+            ref: "#/components/schemas/Game"
         ),
         new OA\Property(
-            property: "platform_id",
-            type: "integer",
-            example: 1
-        )
+            property: "platform",
+            ref: "#/components/schemas/Platform"
+        ),
     ]
 )]
 class HttpOpenApiGamePlatformSchema

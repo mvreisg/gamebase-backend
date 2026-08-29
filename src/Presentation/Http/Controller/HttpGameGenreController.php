@@ -99,7 +99,7 @@ class HttpGameGenreController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["game_id, genre_id"],
+                            example: ["game_id", "genre_id"],
                             items: new OA\Items(
                                 type: "integer",
                             )
@@ -289,7 +289,7 @@ class HttpGameGenreController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["game_id, genre_id"],
+                            example: ["game_id", "genre_id"],
                             items: new OA\Items(
                                 type: "integer",
                             )
@@ -385,8 +385,7 @@ class HttpGameGenreController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -514,8 +513,7 @@ class HttpGameGenreController
                         "status" => $wasDeleted ? "deleted" : "not_deleted"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -671,9 +669,7 @@ class HttpGameGenreController
                         ]
                     ])
                 );
-            return $response
-                ->withStatus(200);
-            return $response;
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }

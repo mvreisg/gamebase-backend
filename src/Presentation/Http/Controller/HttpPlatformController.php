@@ -378,8 +378,7 @@ class HttpPlatformController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -556,8 +555,7 @@ class HttpPlatformController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -705,8 +703,7 @@ class HttpPlatformController
                         ]
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }

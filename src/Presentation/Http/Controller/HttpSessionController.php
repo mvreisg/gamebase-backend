@@ -266,8 +266,7 @@ class HttpSessionController
                 ->write(
                     json_encode($data)
                 );
-            return $response
-                ->withStatus(201);
+            return $response->withStatus(201);
         } catch (\Throwable $e) {
             throw $e;
         }

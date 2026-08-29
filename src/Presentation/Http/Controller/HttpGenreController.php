@@ -378,8 +378,7 @@ class HttpGenreController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -556,8 +555,7 @@ class HttpGenreController
                         "status" => $wasUpdated ? "updated" : "same"
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
@@ -706,8 +704,7 @@ class HttpGenreController
                         ]
                     ])
                 );
-            return $response
-                ->withStatus(200);
+            return $response->withStatus(200);
         } catch (\Throwable $e) {
             throw $e;
         }
