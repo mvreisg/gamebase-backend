@@ -6,6 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
 use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
 use Mvreisg\GamebaseBackend\Application\Session\Service\SessionService;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\SafeUser;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -236,13 +237,13 @@ class HttpSessionController
                         "id" => $result->getData()->getUserId()->getValue(),
                         "username" => $result->getData()->getUsername()->getValue(),
                         "permissions" => array_map(function ($item) {
+                            $user = SafeUser::create($item->getUser());
                             return [
                                 "id" => $item->getId()->getValue(),
                                 "user" => [
-                                    "id" => $item->getUser()->getId()->getValue(),
-                                    "username" => $item->getUser()->getUsername()->getValue(),
-                                    "password" => $item->getUser()->getPassword()->getValue(),
-                                    "is_active" => $item->getUser()->getIsActive(),
+                                    "id" => $user->getId()->getValue(),
+                                    "username" => $user->getUsername()->getValue(),
+                                    "is_active" => $user->getIsActive(),
                                 ],
                                 "sector" => [
                                     "id" => $item->getSector()->getId()->getValue(),
@@ -488,13 +489,13 @@ class HttpSessionController
                 "id" => $sessionData->getUserId()->getValue(),
                 "username" => $sessionData->getUsername()->getValue(),
                 "permissions" => array_map(function ($item) {
+                    $user = SafeUser::create($item->getUser());
                     return [
                         "id" => $item->getId()->getValue(),
                         "user" => [
-                            "id" => $item->getUser()->getId()->getValue(),
-                            "username" => $item->getUser()->getUsername()->getValue(),
-                            "password" => $item->getUser()->getPassword()->getValue(),
-                            "is_active" => $item->getUser()->getIsActive(),
+                            "id" => $user->getId()->getValue(),
+                            "username" => $user->getUsername()->getValue(),
+                            "is_active" => $user->getIsActive(),
                         ],
                         "sector" => [
                             "id" => $item->getSector()->getId()->getValue(),

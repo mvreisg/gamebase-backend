@@ -8,6 +8,7 @@ use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\SafeUser;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
@@ -172,23 +173,19 @@ class HttpUserController
                 return HttpMissingKeysInformerResponse::getStatusAsArrayOfBodyKeys($response, $missingBodyKeys);
             }
 
-            $queryParams = $request->getQueryParams();
-            $showPassword = false;
-            if (isset($queryParams["show_password"])) {
-                $showPassword = $queryParams["show_password"] === "true";
-            }
-
             $username = $body["username"];
             $password = $body["password"];
             $isActive = $body["is_active"];
 
-            $user = $this->userService->insert(
-                new UserServiceInsertDto(
-                    Username::create($username),
-                    DecodedPassword::create($password),
-                    $isActive
-                ),
-                $token
+            $user = SafeUser::create(
+                $this->userService->insert(
+                    new UserServiceInsertDto(
+                        Username::create($username),
+                        DecodedPassword::create($password),
+                        $isActive
+                    ),
+                    $token
+                )
             );
 
             $data = [
@@ -196,10 +193,6 @@ class HttpUserController
                 "username" => $user->getUsername()->getValue(),
                 "is_active" => $user->getIsActive()
             ];
-
-            if ($showPassword) {
-                $data["password"] = $user->getPassword()->getValue();
-            }
 
             $response
                 ->getBody()
@@ -692,15 +685,11 @@ class HttpUserController
 
             $id = (int)$args["id"];
 
-            $queryParams = $request->getQueryParams();
-            $showPassword = false;
-            if (isset($queryParams["show_password"])) {
-                $showPassword = $queryParams["show_password"] === "true";
-            }
-
-            $user = $this->userService->findById(
-                Id::create($id),
-                $token
+            $user = SafeUser::create(
+                $this->userService->findById(
+                    Id::create($id),
+                    $token
+                )
             );
 
             if ($user === null) {
@@ -719,10 +708,6 @@ class HttpUserController
                 "username" => $user->getUsername()->getValue(),
                 "is_active" => $user->getIsActive()
             ];
-
-            if ($showPassword) {
-                $data["password"] = $user->getPassword()->getValue();
-            }
 
             $response
                 ->getBody()
@@ -850,15 +835,11 @@ class HttpUserController
 
             $username = $args["username"];
 
-            $queryParams = $request->getQueryParams();
-            $showPassword = false;
-            if (isset($queryParams["show_password"])) {
-                $showPassword = $queryParams["show_password"] === "true";
-            }
-
-            $user = $this->userService->findByUsername(
-                Username::create($username),
-                $token
+            $user = SafeUser::create(
+                $this->userService->findByUsername(
+                    Username::create($username),
+                    $token
+                )
             );
 
             if ($user === null) {
@@ -877,10 +858,6 @@ class HttpUserController
                 "username" => $user->getUsername()->getValue(),
                 "is_active" => $user->getIsActive()
             ];
-
-            if ($showPassword) {
-                $data["password"] = $user->getPassword()->getValue();
-            }
 
             $response
                 ->getBody()
@@ -1012,23 +989,14 @@ class HttpUserController
                 return $response->withStatus(404);
             }
 
-            $queryParams = $request->getQueryParams();
-            $showPassword = false;
-            if (isset($queryParams["show_password"])) {
-                $showPassword = $queryParams["show_password"] === "true";
-            }
-
             $data = [];
             foreach ($users->fetchAll() as $user) {
+                $safeUser = SafeUser::create($user);
                 $value = [
-                    "id" => $user->getId()->getValue(),
-                    "username" => $user->getUsername()->getValue(),
-                    "is_active" => $user->getIsActive()
+                    "id" => $safeUser->getId()->getValue(),
+                    "username" => $safeUser->getUsername()->getValue(),
+                    "is_active" => $safeUser->getIsActive()
                 ];
-
-                if ($showPassword) {
-                    $value["password"] = $user->getPassword()->getValue();
-                }
 
                 $data[] = $value;
             }
