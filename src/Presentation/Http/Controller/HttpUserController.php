@@ -891,7 +891,7 @@ class HttpUserController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                 ),
                 new OA\Property(
@@ -922,7 +922,7 @@ class HttpUserController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                     example: 0
                 ),
@@ -983,7 +983,7 @@ class HttpUserController
                     ->getBody()
                     ->write(
                         json_encode([
-                            "number_found" => 0
+                            "amount" => 0
                         ])
                     );
                 return $response->withStatus(404);
@@ -1005,7 +1005,7 @@ class HttpUserController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "number_found" => $users->count(),
+                        "amount" => $users->count(),
                         "data" => $data
                     ])
                 );

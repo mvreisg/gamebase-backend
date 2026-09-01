@@ -737,7 +737,7 @@ class HttpSectorController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                 ),
                 new OA\Property(
@@ -768,7 +768,7 @@ class HttpSectorController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                     example: 0
                 ),
@@ -829,7 +829,7 @@ class HttpSectorController
                     ->getBody()
                     ->write(
                         json_encode([
-                            "number_found" => 0
+                            "amount" => 0
                         ])
                     );
                 return $response->withStatus(404);
@@ -849,7 +849,7 @@ class HttpSectorController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "number_found" => $sectors->count(),
+                        "amount" => $sectors->count(),
                         "data" => $data
                     ])
                 );

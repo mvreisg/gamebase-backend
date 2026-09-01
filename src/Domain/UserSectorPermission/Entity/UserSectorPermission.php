@@ -7,6 +7,7 @@ namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
+use Mvreisg\GamebaseBackend\Domain\User\Entity\SafeUser;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 
 class UserSectorPermission
@@ -47,9 +48,9 @@ class UserSectorPermission
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getUser(): SafeUser
     {
-        return $this->user;
+        return SafeUser::create($this->user);
     }
 
     public function getSector(): Sector

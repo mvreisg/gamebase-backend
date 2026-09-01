@@ -730,7 +730,7 @@ class HttpGameController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                 ),
                 new OA\Property(
@@ -761,7 +761,7 @@ class HttpGameController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                     example: 0
                 ),
@@ -822,7 +822,7 @@ class HttpGameController
                     ->getBody()
                     ->write(
                         json_encode([
-                            "number_found" => 0
+                            "amount" => 0
                         ])
                     );
                 return $response->withStatus(404);
@@ -841,7 +841,7 @@ class HttpGameController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "number_found" => $games->count(),
+                        "amount" => $games->count(),
                         "data" => $data
                     ])
                 );

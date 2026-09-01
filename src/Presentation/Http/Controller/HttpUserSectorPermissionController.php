@@ -197,7 +197,6 @@ class HttpUserSectorPermissionController
                             "user" => [
                                 "id" => $userSectorPermission->getUser()->getId()->getValue(),
                                 "username" => $userSectorPermission->getUser()->getUsername()->getValue(),
-                                "password" => $userSectorPermission->getUser()->getPassword()->getValue(),
                                 "is_active" => $userSectorPermission->getUser()->getIsActive()
                             ],
                             "sector" => [
@@ -679,7 +678,6 @@ class HttpUserSectorPermissionController
                             "user" => [
                                 "id" => $userSectorPermission->getUser()->getId()->getValue(),
                                 "username" => $userSectorPermission->getUser()->getUsername()->getValue(),
-                                "password" => $userSectorPermission->getUser()->getPassword()->getValue(),
                                 "is_active" => $userSectorPermission->getUser()->getIsActive()
                             ],
                             "sector" => [
@@ -724,7 +722,7 @@ class HttpUserSectorPermissionController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                 ),
                 new OA\Property(
@@ -755,7 +753,7 @@ class HttpUserSectorPermissionController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                     example: 0
                 ),
@@ -816,7 +814,7 @@ class HttpUserSectorPermissionController
                     ->getBody()
                     ->write(
                         json_encode([
-                            "number_found" => 0
+                            "amount" => 0
                         ])
                     );
                 return $response->withStatus(404);
@@ -829,7 +827,6 @@ class HttpUserSectorPermissionController
                     "user" => [
                         "id" => $userSectorPermission->getUser()->getId()->getValue(),
                         "username" => $userSectorPermission->getUser()->getUsername()->getValue(),
-                        "password" => $userSectorPermission->getUser()->getPassword()->getValue(),
                         "is_active" => $userSectorPermission->getUser()->getIsActive()
                     ],
                     "sector" => [
@@ -851,7 +848,7 @@ class HttpUserSectorPermissionController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "number_found" => $userSectorPermissions->count(),
+                        "amount" => $userSectorPermissions->count(),
                         "data" => $data
                     ])
                 );

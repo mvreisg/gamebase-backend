@@ -731,7 +731,7 @@ class HttpGenreController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                 ),
                 new OA\Property(
@@ -762,7 +762,7 @@ class HttpGenreController
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
-                    property: "number_found",
+                    property: "amount",
                     type: "integer",
                     example: 0
                 ),
@@ -823,7 +823,7 @@ class HttpGenreController
                     ->getBody()
                     ->write(
                         json_encode([
-                            "number_found" => 0
+                            "amount" => 0
                         ])
                     );
                 return $response->withStatus(404);
@@ -842,7 +842,7 @@ class HttpGenreController
                 ->getBody()
                 ->write(
                     json_encode([
-                        "number_found" => $genres->count(),
+                        "amount" => $genres->count(),
                         "data" => $data
                     ])
                 );
