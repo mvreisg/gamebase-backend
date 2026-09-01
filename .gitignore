@@ -18,5 +18,8 @@
 # logs
 /logs/
 
-#OpenAPI
+# OpenAPI
 /public/docs/
+
+# VSCode
+.vscode/
