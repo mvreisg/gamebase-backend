@@ -2,8 +2,6 @@
 
 RESTful backend for managing a game database, built with modern PHP practices and a DDD-inspired structure.
 
----
-
 ## Features
 
 - REST API
@@ -16,8 +14,6 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Environment variables with Dotenv
 - Logging system with Monolog
 - OpenAPI Documentation
-
----
 
 ## Tech Stack
 
@@ -35,23 +31,13 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Redis
 - MariaDB
 
----
-
 ## Project Status
 
 🚧 **Active development**
 
-*TODO List:*
-
-- Empty
-
----
-
 ## License
 
 GPL-3.0
-
----
 
 ## Running the project
 
@@ -73,8 +59,6 @@ Example `.env` to run with `Docker` under `development` environment:
 Copy all keys from `.env.example` into your environment file and fill in the values.
 
 *The `docker-compose.development.up` and `docker-compose.development.down` scripts are available to ease the `Docker` setup.*
-
----
 
 ### 2. Environment Variables
 
@@ -156,8 +140,6 @@ REDIS_PORT=6379
 REDIS_EXPOSE_PORT=6380
 ```
 
----
-
 ### 3. Create the Database
 
 Access
@@ -173,12 +155,8 @@ Steps:
 3. Click on **Phinx**
 4. Ensure the status is **OK**
 
----
-
 ## Composer Commands
 
 All commands are defined in the `scripts` section of `composer.json`.
-
----
 
 *Made with ❤️ by Marcus Vinicius Reis Gonçalves*
