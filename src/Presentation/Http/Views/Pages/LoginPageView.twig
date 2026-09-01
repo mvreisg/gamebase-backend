@@ -14,12 +14,7 @@
         <div class="m-1">  
             Database exists and is ready to use.
         </div>
-    {% else %}
-        {% include "Components/Database/Phinx/PhinxDatabase.twig" with { 
-            returnCode: phinx.returnCode,
-            output: phinx.output
-        } %}
-    {% endif %}
+    {% endif %}            
     {% include "Components/Scripts/BootstrapScript.twig" %}
     {% include "Components/Scripts/SessionScript.twig" with { 
         host: host

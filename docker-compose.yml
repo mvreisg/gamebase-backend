@@ -21,6 +21,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: gamebase-backend-php
+    volumes:
+      - ./:/var/www/html
     networks:
       - gamebase-backend-network
     depends_on:
@@ -28,6 +30,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      phinx:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "php-fpm -t || exit 1"]
       interval: 5s
@@ -69,6 +73,21 @@ services:
       timeout: 5s
       retries: 20
       start_period: 30s
+
+  phinx:
+    container_name: gamebase-backend-phinx
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      MACHINE: ${MACHINE}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash /var/www/html/configurations/phinx/startup/startup.sh
+    networks:
+      - gamebase-backend-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
 volumes:
   mariadb_data:

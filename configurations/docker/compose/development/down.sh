@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../" && pwd)"
+
+cd "$PROJECT_ROOT"
+
+ENVIRONMENT=development \
+MACHINE=docker \
+docker compose \
+    --env-file ".env.development.docker" \
+    down -v

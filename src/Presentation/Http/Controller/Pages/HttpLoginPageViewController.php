@@ -39,18 +39,25 @@ class HttpLoginPageViewController
         ResponseInterface $response,
         array $args
     ): ResponseInterface {
-        $doesDatabaseExist = $this->databaseService->exists(
-            $this->repositoryOptions->getDatabase()
-        );
-        if ($doesDatabaseExist === false) {
-            $this->databaseService->create(
-                $this->repositoryOptions->getDatabase()
-            );
-            $this->phinxDatabaseComponentModel->execute();
+        $doesDatabaseExist = false;
+        try {
             $doesDatabaseExist = $this->databaseService->exists(
                 $this->repositoryOptions->getDatabase()
             );
+            if ($doesDatabaseExist === false) {
+                $this->databaseService->create(
+                    $this->repositoryOptions->getDatabase()
+                );
+            }
+            $doesDatabaseExist = $this->databaseService->exists(
+                $this->repositoryOptions->getDatabase()
+            );
+            $this->phinxDatabaseComponentModel->execute();
+        } catch (\Throwable $e) {
+            $response->getBody()->write("Database connection error: " . $e->getMessage());
+            return $response;
         }
+
         $html = $this->environment->render("Pages/LoginPageView.twig", [
             "host" => $this->options->getHost(),
             "title" => $this->options->getTitle(),

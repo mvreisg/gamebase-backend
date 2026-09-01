@@ -27,7 +27,7 @@ class HttpOpenApiDocumentationComponentModel
             mkdir($path, 0775, true);
         }
 
-        $command = "bash $root/configurations/api/startup/api_startup.sh 2>&1";
+        $command = "bash $root/configurations/openapi/startup/startup.sh 2>&1";
 
         exec(
             $command,

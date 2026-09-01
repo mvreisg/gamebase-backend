@@ -19,7 +19,7 @@ class HttpPhinxDatabaseComponentModel
     {
         $root = escapeshellarg(PROJECT_ROOT);
 
-        $command = "bash $root/configurations/phinx/startup/phinx_startup.sh 2>&1";
+        $command = "bash $root/configurations/phinx/startup/startup.sh 2>&1";
 
         exec(
             $command,

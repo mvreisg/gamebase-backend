@@ -58,8 +58,6 @@ Example `.env` to run with `Docker` under `development` environment:
 
 Copy all keys from `.env.example` into your environment file and fill in the values.
 
-*The `docker-compose.development.up` and `docker-compose.development.down` scripts are available to ease the `Docker` setup.*
-
 ### 2. Environment Variables
 
 #### Timezone
@@ -154,6 +152,23 @@ Steps:
 2. Verify the database was created
 3. Click on **Phinx**
 4. Ensure the status is **OK**
+
+### 4. Generate OpenAPI Documentation
+
+Run the following command to generate the OpenAPI documentation:
+
+```
+/configurations/openapi/startup/startup.sh
+```
+
+### 4. Run the project
+
+Run the scripts to start and stop the Docker containers:
+
+```
+/configurations/docker/compose/development/up.sh
+/configurations/docker/compose/development/down.sh
+```
 
 ## Composer Commands
 
