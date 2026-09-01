@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache;
 
 interface AuthenticationTokenCacheInterface
 {

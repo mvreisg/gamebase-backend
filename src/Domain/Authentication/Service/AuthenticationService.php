@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Service;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Service;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\UnexistantTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Psr\Log\LoggerInterface;
 
 class AuthenticationService

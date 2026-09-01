@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Tests\Application\GamePlatform\Service;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
 use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceInsertDto;
 use Mvreisg\GamebaseBackend\Application\GamePlatform\Service\Dto\GamePlatformServiceUpdateDto;

@@ -1,9 +1,9 @@
 <?php
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\UnexistantTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
 use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
 use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;

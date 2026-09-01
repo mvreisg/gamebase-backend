@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Token;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 
 class AuthenticationToken
 {

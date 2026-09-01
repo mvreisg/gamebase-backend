@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exception;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception;
 
 class AuthenticationTokenProviderException extends \Exception
 {

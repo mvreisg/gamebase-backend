@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Exception;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Exception;
 
 class UnexistantTokenException extends \Exception
 {

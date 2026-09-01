@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Serialization\Authentication\Data;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Casing\SerializationCasingTypes;

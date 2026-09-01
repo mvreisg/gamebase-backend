@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Session\Service;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Application\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
 use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;

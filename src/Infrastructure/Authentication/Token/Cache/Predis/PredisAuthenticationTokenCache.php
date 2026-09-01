@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Duration;
 use Predis\Client;
 

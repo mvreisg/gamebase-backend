@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Tests\Application\Authentication\Service;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\UnexistantTokenException;
-use Mvreisg\GamebaseBackend\Application\Authentication\Service\AuthenticationService;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\UnexistantTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;

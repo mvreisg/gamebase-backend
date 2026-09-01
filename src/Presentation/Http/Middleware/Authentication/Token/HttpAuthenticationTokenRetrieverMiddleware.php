@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Middleware\Authentication\Token;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Exception\InvalidTokenException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;

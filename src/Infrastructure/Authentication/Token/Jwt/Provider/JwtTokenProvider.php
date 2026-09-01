@@ -6,10 +6,10 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provid
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\AuthenticationTokenProvider;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\Option\JwtTokenProviderOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Authentication\Data\AuthenticationDataSerializer;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;

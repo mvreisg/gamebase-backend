@@ -15,13 +15,13 @@ class AuthorizationDomainService
         UserSectorPermissionCollection $userSectorPermissions,
         SectorType $sectorType,
         PermissionType $permissionType
-    ): void {
+    ): bool {
         try {
             foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $sector = $userSectorPermission->getSector();
                 $permission = $userSectorPermission->getPermission();
                 if ($sector->equals($sectorType) && $permission->equals($permissionType)) {
-                    return;
+                    return true;
                 }
             }
 

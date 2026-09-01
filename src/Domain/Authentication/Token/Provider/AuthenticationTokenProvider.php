@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Token\Provider;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider;
 
-use Mvreisg\GamebaseBackend\Application\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Application\Authentication\Token\AuthenticationToken;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
 
 interface AuthenticationTokenProvider
 {

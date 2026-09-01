@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Authentication\Token\Cache\Exception;
+namespace Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\Exception;
 
 class AuthenticationTokenCacheException extends \Exception
 {
