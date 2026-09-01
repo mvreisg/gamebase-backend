@@ -161,7 +161,7 @@ Run the following command to generate the OpenAPI documentation:
 /configurations/openapi/startup/startup.sh
 ```
 
-### 4. Run the project
+### 5. Run the project
 
 Run the scripts to start and stop the Docker containers:
 
