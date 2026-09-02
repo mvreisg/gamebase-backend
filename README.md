@@ -163,11 +163,12 @@ Run the following command to generate the OpenAPI documentation:
 
 ### 5. Run the project
 
-Run the scripts to start and stop the Docker containers:
+Run the scripts to control the Docker containers:
 
 ```
-/configurations/docker/compose/development/up.sh
-/configurations/docker/compose/development/down.sh
+/configurations/docker/compose/development/build.sh
+/configurations/docker/compose/development/kill.sh
+/configurations/docker/compose/development/logs.sh
 ```
 
 ## Composer Commands
