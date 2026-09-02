@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Phinx\Seed\AbstractSeed;
+use DI\Container;
 
 class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
 {
@@ -20,10 +21,10 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
         $userResult = $this->fetchRow("SELECT * FROM user WHERE username = '{$container->get("repository.root.username")}'");
 
         $data = [];
-        foreach (SectorType::cases() as $sectorKey => $sectorValue) {
+        foreach (SectorType::cases() as $sectorValue) {
             $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
 
-            foreach (PermissionType::cases() as $permissionKey => $permissionValue) {
+            foreach (PermissionType::cases() as $permissionValue) {
                 $isValid = $sectorValue->allow($permissionValue);
                 if ($isValid === false) {
                     continue;
