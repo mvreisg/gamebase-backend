@@ -21,6 +21,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -35,12 +36,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class UserServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createUser(
         Id $id,
         Username $username,
@@ -248,6 +260,7 @@ class UserServiceTest extends TestCase
         MockObject&UserRepositoryInterface $userRepository,
         MockObject&EncryptionInterface $encrypter,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        ClockInterface $clock,
         UserDomainService $userDomainService
     ): UserService {
         $userService = new UserService(
@@ -255,6 +268,7 @@ class UserServiceTest extends TestCase
             $encrypter,
             $checkAuthorizationUseCase,
             $userDomainService,
+            $clock,
             new NullLogger()
         );
         return $userService;
@@ -268,6 +282,7 @@ class UserServiceTest extends TestCase
 
     public function testIfAUserGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -328,6 +343,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -365,6 +381,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -425,6 +442,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -462,6 +480,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(DuplicatedUsernameException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -522,6 +541,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -539,6 +559,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(EncryptionInterfaceException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -597,6 +618,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -618,6 +640,7 @@ class UserServiceTest extends TestCase
 
     public function testIfAValidUserGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -678,6 +701,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -700,6 +724,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -760,6 +785,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -778,6 +804,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UserNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -838,6 +865,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -856,6 +884,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(DuplicatedUsernameException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -916,6 +945,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -934,6 +964,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(EncryptionInterfaceException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -992,6 +1023,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1010,6 +1042,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(EncryptionInterfaceException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1068,6 +1101,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1090,6 +1124,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsSetToActive(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1150,6 +1185,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1167,6 +1203,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsSetToInactive(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1227,6 +1264,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1246,6 +1284,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1306,6 +1345,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1321,6 +1361,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UserNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1381,6 +1422,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1400,6 +1442,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1460,6 +1503,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1493,6 +1537,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1553,6 +1598,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1570,6 +1616,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserGetsFoundByUsername(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1630,6 +1677,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1663,6 +1711,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1723,6 +1772,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1740,6 +1790,7 @@ class UserServiceTest extends TestCase
 
     public function testIfAllUsersGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1800,6 +1851,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 
@@ -1817,6 +1869,7 @@ class UserServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
@@ -1877,6 +1930,7 @@ class UserServiceTest extends TestCase
             $userRepository,
             $encrypter,
             $checkAuthorizationUseCase,
+            $clock,
             $userDomainService
         );
 

@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
@@ -27,6 +28,7 @@ class UserService
     private EncryptionInterface $encrypter;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private UserDomainService $userDomainService;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -34,12 +36,14 @@ class UserService
         EncryptionInterface $encrypter,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         UserDomainService $userDomainService,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->encrypter = $encrypter;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->userDomainService = $userDomainService;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -68,11 +72,18 @@ class UserService
                 )
             );
 
+            $this->logger->notice("User inserted succesfully!", [
+                "id" => $insertedUser->getId()->getValue(),
+                "username" => $insertedUser->getUsername()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting user", [
-                "exception" => $e,
-                "dto" => $dto
+            $this->logger->error("Error inserting user!", [
+                "exception" => $e->getMessage(),
+                "username" => $dto->username->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -125,11 +136,17 @@ class UserService
                 )
             );
 
+            $this->logger->notice("User data updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating user", [
-                "exception" => $e,
-                "dto" => $dto
+            $this->logger->error("Error updating user!", [
+                "exception" => $e->getMessage(),
+                "username" => $dto->username->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -153,12 +170,18 @@ class UserService
                 $isActive
             );
 
+            $this->logger->notice("User isActive updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting user active status", [
-                "exception" => $e,
-                "userId" => $id,
-                "isActive" => $isActive
+            $this->logger->error("Error setting user active status!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "isActive" => $isActive,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -175,11 +198,18 @@ class UserService
 
             $fetchedUser = $this->repository->findById($id);
 
+            $this->logger->notice("User found by ID succesfully!", [
+                "id" => $fetchedUser->getId()->getValue(),
+                "username" => $fetchedUser->getUsername()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $fetchedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding user by ID", [
-                "exception" => $e,
-                "userId" => $id
+            $this->logger->error("Error finding user by ID!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -196,11 +226,18 @@ class UserService
 
             $fetchedUser = $this->repository->findByUsername($username);
 
+            $this->logger->notice("User found by username succesfully!", [
+                "id" => $fetchedUser->getId()->getValue(),
+                "username" => $fetchedUser->getUsername()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $fetchedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding user by username", [
-                "exception" => $e,
-                "username" => $username
+            $this->logger->error("Error finding user by username!", [
+                "exception" => $e->getMessage(),
+                "username" => $username->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -215,10 +252,18 @@ class UserService
                 PermissionType::List
             );
 
-            return $this->repository->findAll();
+            $users = $this->repository->findAll();
+
+            $this->logger->notice("All users found succesfully!", [
+                "count" => $users->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $users;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all users", [
-                "exception" => $e
+            $this->logger->error("Error finding all users!", [
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
