@@ -1,0 +1,22 @@
+services:
+  php:
+    build:
+      target: development
+
+    volumes:
+      - ../../:/var/www/html
+
+  nginx:
+    volumes:
+      - ../../:/var/www/html
+
+    ports:
+      - "${NGINX_EXPOSE_PORT}:${NGINX_PORT}"
+
+  redis:
+    ports:
+      - "${REDIS_EXPOSE_PORT}:${REDIS_PORT}"
+
+  mariadb:
+    ports:
+      - "${REPOSITORY_EXPOSE_PORT}:${REPOSITORY_PORT}"

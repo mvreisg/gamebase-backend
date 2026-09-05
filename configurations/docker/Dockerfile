@@ -1,4 +1,8 @@
-FROM php:8.4.11-fpm
+########
+# base #
+########
+
+FROM php:8.4.11-fpm AS base
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -14,9 +18,17 @@ WORKDIR /var/www/html
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+###############
+# development #
+###############
+
+FROM base AS development
+
 COPY composer.json composer.lock ./
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install \
+    --no-interaction \
+    --prefer-dist
 
 RUN git config --global --add safe.directory /var/www/html
 
