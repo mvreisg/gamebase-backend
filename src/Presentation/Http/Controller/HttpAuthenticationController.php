@@ -59,7 +59,7 @@ class HttpAuthenticationController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

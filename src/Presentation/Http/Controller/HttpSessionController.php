@@ -58,7 +58,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

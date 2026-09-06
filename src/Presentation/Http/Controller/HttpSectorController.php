@@ -594,7 +594,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Sector with the informed ID exists",
+        description: "Response if authenticated and the Sector with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

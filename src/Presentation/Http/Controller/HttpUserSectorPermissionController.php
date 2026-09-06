@@ -65,7 +65,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the UserSectorPermission is inserted on the repository",
+        description: "Response if authenticated and the UserSectorPermission is inserted on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -78,7 +78,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -268,7 +268,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the UserSectorPermission is inserted on the repository",
+        description: "Response if authenticated and the UserSectorPermission is inserted on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -280,7 +280,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -437,7 +437,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the UserSectorPermission is updated on the repository",
+        description: "Response if authenticated and the UserSectorPermission is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -449,7 +449,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -565,7 +565,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the UserSectorPermission with the informed ID exists",
+        description: "Response if authenticated and the UserSectorPermission with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -578,7 +578,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -718,7 +718,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the UserSectorPermission with the informed ID exists",
+        description: "Response if authenticated and the UserSectorPermission with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -737,7 +737,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

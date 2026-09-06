@@ -597,7 +597,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User with the informed ID exists",
+        description: "Response if authenticated and the User with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
