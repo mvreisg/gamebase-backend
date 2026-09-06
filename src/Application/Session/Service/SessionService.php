@@ -75,7 +75,7 @@ class SessionService
             if ($doTheTwoPasswordsMatchesEqually === false) {
                 $this->logger->warning("Invalid credentials provided for login attempt", [
                     "username" => $username->getValue(),
-                    "timestamp" => $this->clock->now()->format("Y-m-d H:i:s")
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
                 ]);
                 throw new InvalidCredentialsException();
             }
@@ -123,7 +123,7 @@ class SessionService
 
             $this->logger->info("User logged in successfully", [
                 "username" => $username->getValue(),
-                "timestamp" => $this->clock->now()->format("Y-m-d H:i:s")
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return new SessionLoginReturn(
@@ -132,7 +132,8 @@ class SessionService
             );
         } catch (\Throwable $e) {
             $this->logger->error("An error occurred during login", [
-                "exception" => $e
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -149,14 +150,15 @@ class SessionService
 
             $this->logger->info("User logoff has been tried", [
                 "username" => $decodedToken->getAuthenticationData()->getUsername()->getValue(),
-                "timestamp" => $this->clock->now()->format("Y-m-d H:i:s"),
-                "logoff_successful" => $wasDeleted
+                "wasDeleted" => $wasDeleted,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return $wasDeleted;
         } catch (\Throwable $e) {
             $this->logger->error("An error occurred during logoff", [
-                "exception" => $e
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -187,7 +189,8 @@ class SessionService
             return $sessionData;
         } catch (\Throwable $e) {
             $this->logger->error("An error occurred during session data retrieval", [
-                "exception" => $e
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
