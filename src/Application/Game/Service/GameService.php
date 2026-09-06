@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceIn
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
 
@@ -23,17 +24,20 @@ class GameService
     private GameRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private GameDomainService $gameDomainService;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
         GameRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->gameDomainService = $gameDomainService;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -57,11 +61,18 @@ class GameService
                 )
             );
 
+            $this->logger->notice("Game inserted succesfully!", [
+                "id" => $insertedGame->getId()->getValue(),
+                "name" => $insertedGame->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedGame;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting game", [
-                "exception" => $e,
-                "data" => $dto,
+            $this->logger->error("Error inserting Game!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -93,11 +104,17 @@ class GameService
                 )
             );
 
+            $this->logger->notice("Game data updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating game", [
-                "exception" => $e,
-                "dto" => $dto,
+            $this->logger->error("Error updating Game!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -121,12 +138,18 @@ class GameService
                 $isActive
             );
 
+            $this->logger->notice("Game isActive updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting game active status", [
-                "exception" => $e,
-                "gameId" => $id,
+            $this->logger->error("Error setting Game active status!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
                 "isActive" => $isActive,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -141,15 +164,22 @@ class GameService
                 PermissionType::List
             );
 
-            $foundGame = $this->repository->findById(
+            $fetchedGame = $this->repository->findById(
                 $id
             );
 
-            return $foundGame;
+            $this->logger->notice("Game found by id succesfully!", [
+                "id" => $fetchedGame->getId()->getValue(),
+                "name" => $fetchedGame->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $fetchedGame;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding game", [
-                "exception" => $e,
-                "gameId" => $id,
+            $this->logger->error("Error finding Game by id!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -164,10 +194,18 @@ class GameService
                 PermissionType::List
             );
 
-            return $this->repository->findAll();
+            $games = $this->repository->findAll();
+
+            $this->logger->notice("All Games found succesfully!", [
+                "count" => $games->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $games;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding games", [
-                "exception" => $e,
+            $this->logger->error("Error finding all Games!", [
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
