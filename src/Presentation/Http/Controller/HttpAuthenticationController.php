@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Authentication",
-    description: "Endpoints related to authentication management"
+    description: "Endpoints related to Authentication management"
 )]
 class HttpAuthenticationController
 {
@@ -27,7 +27,7 @@ class HttpAuthenticationController
     #[OA\Get(
         path: "/authentication/validate",
         summary: "Validate authentication token",
-        description: "Validates the authentication token and returns its associated data.",
+        description: "Validates the authentication token and returns its associated data",
         tags: ["Authentication"]
     )]
     #[OA\Parameter(

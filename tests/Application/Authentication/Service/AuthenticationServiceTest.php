@@ -121,7 +121,7 @@ class AuthenticationServiceTest extends TestCase
         $provider
             ->method("encode")
             ->willThrowException(
-                new AuthenticationTokenProviderException("encoding error.")
+                new AuthenticationTokenProviderException("encoding error")
             );
         return $provider;
     }
@@ -132,7 +132,7 @@ class AuthenticationServiceTest extends TestCase
         $provider
             ->method("decode")
             ->willThrowException(
-                new AuthenticationTokenProviderException("decoding error.")
+                new AuthenticationTokenProviderException("decoding error")
             );
         return $provider;
     }
@@ -143,7 +143,7 @@ class AuthenticationServiceTest extends TestCase
         $provider
             ->method("validate")
             ->willThrowException(
-                new AuthenticationTokenProviderException("validation error.")
+                new AuthenticationTokenProviderException("validation error")
             );
         return $provider;
     }

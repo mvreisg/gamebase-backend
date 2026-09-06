@@ -32,7 +32,7 @@ class HttpSectorController
     #[OA\Post(
         path: "/sector",
         summary: "Inserts a new Sector",
-        description: "Receives the user credentials and if valid, inserts a Sector and returns a copy of the inserted Sector.",
+        description: "Receives the user credentials and if valid, inserts a Sector and returns a copy of the inserted Sector",
         tags: ["Insert"]
     )]
     #[OA\Parameter(
@@ -208,12 +208,12 @@ class HttpSectorController
     #[OA\Put(
         path: "/sector/{id}",
         summary: "Update a Sector",
-        description: "Receives the user credentials and if valid, tries to update a Sector and returns the update status.",
+        description: "Receives the user credentials and if valid, tries to update a Sector and returns the update status",
         tags: ["Update"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Sector to be updated.",
+                description: "The id of the Sector to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -393,12 +393,12 @@ class HttpSectorController
     #[OA\Patch(
         path: "/sector/{id}",
         summary: "Activates/Deactivates a Sector by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a Sector and returns the activation status.",
+        description: "Receives the user credentials and if valid, tries to activate/deactivate a Sector and returns the activation status",
         tags: ["Activate", "Deactivate"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Sector to be activated/deactivated.",
+                description: "The id of the Sector to be activated/deactivated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -570,12 +570,12 @@ class HttpSectorController
     #[OA\Get(
         path: "/sector/{id}",
         summary: "Returns a Sector by its ID",
-        description: "Receives the user credentials and if valid, searches for the Sector with the ID, and if the Sector exists, returns it.",
+        description: "Receives the user credentials and if valid, searches for the Sector with the ID, and if the Sector exists, returns it",
         tags: ["Get"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Sector to be searched.",
+                description: "The id of the Sector to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -719,7 +719,7 @@ class HttpSectorController
     #[OA\Get(
         path: "/sector",
         summary: "Returns all the Games on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Games.",
+        description: "Receives the user credentials and if valid, returns all the existant Games",
         tags: ["Get", "All"],
     )]
     #[OA\Parameter(

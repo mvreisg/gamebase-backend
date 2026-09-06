@@ -17,7 +17,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Game",
-    description: "Endpoints related to game management"
+    description: "Endpoints related to Game management"
 )]
 class HttpGameController
 {
@@ -31,7 +31,7 @@ class HttpGameController
     #[OA\Post(
         path: "/game",
         summary: "Inserts a new Game",
-        description: "If authenticated, inserts a Game and returns a copy.",
+        description: "If authenticated, inserts a Game and returns a copy",
         tags: ["Game"]
     )]
     #[OA\Parameter(
@@ -204,12 +204,12 @@ class HttpGameController
     #[OA\Put(
         path: "/game/{id}",
         summary: "Update a Game",
-        description: "If authenticated, update a Game and returns the status.",
+        description: "If authenticated, update a Game and returns the status",
         tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be updated.",
+                description: "The id of the Game to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -387,12 +387,12 @@ class HttpGameController
     #[OA\Patch(
         path: "/game/{id}",
         summary: "Set activation status of a Game by its ID",
-        description: "If authenticated, sets the activation status and returns the status.",
+        description: "If authenticated, sets the activation status and returns the status",
         tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be updated.",
+                description: "The id of the Game to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -446,7 +446,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Game does not exist",
+        description: "Response if a value is missing or if the Game does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -564,12 +564,12 @@ class HttpGameController
     #[OA\Get(
         path: "/game/{id}",
         summary: "Returns a Game by its ID",
-        description: "If authenticated, searches for the Game with the ID, and if exists, returns it.",
+        description: "If authenticated, searches for the Game with the ID, and if exists, returns it",
         tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be searched.",
+                description: "The id of the Game to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -588,7 +588,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Game with the informed ID exists.",
+        description: "Response if authenticated and the Game with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -712,7 +712,7 @@ class HttpGameController
     #[OA\Get(
         path: "/game",
         summary: "Returns all the Games on the repository",
-        description: "If authenticated, returns all the existant Games.",
+        description: "If authenticated, returns all the existant Games",
         tags: ["Game"],
     )]
     #[OA\Parameter(

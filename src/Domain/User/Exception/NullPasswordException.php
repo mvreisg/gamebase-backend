@@ -8,6 +8,6 @@ class NullPasswordException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct("The password of the game is null.");
+        parent::__construct("The password of the game is null");
     }
 }

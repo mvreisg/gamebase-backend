@@ -17,7 +17,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Platform",
-    description: "Endpoints related to platform management"
+    description: "Endpoints related to Platform management"
 )]
 class HttpPlatformController
 {
@@ -31,7 +31,7 @@ class HttpPlatformController
     #[OA\Post(
         path: "/platform",
         summary: "Inserts a new Platform",
-        description: "If authenticated, inserts a Platform and returns a copy.",
+        description: "If authenticated, inserts a Platform and returns a copy",
         tags: ["Platform"]
     )]
     #[OA\Parameter(
@@ -204,12 +204,12 @@ class HttpPlatformController
     #[OA\Put(
         path: "/platform/{id}",
         summary: "Update a Platform",
-        description: "If authenticated, update a Platform and returns the status.",
+        description: "If authenticated, update a Platform and returns the status",
         tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be updated.",
+                description: "The id of the Platform to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -387,12 +387,12 @@ class HttpPlatformController
     #[OA\Patch(
         path: "/platform/{id}",
         summary: "Set activation status of a Platform by its ID",
-        description: "If authenticated, sets the activation status and returns the status.",
+        description: "If authenticated, sets the activation status and returns the status",
         tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be updated.",
+                description: "The id of the Platform to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -564,12 +564,12 @@ class HttpPlatformController
     #[OA\Get(
         path: "/platform/{id}",
         summary: "Returns a Platform by its ID",
-        description: "If authenticated, searches for the Platform with the ID, and if exists, returns it.",
+        description: "If authenticated, searches for the Platform with the ID, and if exists, returns it",
         tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be searched.",
+                description: "The id of the Platform to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -588,7 +588,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Platform with the informed ID exists.",
+        description: "Response if authenticated and the Platform with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -712,7 +712,7 @@ class HttpPlatformController
     #[OA\Get(
         path: "/platform",
         summary: "Returns all the Platforms on the repository",
-        description: "If authenticated, returns all the existant Platforms.",
+        description: "If authenticated, returns all the existant Platforms",
         tags: ["Platform"],
     )]
     #[OA\Parameter(

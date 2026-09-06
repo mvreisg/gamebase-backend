@@ -9,7 +9,7 @@ class NullNameException extends \Exception
     public function __construct(string $className)
     {
         parent::__construct(
-            "The name of the {$className} is null."
+            "The name of the {$className} is null"
         );
     }
 }

@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "GameGenre",
-    description: "Endpoints related to game-genre relation management"
+    description: "Endpoints related to GameGenre management"
 )]
 class HttpGameGenreController
 {

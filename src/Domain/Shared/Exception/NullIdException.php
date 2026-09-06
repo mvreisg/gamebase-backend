@@ -8,6 +8,6 @@ class NullIdException extends \Exception
 {
     public function __construct(string $className)
     {
-        parent::__construct("The id of the {$className} is null.");
+        parent::__construct("The id of the {$className} is null");
     }
 }

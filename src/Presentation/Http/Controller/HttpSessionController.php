@@ -18,7 +18,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Session",
-    description: "Endpoints related to session management"
+    description: "Endpoints related to Session management"
 )]
 class HttpSessionController
 {

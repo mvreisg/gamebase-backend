@@ -11,7 +11,7 @@ class DuplicatedNameException extends \Exception
     public function __construct(Name $name)
     {
         parent::__construct(
-            "The name '{$name->getValue()}' is already in use."
+            "The name '{$name->getValue()}' is already in use"
         );
     }
 }

@@ -11,7 +11,7 @@ class UserNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The user with id '{$id->getValue()}' was not found."
+            "The user with id '{$id->getValue()}' was not found"
         );
     }
 }

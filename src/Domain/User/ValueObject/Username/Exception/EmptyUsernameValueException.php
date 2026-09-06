@@ -8,6 +8,6 @@ class EmptyUsernameValueException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct("Empty username value.");
+        parent::__construct("Empty username value");
     }
 }

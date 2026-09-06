@@ -11,7 +11,7 @@ class GameNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The game with id '{$id->getValue()}' was not found."
+            "The game with id '{$id->getValue()}' was not found"
         );
     }
 }

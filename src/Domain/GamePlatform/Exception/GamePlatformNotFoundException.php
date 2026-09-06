@@ -11,7 +11,7 @@ class GamePlatformNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The game platform with id '{$id->getValue()}' was not found."
+            "The game platform with id '{$id->getValue()}' was not found"
         );
     }
 }

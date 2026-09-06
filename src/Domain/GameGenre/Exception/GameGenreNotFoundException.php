@@ -11,7 +11,7 @@ class GameGenreNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The game genre with id '{$id->getValue()}' was not found."
+            "The game genre with id '{$id->getValue()}' was not found"
         );
     }
 }

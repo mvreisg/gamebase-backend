@@ -30,7 +30,7 @@ class HttpUserSectorPermissionController
     #[OA\Post(
         path: "/user_sector_permission",
         summary: "Inserts a new UserSectorPermission",
-        description: "Receives the user credentials and if valid, inserts a UserSectorPermission and returns a copy of the inserted UserSectorPermission.",
+        description: "Receives the user credentials and if valid, inserts a UserSectorPermission and returns a copy of the inserted UserSectorPermission",
         tags: ["Insert"]
     )]
     #[OA\Parameter(
@@ -223,12 +223,12 @@ class HttpUserSectorPermissionController
     #[OA\Put(
         path: "/user_sector_permission/{id}",
         summary: "Update a UserSectorPermission",
-        description: "Receives the user credentials and if valid, tries to update a UserSectorPermission and returns the update status.",
+        description: "Receives the user credentials and if valid, tries to update a UserSectorPermission and returns the update status",
         tags: ["Update"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the UserSectorPermission to be updated.",
+                description: "The id of the UserSectorPermission to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -413,12 +413,12 @@ class HttpUserSectorPermissionController
     #[OA\Delete(
         path: "/user_sector_permission/{id}",
         summary: "Deletes a UserSectorPermission by its ID",
-        description: "Receives the user credentials and if valid, tries to deletes a UserSectorPermission and returns the deletion status.",
+        description: "Receives the user credentials and if valid, tries to deletes a UserSectorPermission and returns the deletion status",
         tags: ["Delete"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the UserSectorPermission to be deleted.",
+                description: "The id of the UserSectorPermission to be deleted",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -541,12 +541,12 @@ class HttpUserSectorPermissionController
     #[OA\Get(
         path: "/user_sector_permission/{id}",
         summary: "Returns a UserSectorPermission by its ID",
-        description: "Receives the user credentials and if valid, searches for the UserSectorPermission with the ID, and if the UserSectorPermission exists, returns it.",
+        description: "Receives the user credentials and if valid, searches for the UserSectorPermission with the ID, and if the UserSectorPermission exists, returns it",
         tags: ["Get"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the UserSectorPermission to be searched.",
+                description: "The id of the UserSectorPermission to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -704,7 +704,7 @@ class HttpUserSectorPermissionController
     #[OA\Get(
         path: "/user_sector_permission",
         summary: "Returns all the GameGenres on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant GameGenres.",
+        description: "Receives the user credentials and if valid, returns all the existant GameGenres",
         tags: ["Get", "All"],
     )]
     #[OA\Parameter(

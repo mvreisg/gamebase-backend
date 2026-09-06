@@ -136,7 +136,7 @@ class SessionServiceTest extends TestCase
             ->method("decrypt")
             ->willThrowException(
                 new EncryptionInterfaceException(
-                    "decrypt error."
+                    "decrypt error"
                 )
             );
 
