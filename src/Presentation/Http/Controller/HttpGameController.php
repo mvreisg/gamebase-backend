@@ -726,7 +726,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Game with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
