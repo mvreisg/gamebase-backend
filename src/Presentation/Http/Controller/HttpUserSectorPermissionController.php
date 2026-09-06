@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "UserSectorPermission",
-    description: "Endpoints related to game-genre relation management"
+    description: "Endpoints related to UserSectorPermission management"
 )]
 class HttpUserSectorPermissionController
 {
@@ -30,8 +30,8 @@ class HttpUserSectorPermissionController
     #[OA\Post(
         path: "/user_sector_permission",
         summary: "Inserts a new UserSectorPermission",
-        description: "Receives the user credentials and if valid, inserts a UserSectorPermission and returns a copy of the inserted UserSectorPermission",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a UserSectorPermission and returns a copy",
+        tags: ["UserSectorPermission"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -65,7 +65,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if authenticated and the UserSectorPermission is inserted on the repository",
+        description: "Response if authenticated and the UserSectorPermission exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -90,7 +90,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the UserSectorPermission does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -112,7 +112,7 @@ class HttpUserSectorPermissionController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "UserSectorPermission not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -223,8 +223,8 @@ class HttpUserSectorPermissionController
     #[OA\Put(
         path: "/user_sector_permission/{id}",
         summary: "Update a UserSectorPermission",
-        description: "Receives the user credentials and if valid, tries to update a UserSectorPermission and returns the update status",
-        tags: ["Update"],
+        description: "If authenticated, update a UserSectorPermission and returns the status",
+        tags: ["UserSectorPermission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -268,7 +268,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the UserSectorPermission is inserted on the repository",
+        description: "Response if authenticated and the UserSectorPermission is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -292,7 +292,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the UserSectorPermission does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -314,7 +314,7 @@ class HttpUserSectorPermissionController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "UserSectorPermission not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -413,8 +413,8 @@ class HttpUserSectorPermissionController
     #[OA\Delete(
         path: "/user_sector_permission/{id}",
         summary: "Deletes a UserSectorPermission by its ID",
-        description: "Receives the user credentials and if valid, tries to deletes a UserSectorPermission and returns the deletion status",
-        tags: ["Delete"],
+        description: "If authenticated, deletes and returns the status",
+        tags: ["UserSectorPermission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -437,7 +437,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the UserSectorPermission is updated on the repository",
+        description: "Response if authenticated and the UserSectorPermission is deleted on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -461,7 +461,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the UserSectorPermission does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -541,8 +541,8 @@ class HttpUserSectorPermissionController
     #[OA\Get(
         path: "/user_sector_permission/{id}",
         summary: "Returns a UserSectorPermission by its ID",
-        description: "Receives the user credentials and if valid, searches for the UserSectorPermission with the ID, and if the UserSectorPermission exists, returns it",
-        tags: ["Get"],
+        description: "If authenticated, searches for the UserSectorPermission with the ID, and if exists, returns it",
+        tags: ["UserSectorPermission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -590,7 +590,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the UserSectorPermission does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -703,9 +703,9 @@ class HttpUserSectorPermissionController
 
     #[OA\Get(
         path: "/user_sector_permission",
-        summary: "Returns all the GameGenres on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant GameGenres",
-        tags: ["Get", "All"],
+        summary: "Returns all the UserSectorPermissions on the repository",
+        description: "If authenticated, returns all the existant UserSectorPermissions",
+        tags: ["UserSectorPermission"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -718,7 +718,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the UserSectorPermission with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -749,7 +749,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no UserSectorPermissions were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
