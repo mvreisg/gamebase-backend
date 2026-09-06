@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Authentication",
-    description: "Endpoints related to authentication"
+    description: "Endpoints related to authentication management"
 )]
 class HttpAuthenticationController
 {
