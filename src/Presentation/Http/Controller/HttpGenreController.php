@@ -31,7 +31,7 @@ class HttpGenreController
     #[OA\Post(
         path: "/genre",
         summary: "Inserts a new Genre",
-        description: "If authenticated, inserts a Genre and returns a copy.",
+        description: "If authenticated, inserts a Genre and returns a copy",
         tags: ["Genre"]
     )]
     #[OA\Parameter(
@@ -123,34 +123,11 @@ class HttpGenreController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -204,12 +181,12 @@ class HttpGenreController
     #[OA\Put(
         path: "/genre/{id}",
         summary: "Update a Genre",
-        description: "If authenticated, update a Genre and returns the status.",
+        description: "If authenticated, update a Genre and returns the status",
         tags: ["Genre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Genre to be updated.",
+                description: "The id of the Genre to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -268,7 +245,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Genre does not exist",
+        description: "Response if a value is missing or if the Genre does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -305,34 +282,11 @@ class HttpGenreController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -387,12 +341,12 @@ class HttpGenreController
     #[OA\Patch(
         path: "/genre/{id}",
         summary: "Set activation status of a Genre by its ID",
-        description: "If authenticated, sets the activation status and returns the status.",
+        description: "If authenticated, sets the activation status and returns the status",
         tags: ["Genre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Genre to be updated.",
+                description: "The id of the Genre to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -446,7 +400,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Genre does not exist",
+        description: "Response if a value is missing or if the Genre does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -483,34 +437,11 @@ class HttpGenreController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -564,12 +495,12 @@ class HttpGenreController
     #[OA\Get(
         path: "/genre/{id}",
         summary: "Returns a Genre by its ID",
-        description: "If authenticated, searches for the Genre with the ID, and if exists, returns it.",
+        description: "If authenticated, searches for the Genre with the ID, and if exists, returns it",
         tags: ["Genre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Genre to be searched.",
+                description: "The id of the Genre to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -588,7 +519,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Genre with the informed ID exists.",
+        description: "Response if authenticated and the Genre with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -628,34 +559,11 @@ class HttpGenreController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -713,7 +621,7 @@ class HttpGenreController
     #[OA\Get(
         path: "/genre",
         summary: "Returns all the Genres on the repository",
-        description: "If authenticated, returns all the existant Genres.",
+        description: "If authenticated, returns all the existant Genres",
         tags: ["Genre"],
     )]
     #[OA\Parameter(

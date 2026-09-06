@@ -30,7 +30,7 @@ class HttpGamePlatformController
     #[OA\Post(
         path: "/game_platform",
         summary: "Inserts a new GamePlatform",
-        description: "If authenticated, inserts a GamePlatform and returns a copy.",
+        description: "If authenticated, inserts a GamePlatform and returns a copy",
         tags: ["GamePlatform"]
     )]
     #[OA\Parameter(
@@ -122,34 +122,11 @@ class HttpGamePlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -211,12 +188,12 @@ class HttpGamePlatformController
     #[OA\Put(
         path: "/game_platform/{id}",
         summary: "Update a GamePlatform",
-        description: "If authenticated, update a GamePlatform and returns the status.",
+        description: "If authenticated, update a GamePlatform and returns the status",
         tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the GamePlatform to be updated.",
+                description: "The id of the GamePlatform to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -312,34 +289,11 @@ class HttpGamePlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -394,12 +348,12 @@ class HttpGamePlatformController
     #[OA\Delete(
         path: "/game_platform/{id}",
         summary: "Deletes a GamePlatform by its ID",
-        description: "If authenticated, deletes and returns the status.",
+        description: "If authenticated, deletes and returns the status",
         tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the GamePlatform to be deleted.",
+                description: "The id of the GamePlatform to be deleted",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -456,34 +410,11 @@ class HttpGamePlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -522,12 +453,12 @@ class HttpGamePlatformController
     #[OA\Get(
         path: "/game_platform/{id}",
         summary: "Returns a GamePlatform by its ID",
-        description: "If authenticated, searches for the GamePlatform with the ID, and if exists, returns it.",
+        description: "If authenticated, searches for the GamePlatform with the ID, and if exists, returns it",
         tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the GamePlatform to be searched.",
+                description: "The id of the GamePlatform to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -546,7 +477,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the GamePlatform with the informed ID exists.",
+        description: "Response if authenticated and the GamePlatform with the informed ID exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -586,34 +517,11 @@ class HttpGamePlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -678,7 +586,7 @@ class HttpGamePlatformController
     #[OA\Get(
         path: "/game_platform",
         summary: "Returns all the GamePlatforms on the repository",
-        description: "If authenticated, returns all the existant GamePlatforms.",
+        description: "If authenticated, returns all the existant GamePlatforms",
         tags: ["GamePlatform"],
     )]
     #[OA\Parameter(
@@ -738,34 +646,11 @@ class HttpGamePlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
