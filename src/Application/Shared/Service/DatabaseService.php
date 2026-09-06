@@ -28,7 +28,7 @@ class DatabaseService
             $this->logger->error(
                 "An error occurred while checking if database exists",
                 [
-                    "exception" => $e,
+                    "exception" => $e->getMessage(),
                     "database" => $database
                 ]
             );
@@ -44,7 +44,7 @@ class DatabaseService
             $this->logger->error(
                 "An error occurred while creating database",
                 [
-                    "exception" => $e,
+                    "exception" => $e->getMessage(),
                     "database" => $database
                 ]
             );
@@ -60,7 +60,7 @@ class DatabaseService
             $this->logger->error(
                 "An error occurred while dropping database",
                 [
-                    "exception" => $e,
+                    "exception" => $e->getMessage(),
                     "database" => $database
                 ]
             );
