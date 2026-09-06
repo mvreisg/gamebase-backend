@@ -18,7 +18,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Sector",
-    description: "Endpoints related to sector management"
+    description: "Endpoints related to Sector management"
 )]
 class HttpSectorController
 {
@@ -32,8 +32,8 @@ class HttpSectorController
     #[OA\Post(
         path: "/sector",
         summary: "Inserts a new Sector",
-        description: "Receives the user credentials and if valid, inserts a Sector and returns a copy of the inserted Sector",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a Sector and returns a copy",
+        tags: ["Sector"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -50,7 +50,7 @@ class HttpSectorController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Game"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -62,7 +62,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the Sector is inserted on the repository",
+        description: "Response if authenticated and the Sector exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -75,7 +75,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -87,7 +87,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Sector does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -109,7 +109,7 @@ class HttpSectorController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Sector not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -208,8 +208,8 @@ class HttpSectorController
     #[OA\Put(
         path: "/sector/{id}",
         summary: "Update a Sector",
-        description: "Receives the user credentials and if valid, tries to update a Sector and returns the update status",
-        tags: ["Update"],
+        description: "If authenticated, update a Sector and returns the status",
+        tags: ["Sector"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -236,7 +236,7 @@ class HttpSectorController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Game"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -248,7 +248,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Sector is inserted on the repository",
+        description: "Response if authenticated and the Sector is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -260,7 +260,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -272,7 +272,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Sector does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -294,7 +294,7 @@ class HttpSectorController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Sector not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -392,13 +392,13 @@ class HttpSectorController
 
     #[OA\Patch(
         path: "/sector/{id}",
-        summary: "Activates/Deactivates a Sector by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a Sector and returns the activation status",
-        tags: ["Activate", "Deactivate"],
+        summary: "Set activation status of a Sector by its ID",
+        description: "If authenticated, sets the activation status and returns the status",
+        tags: ["Sector"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Sector to be activated/deactivated",
+                description: "The id of the Sector to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -428,7 +428,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Sector is updated on the repository",
+        description: "Response if authenticated and the Sector is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -440,7 +440,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -452,7 +452,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Sector does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -474,7 +474,7 @@ class HttpSectorController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Sector not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -570,8 +570,8 @@ class HttpSectorController
     #[OA\Get(
         path: "/sector/{id}",
         summary: "Returns a Sector by its ID",
-        description: "Receives the user credentials and if valid, searches for the Sector with the ID, and if the Sector exists, returns it",
-        tags: ["Get"],
+        description: "If authenticated, searches for the Sector with the ID, and if exists, returns it",
+        tags: ["Sector"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -607,7 +607,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -619,7 +619,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the Sector does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -718,9 +718,9 @@ class HttpSectorController
 
     #[OA\Get(
         path: "/sector",
-        summary: "Returns all the Games on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Games",
-        tags: ["Get", "All"],
+        summary: "Returns all the Sectors on the repository",
+        description: "If authenticated, returns all the existant Sectors",
+        tags: ["Sector"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -733,7 +733,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Sector with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -752,7 +752,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -764,7 +764,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no Sectors were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
