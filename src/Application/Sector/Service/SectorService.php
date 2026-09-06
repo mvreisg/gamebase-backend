@@ -177,10 +177,10 @@ class SectorService
             $fetchedSector = $this->repository->findById($id);
 
             $this->logger->notice("Sector found by id succesfully!", [
-                 "id" => $fetchedSector->getId()->getValue(),
-                 "name" => $fetchedSector->getName()->getValue(),
-                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
-             ]);
+                "id" => $fetchedSector->getId()->getValue(),
+                "name" => $fetchedSector->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
 
             return $fetchedSector;
         } catch (\Throwable $e) {
