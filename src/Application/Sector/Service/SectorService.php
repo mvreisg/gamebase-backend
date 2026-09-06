@@ -74,7 +74,7 @@ class SectorService
 
             return $insertedSector;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting sector!", [
+            $this->logger->error("Error inserting Sector!", [
                 "exception" => $e->getMessage(),
                 "name" => $dto->name->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -121,7 +121,7 @@ class SectorService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating sector!", [
+            $this->logger->error("Error updating Sector!", [
                 "exception" => $e->getMessage(),
                 "name" => $dto->name->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -155,7 +155,7 @@ class SectorService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting sector active status!", [
+            $this->logger->error("Error setting Sector active status!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "isActive" => $isActive,
@@ -176,7 +176,7 @@ class SectorService
 
             $fetchedSector = $this->repository->findById($id);
 
-            $this->logger->notice("Sector found by ID succesfully!", [
+            $this->logger->notice("Sector found by id succesfully!", [
                  "id" => $fetchedSector->getId()->getValue(),
                  "name" => $fetchedSector->getName()->getValue(),
                  "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -184,7 +184,7 @@ class SectorService
 
             return $fetchedSector;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding sector by ID!", [
+            $this->logger->error("Error finding Sector by id!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -204,14 +204,14 @@ class SectorService
 
             $sectors = $this->repository->findAll();
 
-            $this->logger->notice("All sectors found succesfully!", [
+            $this->logger->notice("All Sectors found succesfully!", [
                 "count" => $sectors->count(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return $sectors;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all sectors!", [
+            $this->logger->error("Error finding all Sectors!", [
                 "exception" => $e->getMessage(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);

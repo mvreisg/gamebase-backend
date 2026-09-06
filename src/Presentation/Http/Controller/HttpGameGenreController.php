@@ -347,7 +347,7 @@ class HttpGameGenreController
 
     #[OA\Delete(
         path: "/game_genre/{id}",
-        summary: "Deletes a GameGenre by its ID",
+        summary: "Deletes a GameGenre by its id",
         description: "If authenticated, deletes and returns the status",
         tags: ["GameGenre"],
         parameters: [
@@ -452,8 +452,8 @@ class HttpGameGenreController
 
     #[OA\Get(
         path: "/game_genre/{id}",
-        summary: "Returns a GameGenre by its ID",
-        description: "If authenticated, searches for the GameGenre with the ID, and if exists, returns it",
+        summary: "Returns a GameGenre by its id",
+        description: "If authenticated, searches for the GameGenre with the id, and if exists, returns it",
         tags: ["GameGenre"],
         parameters: [
             new OA\PathParameter(
@@ -477,7 +477,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the GameGenre with the informed ID exists",
+        description: "Response if authenticated and the GameGenre with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

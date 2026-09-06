@@ -340,7 +340,7 @@ class HttpGenreController
 
     #[OA\Patch(
         path: "/genre/{id}",
-        summary: "Set activation status of a Genre by its ID",
+        summary: "Set activation status of a Genre by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["Genre"],
         parameters: [
@@ -494,8 +494,8 @@ class HttpGenreController
 
     #[OA\Get(
         path: "/genre/{id}",
-        summary: "Returns a Genre by its ID",
-        description: "If authenticated, searches for the Genre with the ID, and if exists, returns it",
+        summary: "Returns a Genre by its id",
+        description: "If authenticated, searches for the Genre with the id, and if exists, returns it",
         tags: ["Genre"],
         parameters: [
             new OA\PathParameter(
@@ -519,7 +519,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Genre with the informed ID exists",
+        description: "Response if authenticated and the Genre with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -681,34 +681,11 @@ class HttpGenreController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

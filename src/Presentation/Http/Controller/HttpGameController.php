@@ -340,7 +340,7 @@ class HttpGameController
 
     #[OA\Patch(
         path: "/game/{id}",
-        summary: "Set activation status of a Game by its ID",
+        summary: "Set activation status of a Game by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["Game"],
         parameters: [
@@ -494,8 +494,8 @@ class HttpGameController
 
     #[OA\Get(
         path: "/game/{id}",
-        summary: "Returns a Game by its ID",
-        description: "If authenticated, searches for the Game with the ID, and if exists, returns it",
+        summary: "Returns a Game by its id",
+        description: "If authenticated, searches for the Game with the id, and if exists, returns it",
         tags: ["Game"],
         parameters: [
             new OA\PathParameter(
@@ -519,7 +519,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Game with the informed ID exists",
+        description: "Response if authenticated and the Game with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

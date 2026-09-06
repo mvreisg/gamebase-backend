@@ -348,7 +348,7 @@ class HttpPermissionController
 
     #[OA\Patch(
         path: "/permission/{id}",
-        summary: "Set activation status of a Permission by its ID",
+        summary: "Set activation status of a Permission by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["Permission"],
         parameters: [
@@ -503,8 +503,8 @@ class HttpPermissionController
 
     #[OA\Get(
         path: "/permission/{id}",
-        summary: "Returns a Permission by its ID",
-        description: "If authenticated, searches for the Permission with the ID, and if exists, returns it",
+        summary: "Returns a Permission by its id",
+        description: "If authenticated, searches for the Permission with the id, and if exists, returns it",
         tags: ["Permission"],
         parameters: [
             new OA\PathParameter(
@@ -528,7 +528,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Permission with the informed ID exists",
+        description: "Response if authenticated and the Permission with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

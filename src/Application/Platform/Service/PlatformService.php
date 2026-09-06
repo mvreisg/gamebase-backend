@@ -145,7 +145,7 @@ class PlatformService
 
             return $fetchedPlatform;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding platform by ID", [
+            $this->logger->error("Error finding platform by id", [
                 "error" => $e->getMessage(),
                 "platformId" => $id,
             ]);

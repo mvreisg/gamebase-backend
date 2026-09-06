@@ -80,7 +80,7 @@ class UserService
 
             return $insertedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting user!", [
+            $this->logger->error("Error inserting User!", [
                 "exception" => $e->getMessage(),
                 "username" => $dto->username->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -143,7 +143,7 @@ class UserService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating user!", [
+            $this->logger->error("Error updating User!", [
                 "exception" => $e->getMessage(),
                 "username" => $dto->username->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -177,7 +177,7 @@ class UserService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting user active status!", [
+            $this->logger->error("Error setting User active status!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "isActive" => $isActive,
@@ -198,7 +198,7 @@ class UserService
 
             $fetchedUser = $this->repository->findById($id);
 
-            $this->logger->notice("User found by ID succesfully!", [
+            $this->logger->notice("User found by id succesfully!", [
                 "id" => $fetchedUser->getId()->getValue(),
                 "username" => $fetchedUser->getUsername()->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -206,7 +206,7 @@ class UserService
 
             return $fetchedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding user by ID!", [
+            $this->logger->error("Error finding User by id!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -234,7 +234,7 @@ class UserService
 
             return $fetchedUser;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding user by username!", [
+            $this->logger->error("Error finding User by username!", [
                 "exception" => $e->getMessage(),
                 "username" => $username->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -254,14 +254,14 @@ class UserService
 
             $users = $this->repository->findAll();
 
-            $this->logger->notice("All users found succesfully!", [
+            $this->logger->notice("All Users found succesfully!", [
                 "count" => $users->count(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return $users;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all users!", [
+            $this->logger->error("Error finding all Users!", [
                 "exception" => $e->getMessage(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);

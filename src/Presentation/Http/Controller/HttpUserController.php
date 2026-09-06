@@ -348,7 +348,7 @@ class HttpUserController
 
     #[OA\Patch(
         path: "/user/{id}",
-        summary: "Set activation status of a User by its ID",
+        summary: "Set activation status of a User by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["User"],
         parameters: [
@@ -503,8 +503,8 @@ class HttpUserController
 
     #[OA\Get(
         path: "/user/{id}",
-        summary: "Returns a User by its ID",
-        description: "If authenticated, searches for the User with the ID, and if exists, returns it",
+        summary: "Returns a User by its id",
+        description: "If authenticated, searches for the User with the id, and if exists, returns it",
         tags: ["User"],
         parameters: [
             new OA\PathParameter(
@@ -528,7 +528,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the User with the informed ID exists",
+        description: "Response if authenticated and the User with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

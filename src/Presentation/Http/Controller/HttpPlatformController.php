@@ -340,7 +340,7 @@ class HttpPlatformController
 
     #[OA\Patch(
         path: "/platform/{id}",
-        summary: "Set activation status of a Platform by its ID",
+        summary: "Set activation status of a Platform by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["Platform"],
         parameters: [
@@ -494,8 +494,8 @@ class HttpPlatformController
 
     #[OA\Get(
         path: "/platform/{id}",
-        summary: "Returns a Platform by its ID",
-        description: "If authenticated, searches for the Platform with the ID, and if exists, returns it",
+        summary: "Returns a Platform by its id",
+        description: "If authenticated, searches for the Platform with the id, and if exists, returns it",
         tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
@@ -519,7 +519,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Platform with the informed ID exists",
+        description: "Response if authenticated and the Platform with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

@@ -158,7 +158,7 @@ class GamePlatformService
 
             return $fetchedGamePlatform;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding GamePlatform by ID", [
+            $this->logger->error("Error finding GamePlatform by id", [
                 "exception" => $e,
                 "gamePlatformId" => $id,
             ]);

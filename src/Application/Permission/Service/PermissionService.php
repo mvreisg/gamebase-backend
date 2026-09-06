@@ -74,7 +74,7 @@ class PermissionService
 
             return $insertedPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting permission!", [
+            $this->logger->error("Error inserting Permission!", [
                 "exception" => $e->getMessage(),
                 "name" => $dto->name->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -121,7 +121,7 @@ class PermissionService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating permission!", [
+            $this->logger->error("Error updating Permission!", [
                 "exception" => $e->getMessage(),
                 "name" => $dto->name->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -155,7 +155,7 @@ class PermissionService
 
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting permission active status!", [
+            $this->logger->error("Error setting Permission active status!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "isActive" => $isActive,
@@ -176,7 +176,7 @@ class PermissionService
 
             $fetchedPermission = $this->repository->findById($id);
 
-            $this->logger->notice("Permission found by ID succesfully!", [
+            $this->logger->notice("Permission found by id succesfully!", [
                  "id" => $fetchedPermission->getId()->getValue(),
                  "name" => $fetchedPermission->getName()->getValue(),
                  "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -184,7 +184,7 @@ class PermissionService
 
             return $fetchedPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding permission by ID!", [
+            $this->logger->error("Error finding Permission by id!", [
                 "exception" => $e->getMessage(),
                 "id" => $id->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
@@ -204,14 +204,14 @@ class PermissionService
 
             $permissions = $this->repository->findAll();
 
-            $this->logger->notice("All permissions found succesfully!", [
+            $this->logger->notice("All Permissions found succesfully!", [
                 "count" => $permissions->count(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return $permissions;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all permissions!", [
+            $this->logger->error("Error finding all Permissions!", [
                 "exception" => $e->getMessage(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);

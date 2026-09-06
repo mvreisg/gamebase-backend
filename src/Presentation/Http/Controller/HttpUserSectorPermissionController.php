@@ -366,7 +366,7 @@ class HttpUserSectorPermissionController
 
     #[OA\Delete(
         path: "/user_sector_permission/{id}",
-        summary: "Deletes a UserSectorPermission by its ID",
+        summary: "Deletes a UserSectorPermission by its id",
         description: "If authenticated, deletes and returns the status",
         tags: ["UserSectorPermission"],
         parameters: [
@@ -471,8 +471,8 @@ class HttpUserSectorPermissionController
 
     #[OA\Get(
         path: "/user_sector_permission/{id}",
-        summary: "Returns a UserSectorPermission by its ID",
-        description: "If authenticated, searches for the UserSectorPermission with the ID, and if exists, returns it",
+        summary: "Returns a UserSectorPermission by its id",
+        description: "If authenticated, searches for the UserSectorPermission with the id, and if exists, returns it",
         tags: ["UserSectorPermission"],
         parameters: [
             new OA\PathParameter(
@@ -496,7 +496,7 @@ class HttpUserSectorPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the UserSectorPermission with the informed ID exists",
+        description: "Response if authenticated and the UserSectorPermission with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

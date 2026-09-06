@@ -346,7 +346,7 @@ class HttpSectorController
 
     #[OA\Patch(
         path: "/sector/{id}",
-        summary: "Set activation status of a Sector by its ID",
+        summary: "Set activation status of a Sector by its id",
         description: "If authenticated, sets the activation status and returns the status",
         tags: ["Sector"],
         parameters: [
@@ -500,8 +500,8 @@ class HttpSectorController
 
     #[OA\Get(
         path: "/sector/{id}",
-        summary: "Returns a Sector by its ID",
-        description: "If authenticated, searches for the Sector with the ID, and if exists, returns it",
+        summary: "Returns a Sector by its id",
+        description: "If authenticated, searches for the Sector with the id, and if exists, returns it",
         tags: ["Sector"],
         parameters: [
             new OA\PathParameter(
@@ -525,7 +525,7 @@ class HttpSectorController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the Sector with the informed ID exists",
+        description: "Response if authenticated and the Sector with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

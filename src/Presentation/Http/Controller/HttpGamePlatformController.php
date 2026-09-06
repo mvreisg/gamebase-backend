@@ -347,7 +347,7 @@ class HttpGamePlatformController
 
     #[OA\Delete(
         path: "/game_platform/{id}",
-        summary: "Deletes a GamePlatform by its ID",
+        summary: "Deletes a GamePlatform by its id",
         description: "If authenticated, deletes and returns the status",
         tags: ["GamePlatform"],
         parameters: [
@@ -452,8 +452,8 @@ class HttpGamePlatformController
 
     #[OA\Get(
         path: "/game_platform/{id}",
-        summary: "Returns a GamePlatform by its ID",
-        description: "If authenticated, searches for the GamePlatform with the ID, and if exists, returns it",
+        summary: "Returns a GamePlatform by its id",
+        description: "If authenticated, searches for the GamePlatform with the id, and if exists, returns it",
         tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
@@ -477,7 +477,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if authenticated and the GamePlatform with the informed ID exists",
+        description: "Response if authenticated and the GamePlatform with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(

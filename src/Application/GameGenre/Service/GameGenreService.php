@@ -158,7 +158,7 @@ class GameGenreService
 
             return $fetchedGameGenre;
         } catch (\Throwable $e) {
-            $this->logger->error("Error fetching GameGenre by ID", [
+            $this->logger->error("Error fetching GameGenre by id", [
                 "exception" => $e,
                 "gameGenreId" => $id,
             ]);

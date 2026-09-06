@@ -8,6 +8,6 @@ class InvalidIdValueException extends \Exception
 {
     public function __construct(int $value)
     {
-        parent::__construct("Invalid ID value: " . $value);
+        parent::__construct("Invalid id value: " . $value);
     }
 }
