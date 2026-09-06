@@ -613,7 +613,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Game does not exist",
+        description: "Response if the Game does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -757,7 +757,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Game does not exist",
+        description: "Response if no Games were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
