@@ -613,7 +613,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Platform does not exist",
+        description: "Response if the Platform does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -757,7 +757,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Platform does not exist",
+        description: "Response if no Platforms were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
