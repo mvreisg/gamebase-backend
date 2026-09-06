@@ -30,8 +30,8 @@ class HttpGamePlatformController
     #[OA\Post(
         path: "/game_platform",
         summary: "Inserts a new GamePlatform",
-        description: "Receives the user credentials and if valid, inserts a GamePlatform and returns a copy of the inserted GamePlatform.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a GamePlatform and returns a copy.",
+        tags: ["GamePlatform"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -60,7 +60,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the GamePlatform is inserted on the repository",
+        description: "Response if authenticated and the GamePlatform exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -73,7 +73,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -85,7 +85,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GamePlatform does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -107,7 +107,7 @@ class HttpGamePlatformController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "GamePlatform not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -211,8 +211,8 @@ class HttpGamePlatformController
     #[OA\Put(
         path: "/game_platform/{id}",
         summary: "Update a GamePlatform",
-        description: "Receives the user credentials and if valid, tries to update a GamePlatform and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a GamePlatform and returns the status.",
+        tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -251,7 +251,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GamePlatform is inserted on the repository",
+        description: "Response if authenticated and the GamePlatform is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -263,7 +263,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -275,7 +275,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GamePlatform does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -297,7 +297,7 @@ class HttpGamePlatformController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "GamePlatform not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -394,8 +394,8 @@ class HttpGamePlatformController
     #[OA\Delete(
         path: "/game_platform/{id}",
         summary: "Deletes a GamePlatform by its ID",
-        description: "Receives the user credentials and if valid, tries to deletes a GamePlatform and returns the deletion status.",
-        tags: ["Delete"],
+        description: "If authenticated, deletes and returns the status.",
+        tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -418,7 +418,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GamePlatform is updated on the repository",
+        description: "Response if authenticated and the GamePlatform is deleted on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -430,7 +430,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -442,7 +442,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GamePlatform does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -522,8 +522,8 @@ class HttpGamePlatformController
     #[OA\Get(
         path: "/game_platform/{id}",
         summary: "Returns a GamePlatform by its ID",
-        description: "Receives the user credentials and if valid, searches for the GamePlatform with the ID, and if the GamePlatform exists, returns it.",
-        tags: ["Get"],
+        description: "If authenticated, searches for the GamePlatform with the ID, and if exists, returns it.",
+        tags: ["GamePlatform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -546,7 +546,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GamePlatform with the informed ID exists",
+        description: "Response if authenticated and the GamePlatform with the informed ID exists.",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -559,7 +559,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -571,7 +571,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the GamePlatform does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -677,9 +677,9 @@ class HttpGamePlatformController
 
     #[OA\Get(
         path: "/game_platform",
-        summary: "Returns all the GameGenres on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant GameGenres.",
-        tags: ["Get", "All"],
+        summary: "Returns all the GamePlatforms on the repository",
+        description: "If authenticated, returns all the existant GamePlatforms.",
+        tags: ["GamePlatform"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -692,7 +692,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GamePlatform with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -711,7 +711,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -723,7 +723,7 @@ class HttpGamePlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no GamePlatforms were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
