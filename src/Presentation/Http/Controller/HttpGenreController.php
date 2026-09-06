@@ -613,7 +613,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Genre does not exist",
+        description: "Response if the Genre does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -758,7 +758,7 @@ class HttpGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the Genre does not exist",
+        description: "Response if no Genres were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
