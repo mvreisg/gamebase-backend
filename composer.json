@@ -1,54 +1,55 @@
 {
-    "name": "mvreisg/gamebase-backend",
-    "description": "A simple PHP API for game database.",
-    "type": "project",
-    "autoload": {
-        "files": [
-            "bootstrap.php"
-        ],
-        "psr-4": {
-            "Mvreisg\\GamebaseBackend\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Mvreisg\\GamebaseBackend\\Tests\\": "tests/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Marcus Vinicius",
-            "email": "marcus_viniciusreis@hotmail.com"
-        }
+  "name": "mvreisg/gamebase-backend",
+  "description": "A simple PHP API for game database.",
+  "type": "project",
+  "autoload": {
+    "files": [
+      "bootstrap.php"
     ],
-    "require": {
-        "php": "^8.4.11",
-        "vlucas/phpdotenv": "^5.6",
-        "robmorgan/phinx": "^0.16.6",
-        "firebase/php-jwt": "^7.0.0",
-        "predis/predis": "^2.3",
-        "defuse/php-encryption": "^2.4",
-        "slim/slim": "4.*",
-        "slim/psr7": "^1.8",
-        "php-di/php-di": "^7.1",
-        "twig/twig": "^3.24",
-        "monolog/monolog": "^3.10",
-        "zircote/swagger-php": "^6.1"
-    },
-    "require-dev": {                
-        "phpunit/phpunit": "^11.5",
-        "friendsofphp/php-cs-fixer": "^3.75",
-        "gd-75/php-cs-fixer-enforce-double-quotes": "^1.1",
-        "squizlabs/php_codesniffer": "^4.0" 
-    },
-    "scripts": {
-        "lint:fix": "vendor/bin/php-cs-fixer fix .",
-        "format": "vendor/bin/phpcs",
-        "format:fix": "vendor/bin/phpcbf",
-        "phinx": "vendor/bin/phinx",
-        "phpunit:test": "vendor/bin/phpunit",
-        "phpunit:test:all": "vendor/bin/phpunit ./tests --testdox",
-        "openapi": "vendor/bin/openapi",
-        "openapi:generate": "vendor/bin/openapi src/Presentation/Http/Controller src/Presentation/Http/OpenApi -o public/docs/openapi.json"
+    "psr-4": {
+      "Mvreisg\\GamebaseBackend\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mvreisg\\GamebaseBackend\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Marcus Vinicius",
+      "email": "marcus_viniciusreis@hotmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.4.11",
+    "vlucas/phpdotenv": "^5.6",
+    "robmorgan/phinx": "^0.16.6",
+    "firebase/php-jwt": "^7.0.0",
+    "predis/predis": "^2.3",
+    "defuse/php-encryption": "^2.4",
+    "slim/slim": "4.*",
+    "slim/psr7": "^1.8",
+    "php-di/php-di": "^7.1",
+    "twig/twig": "^3.24",
+    "monolog/monolog": "^3.10",
+    "zircote/swagger-php": "^6.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5",
+    "friendsofphp/php-cs-fixer": "^3.75",
+    "gd-75/php-cs-fixer-enforce-double-quotes": "^1.1",
+    "squizlabs/php_codesniffer": "^4.0"
+  },
+  "scripts": {
+    "lint": "vendor/bin/php-cs-fixer check",
+    "lint:fix": "vendor/bin/php-cs-fixer fix",
+    "format": "vendor/bin/phpcs",
+    "format:fix": "vendor/bin/phpcbf",
+    "phinx": "vendor/bin/phinx",
+    "phpunit:test": "vendor/bin/phpunit",
+    "phpunit:test:all": "vendor/bin/phpunit ./tests --testdox",
+    "openapi": "vendor/bin/openapi",
+    "openapi:generate": "vendor/bin/openapi src/Presentation/Http/Controller src/Presentation/Http/OpenApi -o public/docs/openapi.json"
+  }
 }
