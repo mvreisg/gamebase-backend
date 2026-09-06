@@ -30,8 +30,8 @@ class HttpGameGenreController
     #[OA\Post(
         path: "/game_genre",
         summary: "Inserts a new GameGenre",
-        description: "Receives the user credentials and if valid, inserts a GameGenre and returns a copy of the inserted GameGenre.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a GameGenre and returns a copy.",
+        tags: ["GameGenre"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -60,7 +60,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the GameGenre is inserted on the repository",
+        description: "Response if authenticated and the GameGenre exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -73,7 +73,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -85,7 +85,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GameGenre does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -107,7 +107,7 @@ class HttpGameGenreController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "GameGenre not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -211,8 +211,8 @@ class HttpGameGenreController
     #[OA\Put(
         path: "/game_genre/{id}",
         summary: "Update a GameGenre",
-        description: "Receives the user credentials and if valid, tries to update a GameGenre and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a GameGenre and returns the status.",
+        tags: ["GameGenre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -251,7 +251,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GameGenre is inserted on the repository",
+        description: "Response if authenticated and the GameGenre is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -263,7 +263,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -275,7 +275,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GameGenre does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -297,7 +297,7 @@ class HttpGameGenreController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "GameGenre not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -394,8 +394,8 @@ class HttpGameGenreController
     #[OA\Delete(
         path: "/game_genre/{id}",
         summary: "Deletes a GameGenre by its ID",
-        description: "Receives the user credentials and if valid, tries to deletes a GameGenre and returns the deletion status.",
-        tags: ["Delete"],
+        description: "If authenticated, deletes and returns the status.",
+        tags: ["GameGenre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -418,7 +418,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GameGenre is updated on the repository",
+        description: "Response if authenticated and the GameGenre is deleted on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -430,7 +430,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -442,7 +442,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the GameGenre does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -522,8 +522,8 @@ class HttpGameGenreController
     #[OA\Get(
         path: "/game_genre/{id}",
         summary: "Returns a GameGenre by its ID",
-        description: "Receives the user credentials and if valid, searches for the GameGenre with the ID, and if the GameGenre exists, returns it.",
-        tags: ["Get"],
+        description: "If authenticated, searches for the GameGenre with the ID, and if exists, returns it.",
+        tags: ["GameGenre"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
@@ -546,7 +546,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GameGenre with the informed ID exists",
+        description: "Response if authenticated and the GameGenre with the informed ID exists.",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -559,7 +559,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -571,7 +571,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the GameGenre does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -678,8 +678,8 @@ class HttpGameGenreController
     #[OA\Get(
         path: "/game_genre",
         summary: "Returns all the GameGenres on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant GameGenres.",
-        tags: ["Get", "All"],
+        description: "If authenticated, returns all the existant GameGenres.",
+        tags: ["GameGenre"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -692,7 +692,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the GameGenre with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -711,7 +711,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -723,7 +723,7 @@ class HttpGameGenreController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no GameGenres were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
