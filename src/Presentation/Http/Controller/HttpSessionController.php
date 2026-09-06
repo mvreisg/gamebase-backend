@@ -31,9 +31,9 @@ class HttpSessionController
 
     #[OA\Post(
         path: "/session/login",
-        summary: "Login",
-        description: "Receives the user credentials and if valid, creates a session and returns the authentication token",
-        tags: ["Login"]
+        summary: "Make Login",
+        description: "If user credentials is valid, creates a session and returns a token",
+        tags: ["Session"]
     )]
     #[OA\RequestBody(
         content: new OA\JsonContent(
@@ -41,12 +41,12 @@ class HttpSessionController
                 new OA\Property(
                     property: "username",
                     type: "string",
-                    example: "mvreisg"
+                    example: "admin"
                 ),
                 new OA\Property(
                     property: "password",
                     type: "string",
-                    example: "mg4ing854g48n"
+                    example: "admin"
                 ),
                 new OA\Property(
                     property: "one_week_login",
@@ -84,7 +84,7 @@ class HttpSessionController
                         new OA\Property(
                             property: "token",
                             type: "string",
-                            example: "Bearer ey33...432"
+                            example: "Bearer token"
                         ),
                         new OA\Property(
                             property: "user",
@@ -115,22 +115,10 @@ class HttpSessionController
         )
     )]
     #[OA\Response(
-        response: 401,
-        description: "Response if user does not have credentials",
+        response: 404,
+        description: "Response if a value is missing",
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(
-                    property: "message",
-                    type: "string",
-                ),
-            ]
-        )
-    )]
-    #[OA\Response(
-        response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
-        content: new OA\JsonContent(
-            oneOf: [
                 new OA\Schema(
                     title: "Missing keys",
                     properties: [
@@ -149,15 +137,6 @@ class HttpSessionController
                         )
                     ]
                 ),
-                new OA\Schema(
-                    title: "User not found",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -273,10 +252,9 @@ class HttpSessionController
 
     #[OA\Delete(
         path: "/session/logoff",
-        summary: "Logoff",
-        description:
-            "Invalidates the user's authentication token and removes it from the cache",
-        tags: ["Logoff"]
+        summary: "Make Logoff",
+        description: "Invalidates a authentication token and removes it from cache",
+        tags: ["Session"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -289,7 +267,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if logoff process is successful",
+        description: "Response if logoff was successful",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -302,7 +280,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -314,7 +292,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 403,
-        description: "Response if user is forbidden because of invalid token",
+        description: "Response if invalid token",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -377,9 +355,8 @@ class HttpSessionController
     #[OA\Get(
         path: "/session/me",
         summary: "Get User Information",
-        description:
-            "Returns the information of the currently logged-in user",
-        tags: ["Me", "Get", "Information"]
+        description: "Returns the user data",
+        tags: ["Session"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -392,7 +369,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -423,7 +400,7 @@ class HttpSessionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing, if the user does not exist",
+        description: "Response if token does not exist",
         content: new OA\JsonContent(
             title: "Unexistant token",
             properties: [
