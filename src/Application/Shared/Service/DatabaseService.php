@@ -23,7 +23,11 @@ class DatabaseService
     public function exists(string $database): bool
     {
         try {
-            return $this->repository->exists($database);
+            $doesTheDatabaseExists = $this->repository->exists($database);
+            $this->logger->info("Database exists?", [
+                "exists" => $doesTheDatabaseExists
+            ]);
+            return $doesTheDatabaseExists;
         } catch (\Exception $e) {
             $this->logger->error(
                 "An error occurred while checking if database exists",
@@ -39,7 +43,11 @@ class DatabaseService
     public function create(string $database): bool
     {
         try {
-            return $this->repository->create($database);
+            $wasCreated = $this->repository->create($database);
+            $this->logger->info("Database creation attempt!", [
+                "wasCreated" => $wasCreated
+            ]);
+            return $wasCreated;
         } catch (\Exception $e) {
             $this->logger->error(
                 "An error occurred while creating database",
@@ -55,7 +63,11 @@ class DatabaseService
     public function drop(string $database): bool
     {
         try {
-            return $this->repository->drop($database);
+            $wasDropped = $this->repository->drop($database);
+            $this->logger->info("Database drop attempt!", [
+                "wasDropped" => $wasDropped
+            ]);
+            return $wasDropped;
         } catch (\Exception $e) {
             $this->logger->error(
                 "An error occurred while dropping database",

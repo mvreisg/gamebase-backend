@@ -196,6 +196,10 @@ class GamePlatformService
                 $id
             );
 
+            if ($fetchedGamePlatform === null) {
+                return null;
+            }
+
             $this->logger->notice("GamePlatform found by id succesfully!", [
                 "id" => $fetchedGamePlatform->getId()->getValue(),
                 "game" => [

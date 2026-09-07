@@ -168,6 +168,10 @@ class GenreService
                 $id
             );
 
+            if ($fetchedGenre === null) {
+                return null;
+            }              
+
             $this->logger->notice("Genre found by id succesfully!", [
                 "id" => $fetchedGenre->getId()->getValue(),
                 "name" => $fetchedGenre->getName()->getValue(),

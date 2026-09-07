@@ -237,6 +237,10 @@ class UserSectorPermissionService
                 $id
             );
 
+            if ($fetchedUserSectorPermission === null) {
+                return null;
+            }
+
             $this->logger->notice("UserSectorPermission fetched succesfully!", [
                 "id" => $id->getValue(),
                 "username" => $fetchedUserSectorPermission?->getUser()->getUsername()->getValue(),

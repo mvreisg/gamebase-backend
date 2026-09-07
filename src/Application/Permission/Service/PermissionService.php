@@ -176,6 +176,10 @@ class PermissionService
 
             $fetchedPermission = $this->repository->findById($id);
 
+            if ($fetchedPermission === null) {
+                return null;
+            }
+
             $this->logger->notice("Permission found by id succesfully!", [
                  "id" => $fetchedPermission->getId()->getValue(),
                  "name" => $fetchedPermission->getName()->getValue(),

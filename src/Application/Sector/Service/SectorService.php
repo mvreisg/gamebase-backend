@@ -176,6 +176,10 @@ class SectorService
 
             $fetchedSector = $this->repository->findById($id);
 
+            if ($fetchedSector === null) {
+                return null;
+            }
+
             $this->logger->notice("Sector found by id succesfully!", [
                 "id" => $fetchedSector->getId()->getValue(),
                 "name" => $fetchedSector->getName()->getValue(),

@@ -196,6 +196,10 @@ class GameGenreService
                 $id
             );
 
+            if ($fetchedGameGenre === null) {
+                return null;
+            }
+
             $this->logger->notice("GameGenre found by id succesfully!", [
                 "id" => $fetchedGameGenre->getId()->getValue(),
                 "game" => [

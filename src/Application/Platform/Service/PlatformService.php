@@ -143,6 +143,10 @@ class PlatformService
 
             $fetchedPlatform = $this->repository->findById($id);
 
+            if ($fetchedPlatform === null) {
+                return null;
+            }
+
             return $fetchedPlatform;
         } catch (\Throwable $e) {
             $this->logger->error("Error finding platform by id", [

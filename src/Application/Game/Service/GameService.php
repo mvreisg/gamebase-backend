@@ -168,6 +168,10 @@ class GameService
                 $id
             );
 
+            if ($fetchedGame === null) {
+                return null;
+            }
+
             $this->logger->notice("Game found by id succesfully!", [
                 "id" => $fetchedGame->getId()->getValue(),
                 "name" => $fetchedGame->getName()->getValue(),
