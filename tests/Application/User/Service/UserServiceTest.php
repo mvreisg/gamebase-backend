@@ -244,13 +244,15 @@ class UserServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -337,7 +339,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -436,7 +439,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -535,7 +539,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -612,7 +617,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -695,7 +701,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -779,7 +786,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -859,7 +867,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -939,7 +948,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1017,7 +1027,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1095,7 +1106,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1179,7 +1191,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1258,7 +1271,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1339,7 +1353,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1416,7 +1431,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1497,7 +1513,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1592,7 +1609,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1671,7 +1689,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1766,7 +1785,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1845,7 +1865,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,
@@ -1924,7 +1945,8 @@ class UserServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $userService = $this->createUserService(
             $userRepository,

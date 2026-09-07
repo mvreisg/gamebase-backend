@@ -228,13 +228,15 @@ class SectorServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -345,7 +347,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -444,7 +447,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -528,7 +532,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -616,7 +621,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -705,7 +711,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -790,7 +797,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -875,7 +883,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -964,7 +973,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1048,7 +1058,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1134,7 +1145,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1216,7 +1228,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1302,7 +1315,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1397,7 +1411,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1481,7 +1496,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1565,7 +1581,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository

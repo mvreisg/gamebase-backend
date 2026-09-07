@@ -25,6 +25,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\Permis
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -37,12 +38,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class PlatformServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createPlatform(
         Id $id,
         Name $name,
@@ -242,13 +254,15 @@ class PlatformServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -285,6 +299,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfAPlatformGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -346,7 +361,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -385,6 +401,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -446,7 +463,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -470,6 +488,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(DuplicatedNameException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -531,7 +550,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -559,6 +579,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfAValidPlatformGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -620,7 +641,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -649,6 +671,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -710,7 +733,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -735,6 +759,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -796,7 +821,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -821,6 +847,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(PlatformNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -882,7 +909,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -911,6 +939,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfPlatformGetsSetToActive(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -972,7 +1001,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -997,6 +1027,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfPlatformGetsSetToInactive(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1058,7 +1089,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1085,6 +1117,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1146,7 +1179,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1169,6 +1203,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(PlatformNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1230,7 +1265,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1257,6 +1293,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfPlatformGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1318,7 +1355,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1354,6 +1392,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1415,7 +1454,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1440,6 +1480,7 @@ class PlatformServiceTest extends TestCase
 
     public function testIfAllPlatformsGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1501,7 +1542,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository
@@ -1526,6 +1568,7 @@ class PlatformServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $platform = $this->createPlatform(
             Id::create(1),
             Name::create("test"),
@@ -1587,7 +1630,8 @@ class PlatformServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $platformDomainService = $this->createPlatformDomainService(
             $platformRepository

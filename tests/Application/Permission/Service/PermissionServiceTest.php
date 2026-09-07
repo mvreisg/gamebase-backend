@@ -241,13 +241,15 @@ class PermissionServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -349,7 +351,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -453,7 +456,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -542,7 +546,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -635,7 +640,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -729,7 +735,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -819,7 +826,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -909,7 +917,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1003,7 +1012,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1092,7 +1102,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1183,7 +1194,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1270,7 +1282,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1355,7 +1368,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1455,7 +1469,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1544,7 +1559,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1633,7 +1649,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository

@@ -25,6 +25,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\Permis
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -37,12 +38,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class GenreServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createGenre(
         Id $id,
         Name $name,
@@ -242,13 +254,15 @@ class GenreServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -266,12 +280,14 @@ class GenreServiceTest extends TestCase
     private function createGenreService(
         MockObject&GenreRepositoryInterface $genreRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        GenreDomainService $genreDomainService
+        GenreDomainService $genreDomainService,
+        ClockInterface $clock
     ): GenreService {
         $genreService = new GenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
             $genreDomainService,
+            $clock,
             new NullLogger()
         );
         return $genreService;
@@ -285,6 +301,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfAGenreGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -346,7 +363,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -354,7 +372,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $insertedGenre = $genreService->insert(
@@ -385,6 +404,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -446,7 +466,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -454,7 +475,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->insert(
@@ -470,6 +492,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(DuplicatedNameException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -531,7 +554,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -539,7 +563,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->insert(
@@ -559,6 +584,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfAValidGenreGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -620,7 +646,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -628,7 +655,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $wasUpdated = $genreService->update(
@@ -649,6 +677,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -710,7 +739,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -718,7 +748,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->update(
@@ -735,6 +766,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -796,7 +828,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -804,7 +837,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->update(
@@ -821,6 +855,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -882,7 +917,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -890,7 +926,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->update(
@@ -911,6 +948,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfGenreGetsSetToActive(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -972,7 +1010,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -980,7 +1019,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -997,6 +1037,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfGenreGetsSetToInactive(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1058,7 +1099,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1066,7 +1108,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $isActive = false;
@@ -1085,6 +1128,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1146,7 +1190,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1154,7 +1199,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1169,6 +1215,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1230,7 +1277,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1238,7 +1286,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1257,6 +1306,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfGenreGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1318,7 +1368,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1326,7 +1377,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $foundGenre = $genreService->findById(
@@ -1354,6 +1406,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1415,7 +1468,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1423,7 +1477,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->findById(
@@ -1440,6 +1495,7 @@ class GenreServiceTest extends TestCase
 
     public function testIfAllGenresGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1501,7 +1557,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1509,7 +1566,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genres = $genreService->findAll(
@@ -1526,6 +1584,7 @@ class GenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $genre = $this->createGenre(
             Id::create(1),
             Name::create("test"),
@@ -1587,7 +1646,8 @@ class GenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $genreDomainService = $this->createGenreDomainService(
             $genreRepository
@@ -1595,7 +1655,8 @@ class GenreServiceTest extends TestCase
         $genreService = $this->createGenreService(
             $genreRepository,
             $checkAuthorizationUseCase,
-            $genreDomainService
+            $genreDomainService,
+            $clock
         );
 
         $genreService->findAll(
