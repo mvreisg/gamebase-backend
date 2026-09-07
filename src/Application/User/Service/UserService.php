@@ -230,6 +230,10 @@ class UserService
 
             $fetchedUser = $this->repository->findByUsername($username);
 
+            if ($fetchedUser === null) {
+                return null;
+            }
+
             $this->logger->notice("User found by username succesfully!", [
                 "id" => $fetchedUser->getId()->getValue(),
                 "username" => $fetchedUser->getUsername()->getValue(),
