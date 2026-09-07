@@ -1,0 +1,16 @@
+<div class="m-1">  
+    Status:   
+    {% if returnCode == 0 %}
+        <span class="fw-semibold" style="color: lime">OK</span>
+    {% else %}
+        <span class="fw-semibold" style="color: red">Error!</span>
+    {% endif %}
+    <div class="m-1">
+        <span class="fw-semibold">Key:</span>
+        <pre id="key-text" style="background-color: gray;" class="d-inline-flex">{{ output|join("\n") }}</pre>
+    </div>
+    <button id="key-button">Copy to clipboard</button>    
+    <pre>    
+    Jwt returned with status code: {{ returnCode }}
+    </pre>
+</div>

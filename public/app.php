@@ -52,6 +52,7 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDas
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Api\Documentation\HttpApiDocumentationPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\OpenApi\Documentation\HttpOpenApiDocumentationDashboardViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Defuse\HttpDefuseEncryptionPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Jwt\HttpJwtEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Sodium\HttpSodiumEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpUnauthorizedExceptionHandler;
@@ -322,6 +323,9 @@ try {
             });
             $encryptionGroup->group("/sodium", function (RouteCollectorProxy $sodiumGroup) {
                 $sodiumGroup->get("/view", HttpSodiumEncryptionPageController::class);
+            });
+            $encryptionGroup->group("/jwt", function (RouteCollectorProxy $sodiumGroup) {
+                $sodiumGroup->get("/view", HttpJwtEncryptionPageController::class);
             });
         });
         $pagesGroup->group("/dashboard", function (RouteCollectorProxy $dashboardGroup) {

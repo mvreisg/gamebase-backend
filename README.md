@@ -64,6 +64,8 @@ Copy all keys from `.env.example` into your environment file and fill in the val
 
 #### Timezone
 
+Inform it on **IANA Format**, for example:
+
 ```
 TIME_ZONE="America/Sao_Paulo"
 ```
@@ -86,20 +88,28 @@ API_CONSUMERS_ADDRESSES="http://localhost:8082,http://localhost:8083"
 API_CONSUMERS_ADDRESSES_SEPARATOR=","
 ```
 
+The addresses **will be tokenized** based on the **separator character**.
+
 #### Repository (Database)
 
 ```
-REPOSITORY_ROOT_USERNAME="backend_root"
-REPOSITORY_ROOT_PASSWORD="secret"
+REPOSITORY_ROOT_USERNAME="username"
+REPOSITORY_ROOT_PASSWORD="password"
 
 REPOSITORY_HOST="database"
 REPOSITORY_DATABASE="gamebase"
-REPOSITORY_USERNAME="user"
+REPOSITORY_USERNAME="username"
 REPOSITORY_PASSWORD="password"
 REPOSITORY_PORT="3306"
 REPOSITORY_CHARSET="utf8mb4"
 REPOSITORY_EXPOSE_PORT="3307"
 ```
+
+`REPOSITORY_PORT`: internal container port
+
+`REPOSITORY_EXPOSE_PORT`: host port mapped to container
+
+For `Docker`, ensure `REPOSITORY_HOST` has the **same value** as the name of the **database container**. Ex: `REPOSITORY_HOST="mariadb"`
 
 #### Encryption Keys
 
@@ -115,20 +125,14 @@ Then click on:
 
 - `Defuse Encryption`
 - `Sodium Encryption`
+- `Jwt Encryption`
 
 Copy the `Key` values into:
 
 ```
 DEFUSE_PHP_ENCRYPTION_KEY=
 SODIUM_CRYPTO_SECRETBOX_KEY=
-```
-
-⚠️ Keep both values secret (even if unused).
-
-#### JWT Secret
-
-```
-JWT_SECRET="your-secret-key"
+JWT_SECRET=
 ```
 
 #### Redis
@@ -140,6 +144,12 @@ REDIS_PORT=6379
 REDIS_EXPOSE_PORT=6380
 ```
 
+`REDIS_PORT`: internal container port
+
+`REDIS_EXPOSE_PORT`: host port mapped to container
+
+For `Docker`, ensure `REDIS_HOST` has the **same value** as the name of the **redis container**. Ex: `REDIS_HOST="redis"`
+
 ### 3. Create the Database
 
 Access
@@ -148,9 +158,9 @@ Access
 http://localhost:{$NGINX_EXPOSE_PORT}/pages/login
 ```
 
-Log-in with the provided `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD`
+To make **first login**, use `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD` provided on the `.env.enviroment.machine.example` file.
 
-Steps:
+After that, do the following steps:
 
 1. Click on **PDO Database**
 2. Verify if the database was created. If not, click on **Create**.
