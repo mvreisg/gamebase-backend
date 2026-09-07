@@ -16,7 +16,7 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
@@ -166,7 +166,7 @@ class UserServiceTest extends TestCase
         $encrypter
             ->method("decrypt")
             ->willThrowException(
-                new EncryptionInterfaceException(
+                new EncryptionException(
                     "decryption error"
                 )
             );
@@ -180,7 +180,7 @@ class UserServiceTest extends TestCase
         $encrypter
             ->method("encrypt")
             ->willThrowException(
-                new EncryptionInterfaceException(
+                new EncryptionException(
                     "ecryption error"
                 )
             );
@@ -562,7 +562,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserInsertionFailsBecauseOfEncryptionError(): void
     {
-        $this->expectException(EncryptionInterfaceException::class);
+        $this->expectException(EncryptionException::class);
 
         $clock = $this->createClock("UTC");
         $user = $this->createUser(
@@ -972,7 +972,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserUpdateFailsBecauseOfDecryptionError(): void
     {
-        $this->expectException(EncryptionInterfaceException::class);
+        $this->expectException(EncryptionException::class);
 
         $clock = $this->createClock("UTC");
         $user = $this->createUser(
@@ -1051,7 +1051,7 @@ class UserServiceTest extends TestCase
 
     public function testIfUserUpdateFailsBecauseOfEncryptionError(): void
     {
-        $this->expectException(EncryptionInterfaceException::class);
+        $this->expectException(EncryptionException::class);
 
         $clock = $this->createClock("UTC");
         $user = $this->createUser(

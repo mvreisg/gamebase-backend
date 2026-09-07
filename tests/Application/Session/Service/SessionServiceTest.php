@@ -9,12 +9,12 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;
-use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\InvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\UnexistantUserException;
+use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginInputDto;
 use Mvreisg\GamebaseBackend\Application\Session\Service\SessionService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
@@ -135,7 +135,7 @@ class SessionServiceTest extends TestCase
         $encrypter
             ->method("decrypt")
             ->willThrowException(
-                new EncryptionInterfaceException(
+                new EncryptionException(
                     "decrypt error"
                 )
             );
@@ -230,12 +230,12 @@ class SessionServiceTest extends TestCase
         return $service;
     }
 
-    private function createSessionLoginParameters(
+    private function createSessionServiceLoginInputDto(
         Username $username,
         Password $password,
         bool $oneWeekLogin
-    ): SessionLoginParameters {
-        return new SessionLoginParameters(
+    ): SessionServiceLoginInputDto {
+        return new SessionServiceLoginInputDto(
             $username,
             $password,
             $oneWeekLogin
@@ -296,34 +296,34 @@ class SessionServiceTest extends TestCase
             $tokenCache
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters(
+        $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
             $user->getPassword(),
             false
         );
 
         $result = $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
 
         $this->assertEquals(
             $encodedToken,
-            $result->getToken()
+            $result->token
         );
 
         $this->assertEquals(
             $user->getId()->getValue(),
-            $result->getData()->getUserId()->getValue()
+            $result->data->getUserId()->getValue()
         );
 
         $this->assertEquals(
             $user->getUsername()->getValue(),
-            $result->getData()->getUsername()->getValue()
+            $result->data->getUsername()->getValue()
         );
 
         $this->assertCount(
             0,
-            $result->getData()->getUserSectorPermissionCollection()->fetchAll()
+            $result->data->getUserSectorPermissionCollection()->fetchAll()
         );
     }
 
@@ -375,58 +375,58 @@ class SessionServiceTest extends TestCase
             $tokenCache
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters(
+        $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
             $user->getPassword(),
             false
         );
 
         $result = $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
 
         $this->assertEquals(
             $encodedToken,
-            $result->getToken()
+            $result->token
         );
 
         $this->assertEquals(
             $user->getId()->getValue(),
-            $result->getData()->getUserId()->getValue()
+            $result->data->getUserId()->getValue()
         );
 
         $this->assertEquals(
             $user->getUsername()->getValue(),
-            $result->getData()->getUsername()->getValue()
+            $result->data->getUsername()->getValue()
         );
 
         $this->assertCount(
             0,
-            $result->getData()->getUserSectorPermissionCollection()->fetchAll()
+            $result->data->getUserSectorPermissionCollection()->fetchAll()
         );
 
         $result = $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
 
         $this->assertEquals(
             $encodedToken,
-            $result->getToken()
+            $result->token
         );
 
         $this->assertEquals(
             $user->getId()->getValue(),
-            $result->getData()->getUserId()->getValue()
+            $result->data->getUserId()->getValue()
         );
 
         $this->assertEquals(
             $user->getUsername()->getValue(),
-            $result->getData()->getUsername()->getValue()
+            $result->data->getUsername()->getValue()
         );
 
         $this->assertCount(
             0,
-            $result->getData()->getUserSectorPermissionCollection()->fetchAll()
+            $result->data->getUserSectorPermissionCollection()->fetchAll()
         );
     }
 
@@ -465,20 +465,20 @@ class SessionServiceTest extends TestCase
             $tokenCache
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters(
+        $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
             $user->getPassword(),
             false
         );
 
         $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
     }
 
     public function testIfLoginFailsByDecryptionException(): void
     {
-        $this->expectException(EncryptionInterfaceException::class);
+        $this->expectException(EncryptionException::class);
 
         $user = $this->createUser(
             Id::create(1),
@@ -513,14 +513,14 @@ class SessionServiceTest extends TestCase
             $tokenCache
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters(
+        $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
             $user->getPassword(),
             false
         );
 
         $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
     }
 
@@ -561,14 +561,14 @@ class SessionServiceTest extends TestCase
             $tokenCache
         );
 
-        $sessionLoginParameters = $this->createSessionLoginParameters(
+        $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
             DecodedPassword::create("error"),
             false
         );
 
         $sessionService->login(
-            $sessionLoginParameters
+            $SessionServiceLoginInputDto
         );
     }
 

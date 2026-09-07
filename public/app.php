@@ -4,10 +4,8 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenExceptio
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\UnexistantTokenException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\Exception\AuthenticationTokenCacheException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception\AuthenticationTokenProviderException;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Domain\Game\Exception\GameNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Exception\GameGenreNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Exception\GamePlatformNotFoundException;
@@ -18,21 +16,16 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\Exception\EmptyPermiss
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\Exception\InvalidPermissionValueValueException;
 use Mvreisg\GamebaseBackend\Domain\Platform\Exception\PlatformNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\Sector\Exception\DuplicatedSectorValueException;
-use Mvreisg\GamebaseBackend\Domain\Sector\Exception\NullPermissionValueException;
-use Mvreisg\GamebaseBackend\Domain\Sector\Exception\NullSectorValueException;
 use Mvreisg\GamebaseBackend\Domain\Sector\Exception\SectorNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\Exception\EmptySectorValueValueException;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\Exception\InvalidSectorValueValueException;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\InvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
-use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIdException;
-use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullIsActiveException;
-use Mvreisg\GamebaseBackend\Domain\Shared\Exception\NullNameException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Exception\InvalidIdValueException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Exception\EmptyNameValueException;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Exception\InvalidNameValueException;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\DuplicatedUsernameException;
-use Mvreisg\GamebaseBackend\Domain\User\Exception\NullPasswordException;
-use Mvreisg\GamebaseBackend\Domain\User\Exception\NullUsernameException;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\UserNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Exception\EmptyPasswordValueException;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Exception\InvalidPasswordValueException;
@@ -123,7 +116,7 @@ try {
             HttpUnauthorizedExceptionHandler::class
         )
         ->setErrorHandler(
-            EncryptionInterfaceException::class,
+            EncryptionException::class,
             HttpInternalServerErrorExceptionHandler::class
         )
         ->setErrorHandler(
@@ -155,10 +148,6 @@ try {
             HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
-            NullPermissionValueException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
             PermissionNotFoundException::class,
             HttpNotFoundExceptionHandler::class
         )
@@ -176,10 +165,6 @@ try {
         )
         ->setErrorHandler(
             DuplicatedSectorValueException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
-            NullSectorValueException::class,
             HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
@@ -203,18 +188,6 @@ try {
             HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(
-            NullIdException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
-            NullIsActiveException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
-            NullNameException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
             EmptyPasswordValueException::class,
             HttpBadRequestExceptionHandler::class
         )
@@ -232,14 +205,6 @@ try {
         )
         ->setErrorHandler(
             DuplicatedUsernameException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
-            NullPasswordException::class,
-            HttpBadRequestExceptionHandler::class
-        )
-        ->setErrorHandler(
-            NullUsernameException::class,
             HttpBadRequestExceptionHandler::class
         )
         ->setErrorHandler(

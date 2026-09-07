@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Application\Session\Exception;
+namespace Mvreisg\GamebaseBackend\Domain\Session\Exception;
 
 class InvalidCredentialsException extends \Exception
 {

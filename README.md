@@ -14,6 +14,7 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Environment variables with Dotenv
 - Logging system with Monolog
 - OpenAPI Documentation
+- Internal Dashboard
 
 ## Tech Stack
 
@@ -30,6 +31,7 @@ RESTful backend for managing a game database, built with modern PHP practices an
 - Dotenv
 - Redis
 - MariaDB
+- Twig
 
 ## Project Status
 
