@@ -11,7 +11,7 @@ class PermissionNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The permission with id '{$id->getValue()}' was not found."
+            "The permission with id '{$id->getValue()}' was not found"
         );
     }
 }

@@ -8,6 +8,6 @@ class EmptyPasswordValueException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct("Empty password value.");
+        parent::__construct("Empty password value");
     }
 }

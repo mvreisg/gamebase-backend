@@ -12,7 +12,7 @@ class DuplicatedSectorValueException extends \Exception
         SectorValue $value
     ) {
         parent::__construct(
-            "The sector value '{$value->getValue()->value}' is duplicated."
+            "The sector value '{$value->getValue()->value}' is duplicated"
         );
     }
 }

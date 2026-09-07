@@ -17,7 +17,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Platform",
-    description: "Endpoints related to platform management"
+    description: "Endpoints related to Platform management"
 )]
 class HttpPlatformController
 {
@@ -31,8 +31,8 @@ class HttpPlatformController
     #[OA\Post(
         path: "/platform",
         summary: "Inserts a new Platform",
-        description: "Receives the user credentials and if valid, inserts a Platform and returns a copy of the inserted Platform.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a Platform and returns a copy",
+        tags: ["Platform"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -61,7 +61,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the Platform is inserted on the repository",
+        description: "Response if authenticated and the Platform exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -74,7 +74,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -86,7 +86,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Platform does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -108,7 +108,7 @@ class HttpPlatformController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Platform not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -123,34 +123,11 @@ class HttpPlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -204,12 +181,12 @@ class HttpPlatformController
     #[OA\Put(
         path: "/platform/{id}",
         summary: "Update a Platform",
-        description: "Receives the user credentials and if valid, tries to update a Platform and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a Platform and returns the status",
+        tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be updated.",
+                description: "The id of the Platform to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -244,7 +221,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Platform is inserted on the repository",
+        description: "Response if authenticated and the Platform is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -256,7 +233,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -268,7 +245,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Platform does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -290,7 +267,7 @@ class HttpPlatformController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Platform not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -305,34 +282,11 @@ class HttpPlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -386,13 +340,13 @@ class HttpPlatformController
 
     #[OA\Patch(
         path: "/platform/{id}",
-        summary: "Activates/Deactivates a Platform by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a Platform and returns the activation status.",
-        tags: ["Activate", "Deactivate"],
+        summary: "Set activation status of a Platform by its id",
+        description: "If authenticated, sets the activation status and returns the status",
+        tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be activated/deactivated.",
+                description: "The id of the Platform to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -422,7 +376,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Platform is updated on the repository",
+        description: "Response if authenticated and the Platform is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -434,7 +388,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -446,7 +400,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a body value is missing or if the Platform does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -468,7 +422,7 @@ class HttpPlatformController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Platform not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -483,34 +437,11 @@ class HttpPlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -563,13 +494,13 @@ class HttpPlatformController
 
     #[OA\Get(
         path: "/platform/{id}",
-        summary: "Returns a Platform by its ID",
-        description: "Receives the user credentials and if valid, searches for the Platform with the ID, and if the Platform exists, returns it.",
-        tags: ["Get"],
+        summary: "Returns a Platform by its id",
+        description: "If authenticated, searches for the Platform with the id, and if exists, returns it",
+        tags: ["Platform"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Platform to be searched.",
+                description: "The id of the Platform to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -588,7 +519,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Platform with the informed ID exists",
+        description: "Response if authenticated and the Platform with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -601,7 +532,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -613,7 +544,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the Platform does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -628,34 +559,11 @@ class HttpPlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -712,8 +620,8 @@ class HttpPlatformController
     #[OA\Get(
         path: "/platform",
         summary: "Returns all the Platforms on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Platforms.",
-        tags: ["Get", "All"],
+        description: "If authenticated, returns all the existant Platforms",
+        tags: ["Platform"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -726,7 +634,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Platform with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -745,7 +653,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -757,7 +665,7 @@ class HttpPlatformController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no Platforms were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -772,34 +680,11 @@ class HttpPlatformController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

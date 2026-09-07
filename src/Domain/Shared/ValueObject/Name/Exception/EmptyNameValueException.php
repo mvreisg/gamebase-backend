@@ -8,6 +8,6 @@ class EmptyNameValueException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct("Empty name value.");
+        parent::__construct("Empty name value");
     }
 }

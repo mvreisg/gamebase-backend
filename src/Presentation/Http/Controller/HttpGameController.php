@@ -17,7 +17,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Game",
-    description: "Endpoints related to game management"
+    description: "Endpoints related to Game management"
 )]
 class HttpGameController
 {
@@ -31,8 +31,8 @@ class HttpGameController
     #[OA\Post(
         path: "/game",
         summary: "Inserts a new Game",
-        description: "Receives the user credentials and if valid, inserts a Game and returns a copy of the inserted Game.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a Game and returns a copy",
+        tags: ["Game"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -61,7 +61,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the Game is inserted on the repository",
+        description: "Response if authenticated and the Game exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -74,7 +74,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -86,7 +86,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Game does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -108,7 +108,7 @@ class HttpGameController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Game not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -123,34 +123,11 @@ class HttpGameController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -204,12 +181,12 @@ class HttpGameController
     #[OA\Put(
         path: "/game/{id}",
         summary: "Update a Game",
-        description: "Receives the user credentials and if valid, tries to update a Game and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a Game and returns the status",
+        tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be updated.",
+                description: "The id of the Game to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -244,7 +221,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Game is inserted on the repository",
+        description: "Response if authenticated and the Game is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -256,7 +233,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -268,7 +245,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Game does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -290,7 +267,7 @@ class HttpGameController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Game not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -305,34 +282,11 @@ class HttpGameController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -386,13 +340,13 @@ class HttpGameController
 
     #[OA\Patch(
         path: "/game/{id}",
-        summary: "Activates/Deactivates a Game by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a Game and returns the activation status.",
-        tags: ["Activate", "Deactivate"],
+        summary: "Set activation status of a Game by its id",
+        description: "If authenticated, sets the activation status and returns the status",
+        tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be activated/deactivated.",
+                description: "The id of the Game to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -422,7 +376,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Game is updated on the repository",
+        description: "Response if authenticated and the Game is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -434,7 +388,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -446,7 +400,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Game does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -468,7 +422,7 @@ class HttpGameController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Game not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -483,34 +437,11 @@ class HttpGameController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -563,13 +494,13 @@ class HttpGameController
 
     #[OA\Get(
         path: "/game/{id}",
-        summary: "Returns a Game by its ID",
-        description: "Receives the user credentials and if valid, searches for the Game with the ID, and if the Game exists, returns it.",
-        tags: ["Get"],
+        summary: "Returns a Game by its id",
+        description: "If authenticated, searches for the Game with the id, and if exists, returns it",
+        tags: ["Game"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Game to be searched.",
+                description: "The id of the Game to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -588,7 +519,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Game with the informed ID exists",
+        description: "Response if authenticated and the Game with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -601,7 +532,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -613,7 +544,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the Game does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -628,34 +559,11 @@ class HttpGameController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -712,8 +620,8 @@ class HttpGameController
     #[OA\Get(
         path: "/game",
         summary: "Returns all the Games on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Games.",
-        tags: ["Get", "All"],
+        description: "If authenticated, returns all the existant Games",
+        tags: ["Game"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -726,7 +634,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Game with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -745,7 +653,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -757,7 +665,7 @@ class HttpGameController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no Games were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -772,34 +680,11 @@ class HttpGameController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

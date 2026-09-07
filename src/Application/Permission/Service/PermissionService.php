@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositor
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\Dto\PermissionRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
 
@@ -23,17 +24,20 @@ class PermissionService
     private PermissionRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private PermissionDomainService $permissionDomainService;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
         PermissionRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         PermissionDomainService $permissionDomainService,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->permissionDomainService = $permissionDomainService;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -62,11 +66,18 @@ class PermissionService
                 )
             );
 
+            $this->logger->notice("Permission inserted succesfully!", [
+                "id" => $insertedPermission->getId()->getValue(),
+                "name" => $insertedPermission->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting permission", [
-                "error" => $e->getMessage(),
-                "dto" => $dto,
+            $this->logger->error("Error inserting Permission!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -103,11 +114,17 @@ class PermissionService
                 )
             );
 
+            $this->logger->notice("Permission data updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating permission", [
-                "error" => $e->getMessage(),
-                "dto" => $dto,
+            $this->logger->error("Error updating Permission!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -131,12 +148,18 @@ class PermissionService
                 $isActive
             );
 
+            $this->logger->notice("Permission isActive updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting permission active status", [
-                "error" => $e->getMessage(),
-                "permissionId" => $id,
+            $this->logger->error("Error setting Permission active status!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
                 "isActive" => $isActive,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -153,11 +176,22 @@ class PermissionService
 
             $fetchedPermission = $this->repository->findById($id);
 
+            if ($fetchedPermission === null) {
+                return null;
+            }
+
+            $this->logger->notice("Permission found by id succesfully!", [
+                 "id" => $fetchedPermission->getId()->getValue(),
+                 "name" => $fetchedPermission->getName()->getValue(),
+                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+             ]);
+
             return $fetchedPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding permission by ID", [
-                "error" => $e->getMessage(),
-                "permissionId" => $id,
+            $this->logger->error("Error finding Permission by id!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -172,10 +206,18 @@ class PermissionService
                 PermissionType::List
             );
 
-            return $this->repository->findAll();
+            $permissions = $this->repository->findAll();
+
+            $this->logger->notice("All Permissions found succesfully!", [
+                "count" => $permissions->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $permissions;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all permissions", [
-                "error" => $e->getMessage(),
+            $this->logger->error("Error finding all Permissions!", [
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }

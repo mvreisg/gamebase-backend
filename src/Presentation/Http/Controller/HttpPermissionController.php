@@ -18,7 +18,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Permission",
-    description: "Endpoints related to permission management"
+    description: "Endpoints related to Permission management"
 )]
 class HttpPermissionController
 {
@@ -33,8 +33,8 @@ class HttpPermissionController
     #[OA\Post(
         path: "/permission",
         summary: "Inserts a new Permission",
-        description: "Receives the user credentials and if valid, inserts a Permission and returns a copy of the inserted Permission.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a Permission and returns a copy",
+        tags: ["Permission"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -51,7 +51,7 @@ class HttpPermissionController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Create"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -63,7 +63,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the Permission is inserted on the repository",
+        description: "Response if authenticated and the Permission exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -76,7 +76,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -88,7 +88,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Permission does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -110,7 +110,7 @@ class HttpPermissionController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Permission not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -125,34 +125,11 @@ class HttpPermissionController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -209,12 +186,12 @@ class HttpPermissionController
     #[OA\Put(
         path: "/permission/{id}",
         summary: "Update a Permission",
-        description: "Receives the user credentials and if valid, tries to update a Permission and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a Permission and returns the status",
+        tags: ["Permission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Permission to be updated.",
+                description: "The id of the Permission to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -237,7 +214,7 @@ class HttpPermissionController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Create"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -249,7 +226,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Permission is inserted on the repository",
+        description: "Response if authenticated and the Permission is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -261,7 +238,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -273,7 +250,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Permission does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -295,7 +272,7 @@ class HttpPermissionController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Permission not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -310,34 +287,11 @@ class HttpPermissionController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -394,13 +348,13 @@ class HttpPermissionController
 
     #[OA\Patch(
         path: "/permission/{id}",
-        summary: "Activates/Deactivates a Permission by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a Permission and returns the activation status.",
-        tags: ["Activate", "Deactivate"],
+        summary: "Set activation status of a Permission by its id",
+        description: "If authenticated, sets the activation status and returns the status",
+        tags: ["Permission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Permission to be activated/deactivated.",
+                description: "The id of the Permission to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -430,7 +384,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Permission is updated on the repository",
+        description: "Response if authenticated and the Permission is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -442,7 +396,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -454,7 +408,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the Permission does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -476,7 +430,7 @@ class HttpPermissionController
                     ]
                 ),
                 new OA\Schema(
-                    title: "User not found",
+                    title: "Permission not found",
                     properties: [
                         new OA\Property(
                             property: "message",
@@ -491,34 +445,11 @@ class HttpPermissionController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -572,13 +503,13 @@ class HttpPermissionController
 
     #[OA\Get(
         path: "/permission/{id}",
-        summary: "Returns a Permission by its ID",
-        description: "Receives the user credentials and if valid, searches for the Permission with the ID, and if the Permission exists, returns it.",
-        tags: ["Get"],
+        summary: "Returns a Permission by its id",
+        description: "If authenticated, searches for the Permission with the id, and if exists, returns it",
+        tags: ["Permission"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the Permission to be searched.",
+                description: "The id of the Permission to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -597,7 +528,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Permission with the informed ID exists",
+        description: "Response if authenticated and the Permission with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -610,7 +541,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -622,7 +553,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the Permission does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -637,34 +568,11 @@ class HttpPermissionController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -722,9 +630,9 @@ class HttpPermissionController
 
     #[OA\Get(
         path: "/permission",
-        summary: "Returns all the Games on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Games.",
-        tags: ["Get", "All"],
+        summary: "Returns all the Permissions on the repository",
+        description: "If authenticated, returns all the existant Permissions",
+        tags: ["Permission"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -737,7 +645,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the Permission with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -756,7 +664,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -768,7 +676,7 @@ class HttpPermissionController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no Permissions were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -783,34 +691,11 @@ class HttpPermissionController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

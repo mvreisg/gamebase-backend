@@ -24,6 +24,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\Permis
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -36,12 +37,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class PermissionServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createPermission(
         Id $id,
         Name $name,
@@ -229,13 +241,15 @@ class PermissionServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -253,12 +267,14 @@ class PermissionServiceTest extends TestCase
     private function createPermissionService(
         MockObject&PermissionRepositoryInterface $permissionRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
+        ClockInterface $clock,
         PermissionDomainService $permissionDomainService
     ): PermissionService {
         $permissionService = new PermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
             $permissionDomainService,
+            $clock,
             new NullLogger()
         );
         return $permissionService;
@@ -272,6 +288,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfAPermissionGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("Create"),
@@ -334,7 +351,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -342,6 +360,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -374,6 +393,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -436,7 +456,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -444,6 +465,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -461,6 +483,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(DuplicatedNameException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -523,7 +546,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -531,6 +555,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -552,6 +577,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfAValidPermissionGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -614,7 +640,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -622,6 +649,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -644,6 +672,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -706,7 +735,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -714,6 +744,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -732,6 +763,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -794,7 +826,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -802,6 +835,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -820,6 +854,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(PermissionNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -882,7 +917,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -890,6 +926,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -912,6 +949,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfPermissionGetsSetToActive(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -974,7 +1012,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -982,6 +1021,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -999,6 +1039,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfPermissionGetsSetToInactive(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1061,7 +1102,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1069,6 +1111,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1088,6 +1131,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1150,7 +1194,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1158,6 +1203,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1173,6 +1219,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(PermissionNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1235,7 +1282,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1243,6 +1291,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1262,6 +1311,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfPermissionGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("List"),
@@ -1318,7 +1368,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1326,6 +1377,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1354,6 +1406,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1416,7 +1469,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1424,6 +1478,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1441,6 +1496,7 @@ class PermissionServiceTest extends TestCase
 
     public function testIfAllPermissionsGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1503,7 +1559,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1511,6 +1568,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 
@@ -1528,6 +1586,7 @@ class PermissionServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $permission = $this->createPermission(
             Id::create(1),
             Name::create("test"),
@@ -1590,7 +1649,8 @@ class PermissionServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $permissionDomainService = $this->createPermissionDomainService(
             $permissionRepository
@@ -1598,6 +1658,7 @@ class PermissionServiceTest extends TestCase
         $permissionService = $this->createPermissionService(
             $permissionRepository,
             $checkAuthorizationUseCase,
+            $clock,
             $permissionDomainService
         );
 

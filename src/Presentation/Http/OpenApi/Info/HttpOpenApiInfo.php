@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(
     version: "1.0.0",
     title: "Gamebase-Backend API",
-    description: "API documentation for the Gamebase-Backend project."
+    description: "API documentation for the Gamebase-Backend project"
 )]
 #[OA\SecurityScheme(
     securityScheme: "bearerAuth",

@@ -33,7 +33,7 @@ class PredisAuthenticationTokenCache implements AuthenticationTokenCacheInterfac
         );
         if ($value === null) {
             throw new AuthenticationTokenCacheException(
-                "Unexistant value."
+                "Unexistant value"
             );
         }
         return $value;

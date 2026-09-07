@@ -8,6 +8,6 @@ class NullIsActiveException extends \Exception
 {
     public function __construct(string $className)
     {
-        parent::__construct("The isActive of the {$className} is null.");
+        parent::__construct("The isActive of the {$className} is null");
     }
 }

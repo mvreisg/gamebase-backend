@@ -17,6 +17,7 @@ use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\Dto\GameGenreRepositoryI
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Service\GameGenreDomainService;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
 
@@ -27,6 +28,7 @@ class GameGenreService
     private GenreDomainService $genreDomainService;
     private GameGenreDomainService $gameGenreDomainService;
     private GameGenreRepositoryInterface $repository;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -35,6 +37,7 @@ class GameGenreService
         GenreDomainService $genreDomainService,
         GameGenreDomainService $gameGenreDomainService,
         GameGenreRepositoryInterface $repository,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
@@ -42,6 +45,7 @@ class GameGenreService
         $this->genreDomainService = $genreDomainService;
         $this->gameGenreDomainService = $gameGenreDomainService;
         $this->repository = $repository;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -69,11 +73,28 @@ class GameGenreService
                 )
             );
 
+            $this->logger->notice("GameGenre inserted succesfully!", [
+                "id" => $insertedGameGenre->getId()->getValue(),
+                "game" => [
+                    "id" => $insertedGameGenre->getGame()->getId()->getValue()
+                ],
+                "genre" => [
+                    "id" => $insertedGameGenre->getGenre()->getId()->getValue()
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedGameGenre;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting GameGenre", [
-                "exception" => $e,
-                "dto" => $dto,
+            $this->logger->error("Error inserting GameGenre!", [
+                "exception" => $e->getMessage(),
+                "game" => [
+                    "id" => $dto->gameId->getValue()
+                ],
+                "genre" => [
+                    "id" => $dto->genreId->getValue()
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -108,11 +129,23 @@ class GameGenreService
                 )
             );
 
+            $this->logger->notice("GameGenre data updated succesfully!", [
+                "id" => $dto->id->getValue(),
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating GameGenre", [
-                "exception" => $e,
-                "dto" => $dto,
+            $this->logger->error("Error updating GameGenre!", [
+                "exception" => $e->getMessage(),
+                "game" => [
+                    "id" => $dto->gameId->getValue()
+                ],
+                "genre" => [
+                    "id" => $dto->genreId->getValue()
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -133,11 +166,18 @@ class GameGenreService
 
             $wasDeleted = $this->repository->delete($id);
 
+            $this->logger->notice("GameGenre deleted succesfully!", [
+                "id" => $id->getValue(),
+                "wasDeleted" => $wasDeleted,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasDeleted;
         } catch (\Throwable $e) {
-            $this->logger->error("Error deleting GameGenre", [
-                "exception" => $e,
-                "gameGenreId" => $id,
+            $this->logger->error("Error deleting GameGenre!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -156,11 +196,27 @@ class GameGenreService
                 $id
             );
 
+            if ($fetchedGameGenre === null) {
+                return null;
+            }
+
+            $this->logger->notice("GameGenre found by id succesfully!", [
+                "id" => $fetchedGameGenre->getId()->getValue(),
+                "game" => [
+                    "id" => $fetchedGameGenre->getGame()->getId()->getValue(),
+                ],
+                "genre" => [
+                    "id" => $fetchedGameGenre->getGenre()->getId()->getValue(),
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $fetchedGameGenre;
         } catch (\Throwable $e) {
-            $this->logger->error("Error fetching GameGenre by ID", [
-                "exception" => $e,
-                "gameGenreId" => $id,
+            $this->logger->error("Error finding GameGenre by id!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -175,10 +231,18 @@ class GameGenreService
                 PermissionType::List
             );
 
-            return $this->repository->findAll();
+            $gameGenres = $this->repository->findAll();
+
+            $this->logger->notice("All GameGenres found succesfully!", [
+                "count" => $gameGenres->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $gameGenres;
         } catch (\Throwable $e) {
             $this->logger->error("Error fetching all GameGenres", [
-                "exception" => $e,
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }

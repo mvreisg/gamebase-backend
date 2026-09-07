@@ -213,13 +213,15 @@ class CheckAuthorizationUseCaseTest extends TestCase
         UserDomainService $userDomainService,
         AuthorizationDomainService $authorizationDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $repository,
-        AuthenticationService $authenticationService
+        AuthenticationService $authenticationService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         return new CheckAuthorizationUseCase(
             $userDomainService,
             $repository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
     }
@@ -303,7 +305,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
             $userDomainService,
             $authorizationDomainService,
             $userSectorPermissionRepository,
-            $authenticationService
+            $authenticationService,
+            $clock
         );
 
         $checkAuthorizationUseCase->execute(
@@ -384,7 +387,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
             $userDomainService,
             $authorizationDomainService,
             $userSectorPermissionRepository,
-            $authenticationService
+            $authenticationService,
+            $clock
         );
 
         $checkAuthorizationUseCase->execute(
@@ -467,7 +471,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
             $userDomainService,
             $authorizationDomainService,
             $userSectorPermissionRepository,
-            $authenticationService
+            $authenticationService,
+            $clock
         );
 
         $checkAuthorizationUseCase->execute(
@@ -550,7 +555,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
             $userDomainService,
             $authorizationDomainService,
             $userSectorPermissionRepository,
-            $authenticationService
+            $authenticationService,
+            $clock
         );
 
         $checkAuthorizationUseCase->execute(

@@ -10,4 +10,6 @@ ENVIRONMENT=development \
 MACHINE=docker \
 docker compose \
     --env-file ".env.development.docker" \
-    down -v
+    -f "./configurations/docker/compose.yml" \
+    -f "./configurations/docker/compose.development.yml" \
+    up --build

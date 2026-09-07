@@ -11,7 +11,7 @@ class DuplicatedUsernameException extends \Exception
     public function __construct(Username $username)
     {
         parent::__construct(
-            "The username '{$username->getValue()}' is already in use."
+            "The username '{$username->getValue()}' is already in use"
         );
     }
 }

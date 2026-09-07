@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "Authentication",
-    description: "Endpoints related to authentication"
+    description: "Endpoints related to Authentication management"
 )]
 class HttpAuthenticationController
 {
@@ -26,9 +26,9 @@ class HttpAuthenticationController
 
     #[OA\Get(
         path: "/authentication/validate",
-        summary: "Validate",
-        description: "Validates the provided authentication token and returns the associated authentication data if valid.",
-        tags: ["Validate"]
+        summary: "Validate authentication token",
+        description: "Validates the authentication token and returns its associated data",
+        tags: ["Authentication"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -59,7 +59,7 @@ class HttpAuthenticationController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -97,34 +97,11 @@ class HttpAuthenticationController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

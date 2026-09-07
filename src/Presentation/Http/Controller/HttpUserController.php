@@ -19,7 +19,7 @@ use OpenApi\Attributes as OA;
 
 #[OA\Tag(
     name: "User",
-    description: "Endpoints related to sector management"
+    description: "Endpoints related to User management"
 )]
 class HttpUserController
 {
@@ -33,8 +33,8 @@ class HttpUserController
     #[OA\Post(
         path: "/user",
         summary: "Inserts a new User",
-        description: "Receives the user credentials and if valid, inserts a User and returns a copy of the inserted User.",
-        tags: ["Insert"]
+        description: "If authenticated, inserts a User and returns a copy",
+        tags: ["User"]
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -51,7 +51,7 @@ class HttpUserController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Marcus"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -63,7 +63,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 201,
-        description: "Response if credentials is valid and the User is inserted on the repository",
+        description: "Response if authenticated and the User exists on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -76,7 +76,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -88,7 +88,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the User does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -102,7 +102,7 @@ class HttpUserController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["name", "is_active", "value"],
+                            example: ["name", "is_active"],
                             items: new OA\Items(
                                 type: "string",
                             )
@@ -125,34 +125,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -208,12 +185,12 @@ class HttpUserController
     #[OA\Put(
         path: "/user/{id}",
         summary: "Update a User",
-        description: "Receives the user credentials and if valid, tries to update a User and returns the update status.",
-        tags: ["Update"],
+        description: "If authenticated, update a User and returns the status",
+        tags: ["User"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the User to be updated.",
+                description: "The id of the User to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -236,7 +213,7 @@ class HttpUserController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "Palworld"
+                    example: "Marcus"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -248,7 +225,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User is inserted on the repository",
+        description: "Response if authenticated and the User is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -260,7 +237,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -272,7 +249,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the User does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -286,7 +263,7 @@ class HttpUserController
                         new OA\Property(
                             property: "body",
                             type: "array",
-                            example: ["name", "is_active", "value"],
+                            example: ["name", "is_active"],
                             items: new OA\Items(
                                 type: "string",
                             )
@@ -309,34 +286,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -394,13 +348,13 @@ class HttpUserController
 
     #[OA\Patch(
         path: "/user/{id}",
-        summary: "Activates/Deactivates a User by its ID",
-        description: "Receives the user credentials and if valid, tries to activate/deactivate a User and returns the activation status.",
-        tags: ["Activate", "Deactivate"],
+        summary: "Set activation status of a User by its id",
+        description: "If authenticated, sets the activation status and returns the status",
+        tags: ["User"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the User to be activated/deactivated.",
+                description: "The id of the User to be updated",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -430,7 +384,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User is updated on the repository",
+        description: "Response if authenticated and the User is updated on the repository",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -442,7 +396,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -454,7 +408,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if a value is missing or if the User does not exist",
         content: new OA\JsonContent(
             oneOf: [
                 new OA\Schema(
@@ -491,34 +445,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -572,13 +503,13 @@ class HttpUserController
 
     #[OA\Get(
         path: "/user/{id}",
-        summary: "Returns a User by its ID",
-        description: "Receives the user credentials and if valid, searches for the User with the ID, and if the User exists, returns it.",
-        tags: ["Get"],
+        summary: "Returns a User by its id",
+        description: "If authenticated, searches for the User with the id, and if exists, returns it",
+        tags: ["User"],
         parameters: [
             new OA\PathParameter(
                 name: "id",
-                description: "The id of the User to be searched.",
+                description: "The id of the User to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -597,7 +528,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User with the informed ID exists",
+        description: "Response if authenticated and the User with the informed id exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -610,7 +541,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -622,7 +553,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the User does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -637,34 +568,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -723,12 +631,12 @@ class HttpUserController
     #[OA\Get(
         path: "/user/{username}",
         summary: "Returns a User by its Username",
-        description: "Receives the user credentials and if valid, searches for the User with the Username, and if the User exists, returns it.",
-        tags: ["Get"],
+        description: "If authenticated, searches for the User with the Username, and if exists, returns it",
+        tags: ["User"],
         parameters: [
             new OA\PathParameter(
                 name: "username",
-                description: "The Username of the User to be searched.",
+                description: "The Username of the User to be searched",
                 required: true,
                 schema: new OA\Schema(
                     type: "integer"
@@ -747,7 +655,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User with the informed ID exists",
+        description: "Response if authenticated and the User with the informed username exists",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -760,7 +668,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -772,7 +680,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if the User does not exist",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -787,34 +695,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]
@@ -872,9 +757,9 @@ class HttpUserController
 
     #[OA\Get(
         path: "/user",
-        summary: "Returns all the Games on the repository",
-        description: "Receives the user credentials and if valid, returns all the existant Games.",
-        tags: ["Get", "All"],
+        summary: "Returns all the Users on the repository",
+        description: "If authenticated, returns all the existant Users",
+        tags: ["User"],
     )]
     #[OA\Parameter(
         name: "Authorization",
@@ -887,7 +772,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 200,
-        description: "Response if credentials is valid and the User with the informed ID exists",
+        description: "Response if authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -906,7 +791,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 401,
-        description: "Response if user does not have credentials",
+        description: "Response if not authenticated",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -918,7 +803,7 @@ class HttpUserController
     )]
     #[OA\Response(
         response: 404,
-        description: "Response if a body value is missing or if the user does not exist",
+        description: "Response if no Users were found",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -933,34 +818,11 @@ class HttpUserController
         response: 500,
         description: "Response if a internal server error occurs",
         content: new OA\JsonContent(
-            oneOf: [
-                new OA\Schema(
-                    title: "Encryption error",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        ),
-                    ]
+            properties: [
+                new OA\Property(
+                    property: "message",
+                    type: "string",
                 ),
-                new OA\Schema(
-                    title: "Authentication token cache exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                ),
-                new OA\Schema(
-                    title: "Authentication token provider exception",
-                    properties: [
-                        new OA\Property(
-                            property: "message",
-                            type: "string",
-                        )
-                    ]
-                )
             ]
         )
     )]

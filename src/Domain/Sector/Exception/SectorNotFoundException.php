@@ -11,7 +11,7 @@ class SectorNotFoundException extends \Exception
     public function __construct(Id $id)
     {
         parent::__construct(
-            "The sector with id '{$id->getValue()}' was not found."
+            "The sector with id '{$id->getValue()}' was not found"
         );
     }
 }

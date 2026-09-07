@@ -78,13 +78,13 @@ class JwtTokenProvider implements AuthenticationTokenProvider
     {
         if ($token->getIssuedAt()->getTimestamp() > $this->clock->now()->getTimestamp()) {
             throw new AuthenticationTokenProviderException(
-                "Issued in the future."
+                "Issued in the future"
             );
         }
 
         if ($this->clock->now()->getTimestamp() > $token->getExpiresAt()->getTimestamp()) {
             throw new AuthenticationTokenProviderException(
-                "Expired token."
+                "Expired token"
             );
         }
     }

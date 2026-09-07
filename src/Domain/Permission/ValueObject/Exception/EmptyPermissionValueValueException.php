@@ -8,6 +8,6 @@ class EmptyPermissionValueValueException extends \Exception
 {
     public function __construct()
     {
-        parent::__construct("Empty PermissionValue value.");
+        parent::__construct("Empty PermissionValue value");
     }
 }

@@ -13,6 +13,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInt
 use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
@@ -35,6 +36,7 @@ class UserSectorPermissionService
     private SectorRepositoryInterface $sectorRepository;
     private PermissionRepositoryInterface $permissionRepository;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -47,6 +49,7 @@ class UserSectorPermissionService
         SectorRepositoryInterface $sectorRepository,
         PermissionRepositoryInterface $permissionRepository,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
@@ -58,6 +61,7 @@ class UserSectorPermissionService
         $this->sectorRepository = $sectorRepository;
         $this->permissionRepository = $permissionRepository;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -100,11 +104,24 @@ class UserSectorPermissionService
                 )
             );
 
+            $this->logger->notice("UserSectorPermission inserted succesfully!", [
+                "id" => $insertedUserSectorPermission->getId()->getValue(),
+                "username" => $insertedUserSectorPermission->getUser()->getUsername()->getValue(),
+                "sector" => $insertedUserSectorPermission->getSector()->getName()->getValue(),
+                "permission" => $insertedUserSectorPermission->getPermission()->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedUserSectorPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting UserSectorPermission", [
-                "exception" => $e,
-                "dto" => $dto,
+            $this->logger->error("Error inserting UserSectorPermission!", [
+                "exception" => $e->getMessage(),
+                "id" => [
+                    "user" => $dto->userId->getValue(),
+                    "sector" => $dto->sectorId->getValue(),
+                    "permission" => $dto->permissionId->getValue()
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -150,11 +167,26 @@ class UserSectorPermissionService
                 )
             );
 
+            $this->logger->notice("UserSectorPermission updated succesfully!", [
+                "id" => [
+                    "user" => $dto->userId->getValue(),
+                    "sector" => $dto->sectorId->getValue(),
+                    "permission" => $dto->permissionId->getValue()
+                ],
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating UserSectorPermission", [
-                "exception" => $e,
-                "dto" => $dto,
+            $this->logger->error("Error updating UserSectorPermission!", [
+                "exception" => $e->getMessage(),
+                "id" => [
+                    "user" => $dto->userId->getValue(),
+                    "sector" => $dto->sectorId->getValue(),
+                    "permission" => $dto->permissionId->getValue()
+                ],
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -175,11 +207,18 @@ class UserSectorPermissionService
 
             $wasDeleted = $this->userSectorPermissionRepository->delete($id);
 
+            $this->logger->notice("UserSectorPermission deleted succesfully!", [
+                "id" => $id->getValue(),
+                "wasDeleted" => $wasDeleted,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasDeleted;
         } catch (\Throwable $e) {
-            $this->logger->error("Error deleting UserSectorPermission", [
-                "exception" => $e,
-                "userSectorPermissionId" => $id,
+            $this->logger->error("Error deleting UserSectorPermission!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -194,15 +233,28 @@ class UserSectorPermissionService
                 PermissionType::List
             );
 
-            $fetchedUserPermission = $this->userSectorPermissionRepository->findById(
+            $fetchedUserSectorPermission = $this->userSectorPermissionRepository->findById(
                 $id
             );
 
-            return $fetchedUserPermission;
+            if ($fetchedUserSectorPermission === null) {
+                return null;
+            }
+
+            $this->logger->notice("UserSectorPermission fetched succesfully!", [
+                "id" => $id->getValue(),
+                "username" => $fetchedUserSectorPermission?->getUser()->getUsername()->getValue(),
+                "sector" => $fetchedUserSectorPermission?->getSector()->getName()->getValue(),
+                "permission" => $fetchedUserSectorPermission?->getPermission()->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $fetchedUserSectorPermission;
         } catch (\Throwable $e) {
-            $this->logger->error("Error fetching UserSectorPermission by ID", [
-                "exception" => $e,
-                "userSectorPermissionId" => $id,
+            $this->logger->error("Error fetching UserSectorPermission by id!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -217,10 +269,18 @@ class UserSectorPermissionService
                 PermissionType::List
             );
 
-            return $this->userSectorPermissionRepository->findAll();
+            $userSectorPermissions = $this->userSectorPermissionRepository->findAll();
+
+            $this->logger->notice("UserSectorPermission fetched succesfully!", [
+                "amount" => $userSectorPermissions->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $userSectorPermissions;
         } catch (\Throwable $e) {
-            $this->logger->error("Error fetching all UserSectorPermissions", [
-                "exception" => $e,
+            $this->logger->error("Error fetching all UserSectorPermissions!", [
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }

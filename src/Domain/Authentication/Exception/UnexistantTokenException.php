@@ -9,7 +9,7 @@ class UnexistantTokenException extends \Exception
     public function __construct()
     {
         parent::__construct(
-            "Unexistant token."
+            "Unexistant token"
         );
     }
 }

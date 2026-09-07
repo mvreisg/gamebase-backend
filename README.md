@@ -166,9 +166,9 @@ Run the following command to generate the OpenAPI documentation:
 Run the scripts to control the Docker containers:
 
 ```
-/configurations/docker/compose/development/build.sh
-/configurations/docker/compose/development/kill.sh
-/configurations/docker/compose/development/logs.sh
+/configurations/docker/scripts/development/build.sh
+/configurations/docker/scripts/development/kill.sh
+/configurations/docker/scripts/development/logs.sh
 ```
 
 ## Composer Commands

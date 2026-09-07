@@ -9,7 +9,7 @@ class NullPermissionValueException extends \Exception
     public function __construct()
     {
         parent::__construct(
-            "The permission value of the permission is null."
+            "The permission value of the permission is null"
         );
     }
 }

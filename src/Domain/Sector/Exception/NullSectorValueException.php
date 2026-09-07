@@ -9,7 +9,7 @@ class NullSectorValueException extends \Exception
     public function __construct()
     {
         parent::__construct(
-            "The sector value of the sector is null."
+            "The sector value of the sector is null"
         );
     }
 }

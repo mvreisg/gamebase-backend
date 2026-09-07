@@ -33,6 +33,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -45,12 +46,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class GameGenreServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createGame(
         Id $id,
         Name $name,
@@ -274,13 +286,15 @@ class GameGenreServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -360,7 +374,8 @@ class GameGenreServiceTest extends TestCase
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         GameDomainService $gameDomainService,
         GenreDomainService $genreDomainService,
-        GameGenreDomainService $gameGenreDomainService
+        GameGenreDomainService $gameGenreDomainService,
+        ClockInterface $clock
     ): GameGenreService {
         $service = new GameGenreService(
             $checkAuthorizationUseCase,
@@ -368,6 +383,7 @@ class GameGenreServiceTest extends TestCase
             $genreDomainService,
             $gameGenreDomainService,
             $gameGenreRepository,
+            $clock,
             new NullLogger()
         );
         return $service;
@@ -381,6 +397,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfAGameGenreGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $game = $this->createGame(
             Id::create(1),
@@ -447,7 +464,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -476,7 +494,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $insertedGameGenre = $gameGenreService->insert(
@@ -507,6 +526,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -578,7 +598,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -607,7 +628,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->insert(
@@ -623,6 +645,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -694,7 +717,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             false,
@@ -723,7 +747,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->insert(
@@ -739,6 +764,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -810,7 +836,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -839,7 +866,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->insert(
@@ -859,6 +887,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfAValidGameGenreGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -930,7 +959,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -959,7 +989,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $wasUpdated = $gameGenreService->update(
@@ -980,6 +1011,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1051,7 +1083,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1080,7 +1113,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->update(
@@ -1097,6 +1131,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1168,7 +1203,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             false,
@@ -1197,7 +1233,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->update(
@@ -1214,6 +1251,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1285,7 +1323,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1314,7 +1353,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->update(
@@ -1331,6 +1371,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameGenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1402,7 +1443,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1431,7 +1473,8 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
 
         $gameGenreService->update(
@@ -1452,6 +1495,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfGameGetsDeleted(): void
     {
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1523,7 +1567,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1552,9 +1597,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $wasDeleted = $gameGenreService->delete(
             $gameGenre->getId(),
             $encodedToken
@@ -1569,6 +1614,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1640,7 +1686,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1669,9 +1716,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $gameGenreService->delete(
             $gameGenre->getId(),
             $encodedToken
@@ -1682,6 +1729,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(GameGenreNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1753,7 +1801,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1782,9 +1831,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $gameGenreService->delete(
             $gameGenre->getId(),
             $encodedToken
@@ -1799,6 +1848,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfGameGenreGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1870,7 +1920,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -1899,9 +1950,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $foundGameGenre = $gameGenreService->findById(
             $gameGenre->getId(),
             $encodedToken
@@ -1927,6 +1978,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -1998,7 +2050,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -2027,9 +2080,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $gameGenreService->findById(
             $gameGenre->getId(),
             $encodedToken
@@ -2044,6 +2097,7 @@ class GameGenreServiceTest extends TestCase
 
     public function testIfAllGameGenresGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -2115,7 +2169,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -2144,9 +2199,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $gameGenres = $gameGenreService->findAll(
             $encodedToken
         );
@@ -2161,6 +2216,7 @@ class GameGenreServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $game = $this->createGame(
             Id::create(1),
             Name::create("test"),
@@ -2232,7 +2288,8 @@ class GameGenreServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $gameRepository = $this->createGameRepository(
             true,
@@ -2261,9 +2318,9 @@ class GameGenreServiceTest extends TestCase
             $checkAuthorizationUseCase,
             $gameDomainService,
             $genreDomainService,
-            $gameGenreDomainService
+            $gameGenreDomainService,
+            $clock
         );
-
         $gameGenreService->findAll(
             $encodedToken
         );

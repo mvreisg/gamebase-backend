@@ -24,6 +24,7 @@ use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
 use Mvreisg\GamebaseBackend\Domain\Sector\Exception\SectorNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Exception\DuplicatedNameException;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -36,12 +37,23 @@ use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
+use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 class SectorServiceTest extends TestCase
 {
+    private function createClock(string $timezone): ClockInterface
+    {
+        $clock = new Clock(
+            new \DateTimeZone(
+                $timezone
+            )
+        );
+        return $clock;
+    }
+
     private function createSectorRepository(
         bool $exists,
         ?Id $id,
@@ -216,13 +228,15 @@ class SectorServiceTest extends TestCase
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
         AuthenticationService $authenticationService,
-        AuthorizationDomainService $authorizationDomainService
+        AuthorizationDomainService $authorizationDomainService,
+        ClockInterface $clock
     ): CheckAuthorizationUseCase {
         $useCase = new CheckAuthorizationUseCase(
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
             $authorizationDomainService,
+            $clock,
             new NullLogger()
         );
         return $useCase;
@@ -240,12 +254,14 @@ class SectorServiceTest extends TestCase
     private function createSectorService(
         MockObject&SectorRepositoryInterface $sectorRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        SectorDomainService $sectorDomainService
+        SectorDomainService $sectorDomainService,
+        ClockInterface $clock
     ): SectorService {
         $sectorService = new SectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
             $sectorDomainService,
+            $clock,
             new NullLogger()
         );
         return $sectorService;
@@ -273,6 +289,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfASectorGetsInserted(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -330,7 +347,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -338,7 +356,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $insertedSector = $sectorService->insert(
@@ -370,6 +389,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -427,7 +447,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -435,7 +456,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->insert(
@@ -452,6 +474,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(DuplicatedNameException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -509,7 +532,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -517,7 +541,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->insert(
@@ -538,6 +563,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfAValidSectorGetsUpdated(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -595,7 +621,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -603,7 +630,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $wasUpdated = $sectorService->update(
@@ -625,6 +653,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -682,7 +711,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -690,7 +720,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->update(
@@ -708,6 +739,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -765,7 +797,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -773,7 +806,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->update(
@@ -791,6 +825,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(SectorNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -848,7 +883,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -856,7 +892,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->update(
@@ -878,6 +915,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfSectorGetsSetToActive(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -935,7 +973,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -943,7 +982,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -960,6 +1000,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfSectorGetsSetToInactive(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1017,7 +1058,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1025,7 +1067,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $isActive = false;
@@ -1044,6 +1087,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1101,7 +1145,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1109,7 +1154,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1124,6 +1170,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(SectorNotFoundException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1181,7 +1228,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1189,7 +1237,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1208,6 +1257,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfSectorGetsFoundById(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1265,7 +1315,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1273,7 +1324,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $foundSector = $sectorService->findById(
@@ -1301,6 +1353,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1358,7 +1411,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1366,7 +1420,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sector = $sectorService->findById(
@@ -1383,6 +1438,7 @@ class SectorServiceTest extends TestCase
 
     public function testIfAllSectorsGetsFound(): void
     {
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1440,7 +1496,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1448,7 +1505,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $permissions = $sectorService->findAll(
@@ -1465,6 +1523,7 @@ class SectorServiceTest extends TestCase
     {
         $this->expectException(UnauthorizedException::class);
 
+        $clock = $this->createClock("UTC");
         $encodedToken = "potato";
         $user = $this->createUser(
             Id::create(1),
@@ -1522,7 +1581,8 @@ class SectorServiceTest extends TestCase
             $userDomainService,
             $userSectorPermissionRepository,
             $authenticationService,
-            $authorizationDomainService
+            $authorizationDomainService,
+            $clock
         );
         $sectorDomainService = $this->createSectorDomainService(
             $sectorRepository
@@ -1530,7 +1590,8 @@ class SectorServiceTest extends TestCase
         $sectorService = $this->createSectorService(
             $sectorRepository,
             $checkAuthorizationUseCase,
-            $sectorDomainService
+            $sectorDomainService,
+            $clock
         );
 
         $sectorService->findAll(
