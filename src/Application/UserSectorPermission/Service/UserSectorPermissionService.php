@@ -238,6 +238,10 @@ class UserSectorPermissionService
             );
 
             if ($fetchedUserSectorPermission === null) {
+                $this->logger->notice("UserSectorPermission not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -271,8 +275,15 @@ class UserSectorPermissionService
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAll();
 
-            $this->logger->notice("UserSectorPermission fetched succesfully!", [
-                "amount" => $userSectorPermissions->count(),
+            if ($userSectorPermissions === null) {
+                $this->logger->notice("No UserSectorPermissions found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
+
+            $this->logger->notice("UserSectorPermissions fetched succesfully!", [
+                "count" => $userSectorPermissions->count(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 

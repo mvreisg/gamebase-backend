@@ -6,7 +6,10 @@
 } %}    
 </html>
 <body>
-    <h1 class="m-1">{{ title }}</h1> 
+    <h1 class="m-1">{{ title }}</h1>
+    {% include "Components/Login/Nav.twig" with { 
+        host: host 
+    } %}
     {% include "Components/Login/LoginForm.twig" with { 
         host: host 
     } %}

@@ -177,14 +177,18 @@ class PermissionService
             $fetchedPermission = $this->repository->findById($id);
 
             if ($fetchedPermission === null) {
+                $this->logger->notice("Permission not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
             $this->logger->notice("Permission found by id succesfully!", [
-                 "id" => $fetchedPermission->getId()->getValue(),
-                 "name" => $fetchedPermission->getName()->getValue(),
-                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
-             ]);
+                "id" => $fetchedPermission->getId()->getValue(),
+                "name" => $fetchedPermission->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
 
             return $fetchedPermission;
         } catch (\Throwable $e) {
@@ -207,6 +211,13 @@ class PermissionService
             );
 
             $permissions = $this->repository->findAll();
+
+            if ($permissions === null) {
+                $this->logger->notice("No Permissions found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All Permissions found succesfully!", [
                 "count" => $permissions->count(),

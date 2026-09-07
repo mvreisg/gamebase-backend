@@ -199,6 +199,10 @@ class UserService
             $fetchedUser = $this->repository->findById($id);
 
             if ($fetchedUser === null) {
+                $this->logger->notice("User not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -231,6 +235,10 @@ class UserService
             $fetchedUser = $this->repository->findByUsername($username);
 
             if ($fetchedUser === null) {
+                $this->logger->notice("User not found!", [
+                    "username" => $username->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -261,6 +269,13 @@ class UserService
             );
 
             $users = $this->repository->findAll();
+
+            if ($users === null) {
+                $this->logger->notice("No Users found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All Users found succesfully!", [
                 "count" => $users->count(),

@@ -108,7 +108,7 @@ You may keep the default values, but generating your own keys is recommended.
 Access:
 
 ```
-http://localhost:{$NGINX_EXPOSE_PORT}/pages/dashboard/home
+http://localhost:{$NGINX_EXPOSE_PORT}/pages/login
 ```
 
 Then click on:
@@ -145,15 +145,17 @@ REDIS_EXPOSE_PORT=6380
 Access
 
 ```
-http://localhost:{$NGINX_EXPOSE_PORT}/pages/dashboard/home
+http://localhost:{$NGINX_EXPOSE_PORT}/pages/login
 ```
+
+Log-in with the provided `REPOSITORY_ROOT_USERNAME` and `REPOSITORY_ROOT_PASSWORD`
 
 Steps:
 
-1. Click on **PDO Database → Create**
-2. Verify the database was created
+1. Click on **PDO Database**
+2. Verify if the database was created. If not, click on **Create**.
 3. Click on **Phinx**
-4. Ensure the status is **OK**
+4. Ensure the status is **OK**. It will only work if the database exists.
 
 ### 4. Generate OpenAPI Documentation
 
@@ -162,6 +164,8 @@ Run the following command to generate the OpenAPI documentation:
 ```
 /configurations/openapi/startup/startup.sh
 ```
+
+On the root folder of the project.
 
 ### 5. Run the project
 
@@ -173,8 +177,22 @@ Run the scripts to control the Docker containers:
 /configurations/docker/scripts/development/logs.sh
 ```
 
+On the root folder of the project.
+
+## Logs
+
+The logs folder is located in:
+
+```
+/logs/
+```
+
+On the root folder of the project.
+
 ## Composer Commands
 
 All commands are defined in the `scripts` section of `composer.json`.
 
-*Made with ❤️ by Marcus Vinicius Reis Gonçalves*
+---
+
+***Made with ❤️ by Marcus Vinicius Reis Gonçalves***

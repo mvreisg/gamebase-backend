@@ -169,6 +169,10 @@ class GameService
             );
 
             if ($fetchedGame === null) {
+                $this->logger->notice("Game not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -199,6 +203,13 @@ class GameService
             );
 
             $games = $this->repository->findAll();
+
+            if ($games === null) {
+                $this->logger->notice("No Games found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All Games found succesfully!", [
                 "count" => $games->count(),

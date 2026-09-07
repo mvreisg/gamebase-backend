@@ -6,12 +6,12 @@
 } %}        
 <body>
     <h1 class="m-1">{{ title }}</h1>
-    {% include "Components/Nav.twig" with { 
+    {% include "Components/Login/Nav.twig" with { 
         host: host 
     } %}
     <div class="m-1">
         <span class="fw-semibold">Key:</span>
-        <pre id="key-text" style="background-color: gray;" class="d-inline-flex">{{ sodium.key }}</pre>
+        <pre id="key-text" style="background-color: gray;" class="d-inline-flex">{{ defuse.key }}</pre>
     </div>
     <button id="key-button">Copy to clipboard</button>
     {% include "Components/Scripts/ClipboardScript.twig" %}    

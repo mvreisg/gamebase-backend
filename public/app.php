@@ -48,11 +48,11 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\HttpUserSectorPermissionController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Pdo\HttpPdoDatabaseDashboardViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Database\Phinx\HttpPhinxDatabaseDashboardViewPageController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Defuse\HttpDashboardDefuseEncryptionPageController;
-use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Sodium\HttpDashboardSodiumEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\HttpDashboardHomeViewPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Api\Documentation\HttpApiDocumentationPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\OpenApi\Documentation\HttpOpenApiDocumentationDashboardViewPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Defuse\HttpDefuseEncryptionPageController;
+use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Sodium\HttpSodiumEncryptionPageController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\HttpLoginPageViewController;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpUnauthorizedExceptionHandler;
 use Mvreisg\GamebaseBackend\Presentation\Http\Handler\Exception\HttpBadRequestExceptionHandler;
@@ -316,6 +316,14 @@ try {
             $apiGroup->get("/documentation", HttpApiDocumentationPageViewController::class);
         });
         $pagesGroup->get("/login", HttpLoginPageViewController::class);
+        $pagesGroup->group("/encryption", function (RouteCollectorProxy $encryptionGroup) {
+            $encryptionGroup->group("/defuse", function (RouteCollectorProxy $defuseGroup) {
+                $defuseGroup->get("/view", HttpDefuseEncryptionPageController::class);
+            });
+            $encryptionGroup->group("/sodium", function (RouteCollectorProxy $sodiumGroup) {
+                $sodiumGroup->get("/view", HttpSodiumEncryptionPageController::class);
+            });
+        });
         $pagesGroup->group("/dashboard", function (RouteCollectorProxy $dashboardGroup) {
             $dashboardGroup->get("/home", HttpDashboardHomeViewPageController::class);
             $dashboardGroup->group("/open_api", function (RouteCollectorProxy $openApiGroup) {
@@ -327,14 +335,6 @@ try {
                 });
                 $databaseGroup->group("/phinx", function (RouteCollectorProxy $phinxGroup) {
                     $phinxGroup->get("/view", HttpPhinxDatabaseDashboardViewPageController::class);
-                });
-            });
-            $dashboardGroup->group("/encryption", function (RouteCollectorProxy $encryptionGroup) {
-                $encryptionGroup->group("/defuse", function (RouteCollectorProxy $defuseGroup) {
-                    $defuseGroup->get("/view", HttpDashboardDefuseEncryptionPageController::class);
-                });
-                $encryptionGroup->group("/sodium", function (RouteCollectorProxy $sodiumGroup) {
-                    $sodiumGroup->get("/view", HttpDashboardSodiumEncryptionPageController::class);
                 });
             });
         });

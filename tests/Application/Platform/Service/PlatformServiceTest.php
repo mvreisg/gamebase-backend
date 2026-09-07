@@ -280,12 +280,14 @@ class PlatformServiceTest extends TestCase
     private function createPlatformService(
         MockObject&PlatformRepositoryInterface $platformRepository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
-        PlatformDomainService $platformDomainService
+        PlatformDomainService $platformDomainService,
+        ClockInterface $clock
     ): PlatformService {
         $platformService = new PlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
             $platformDomainService,
+            $clock,
             new NullLogger()
         );
         return $platformService;
@@ -370,7 +372,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $insertedPlatform = $platformService->insert(
@@ -472,7 +475,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->insert(
@@ -559,7 +563,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->insert(
@@ -650,7 +655,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $wasUpdated = $platformService->update(
@@ -742,7 +748,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->update(
@@ -830,7 +837,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->update(
@@ -918,7 +926,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->update(
@@ -1010,7 +1019,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1098,7 +1108,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $isActive = false;
@@ -1188,7 +1199,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1274,7 +1286,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $isActive = true;
@@ -1364,7 +1377,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $foundPlatform = $platformService->findById(
@@ -1463,7 +1477,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->findById(
@@ -1551,7 +1566,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platforms = $platformService->findAll(
@@ -1639,7 +1655,8 @@ class PlatformServiceTest extends TestCase
         $platformService = $this->createPlatformService(
             $platformRepository,
             $checkAuthorizationUseCase,
-            $platformDomainService
+            $platformDomainService,
+            $clock
         );
 
         $platformService->findAll(
