@@ -304,9 +304,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                         $row["is_active"]
                     )
                 );
-                $users->add(
-                    $user
-                );
+                $users->add($user);
             }
             return $users;
         } catch (\Throwable $e) {

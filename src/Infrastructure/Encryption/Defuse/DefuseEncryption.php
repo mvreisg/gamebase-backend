@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
 
 class DefuseEncryption implements EncryptionInterface
@@ -28,7 +28,7 @@ class DefuseEncryption implements EncryptionInterface
             $encrypted = Crypto::encrypt($text, $key);
             return $encrypted;
         } catch (\Throwable $e) {
-            throw new EncryptionInterfaceException(
+            throw new EncryptionException(
                 $e->getMessage()
             );
         }
@@ -42,7 +42,7 @@ class DefuseEncryption implements EncryptionInterface
             $text = Crypto::decrypt($secret, $key);
             return $text;
         } catch (\Throwable $e) {
-            throw new EncryptionInterfaceException(
+            throw new EncryptionException(
                 $e->getMessage()
             );
         }

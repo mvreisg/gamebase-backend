@@ -593,11 +593,9 @@ class HttpUserController
 
             $id = (int)$args["id"];
 
-            $user = SafeUser::create(
-                $this->userService->findById(
-                    Id::create($id),
-                    $token
-                )
+            $user = $this->userService->findById(
+                Id::create($id),
+                $token
             );
 
             if ($user === null) {
@@ -610,6 +608,10 @@ class HttpUserController
                     );
                 return $response->withStatus(404);
             }
+
+            $user = SafeUser::create(
+                $user
+            );
 
             $data = [
                 "id" => $user->getId()->getValue(),
@@ -720,11 +722,9 @@ class HttpUserController
 
             $username = $args["username"];
 
-            $user = SafeUser::create(
-                $this->userService->findByUsername(
-                    Username::create($username),
-                    $token
-                )
+            $user = $this->userService->findByUsername(
+                Username::create($username),
+                $token
             );
 
             if ($user === null) {
@@ -737,6 +737,10 @@ class HttpUserController
                     );
                 return $response->withStatus(404);
             }
+
+            $user = SafeUser::create(
+                $user
+            );
 
             $data = [
                 "id" => $user->getId()->getValue(),
@@ -854,13 +858,11 @@ class HttpUserController
             $data = [];
             foreach ($users->fetchAll() as $user) {
                 $safeUser = SafeUser::create($user);
-                $value = [
+                $data[] = [
                     "id" => $safeUser->getId()->getValue(),
                     "username" => $safeUser->getUsername()->getValue(),
                     "is_active" => $safeUser->getIsActive()
                 ];
-
-                $data[] = $value;
             }
 
             $response

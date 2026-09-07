@@ -7,12 +7,12 @@ namespace Mvreisg\GamebaseBackend\Application\Session\Service;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
-use Mvreisg\GamebaseBackend\Application\Session\Data\SessionData;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\InvalidCredentialsException;
-use Mvreisg\GamebaseBackend\Application\Session\Exception\UnexistantUserException;
-use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
-use Mvreisg\GamebaseBackend\Application\Session\Login\Return\SessionLoginReturn;
+use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
+use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginInputDto;
+use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginOutputDto;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\InvalidCredentialsException;
+use Mvreisg\GamebaseBackend\Domain\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
@@ -47,10 +47,10 @@ class SessionService
         $this->clock = $clock;
     }
 
-    public function login(SessionLoginParameters $parameters): SessionLoginReturn
+    public function login(SessionServiceLoginInputDto $dto): SessionServiceLoginOutputDto
     {
         try {
-            $username = $parameters->getUsername();
+            $username = $dto->username;
 
             $fetchedUser = $this->userRepository->findByUsername(
                 $username
@@ -68,7 +68,7 @@ class SessionService
             $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
 
             $doTheTwoPasswordsMatchesEqually = strcmp(
-                $parameters->getPassword()->getValue(),
+                $dto->password->getValue(),
                 $decodedPassword
             ) === 0;
 
@@ -91,7 +91,7 @@ class SessionService
                 );
             } else {
                 $interval = null;
-                $oneWeekLogin = $parameters->getOneWeekLogin();
+                $oneWeekLogin = $dto->oneWeekLogin;
                 if ($oneWeekLogin === true) {
                     $interval = new \DateInterval("P7D");
                 } else {
@@ -126,7 +126,7 @@ class SessionService
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
-            return new SessionLoginReturn(
+            return new SessionServiceLoginOutputDto(
                 $token,
                 $sessionData
             );

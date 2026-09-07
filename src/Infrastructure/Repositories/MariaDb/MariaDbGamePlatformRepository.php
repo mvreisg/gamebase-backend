@@ -95,7 +95,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     Name::create(
                         $fetchResult["gm_name"]
                     ),
-                    $fetchResult["gm_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["gm_is_active"]
+                    )
                 ),
                 Platform::create(
                     Id::create(
@@ -104,7 +109,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     Name::create(
                         $fetchResult["pl_name"]
                     ),
-                    $fetchResult["pl_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["pl_is_active"]
+                    )
                 ),
             );
             return $value;
@@ -217,7 +227,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     Name::create(
                         $fetchResult["gm_name"]
                     ),
-                    $fetchResult["gm_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["gm_is_active"]
+                    )
                 ),
                 Platform::create(
                     Id::create(
@@ -226,7 +241,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                     Name::create(
                         $fetchResult["pl_name"]
                     ),
-                    $fetchResult["pl_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["pl_is_active"]
+                    )
                 ),
             );
             return $value;
@@ -281,7 +301,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                         Name::create(
                             $row["gm_name"]
                         ),
-                        $row["gm_is_active"]
+                        /* MariaDB stores bool as int values so a casting
+                        * here is needed.
+                        */
+                        boolval(
+                            $row["gm_is_active"]
+                        )
                     ),
                     Platform::create(
                         Id::create(
@@ -290,7 +315,12 @@ class MariaDbGamePlatformRepository implements GamePlatformRepositoryInterface
                         Name::create(
                             $row["pl_name"]
                         ),
-                        $row["pl_is_active"]
+                        /* MariaDB stores bool as int values so a casting
+                        * here is needed.
+                        */
+                        boolval(
+                            $row["pl_is_active"]
+                        )
                     ),
                 );
                 $gamePlatforms->add($value);

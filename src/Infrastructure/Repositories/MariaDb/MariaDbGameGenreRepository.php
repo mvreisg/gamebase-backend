@@ -95,7 +95,12 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     Name::create(
                         $fetchResult["gm_name"]
                     ),
-                    $fetchResult["gm_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["gm_is_active"]
+                    )
                 ),
                 Genre::create(
                     Id::create(
@@ -104,7 +109,12 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     Name::create(
                         $fetchResult["ge_name"]
                     ),
-                    $fetchResult["ge_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["ge_is_active"]
+                    )
                 ),
             );
             return $value;
@@ -217,7 +227,12 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     Name::create(
                         $fetchResult["gm_name"]
                     ),
-                    $fetchResult["gm_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["gm_is_active"]
+                    )
                 ),
                 Genre::create(
                     Id::create(
@@ -226,7 +241,12 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
                     Name::create(
                         $fetchResult["ge_name"]
                     ),
-                    $fetchResult["ge_is_active"]
+                    /* MariaDB stores bool as int values so a casting
+                    * here is needed.
+                    */
+                    boolval(
+                        $fetchResult["ge_is_active"]
+                    )
                 ),
             );
             return $value;
@@ -272,25 +292,35 @@ class MariaDbGameGenreRepository implements GameGenreRepositoryInterface
             foreach ($fetchResult as $row) {
                 $value = GameGenre::create(
                     Id::create(
-                        $fetchResult["gage_id"]
+                        $row["gage_id"]
                     ),
                     Game::create(
                         Id::create(
-                            $fetchResult["gm_id"]
+                            $row["gm_id"]
                         ),
                         Name::create(
-                            $fetchResult["gm_name"]
+                            $row["gm_name"]
                         ),
-                        $fetchResult["gm_is_active"]
+                        /* MariaDB stores bool as int values so a casting
+                        * here is needed.
+                        */
+                        boolval(
+                            $row["gm_is_active"]
+                        )
                     ),
                     Genre::create(
                         Id::create(
-                            $fetchResult["ge_id"]
+                            $row["ge_id"]
                         ),
                         Name::create(
-                            $fetchResult["ge_name"]
+                            $row["ge_name"]
                         ),
-                        $fetchResult["ge_is_active"]
+                        /* MariaDB stores bool as int values so a casting
+                        * here is needed.
+                        */
+                        boolval(
+                            $row["ge_is_active"]
+                        )
                     ),
                 );
                 $gameGenres->add($value);

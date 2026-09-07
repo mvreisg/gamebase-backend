@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium;
 
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
-use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionInterfaceException;
+use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\Option\SodiumEncryptionOptions;
 
 class SodiumEncryption implements EncryptionInterface
@@ -28,7 +28,7 @@ class SodiumEncryption implements EncryptionInterface
             $secret = base64_encode($nonce . $encrypted);
             return $secret;
         } catch (\Throwable $e) {
-            throw new EncryptionInterfaceException(
+            throw new EncryptionException(
                 $e->getMessage()
             );
         }
@@ -45,7 +45,7 @@ class SodiumEncryption implements EncryptionInterface
             $text = sodium_crypto_secretbox_open($encrypted, $nonce, $key);
             return $text;
         } catch (\Throwable $e) {
-            throw new EncryptionInterfaceException(
+            throw new EncryptionException(
                 $e->getMessage()
             );
         }

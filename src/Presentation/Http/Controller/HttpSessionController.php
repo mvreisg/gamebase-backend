@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
-use Mvreisg\GamebaseBackend\Application\Session\Login\Parameters\SessionLoginParameters;
+use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginInputDto;
 use Mvreisg\GamebaseBackend\Application\Session\Service\SessionService;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
@@ -167,13 +167,13 @@ class HttpSessionController
             $oneWeekLogin = $body["one_week_login"];
 
             $result = $this->sessionService->login(
-                new SessionLoginParameters(
+                new SessionServiceLoginInputDto(
                     Username::create($username),
                     DecodedPassword::create($password),
                     $oneWeekLogin
                 )
             );
-            $token = $result->getToken();
+            $token = $result->token;
             $data = [
                 "data" => [
                     "expires" => [
@@ -184,8 +184,8 @@ class HttpSessionController
                     ],
                     "token" => $token,
                     "user" => [
-                        "id" => $result->getData()->getUserId()->getValue(),
-                        "username" => $result->getData()->getUsername()->getValue(),
+                        "id" => $result->data->getUserId()->getValue(),
+                        "username" => $result->data->getUsername()->getValue(),
                         "permissions" => array_map(function ($item) {
                             return [
                                 "id" => $item->getId()->getValue(),
@@ -207,7 +207,7 @@ class HttpSessionController
                                     "is_active" => $item->getPermission()->getIsActive(),
                                 ]
                             ];
-                        }, $result->getData()->getUserSectorPermissionCollection()->fetchAll())
+                        }, $result->data->getUserSectorPermissionCollection()->fetchAll())
                     ]
                 ]
             ];
