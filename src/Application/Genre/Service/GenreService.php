@@ -169,6 +169,10 @@ class GenreService
             );
 
             if ($fetchedGenre === null) {
+                $this->logger->notice("Genre not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -199,6 +203,13 @@ class GenreService
             );
 
             $genres = $this->repository->findAll();
+
+            if ($genres === null) {
+                $this->logger->notice("No Genres found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All Genres found succesfully!", [
                 "count" => $genres->count(),

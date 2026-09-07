@@ -18,6 +18,10 @@
   };
 
   const initialize = async () => {
+    if (window.location.pathname.includes("/pages/encryption")) {
+      return;
+    }
+
     if (window.location.pathname.includes("/pages/login")) {
       const urlParams = new URLSearchParams(window.location.search);
       const action = urlParams.get("action");

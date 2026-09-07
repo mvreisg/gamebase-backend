@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Defuse;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Defuse;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Model\Components\Encryption\Defuse\HttpDefuseEncryptionComponentModel;
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
@@ -11,7 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
-class HttpDashboardDefuseEncryptionPageController
+class HttpDefuseEncryptionPageController
 {
     private HttpDefuseEncryptionComponentModel $model;
     private HttpOptions $options;
@@ -36,7 +36,7 @@ class HttpDashboardDefuseEncryptionPageController
         array $args
     ): ResponseInterface {
         try {
-            $html = $this->environment->render("Pages/Dashboard/Encryption/Defuse/DefuseEncryptionDashboardView.twig", [
+            $html = $this->environment->render("Pages/Encryption/Defuse/DefuseEncryptionView.twig", [
                 "host" => $this->options->getHost(),
                 "title" => $this->options->getTitle(),
                 "defuse" => [
@@ -44,10 +44,10 @@ class HttpDashboardDefuseEncryptionPageController
                 ]
             ]);
             $response->getBody()->write($html);
-            $this->logger->notice("DefuseEncryptionDashboardView successfully rendered!");
+            $this->logger->notice("DefuseEncryptionView successfully rendered!");
             return $response;
         } catch (\Throwable $e) {
-            $this->logger->error("DefuseEncryptionDashboardView rendering failed!", [
+            $this->logger->error("DefuseEncryptionView rendering failed!", [
                 "exception" => $e->getMessage()
             ]);
             throw $e;

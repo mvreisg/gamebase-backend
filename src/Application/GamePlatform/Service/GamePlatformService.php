@@ -197,6 +197,10 @@ class GamePlatformService
             );
 
             if ($fetchedGamePlatform === null) {
+                $this->logger->notice("GamePlatform not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -232,6 +236,13 @@ class GamePlatformService
             );
 
             $gamePlatforms = $this->repository->findAll();
+
+            if ($gamePlatforms === null) {
+                $this->logger->notice("No GamePlatforms found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All GamePlatforms found succesfully!", [
                 "count" => $gamePlatforms->count(),

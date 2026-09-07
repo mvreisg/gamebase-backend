@@ -177,6 +177,10 @@ class SectorService
             $fetchedSector = $this->repository->findById($id);
 
             if ($fetchedSector === null) {
+                $this->logger->notice("Sector not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -207,6 +211,13 @@ class SectorService
             );
 
             $sectors = $this->repository->findAll();
+
+            if ($sectors === null) {
+                $this->logger->notice("No Sectors found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All Sectors found succesfully!", [
                 "count" => $sectors->count(),

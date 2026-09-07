@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Dashboard\Encryption\Sodium;
+namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller\Pages\Encryption\Sodium;
 
 use Mvreisg\GamebaseBackend\Presentation\Http\Model\Components\Encryption\Sodium\HttpSodiumEncryptionComponentModel;
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
@@ -11,7 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
-class HttpDashboardSodiumEncryptionPageController
+class HttpSodiumEncryptionPageController
 {
     private HttpSodiumEncryptionComponentModel $model;
     private HttpOptions $options;
@@ -36,7 +36,7 @@ class HttpDashboardSodiumEncryptionPageController
         array $args
     ): ResponseInterface {
         try {
-            $html = $this->environment->render("Pages/Dashboard/Encryption/Sodium/SodiumEncryptionDashboardView.twig", [
+            $html = $this->environment->render("Pages/Encryption/Sodium/SodiumEncryptionView.twig", [
                 "host" => $this->options->getHost(),
                 "title" => $this->options->getTitle(),
                 "sodium" => [
@@ -44,10 +44,10 @@ class HttpDashboardSodiumEncryptionPageController
                 ]
             ]);
             $response->getBody()->write($html);
-            $this->logger->notice("SodiumEncryptionDashboardView successfully rendered!");
+            $this->logger->notice("SodiumEncryptionView successfully rendered!");
             return $response;
         } catch (\Throwable $e) {
-            $this->logger->error("SodiumEncryptionDashboardView rendering failed!", [
+            $this->logger->error("SodiumEncryptionView rendering failed!", [
                 "exception" => $e->getMessage()
             ]);
             throw $e;

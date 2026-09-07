@@ -197,6 +197,10 @@ class GameGenreService
             );
 
             if ($fetchedGameGenre === null) {
+                $this->logger->notice("GameGenre not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
@@ -232,6 +236,13 @@ class GameGenreService
             );
 
             $gameGenres = $this->repository->findAll();
+
+            if ($gameGenres === null) {
+                $this->logger->notice("No GameGenres found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
 
             $this->logger->notice("All GameGenres found succesfully!", [
                 "count" => $gameGenres->count(),

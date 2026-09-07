@@ -15,6 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInt
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
 
@@ -23,17 +24,20 @@ class PlatformService
     private PlatformRepositoryInterface $repository;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private PlatformDomainService $platformDomainService;
+    private ClockInterface $clock;
     private LoggerInterface $logger;
 
     public function __construct(
         PlatformRepositoryInterface $repository,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         PlatformDomainService $platformDomainService,
+        ClockInterface $clock,
         LoggerInterface $logger
     ) {
         $this->repository = $repository;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->platformDomainService = $platformDomainService;
+        $this->clock = $clock;
         $this->logger = $logger;
     }
 
@@ -57,11 +61,18 @@ class PlatformService
                 )
             );
 
+            $this->logger->notice("Platform inserted succesfully!", [
+                "id" => $insertedPlatform->getId()->getValue(),
+                "name" => $insertedPlatform->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $insertedPlatform;
         } catch (\Throwable $e) {
-            $this->logger->error("Error inserting platform", [
-                "error" => $e->getMessage(),
-                "dto" => $dto,
+            $this->logger->error("Error inserting Platform!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -93,11 +104,17 @@ class PlatformService
                 )
             );
 
+            $this->logger->notice("Platform data updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error updating platform", [
-                "error" => $e->getMessage(),
-                "dto" => $dto,
+            $this->logger->error("Error updating Platform!", [
+                "exception" => $e->getMessage(),
+                "name" => $dto->name->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -121,12 +138,18 @@ class PlatformService
                 $isActive
             );
 
+            $this->logger->notice("Platform isActive updated succesfully!", [
+                "wasUpdated" => $wasUpdated,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $wasUpdated;
         } catch (\Throwable $e) {
-            $this->logger->error("Error setting platform active status", [
-                "error" => $e->getMessage(),
-                "platformId" => $id,
+            $this->logger->error("Error setting Platform active status!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
                 "isActive" => $isActive,
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -144,14 +167,25 @@ class PlatformService
             $fetchedPlatform = $this->repository->findById($id);
 
             if ($fetchedPlatform === null) {
+                $this->logger->notice("Platform not found!", [
+                    "id" => $id->getValue(),
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
                 return null;
             }
 
+            $this->logger->notice("Platform found by id succesfully!", [
+                "id" => $fetchedPlatform->getId()->getValue(),
+                "name" => $fetchedPlatform->getName()->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
             return $fetchedPlatform;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding platform by id", [
-                "error" => $e->getMessage(),
-                "platformId" => $id,
+            $this->logger->error("Error finding Platform by id!", [
+                "exception" => $e->getMessage(),
+                "id" => $id->getValue(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }
@@ -166,10 +200,25 @@ class PlatformService
                 PermissionType::List
             );
 
-            return $this->repository->findAll();
+            $platforms = $this->repository->findAll();
+
+            if ($platforms === null) {
+                $this->logger->notice("No Platforms found!", [
+                    "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+                ]);
+                return null;
+            }
+
+            $this->logger->notice("All Platforms found succesfully!", [
+                "count" => $platforms->count(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
+            ]);
+
+            return $platforms;
         } catch (\Throwable $e) {
-            $this->logger->error("Error finding all platforms", [
-                "error" => $e->getMessage(),
+            $this->logger->error("Error finding all Platforms!", [
+                "exception" => $e->getMessage(),
+                "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
             throw $e;
         }

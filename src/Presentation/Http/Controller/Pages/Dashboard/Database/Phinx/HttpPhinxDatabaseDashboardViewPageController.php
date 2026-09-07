@@ -44,18 +44,7 @@ class HttpPhinxDatabaseDashboardViewPageController
         array $args
     ): ResponseInterface {
         try {
-            $doesDatabaseExist = $this->databaseService->exists(
-                $this->repositoryOptions->getDatabase()
-            );
-            if ($doesDatabaseExist === false) {
-                $this->databaseService->create(
-                    $this->repositoryOptions->getDatabase()
-                );
-                $this->phinxDatabaseComponentModel->execute();
-                $doesDatabaseExist = $this->databaseService->exists(
-                    $this->repositoryOptions->getDatabase()
-                );
-            }
+            $this->phinxDatabaseComponentModel->execute();
             $html = $this->environment->render("Pages/Dashboard/Database/Phinx/PhinxDatabaseDashboardPageView.twig", [
                 "host" => $this->options->getHost(),
                 "title" => $this->options->getTitle(),
@@ -63,9 +52,6 @@ class HttpPhinxDatabaseDashboardViewPageController
                     "returnCode" => $this->phinxDatabaseComponentModel->getReturnCode(),
                     "output" => $this->phinxDatabaseComponentModel->getOutput()
                 ],
-                "database" => [
-                    "exists" => $doesDatabaseExist
-                ]
             ]);
             $response->getBody()->write($html);
             $this->logger->notice("PhinxDatabaseDashboardPageView successfully rendered!");
