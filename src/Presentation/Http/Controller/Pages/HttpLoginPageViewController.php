@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Presentation\Http\Model\Components\Database\Phinx\Ht
 use Mvreisg\GamebaseBackend\Presentation\Http\Option\HttpOptions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
 class HttpLoginPageViewController
@@ -19,19 +20,22 @@ class HttpLoginPageViewController
     private DatabaseService $databaseService;
     private RepositoryOptions $repositoryOptions;
     private HttpPhinxDatabaseComponentModel $phinxDatabaseComponentModel;
+    private LoggerInterface $logger;
 
     public function __construct(
         Environment $environment,
         HttpOptions $options,
         HttpPhinxDatabaseComponentModel $phinxDatabaseComponentModel,
         DatabaseService $databaseService,
-        RepositoryOptions $repositoryOptions
+        RepositoryOptions $repositoryOptions,
+        LoggerInterface $logger
     ) {
         $this->environment = $environment;
         $this->options = $options;
         $this->phinxDatabaseComponentModel = $phinxDatabaseComponentModel;
         $this->databaseService = $databaseService;
         $this->repositoryOptions = $repositoryOptions;
+        $this->logger = $logger;
     }
 
     public function __invoke(
@@ -39,37 +43,45 @@ class HttpLoginPageViewController
         ResponseInterface $response,
         array $args
     ): ResponseInterface {
-        $doesDatabaseExist = false;
         try {
-            $doesDatabaseExist = $this->databaseService->exists(
-                $this->repositoryOptions->getDatabase()
-            );
-            if ($doesDatabaseExist === false) {
-                $this->databaseService->create(
+            $doesDatabaseExist = false;
+            try {
+                $doesDatabaseExist = $this->databaseService->exists(
                     $this->repositoryOptions->getDatabase()
                 );
+                if ($doesDatabaseExist === false) {
+                    $this->databaseService->create(
+                        $this->repositoryOptions->getDatabase()
+                    );
+                }
+                $doesDatabaseExist = $this->databaseService->exists(
+                    $this->repositoryOptions->getDatabase()
+                );
+                $this->phinxDatabaseComponentModel->execute();
+            } catch (\Throwable $e) {
+                $response->getBody()->write("Database connection error: " . $e->getMessage());
+                return $response;
             }
-            $doesDatabaseExist = $this->databaseService->exists(
-                $this->repositoryOptions->getDatabase()
-            );
-            $this->phinxDatabaseComponentModel->execute();
-        } catch (\Throwable $e) {
-            $response->getBody()->write("Database connection error: " . $e->getMessage());
-            return $response;
-        }
 
-        $html = $this->environment->render("Pages/LoginPageView.twig", [
-            "host" => $this->options->getHost(),
-            "title" => $this->options->getTitle(),
-            "phinx" => [
-                "returnCode" => $this->phinxDatabaseComponentModel->getReturnCode(),
-                "output" => $this->phinxDatabaseComponentModel->getOutput()
-            ],
-            "database" => [
-                "exists" => $doesDatabaseExist
-            ]
-        ]);
-        $response->getBody()->write($html);
-        return $response;
+            $html = $this->environment->render("Pages/LoginPageView.twig", [
+                "host" => $this->options->getHost(),
+                "title" => $this->options->getTitle(),
+                "phinx" => [
+                    "returnCode" => $this->phinxDatabaseComponentModel->getReturnCode(),
+                    "output" => $this->phinxDatabaseComponentModel->getOutput()
+                ],
+                "database" => [
+                    "exists" => $doesDatabaseExist
+                ]
+            ]);
+            $response->getBody()->write($html);
+            $this->logger->notice("LoginPageView successfully rendered!");
+            return $response;
+        } catch (\Throwable $e) {
+            $this->logger->error("LoginPageView rendering failed!", [
+                "exception" => $e->getMessage()
+            ]);
+            throw $e;
+        }
     }
 }
