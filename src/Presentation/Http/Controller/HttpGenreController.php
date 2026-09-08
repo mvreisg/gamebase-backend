@@ -49,7 +49,7 @@ class HttpGenreController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "RPG (Role-playing game)"
+                    example: "RPG"
                 ),
                 new OA\Property(
                     property: "is_active",
@@ -209,7 +209,7 @@ class HttpGenreController
                 new OA\Property(
                     property: "name",
                     type: "string",
-                    example: "RPG (Role-playing game)"
+                    example: "RPG"
                 ),
                 new OA\Property(
                     property: "is_active",
