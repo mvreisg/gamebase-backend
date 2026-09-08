@@ -36,7 +36,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
                 $dto->isActive
             );
 
-            $value = $dto->value->getValue()->value;
+            $value = $dto->value->getValue();
 
             $insertStatement = $this->connection->prepare(
                 "INSERT INTO 
@@ -109,7 +109,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
         try {
             $id = $dto->id->getValue();
             $name = $dto->name->getValue();
-            $value = $dto->value->getValue()->value;
+            $value = $dto->value->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -333,8 +333,6 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
     public function checkIfValueExists(SectorValue $value): ?Id
     {
         try {
-            $valueValue = $value->getValue()->value;
-
             $statement = $this->connection->prepare(
                 "SELECT 
                     *
@@ -345,7 +343,7 @@ class MariaDbSectorRepository implements SectorRepositoryInterface
             );
 
             $statement->execute([
-                ":value" => $valueValue
+                ":value" => $value->getValue()
             ]);
 
             $fetchResult = $statement->fetch();
