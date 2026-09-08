@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Sector\Entity;
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -62,8 +61,8 @@ class Sector
         return $this->isActive;
     }
 
-    public function equals(SectorType $type): bool
+    public function equals(SectorValue $other): bool
     {
-        return $type->value === $this->getSectorValue()->getValue()->value;
+        return $this->getSectorValue()->getValue() === $other->getValue();
     }
 }

@@ -11,8 +11,10 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Service\PermissionDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
@@ -70,8 +72,8 @@ class UserSectorPermissionService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::UserSectorPermission,
-                PermissionType::Create
+                SectorValue::from(SectorType::UserSectorPermission),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->userDomainService->ensureUserExists(
@@ -90,7 +92,7 @@ class UserSectorPermissionService
             $sector = $this->sectorRepository->findById($dto->sectorId);
             $permission = $this->permissionRepository->findById($dto->permissionId);
 
-            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+            $this->userSectorPermissionDomainService->assertIsValid(
                 $user,
                 $sector,
                 $permission
@@ -132,8 +134,8 @@ class UserSectorPermissionService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::UserSectorPermission,
-                PermissionType::Update
+                SectorValue::from(SectorType::UserSectorPermission),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->userDomainService->ensureUserExists(
@@ -152,7 +154,7 @@ class UserSectorPermissionService
             $sector = $this->sectorRepository->findById($dto->sectorId);
             $permission = $this->permissionRepository->findById($dto->permissionId);
 
-            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+            $this->userSectorPermissionDomainService->assertIsValid(
                 $user,
                 $sector,
                 $permission
@@ -197,8 +199,8 @@ class UserSectorPermissionService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::UserSectorPermission,
-                PermissionType::Delete
+                SectorValue::from(SectorType::UserSectorPermission),
+                PermissionValue::from(PermissionType::Delete)
             );
 
             $this->userSectorPermissionDomainService->ensureUserSectorPermissionExists(
@@ -229,8 +231,8 @@ class UserSectorPermissionService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::UserSectorPermission,
-                PermissionType::List
+                SectorValue::from(SectorType::UserSectorPermission),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedUserSectorPermission = $this->userSectorPermissionRepository->findById(
@@ -269,8 +271,8 @@ class UserSectorPermissionService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::UserSectorPermission,
-                PermissionType::List
+                SectorValue::from(SectorType::UserSectorPermission),
+                PermissionValue::from(PermissionType::List)
             );
 
             $userSectorPermissions = $this->userSectorPermissionRepository->findAll();

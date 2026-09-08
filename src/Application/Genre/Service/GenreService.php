@@ -15,6 +15,8 @@ use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterface
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\Dto\GenreRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Service\GenreDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
@@ -46,8 +48,8 @@ class GenreService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Genre,
-                PermissionType::Create
+                SectorValue::from(SectorType::Genre),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->genreDomainService->ensureNameIsUniqueOnInsert(
@@ -83,8 +85,8 @@ class GenreService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Genre,
-                PermissionType::Update
+                SectorValue::from(SectorType::Genre),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->genreDomainService->ensureGenreExists(
@@ -125,8 +127,8 @@ class GenreService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Genre,
-                PermissionType::Activate
+                SectorValue::from(SectorType::Genre),
+                PermissionValue::from(PermissionType::Activate)
             );
 
             $this->genreDomainService->ensureGenreExists(
@@ -160,8 +162,8 @@ class GenreService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Genre,
-                PermissionType::List
+                SectorValue::from(SectorType::Genre),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedGenre = $this->repository->findById(
@@ -198,8 +200,8 @@ class GenreService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Genre,
-                PermissionType::List
+                SectorValue::from(SectorType::Genre),
+                PermissionValue::from(PermissionType::List)
             );
 
             $genres = $this->repository->findAll();

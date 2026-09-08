@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\Exception\InvalidPermi
 
 class PermissionValue
 {
-    private PermissionType $value;
+    private string $value;
 
     public function __construct(string $value)
     {
@@ -27,12 +27,12 @@ class PermissionValue
         return new self($value);
     }
 
-    public function getValue(): PermissionType
+    public function getValue(): string
     {
         return $this->value;
     }
 
-    public function validate(string $value): PermissionType
+    public function validate(string $value): string
     {
         $trimmed = trim($value);
 
@@ -48,12 +48,11 @@ class PermissionValue
         }
 
         $type = PermissionType::tryFrom($trimmed);
+
         if ($type === null) {
-            throw new InvalidPermissionValueValueException(
-                $trimmed
-            );
+            return $trimmed;
         }
 
-        return $type;
+        return $type->value;
     }
 }

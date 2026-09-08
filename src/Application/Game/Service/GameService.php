@@ -15,6 +15,8 @@ use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceIn
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\Dto\GameRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Game\Service\GameDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
@@ -46,8 +48,8 @@ class GameService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Game,
-                PermissionType::Create
+                SectorValue::from(SectorType::Game),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->gameDomainService->ensureNameIsUniqueOnInsert(
@@ -83,8 +85,8 @@ class GameService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Game,
-                PermissionType::Update
+                SectorValue::from(SectorType::Game),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->gameDomainService->ensureGameExists(
@@ -125,8 +127,8 @@ class GameService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Game,
-                PermissionType::Activate
+                SectorValue::from(SectorType::Game),
+                PermissionValue::from(PermissionType::Activate)
             );
 
             $this->gameDomainService->ensureGameExists(
@@ -160,8 +162,8 @@ class GameService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Game,
-                PermissionType::List
+                SectorValue::from(SectorType::Game),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedGame = $this->repository->findById(
@@ -198,8 +200,8 @@ class GameService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Game,
-                PermissionType::List
+                SectorValue::from(SectorType::Game),
+                PermissionValue::from(PermissionType::List)
             );
 
             $games = $this->repository->findAll();

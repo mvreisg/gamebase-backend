@@ -54,11 +54,11 @@ class PermissionDomainService
 
     public function ensureValueIsUnique(PermissionValue $value): void
     {
-        $hasDuplicatedValues = $this->repository->checkIfValueExists(
+        $id = $this->repository->checkIfValueExists(
             $value
         );
 
-        if ($hasDuplicatedValues) {
+        if ($id) {
             throw new DuplicatedPermissionValueException(
                 $value
             );

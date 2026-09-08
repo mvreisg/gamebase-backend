@@ -9,12 +9,14 @@ use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceInse
 use Mvreisg\GamebaseBackend\Application\Platform\Service\Dto\PlatformServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Collection\PlatformCollection;
 use Mvreisg\GamebaseBackend\Domain\Platform\Entity\Platform;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\Dto\PlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
@@ -46,8 +48,8 @@ class PlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Platform,
-                PermissionType::Create
+                SectorValue::from(SectorType::Platform),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->platformDomainService->ensureNameIsUniqueOnInsert(
@@ -83,8 +85,8 @@ class PlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Platform,
-                PermissionType::Update
+                SectorValue::from(SectorType::Platform),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->platformDomainService->ensurePlatformExists(
@@ -125,8 +127,8 @@ class PlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Platform,
-                PermissionType::Activate
+                SectorValue::from(SectorType::Platform),
+                PermissionValue::from(PermissionType::Activate)
             );
 
             $this->platformDomainService->ensurePlatformExists(
@@ -160,8 +162,8 @@ class PlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Platform,
-                PermissionType::List
+                SectorValue::from(SectorType::Platform),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedPlatform = $this->repository->findById($id);
@@ -196,8 +198,8 @@ class PlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Platform,
-                PermissionType::List
+                SectorValue::from(SectorType::Platform),
+                PermissionValue::from(PermissionType::List)
             );
 
             $platforms = $this->repository->findAll();

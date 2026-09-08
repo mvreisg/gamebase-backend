@@ -16,7 +16,9 @@ use Mvreisg\GamebaseBackend\Domain\GamePlatform\Entity\GamePlatform;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\Dto\GamePlatformRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Service\GamePlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Platform\Service\PlatformDomainService;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
@@ -54,8 +56,8 @@ class GamePlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::GamePlatform,
-                PermissionType::Create
+                SectorValue::from(SectorType::GamePlatform),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->gameDomainService->ensureGameExists(
@@ -105,8 +107,8 @@ class GamePlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::GamePlatform,
-                PermissionType::Update
+                SectorValue::from(SectorType::GamePlatform),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->gameDomainService->ensureGameExists(
@@ -156,8 +158,8 @@ class GamePlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::GamePlatform,
-                PermissionType::Delete
+                SectorValue::from(SectorType::GamePlatform),
+                PermissionValue::from(PermissionType::Delete)
             );
 
             $this->gamePlatformDomainService->ensureGamePlatformExists(
@@ -188,8 +190,8 @@ class GamePlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::GamePlatform,
-                PermissionType::List
+                SectorValue::from(SectorType::GamePlatform),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedGamePlatform = $this->repository->findById(
@@ -231,8 +233,8 @@ class GamePlatformService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::GamePlatform,
-                PermissionType::List
+                SectorValue::from(SectorType::GamePlatform),
+                PermissionValue::from(PermissionType::List)
             );
 
             $gamePlatforms = $this->repository->findAll();

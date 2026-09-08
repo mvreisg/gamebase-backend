@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Authorization\UseCase;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
@@ -39,7 +39,7 @@ class CheckAuthorizationUseCase
         $this->logger = $logger;
     }
 
-    public function execute(string $token, SectorType $sectorType, PermissionType $permissionType): bool
+    public function execute(string $token, SectorValue $sectorValue, PermissionValue $permissionValue): bool
     {
         try {
             $decodedToken = $this->authenticationService->validate(
@@ -60,23 +60,23 @@ class CheckAuthorizationUseCase
                 $userSectorPermissions = new UserSectorPermissionCollection();
             }
 
-            $this->authorizationDomainService->ensureHasPermission(
+            $this->authorizationDomainService->checkBetweenAll(
                 $userSectorPermissions,
-                $sectorType,
-                $permissionType
+                $sectorValue,
+                $permissionValue
             );
 
             $this->logger->error("Successfully authorized", [
-                "sector" => $sectorType->value,
-                "permission" => $permissionType->value,
+                "sector" => $sectorValue->getValue(),
+                "permission" => $permissionValue->getValue(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);
 
             return true;
         } catch (\Throwable $e) {
             $this->logger->error("Authorization check failed", [
-                "sector" => $sectorType->value,
-                "permission" => $permissionType->value,
+                "sector" => $sectorValue->getValue(),
+                "permission" => $permissionValue->getValue(),
                 "exception" => $e->getMessage(),
                 "timestamp" => $this->clock->now()->format(\DateTimeInterface::ATOM)
             ]);

@@ -311,8 +311,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
 
         $checkAuthorizationUseCase->execute(
             $encodedToken,
-            SectorType::User,
-            PermissionType::Create
+            SectorValue::from(SectorType::User),
+            PermissionValue::from(PermissionType::Create),
         );
     }
 
@@ -393,8 +393,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
 
         $checkAuthorizationUseCase->execute(
             $encodedToken,
-            SectorType::User,
-            PermissionType::Create
+            SectorValue::from(SectorType::User),
+            PermissionValue::from(PermissionType::Create),
         );
     }
 
@@ -477,8 +477,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
 
         $checkAuthorizationUseCase->execute(
             $encodedToken,
-            SectorType::Game,
-            PermissionType::Create
+            SectorValue::from(SectorType::Game),
+            PermissionValue::from(PermissionType::Create),
         );
     }
 
@@ -561,8 +561,8 @@ class CheckAuthorizationUseCaseTest extends TestCase
 
         $checkAuthorizationUseCase->execute(
             $encodedToken,
-            SectorType::User,
-            PermissionType::List
+            SectorValue::from(SectorType::User),
+            PermissionValue::from(PermissionType::List),
         );
     }
 }

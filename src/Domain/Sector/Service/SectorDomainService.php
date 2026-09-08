@@ -54,11 +54,11 @@ class SectorDomainService
 
     public function ensureValueIsUnique(SectorValue $value): void
     {
-        $hasDuplicatedValues = $this->repository->checkIfValueExists(
+        $id = $this->repository->checkIfValueExists(
             $value
         );
 
-        if ($hasDuplicatedValues) {
+        if ($id) {
             throw new DuplicatedSectorValueException(
                 $value
             );

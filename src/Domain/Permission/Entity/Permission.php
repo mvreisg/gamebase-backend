@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Permission\Entity;
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
@@ -62,8 +61,8 @@ class Permission
         return $this->isActive;
     }
 
-    public function equals(PermissionType $type): bool
+    public function equals(PermissionValue $other): bool
     {
-        return $type->value === $this->getPermissionValue()->getValue()->value;
+        return $this->getPermissionValue()->getValue() === $other->getValue();
     }
 }
