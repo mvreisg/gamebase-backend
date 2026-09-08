@@ -6,7 +6,7 @@ use DI\Container;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Phinx\Seed\AbstractSeed;
 
-class AddingFirstUser extends AbstractSeed
+class AddingUser extends AbstractSeed
 {
     public function run(): void
     {

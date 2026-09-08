@@ -60,7 +60,7 @@ class CheckAuthorizationUseCase
                 $userSectorPermissions = new UserSectorPermissionCollection();
             }
 
-            $this->authorizationDomainService->ensureHasPermission(
+            $this->authorizationDomainService->checkBetweenAll(
                 $userSectorPermissions,
                 $sectorValue,
                 $permissionValue

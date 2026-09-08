@@ -6,8 +6,11 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Phinx\Seed\AbstractSeed;
 use DI\Container;
+use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 
-class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
+class AddingUserSectorPermission extends AbstractSeed
 {
     public function run(): void
     {
@@ -20,12 +23,23 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
 
         $userResult = $this->fetchRow("SELECT * FROM user WHERE username = '{$container->get("repository.root.username")}'");
 
-        $data = [];
-        foreach (SectorType::cases() as $sectorValue) {
-            $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
+        $authorizationDomainService = $container->get(AuthorizationDomainService::class);
 
-            foreach (PermissionType::cases() as $permissionValue) {
-                $permissionResult = $this->fetchRow("SELECT * FROM permission WHERE value = '{$permissionValue->value}'");
+        $data = [];
+        foreach (SectorType::cases() as $sectorType) {
+            $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorType->value}'");
+
+            foreach (PermissionType::cases() as $permissionType) {
+                $permissionResult = $this->fetchRow("SELECT * FROM permission WHERE value = '{$permissionType->value}'");
+
+                try {
+                    $isAuthorized = $authorizationDomainService->check(SectorValue::from($sectorType), PermissionValue::from($permissionType));
+                    if ($isAuthorized === false) {
+                        continue;
+                    }
+                } catch (\Throwable) {
+                    continue;
+                }
 
                 $userSectorPermissionResult = $this->fetchRow(
                     "SELECT 

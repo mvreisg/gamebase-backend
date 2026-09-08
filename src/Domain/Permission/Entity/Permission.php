@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\Permission\Entity;
 
-use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
-use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 
@@ -67,26 +64,5 @@ class Permission
     public function equals(PermissionValue $other): bool
     {
         return $this->getPermissionValue()->getValue() === $other->getValue();
-    }
-
-    public function allow(Sector $sector): bool
-    {
-        switch ($this) {
-            case PermissionType::Delete:
-                return
-                    $sector->getSectorValue()->getValue() === SectorType::GameGenre ||
-                    $sector->getSectorValue()->getValue() === SectorType::GamePlatform ||
-                    $sector->getSectorValue()->getValue() === SectorType::UserSectorPermission;
-            case PermissionType::Activate:
-                return
-                    $sector->getSectorValue()->getValue() === SectorType::Game ||
-                    $sector->getSectorValue()->getValue() === SectorType::Genre ||
-                    $sector->getSectorValue()->getValue() === SectorType::Platform ||
-                    $sector->getSectorValue()->getValue() === SectorType::User ||
-                    $sector->getSectorValue()->getValue() === SectorType::Sector ||
-                    $sector->getSectorValue()->getValue() === SectorType::Permission;
-            default:
-                return true;
-        }
     }
 }

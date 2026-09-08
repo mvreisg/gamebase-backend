@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Service;
 
+use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
@@ -15,11 +16,14 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPer
 class UserSectorPermissionDomainService
 {
     private UserSectorPermissionRepositoryInterface $repository;
+    private AuthorizationDomainService $service;
 
     public function __construct(
-        UserSectorPermissionRepositoryInterface $repository
+        UserSectorPermissionRepositoryInterface $repository,
+        AuthorizationDomainService $service
     ) {
         $this->repository = $repository;
+        $this->service = $service;
     }
 
     public function ensureUserSectorPermissionExists(Id $id): void
@@ -33,12 +37,12 @@ class UserSectorPermissionDomainService
         }
     }
 
-    public function assertSectorPermissionIsValid(
+    public function assertIsValid(
         User $user,
         Sector $sector,
         Permission $permission
     ): void {
-        $isValid = $sector->allow($permission);
+        $isValid = $this->service->check($sector->getSectorValue(), $permission->getPermissionValue());
         if ($isValid === false) {
             throw new InvalidUserSectorPermissionException(
                 $user,

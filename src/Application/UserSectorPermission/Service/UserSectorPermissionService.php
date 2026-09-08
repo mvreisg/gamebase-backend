@@ -92,7 +92,7 @@ class UserSectorPermissionService
             $sector = $this->sectorRepository->findById($dto->sectorId);
             $permission = $this->permissionRepository->findById($dto->permissionId);
 
-            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+            $this->userSectorPermissionDomainService->assertIsValid(
                 $user,
                 $sector,
                 $permission
@@ -154,7 +154,7 @@ class UserSectorPermissionService
             $sector = $this->sectorRepository->findById($dto->sectorId);
             $permission = $this->permissionRepository->findById($dto->permissionId);
 
-            $this->userSectorPermissionDomainService->assertSectorPermissionIsValid(
+            $this->userSectorPermissionDomainService->assertIsValid(
                 $user,
                 $sector,
                 $permission
