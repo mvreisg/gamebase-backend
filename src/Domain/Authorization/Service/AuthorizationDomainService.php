@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Domain\Authorization\Service;
 
 use Mvreisg\GamebaseBackend\Domain\Authorization\Exception\UnauthorizedException;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
-use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 
 class AuthorizationDomainService
 {
     public function ensureHasPermission(
         UserSectorPermissionCollection $userSectorPermissions,
-        SectorType $sectorType,
-        PermissionType $permissionType
+        SectorValue $sectorValue,
+        PermissionValue $permissionValue
     ): bool {
         try {
             foreach ($userSectorPermissions->fetchAll() as $userSectorPermission) {
                 $sector = $userSectorPermission->getSector();
                 $permission = $userSectorPermission->getPermission();
-                if ($sector->equals($sectorType) && $permission->equals($permissionType)) {
+                if ($sector->equals($sectorValue) && $permission->equals($permissionValue)) {
                     return true;
                 }
             }

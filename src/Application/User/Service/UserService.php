@@ -10,6 +10,8 @@ use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\Collection\UserCollection;
@@ -52,8 +54,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::Create
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->userDomainService->ensureUsernameIsUnique(
@@ -94,8 +96,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::Update
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->userDomainService->ensureUserExists(
@@ -157,8 +159,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::Activate
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::Activate)
             );
 
             $this->userDomainService->ensureUserExists(
@@ -192,8 +194,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::List
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedUser = $this->repository->findById($id);
@@ -228,8 +230,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::List
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedUser = $this->repository->findByUsername($username);
@@ -264,8 +266,8 @@ class UserService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::User,
-                PermissionType::List
+                SectorValue::from(SectorType::User),
+                PermissionValue::from(PermissionType::List)
             );
 
             $users = $this->repository->findAll();

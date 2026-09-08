@@ -9,12 +9,14 @@ use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceInsertDt
 use Mvreisg\GamebaseBackend\Application\Sector\Service\Dto\SectorServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
+use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Collection\SectorCollection;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\Dto\SectorRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Service\SectorDomainService;
+use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Psr\Log\LoggerInterface;
@@ -46,8 +48,8 @@ class SectorService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Sector,
-                PermissionType::Create
+                SectorValue::from(SectorType::Sector),
+                PermissionValue::from(PermissionType::Create)
             );
 
             $this->sectorDomainService->ensureNameIsUniqueOnInsert(
@@ -88,8 +90,8 @@ class SectorService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Sector,
-                PermissionType::Update
+                SectorValue::from(SectorType::Sector),
+                PermissionValue::from(PermissionType::Update)
             );
 
             $this->sectorDomainService->ensureSectorExists(
@@ -135,8 +137,8 @@ class SectorService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Sector,
-                PermissionType::Activate
+                SectorValue::from(SectorType::Sector),
+                PermissionValue::from(PermissionType::Activate)
             );
 
             $this->sectorDomainService->ensureSectorExists(
@@ -170,8 +172,8 @@ class SectorService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Sector,
-                PermissionType::List
+                SectorValue::from(SectorType::Sector),
+                PermissionValue::from(PermissionType::List)
             );
 
             $fetchedSector = $this->repository->findById($id);
@@ -206,8 +208,8 @@ class SectorService
         try {
             $this->checkAuthorizationUseCase->execute(
                 $token,
-                SectorType::Sector,
-                PermissionType::List
+                SectorValue::from(SectorType::Sector),
+                PermissionValue::from(PermissionType::List)
             );
 
             $sectors = $this->repository->findAll();

@@ -25,10 +25,6 @@ class AddingPermissionsToAllSectorsToRootUser extends AbstractSeed
             $sectorResult = $this->fetchRow("SELECT * FROM sector WHERE value = '{$sectorValue->value}'");
 
             foreach (PermissionType::cases() as $permissionValue) {
-                $isValid = $sectorValue->allow($permissionValue);
-                if ($isValid === false) {
-                    continue;
-                }
                 $permissionResult = $this->fetchRow("SELECT * FROM permission WHERE value = '{$permissionValue->value}'");
 
                 $userSectorPermissionResult = $this->fetchRow(

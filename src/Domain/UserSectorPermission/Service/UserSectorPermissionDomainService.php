@@ -38,7 +38,7 @@ class UserSectorPermissionDomainService
         Sector $sector,
         Permission $permission
     ): void {
-        $isValid = $sector->getSectorValue()->getValue()->allow($permission->getPermissionValue()->getValue());
+        $isValid = $sector->allow($permission);
         if ($isValid === false) {
             throw new InvalidUserSectorPermissionException(
                 $user,

@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\Exception\InvalidSectorVal
 
 class SectorValue
 {
-    private SectorType $value;
+    private string $value;
 
     public function __construct(string $value)
     {
@@ -27,12 +27,12 @@ class SectorValue
         return new self($value);
     }
 
-    public function getValue(): SectorType
+    public function getValue(): string
     {
         return $this->value;
     }
 
-    public function validate(string $value): SectorType
+    public function validate(string $value): string
     {
         $trimmed = trim($value);
 
@@ -50,11 +50,9 @@ class SectorValue
         $type = SectorType::tryFrom($trimmed);
 
         if ($type === null) {
-            throw new InvalidSectorValueValueException(
-                $trimmed
-            );
+            return $trimmed;
         }
 
-        return $type;
+        return $type->value;
     }
 }
