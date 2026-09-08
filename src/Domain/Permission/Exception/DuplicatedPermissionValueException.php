@@ -12,7 +12,7 @@ class DuplicatedPermissionValueException extends \Exception
         PermissionValue $value
     ) {
         parent::__construct(
-            "The permission value '{$value->getValue()->value}' is duplicated"
+            "The permission value '{$value->getValue()}' is duplicated"
         );
     }
 }

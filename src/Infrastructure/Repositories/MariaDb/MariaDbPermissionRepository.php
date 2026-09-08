@@ -28,7 +28,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
             $this->connection->beginTransaction();
 
             $name = $dto->name->getValue();
-            $value = $dto->value->getValue()->value;
+            $value = $dto->value->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -108,7 +108,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
         try {
             $id = $dto->id->getValue();
             $name = $dto->name->getValue();
-            $value = $dto->value->getValue()->value;
+            $value = $dto->value->getValue();
 
             /* MariaDB bool limitation forces casting bool to int
              * to send to the database.
@@ -329,8 +329,6 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
     public function checkIfValueExists(PermissionValue $value): ?Id
     {
         try {
-            $valueValue = $value->getValue()->value;
-
             $statement = $this->connection->prepare(
                 "SELECT 
                     *
@@ -340,7 +338,7 @@ class MariaDbPermissionRepository implements PermissionRepositoryInterface
                     value = :value;"
             );
             $statement->execute([
-                ":value" => $valueValue
+                ":value" => $value->getValue()
             ]);
 
             $fetchResult = $statement->fetch();
