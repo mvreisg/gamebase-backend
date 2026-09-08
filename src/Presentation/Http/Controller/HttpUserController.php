@@ -54,6 +54,16 @@ class HttpUserController
                     example: "Marcus"
                 ),
                 new OA\Property(
+                    property: "username",
+                    type: "string",
+                    example: "marcus"
+                ),
+                new OA\Property(
+                    property: "password",
+                    type: "string",
+                    example: "senha123"
+                ),
+                new OA\Property(
                     property: "is_active",
                     type: "boolean",
                     example: true
@@ -214,6 +224,16 @@ class HttpUserController
                     property: "name",
                     type: "string",
                     example: "Marcus"
+                ),
+                new OA\Property(
+                    property: "username",
+                    type: "string",
+                    example: "marcus"
+                ),
+                new OA\Property(
+                    property: "password",
+                    type: "string",
+                    example: "senha123"
                 ),
                 new OA\Property(
                     property: "is_active",

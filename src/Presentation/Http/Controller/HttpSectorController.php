@@ -53,6 +53,11 @@ class HttpSectorController
                     example: "Game"
                 ),
                 new OA\Property(
+                    property: "value",
+                    type: "string",
+                    example: "game"
+                ),
+                new OA\Property(
                     property: "is_active",
                     type: "boolean",
                     example: true
@@ -214,6 +219,11 @@ class HttpSectorController
                     property: "name",
                     type: "string",
                     example: "Game"
+                ),
+                new OA\Property(
+                    property: "value",
+                    type: "string",
+                    example: "game"
                 ),
                 new OA\Property(
                     property: "is_active",

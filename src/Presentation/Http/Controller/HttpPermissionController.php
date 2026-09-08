@@ -54,6 +54,11 @@ class HttpPermissionController
                     example: "Create"
                 ),
                 new OA\Property(
+                    property: "value",
+                    type: "string",
+                    example: "create"
+                ),
+                new OA\Property(
                     property: "is_active",
                     type: "boolean",
                     example: true
@@ -215,6 +220,11 @@ class HttpPermissionController
                     property: "name",
                     type: "string",
                     example: "Create"
+                ),
+                new OA\Property(
+                    property: "value",
+                    type: "string",
+                    example: "create"
                 ),
                 new OA\Property(
                     property: "is_active",
