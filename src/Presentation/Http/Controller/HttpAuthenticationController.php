@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Infrastructure\Serialization\Authentication\Data\AuthenticationDataSerializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,10 +16,10 @@ use OpenApi\Attributes as OA;
 )]
 class HttpAuthenticationController
 {
-    private AuthenticationService $authenticationService;
+    private AuthenticationDomainService $authenticationService;
 
     public function __construct(
-        AuthenticationService $authenticationService
+        AuthenticationDomainService $authenticationService
     ) {
         $this->authenticationService = $authenticationService;
     }

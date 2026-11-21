@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Application\Session\Service;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Data\SessionData;
 use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginInputDto;
 use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginOutputDto;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Mvreisg\GamebaseBackend\Domain\Session\Exception\InvalidCredentialsException;
 use Mvreisg\GamebaseBackend\Domain\Session\Exception\UnexistantUserException;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
@@ -23,8 +24,9 @@ class SessionService
 {
     private UserRepositoryInterface $userRepository;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
+    private HashingInterface $hasher;
     private EncryptionInterface $encrypter;
-    private AuthenticationService $authenticationService;
+    private AuthenticationDomainService $authenticationService;
     private AuthenticationTokenCacheInterface $authenticationTokenCache;
     private LoggerInterface $logger;
     private ClockInterface $clock;
@@ -32,14 +34,16 @@ class SessionService
     public function __construct(
         UserRepositoryInterface $userRepository,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
+        HashingInterface $hasher,
         EncryptionInterface $encrypter,
-        AuthenticationService $authenticationService,
+        AuthenticationDomainService $authenticationService,
         AuthenticationTokenCacheInterface $authenticationTokenCache,
         LoggerInterface $logger,
         ClockInterface $clock
     ) {
         $this->userRepository = $userRepository;
         $this->userSectorPermissionRepository = $userSectorPermissionRepository;
+        $this->hasher = $hasher;
         $this->encrypter = $encrypter;
         $this->authenticationService = $authenticationService;
         $this->authenticationTokenCache = $authenticationTokenCache;
@@ -64,13 +68,13 @@ class SessionService
 
             $id = $fetchedUser->getId();
 
-            $fetchedAndEncodedPassword = $fetchedUser->getPassword()->getValue();
-            $decodedPassword = $this->encrypter->decrypt($fetchedAndEncodedPassword);
+            $encryptedPassword = $fetchedUser->getPassword()->getValue();
+            $passwordHash = $this->encrypter->decrypt($encryptedPassword);
 
-            $doTheTwoPasswordsMatchesEqually = strcmp(
+            $doTheTwoPasswordsMatchesEqually = $this->hasher->compare(
                 $dto->password->getValue(),
-                $decodedPassword
-            ) === 0;
+                $passwordHash
+            );
 
             if ($doTheTwoPasswordsMatchesEqually === false) {
                 $this->logger->warning("Invalid credentials provided for login attempt", [

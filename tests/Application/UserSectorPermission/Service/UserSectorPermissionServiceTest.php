@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\UserSectorPermission\Service;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -35,7 +35,6 @@ use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\UserNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
@@ -267,8 +266,8 @@ class UserSectorPermissionServiceTest extends TestCase
     private function createAuthenticationService(
         MockObject&AuthenticationTokenCacheInterface $tokenCache,
         MockObject&AuthenticationTokenProvider $tokenProvider
-    ): AuthenticationService {
-        $service = new AuthenticationService(
+    ): AuthenticationDomainService {
+        $service = new AuthenticationDomainService(
             $tokenCache,
             $tokenProvider,
             new NullLogger()
@@ -294,7 +293,7 @@ class UserSectorPermissionServiceTest extends TestCase
     private function createCheckAuthorizationUseCase(
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
-        AuthenticationService $authenticationService,
+        AuthenticationDomainService $authenticationService,
         AuthorizationDomainService $authorizationDomainService,
         ClockInterface $clock
     ): CheckAuthorizationUseCase {
@@ -399,7 +398,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -527,7 +526,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -635,7 +634,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -743,7 +742,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -851,7 +850,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -963,7 +962,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1076,7 +1075,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1185,7 +1184,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1294,7 +1293,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1403,7 +1402,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1516,7 +1515,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1624,7 +1623,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1728,7 +1727,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1836,7 +1835,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1960,7 +1959,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -2068,7 +2067,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -2176,7 +2175,7 @@ class UserSectorPermissionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(

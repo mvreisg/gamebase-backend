@@ -9,7 +9,7 @@ use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Application\User\Service\UserService;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\SafeUser;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Presentation\Http\Util\Response\HttpMissingKeysInformerResponse;
@@ -168,7 +168,7 @@ class HttpUserController
                 $this->userService->insert(
                     new UserServiceInsertDto(
                         Username::create($username),
-                        DecodedPassword::create($password),
+                        Password::create($password),
                         $isActive
                     ),
                     $token
@@ -346,7 +346,7 @@ class HttpUserController
                 new UserServiceUpdateDto(
                     Id::create($id),
                     Username::create($username),
-                    DecodedPassword::create($password),
+                    Password::create($password),
                     $isActive
                 ),
                 $token

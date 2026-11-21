@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use DI\Container;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Phinx\Seed\AbstractSeed;
 
 class AddingUser extends AbstractSeed
@@ -18,6 +19,11 @@ class AddingUser extends AbstractSeed
         $container = require PROJECT_ROOT . "/configurations/php_di/phinx/container_bootstrap.php";
 
         /**
+         * @var HashingInterface
+         */
+        $hasher = $container->get(HashingInterface::class);
+
+        /**
          * @var EncryptionInterface
          */
         $encrypter = $container->get(EncryptionInterface::class);
@@ -25,7 +31,9 @@ class AddingUser extends AbstractSeed
             [
                 "username" => $container->get("repository.root.username"),
                 "password" => $encrypter->encrypt(
-                    $container->get("repository.root.password")
+                    $hasher->hash(
+                        $container->get("repository.root.password")
+                    )
                 ),
                 "is_active" => 1
             ]

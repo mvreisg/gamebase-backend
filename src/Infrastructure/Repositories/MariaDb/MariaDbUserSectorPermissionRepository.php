@@ -11,7 +11,7 @@ use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Name\Name;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\UserSectorPermission;
@@ -111,7 +111,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 Username::create(
                     $fetchResult["u_username"]
                 ),
-                EncodedPassword::create(
+                Password::create(
                     $fetchResult["u_password"]
                 ),
                 boolval(
@@ -277,7 +277,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                 Username::create(
                     $fetchResult["u_username"]
                 ),
-                EncodedPassword::create(
+                Password::create(
                     $fetchResult["u_password"]
                 ),
                 boolval(
@@ -388,7 +388,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                     Username::create(
                         $row["u_username"]
                     ),
-                    EncodedPassword::create(
+                    Password::create(
                         $row["u_password"]
                     ),
                     boolval(
@@ -495,7 +495,7 @@ class MariaDbUserSectorPermissionRepository implements UserSectorPermissionRepos
                     Username::create(
                         $row["u_username"]
                     ),
-                    EncodedPassword::create(
+                    Password::create(
                         $row["u_password"]
                     ),
                     boolval(

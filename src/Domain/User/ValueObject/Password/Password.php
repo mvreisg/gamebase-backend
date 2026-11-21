@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password;
 
-abstract class Password
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Exception\EmptyPasswordValueException;
+
+class Password
 {
     private string $value;
 
@@ -13,10 +15,24 @@ abstract class Password
         $this->value = $this->validate($value);
     }
 
+    public static function create(string $value): self
+    {
+        return new self($value);
+    }
+
     public function getValue(): string
     {
         return $this->value;
     }
 
-    abstract public function validate(string $value): string;
+    public function validate(string $value): string
+    {
+        $trimmedValue = trim($value);
+
+        if ($trimmedValue === "") {
+            throw new EmptyPasswordValueException();
+        }
+
+        return $trimmedValue;
+    }
 }

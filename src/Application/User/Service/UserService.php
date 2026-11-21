@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Application\User\Service\Dto\UserServiceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Permission\PermissionType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
@@ -20,13 +21,14 @@ use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceIn
 use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Psr\Log\LoggerInterface;
 
 class UserService
 {
     private UserRepositoryInterface $repository;
+    private HashingInterface $hasher;
     private EncryptionInterface $encrypter;
     private CheckAuthorizationUseCase $checkAuthorizationUseCase;
     private UserDomainService $userDomainService;
@@ -35,6 +37,7 @@ class UserService
 
     public function __construct(
         UserRepositoryInterface $repository,
+        HashingInterface $hasher,
         EncryptionInterface $encrypter,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         UserDomainService $userDomainService,
@@ -42,6 +45,7 @@ class UserService
         LoggerInterface $logger
     ) {
         $this->repository = $repository;
+        $this->hasher = $hasher;
         $this->encrypter = $encrypter;
         $this->checkAuthorizationUseCase = $checkAuthorizationUseCase;
         $this->userDomainService = $userDomainService;
@@ -62,14 +66,18 @@ class UserService
                 $dto->username
             );
 
-            $encodedPassword = $this->encrypter->encrypt(
+            $plainHash = $this->hasher->hash(
                 $dto->password->getValue()
+            );
+
+            $encryptedHash = $this->encrypter->encrypt(
+                $plainHash
             );
 
             $insertedUser = $this->repository->insert(
                 new UserRepositoryInterfaceInsertDto(
                     $dto->username,
-                    EncodedPassword::create($encodedPassword),
+                    Password::create($encryptedHash),
                     $dto->isActive
                 )
             );
@@ -108,32 +116,21 @@ class UserService
                 $dto->username
             );
 
-            $fetched = $this->repository->findById(
-                $dto->id
+            var_dump($dto->password->getValue());
+
+            $plainHash = $this->hasher->hash(
+                $dto->password->getValue()
             );
 
-            $encodedPassword = $fetched->getPassword()->getValue();
-
-            $decodedPassword = $this->encrypter->decrypt(
-                $encodedPassword
+            $encryptedHash = $this->encrypter->encrypt(
+                $plainHash
             );
-
-            $isHashEqual = strcmp(
-                $dto->password->getValue(),
-                $decodedPassword
-            ) === 0;
-
-            if ($isHashEqual === false) {
-                $encodedPassword = $this->encrypter->encrypt(
-                    $dto->password->getValue()
-                );
-            }
 
             $wasUpdated = $this->repository->update(
                 new UserRepositoryInterfaceUpdateDto(
                     $dto->id,
                     $dto->username,
-                    EncodedPassword::create($encodedPassword),
+                    Password::create($encryptedHash),
                     $dto->isActive
                 )
             );

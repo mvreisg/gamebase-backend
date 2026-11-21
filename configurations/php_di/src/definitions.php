@@ -10,6 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\Game\Repository\GameRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GameGenre\Repository\GameGenreRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\GamePlatform\Repository\GamePlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Genre\Repository\GenreRepositoryInterface;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Repository\PermissionRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Platform\Repository\PlatformRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\Sector\Repository\SectorRepositoryInterface;
@@ -20,9 +21,10 @@ use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPer
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Cache\Predis\PredisAuthenticationTokenCache;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\JwtTokenProvider;
 use Mvreisg\GamebaseBackend\Infrastructure\Authentication\Token\Jwt\Provider\Option\JwtTokenProviderOptions;
-use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\DefuseEncryption;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Defuse\Option\DefuseEncryptionOptions;
 use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\Option\SodiumEncryptionOptions;
+use Mvreisg\GamebaseBackend\Infrastructure\Encryption\Sodium\SodiumEncryption;
+use Mvreisg\GamebaseBackend\Infrastructure\Hashing\Sodium\SodiumHashing;
 use Mvreisg\GamebaseBackend\Infrastructure\Logger\Monolog\MonologLoggerFactory;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGameGenreRepository;
 use Mvreisg\GamebaseBackend\Infrastructure\Repositories\MariaDb\MariaDbGamePlatformRepository;
@@ -76,7 +78,9 @@ try {
 
         ClockInterface::class => DI\get(Clock::class),
 
-        EncryptionInterface::class => DI\get(DefuseEncryption::class),
+        HashingInterface::class => DI\get(SodiumHashing::class),
+
+        EncryptionInterface::class => DI\get(SodiumEncryption::class),
 
         SodiumEncryptionOptions::class => DI\autowire()
             ->constructorParameter("key", DI\get("encryption.sodium.key")),

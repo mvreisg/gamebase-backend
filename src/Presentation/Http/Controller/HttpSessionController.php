@@ -6,7 +6,7 @@ namespace Mvreisg\GamebaseBackend\Presentation\Http\Controller;
 
 use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginInputDto;
 use Mvreisg\GamebaseBackend\Application\Session\Service\SessionService;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Arrays\ArrayKeysExistanceChecker;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Duration;
@@ -169,7 +169,7 @@ class HttpSessionController
             $result = $this->sessionService->login(
                 new SessionServiceLoginInputDto(
                     Username::create($username),
-                    DecodedPassword::create($password),
+                    Password::create($password),
                     $oneWeekLogin
                 )
             );

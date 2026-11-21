@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Application\Authorization\UseCase;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\ValueObject\SectorValue\SectorValue;
@@ -18,7 +18,7 @@ class CheckAuthorizationUseCase
 {
     private UserDomainService $userDomainService;
     private UserSectorPermissionRepositoryInterface $userSectorPermissionRepository;
-    private AuthenticationService $authenticationService;
+    private AuthenticationDomainService $authenticationService;
     private AuthorizationDomainService $authorizationDomainService;
     private ClockInterface $clock;
     private LoggerInterface $logger;
@@ -26,7 +26,7 @@ class CheckAuthorizationUseCase
     public function __construct(
         UserDomainService $userDomainService,
         UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
-        AuthenticationService $authenticationService,
+        AuthenticationDomainService $authenticationService,
         AuthorizationDomainService $authorizationDomainService,
         ClockInterface $clock,
         LoggerInterface $logger

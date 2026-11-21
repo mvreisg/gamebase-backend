@@ -10,7 +10,7 @@ use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceInsertDto;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\Dto\UserRepositoryInterfaceUpdateDto;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Encoded\EncodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 
 class MariaDbUserRepository implements UserRepositoryInterface
@@ -85,7 +85,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 Username::create(
                     $fetchResult["username"]
                 ),
-                EncodedPassword::create(
+                Password::create(
                     $fetchResult["password"]
                 ),
                 /* MariaDB stores bool as int values so a casting
@@ -206,7 +206,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 Username::create(
                     $fetchResult["username"]
                 ),
-                EncodedPassword::create(
+                Password::create(
                     $fetchResult["password"]
                 ),
                 /* MariaDB stores bool as int values so a casting
@@ -252,7 +252,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                 Username::create(
                     $fetchResult["username"]
                 ),
-                EncodedPassword::create(
+                Password::create(
                     $fetchResult["password"]
                 ),
                 /* MariaDB stores bool as int values so a casting
@@ -294,7 +294,7 @@ class MariaDbUserRepository implements UserRepositoryInterface
                     Username::create(
                         $row["username"]
                     ),
-                    EncodedPassword::create(
+                    Password::create(
                         $row["password"]
                     ),
                     /* MariaDB stores bool as int values so a casting

@@ -12,7 +12,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationToke
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Psr\Log\LoggerInterface;
 
-class AuthenticationService
+class AuthenticationDomainService
 {
     private AuthenticationTokenCacheInterface $tokenCache;
     private AuthenticationTokenProvider $tokenProvider;

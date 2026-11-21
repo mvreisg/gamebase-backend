@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mvreisg\GamebaseBackend\Tests\Application\Session\Service;
 
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -15,11 +15,11 @@ use Mvreisg\GamebaseBackend\Application\Session\Service\Dto\SessionServiceLoginI
 use Mvreisg\GamebaseBackend\Application\Session\Service\SessionService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Repository\UserSectorPermissionRepositoryInterface;
@@ -76,7 +76,7 @@ class SessionServiceTest extends TestCase
     private function createUser(
         Id $id,
         Username $username,
-        DecodedPassword $password,
+        Password $password,
         bool $isActive
     ): User {
         $user = User::create(
@@ -117,6 +117,30 @@ class SessionServiceTest extends TestCase
     {
         $repository = $this->createMock(UserSectorPermissionRepositoryInterface::class);
         return $repository;
+    }
+
+    private function createHasher(): MockObject&HashingInterface
+    {
+        $hasher = $this->createMock(HashingInterface::class);
+        $hasher
+            ->method("hash")
+            ->willReturn(
+                "test"
+            );
+
+        return $hasher;
+    }
+
+    private function createHasherWithUnequalComparison(): MockObject&HashingInterface
+    {
+        $hasher = $this->createMock(HashingInterface::class);
+        $hasher
+            ->method("compare")
+            ->willReturn(
+                false
+            );
+
+        return $hasher;
     }
 
     private function createEncrypter(): MockObject&EncryptionInterface
@@ -170,8 +194,8 @@ class SessionServiceTest extends TestCase
     private function createAuthenticationService(
         MockObject&AuthenticationTokenCacheInterface $tokenCache,
         MockObject&AuthenticationTokenProvider $tokenProvider
-    ): AuthenticationService {
-        return new AuthenticationService(
+    ): AuthenticationDomainService {
+        return new AuthenticationDomainService(
             $tokenCache,
             $tokenProvider,
             new NullLogger()
@@ -214,13 +238,15 @@ class SessionServiceTest extends TestCase
     private function createSessionService(
         MockObject&UserRepositoryInterface $userRepository,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
+        MockObject&HashingInterface $hasher,
         MockObject&EncryptionInterface $encrypter,
-        AuthenticationService $authenticationService,
+        AuthenticationDomainService $authenticationService,
         MockObject&AuthenticationTokenCacheInterface $authenticationTokenCache
     ): SessionService {
         $service = new SessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $authenticationTokenCache,
@@ -253,7 +279,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -279,6 +305,7 @@ class SessionServiceTest extends TestCase
             $issuedAt,
             $expiresAt
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $tokenProvider = $this->createAuthenticationTokenProviderWithDecodeReturn(
             $encodedToken,
@@ -291,6 +318,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -332,7 +360,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -346,6 +374,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             true,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $clock = $this->createClock("UTC");
         $issuedAt = $clock->now();
@@ -370,6 +399,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -437,7 +467,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -449,6 +479,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             true,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $tokenProvider = $this->createAuthenticationTokenProvider(
             $encodedToken
@@ -460,6 +491,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -483,7 +515,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -497,6 +529,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             true,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypterWithDecryptionException();
         $tokenProvider = $this->createAuthenticationTokenProvider(
             $encodedToken
@@ -508,6 +541,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -531,7 +565,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -545,6 +579,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             true,
         );
+        $hasher = $this->createHasherWithUnequalComparison();
         $encrypter = $this->createEncrypter();
         $tokenProvider = $this->createAuthenticationTokenProvider(
             $encodedToken
@@ -556,6 +591,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -563,7 +599,7 @@ class SessionServiceTest extends TestCase
 
         $SessionServiceLoginInputDto = $this->createSessionServiceLoginInputDto(
             $user->getUsername(),
-            DecodedPassword::create("error"),
+            Password::create("error"),
             false
         );
 
@@ -583,7 +619,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -597,6 +633,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             true,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $authenticationData = $this->createAuthenticationData(
             $user->getId(),
@@ -621,6 +658,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -640,7 +678,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -654,6 +692,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             false,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $authenticationData = $this->createAuthenticationData(
             $user->getId(),
@@ -678,6 +717,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache
@@ -703,7 +743,7 @@ class SessionServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
 
@@ -717,6 +757,7 @@ class SessionServiceTest extends TestCase
             $encodedToken,
             false,
         );
+        $hasher = $this->createHasher();
         $encrypter = $this->createEncrypter();
         $authenticationData = $this->createAuthenticationData(
             $user->getId(),
@@ -741,6 +782,7 @@ class SessionServiceTest extends TestCase
         $sessionService = $this->createSessionService(
             $userRepository,
             $userSectorPermissionRepository,
+            $hasher,
             $encrypter,
             $authenticationService,
             $tokenCache

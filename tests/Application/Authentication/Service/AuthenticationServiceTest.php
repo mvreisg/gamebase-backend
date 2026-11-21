@@ -7,7 +7,7 @@ namespace Mvreisg\GamebaseBackend\Tests\Application\Authentication\Service;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Data\AuthenticationData;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\InvalidTokenException;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Exception\UnexistantTokenException;
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\AuthenticationToken;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
@@ -15,7 +15,7 @@ use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\Exception\Authe
 use Mvreisg\GamebaseBackend\Domain\Shared\Interface\ClockInterface;
 use Mvreisg\GamebaseBackend\Domain\Shared\ValueObject\Id\Id;
 use Mvreisg\GamebaseBackend\Domain\User\Entity\User;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
+use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Infrastructure\Time\Clock;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -151,8 +151,8 @@ class AuthenticationServiceTest extends TestCase
     private function createAuthenticationService(
         MockObject&AuthenticationTokenCacheInterface $tokenCache,
         MockObject&AuthenticationTokenProvider $tokenProvider
-    ): AuthenticationService {
-        return new AuthenticationService(
+    ): AuthenticationDomainService {
+        return new AuthenticationDomainService(
             $tokenCache,
             $tokenProvider,
             new NullLogger()
@@ -162,7 +162,7 @@ class AuthenticationServiceTest extends TestCase
     private function createUser(
         Id $id,
         Username $username,
-        DecodedPassword $password,
+        Password $password,
         bool $isActive
     ): User {
         return User::create(
@@ -197,7 +197,7 @@ class AuthenticationServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("marcus"),
-            DecodedPassword::create("password123"),
+            Password::create("password123"),
             true
         );
         $tokenCache = $this->createEmptyAuthenticationTokenCache();
@@ -224,7 +224,7 @@ class AuthenticationServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("marcus"),
-            DecodedPassword::create("password123"),
+            Password::create("password123"),
             true
         );
         $tokenCache = $this->createEmptyAuthenticationTokenCache();
@@ -293,7 +293,7 @@ class AuthenticationServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $authenticationData = new AuthenticationData(
@@ -421,7 +421,7 @@ class AuthenticationServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $authenticationData = new AuthenticationData(
@@ -459,13 +459,13 @@ class AuthenticationServiceTest extends TestCase
         $firstUser = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $secondUser = $this->createUser(
             Id::create(2),
             Username::create("test2"),
-            DecodedPassword::create("test2"),
+            Password::create("test2"),
             true
         );
         $firstAuthenticationData = new AuthenticationData(

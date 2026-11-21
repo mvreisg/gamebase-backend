@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mvreisg\GamebaseBackend\Tests\Application\User\Service;
 
-use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationService;
+use Mvreisg\GamebaseBackend\Domain\Authentication\Service\AuthenticationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Cache\AuthenticationTokenCacheInterface;
 use Mvreisg\GamebaseBackend\Domain\Authentication\Token\Provider\AuthenticationTokenProvider;
 use Mvreisg\GamebaseBackend\Application\Authorization\UseCase\CheckAuthorizationUseCase;
@@ -17,6 +17,7 @@ use Mvreisg\GamebaseBackend\Domain\Authorization\Sector\SectorType;
 use Mvreisg\GamebaseBackend\Domain\Authorization\Service\AuthorizationDomainService;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\EncryptionInterface;
 use Mvreisg\GamebaseBackend\Domain\Encryption\Interface\Exception\EncryptionException;
+use Mvreisg\GamebaseBackend\Domain\Hashing\Interface\HashingInterface;
 use Mvreisg\GamebaseBackend\Domain\Permission\Entity\Permission;
 use Mvreisg\GamebaseBackend\Domain\Permission\ValueObject\PermissionValue\PermissionValue;
 use Mvreisg\GamebaseBackend\Domain\Sector\Entity\Sector;
@@ -30,7 +31,6 @@ use Mvreisg\GamebaseBackend\Domain\User\Exception\DuplicatedUsernameException;
 use Mvreisg\GamebaseBackend\Domain\User\Exception\UserNotFoundException;
 use Mvreisg\GamebaseBackend\Domain\User\Repository\UserRepositoryInterface;
 use Mvreisg\GamebaseBackend\Domain\User\Service\UserDomainService;
-use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Decoded\DecodedPassword;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Password\Password;
 use Mvreisg\GamebaseBackend\Domain\User\ValueObject\Username\Username;
 use Mvreisg\GamebaseBackend\Domain\UserSectorPermission\Entity\Collection\UserSectorPermissionCollection;
@@ -147,6 +147,19 @@ class UserServiceTest extends TestCase
         return $repository;
     }
 
+    private function createHasher(
+        string $hashedMessage
+    ): MockObject&HashingInterface {
+        $hasher = $this->createMock(HashingInterface::class);
+        $hasher
+            ->method("hash")
+            ->willReturn(
+                $hashedMessage
+            );
+
+        return $hasher;
+    }
+
     private function createEncrypter(
         string $encryptedMessage
     ): MockObject&EncryptionInterface {
@@ -160,6 +173,7 @@ class UserServiceTest extends TestCase
         return $encrypter;
     }
 
+    /*
     private function createEncrypterWithDecryptionError(): MockObject&EncryptionInterface
     {
         $encrypter = $this->createMock(EncryptionInterface::class);
@@ -173,6 +187,7 @@ class UserServiceTest extends TestCase
 
         return $encrypter;
     }
+    */
 
     private function createEncrypterWithEncryptionError(): MockObject&EncryptionInterface
     {
@@ -216,8 +231,8 @@ class UserServiceTest extends TestCase
     private function createAuthenticationService(
         MockObject&AuthenticationTokenCacheInterface $tokenCache,
         MockObject&AuthenticationTokenProvider $tokenProvider
-    ): AuthenticationService {
-        $service = new AuthenticationService(
+    ): AuthenticationDomainService {
+        $service = new AuthenticationDomainService(
             $tokenCache,
             $tokenProvider,
             new NullLogger()
@@ -243,7 +258,7 @@ class UserServiceTest extends TestCase
     private function createCheckAuthorizationUseCase(
         UserDomainService $userDomainService,
         MockObject&UserSectorPermissionRepositoryInterface $userSectorPermissionRepository,
-        AuthenticationService $authenticationService,
+        AuthenticationDomainService $authenticationService,
         AuthorizationDomainService $authorizationDomainService,
         ClockInterface $clock
     ): CheckAuthorizationUseCase {
@@ -260,6 +275,7 @@ class UserServiceTest extends TestCase
 
     private function createUserService(
         MockObject&UserRepositoryInterface $userRepository,
+        MockObject&HashingInterface $hasher,
         MockObject&EncryptionInterface $encrypter,
         CheckAuthorizationUseCase $checkAuthorizationUseCase,
         ClockInterface $clock,
@@ -267,6 +283,7 @@ class UserServiceTest extends TestCase
     ): UserService {
         $userService = new UserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $userDomainService,
@@ -288,7 +305,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -308,6 +325,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -344,6 +364,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -388,7 +409,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -408,6 +429,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -444,6 +468,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -488,7 +513,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -508,6 +533,9 @@ class UserServiceTest extends TestCase
             true,
             true,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -544,6 +572,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -568,7 +597,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -588,6 +617,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypterWithEncryptionError();
         $userDomainService = $this->createUserDomainService(
@@ -622,6 +654,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -650,7 +683,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -670,6 +703,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -706,6 +742,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -735,7 +772,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -755,6 +792,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -791,6 +831,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -816,7 +857,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -836,6 +877,9 @@ class UserServiceTest extends TestCase
             false,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -872,6 +916,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -897,7 +942,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -917,6 +962,9 @@ class UserServiceTest extends TestCase
             true,
             true,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -953,6 +1001,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -970,6 +1019,7 @@ class UserServiceTest extends TestCase
         );
     }
 
+    /*
     public function testIfUserUpdateFailsBecauseOfDecryptionError(): void
     {
         $this->expectException(EncryptionException::class);
@@ -978,7 +1028,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -998,6 +1048,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypterWithDecryptionError();
         $userDomainService = $this->createUserDomainService(
@@ -1032,6 +1085,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1048,6 +1102,7 @@ class UserServiceTest extends TestCase
             $encodedToken
         );
     }
+    */
 
     public function testIfUserUpdateFailsBecauseOfEncryptionError(): void
     {
@@ -1057,7 +1112,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1077,6 +1132,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypterWithEncryptionError();
         $userDomainService = $this->createUserDomainService(
@@ -1111,6 +1169,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1140,7 +1199,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1160,6 +1219,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1196,6 +1258,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1220,7 +1283,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1240,6 +1303,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1276,6 +1342,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1302,7 +1369,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1322,6 +1389,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1358,6 +1428,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1380,7 +1451,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             true
         );
         $sector = $this->createSector(
@@ -1400,6 +1471,9 @@ class UserServiceTest extends TestCase
             false,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1436,6 +1510,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1462,7 +1537,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1482,6 +1557,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1518,6 +1596,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1558,7 +1637,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1578,6 +1657,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1614,6 +1696,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1638,7 +1721,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1658,6 +1741,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1694,6 +1780,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1734,7 +1821,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1754,6 +1841,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1790,6 +1880,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1814,7 +1905,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1834,6 +1925,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1870,6 +1964,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
@@ -1894,7 +1989,7 @@ class UserServiceTest extends TestCase
         $user = $this->createUser(
             Id::create(1),
             Username::create("test"),
-            DecodedPassword::create("test"),
+            Password::create("test"),
             false
         );
         $sector = $this->createSector(
@@ -1914,6 +2009,9 @@ class UserServiceTest extends TestCase
             true,
             false,
             $user
+        );
+        $hasher = $this->createHasher(
+            "test"
         );
         $encrypter = $this->createEncrypter(
             "test"
@@ -1950,6 +2048,7 @@ class UserServiceTest extends TestCase
         );
         $userService = $this->createUserService(
             $userRepository,
+            $hasher,
             $encrypter,
             $checkAuthorizationUseCase,
             $clock,
